@@ -187,8 +187,61 @@ export const Homepage: GlobalConfig = {
 					],
 				},
 				{
+					label: 'Présentation vidéo',
+					fields: [
+						{
+							name: 'isPresentationVisible',
+							label: 'Afficher la section',
+							type: 'checkbox',
+							defaultValue: true,
+						},
+						{
+							name: 'presentationTitle',
+							label: 'Titre de la section',
+							type: 'text',
+							defaultValue: 'Présentation de la LIF',
+						},
+						{
+							name: 'presentationIcon',
+							label: 'Icône Lucide',
+							type: 'text',
+							defaultValue: 'Video',
+							admin: {
+								description:
+									"Nom de l'icône Lucide pour le titre (ex: Video, Play, Film)",
+							},
+						},
+						{
+							name: 'presentationVideoTitle',
+							label: "Titre de la vidéo (attribut title de l'iframe)",
+							type: 'text',
+							defaultValue: 'Présentation de la LIF',
+						},
+						{
+							name: 'presentationVideoLink',
+							label: 'URL de la vidéo (format embed)',
+							type: 'text',
+							defaultValue: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+							admin: {
+								description:
+									"Collez l'URL d'intégration de la vidéo (ex: YouTube embed URL https://www.youtube.com/embed/VIDEO_ID)",
+							},
+						},
+					],
+					admin: {
+						description:
+							'Section pour intégrer une vidéo de présentation (ex: YouTube)',
+					},
+				},
+				{
 					label: 'Fonctionnalités',
 					fields: [
+						{
+							name: 'isFeaturesVisible',
+							label: 'Afficher la section',
+							type: 'checkbox',
+							defaultValue: true,
+						},
 						{
 							name: 'featuresTitle',
 							label: 'Titre de la section',
@@ -242,6 +295,12 @@ export const Homepage: GlobalConfig = {
 					label: 'Actualités',
 					fields: [
 						{
+							name: 'isNewsVisible',
+							label: 'Afficher la section',
+							type: 'checkbox',
+							defaultValue: true,
+						},
+						{
 							name: 'newsTitle',
 							label: 'Titre de la section',
 							type: 'text',
@@ -262,6 +321,12 @@ export const Homepage: GlobalConfig = {
 				{
 					label: "Appel à l'action",
 					fields: [
+						{
+							name: 'isCtaVisible',
+							label: 'Afficher la section',
+							type: 'checkbox',
+							defaultValue: true,
+						},
 						{
 							name: 'ctaTitle',
 							label: 'Titre',

@@ -684,6 +684,18 @@ export interface Homepage {
         id?: string | null;
       }[]
     | null;
+  isPresentationVisible?: boolean | null;
+  presentationTitle?: string | null;
+  /**
+   * Nom de l'icône Lucide pour le titre (ex: Video, Play, Film)
+   */
+  presentationIcon?: string | null;
+  presentationVideoTitle?: string | null;
+  /**
+   * Collez l'URL d'intégration de la vidéo (ex: YouTube embed URL https://www.youtube.com/embed/VIDEO_ID)
+   */
+  presentationVideoLink?: string | null;
+  isFeaturesVisible?: boolean | null;
   featuresTitle?: string | null;
   /**
    * Nom de l'icône Lucide pour le titre (ex: Star, Award, Sparkles)
@@ -700,11 +712,13 @@ export interface Homepage {
         id?: string | null;
       }[]
     | null;
+  isNewsVisible?: boolean | null;
   newsTitle?: string | null;
   /**
    * Nom de l'icône Lucide (ex: Newspaper, Bell, Megaphone)
    */
   newsIcon?: string | null;
+  isCtaVisible?: boolean | null;
   ctaTitle?: string | null;
   ctaDescription?: string | null;
   ctaButtonText?: string | null;
@@ -779,6 +793,12 @@ export interface HomepageSelect<T extends boolean = true> {
         isOnline?: T;
         id?: T;
       };
+  isPresentationVisible?: T;
+  presentationTitle?: T;
+  presentationIcon?: T;
+  presentationVideoTitle?: T;
+  presentationVideoLink?: T;
+  isFeaturesVisible?: T;
   featuresTitle?: T;
   featuresIcon?: T;
   features?:
@@ -789,8 +809,10 @@ export interface HomepageSelect<T extends boolean = true> {
         description?: T;
         id?: T;
       };
+  isNewsVisible?: T;
   newsTitle?: T;
   newsIcon?: T;
+  isCtaVisible?: T;
   ctaTitle?: T;
   ctaDescription?: T;
   ctaButtonText?: T;

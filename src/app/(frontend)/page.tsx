@@ -7,6 +7,7 @@ import { FeaturesSection } from '@/components/FeaturesSection';
 import { NewsSection } from '@/components/NewsSection';
 import { Navbar } from '@/components/Navbar';
 import type { Media } from '@/payload-types';
+import { PresentationVideo } from '@/components/PresentationVideo';
 
 export const dynamic = 'force-dynamic';
 
@@ -75,6 +76,10 @@ const defaults = {
 	discordUrl: 'https://discord.gg/votre-discord',
 	youtubeUrl: '',
 	twitterUrl: '',
+	presentationTitle: 'Présentation de la LIF',
+	presentationIcon: 'Video',
+	presentationVideoTitle: 'Présentation de la LIF',
+	presentationVideoLink: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
 };
 
 export default async function Home() {
@@ -219,35 +224,53 @@ export default async function Home() {
 				fallbackServers={servers}
 			/>
 
+			{/* Presentation Video Section */}
+			{content.isPresentationVisible && (
+				<PresentationVideo
+					title={content.presentationTitle || defaults.presentationTitle}
+					titleIcon={content.presentationIcon || defaults.presentationIcon}
+					videoTitle={
+						content.presentationVideoTitle || defaults.presentationVideoTitle
+					}
+					link={content.presentationVideoLink || defaults.presentationVideoLink}
+				/>
+			)}
+
 			{/* Features Section */}
-			<FeaturesSection
-				title={content.featuresTitle || defaults.featuresTitle}
-				titleIcon={content.featuresIcon || defaults.featuresIcon}
-				features={features}
-			/>
+			{content.isFeaturesVisible && (
+				<FeaturesSection
+					title={content.featuresTitle || defaults.featuresTitle}
+					titleIcon={content.featuresIcon || defaults.featuresIcon}
+					features={features}
+				/>
+			)}
 
 			{/* News Section */}
-			<NewsSection
-				title={content.newsTitle || defaults.newsTitle}
-				titleIcon={content.newsIcon || defaults.newsIcon}
-				posts={formattedPosts}
-			/>
+			{content.isNewsVisible && (
+				<NewsSection
+					title={content.newsTitle || defaults.newsTitle}
+					titleIcon={content.newsIcon || defaults.newsIcon}
+					posts={formattedPosts}
+				/>
+			)}
 
 			{/* CTA Section */}
-			<section className="cta-section">
-				<div className="section-container">
-					<h2>{content.ctaTitle || defaults.ctaTitle}</h2>
-					<p>{content.ctaDescription || defaults.ctaDescription}</p>
-					<a
-						href={content.ctaButtonUrl || defaults.ctaButtonUrl}
-						className="btn btn-primary btn-large"
-						target="_blank"
-						rel="noopener noreferrer"
-					>
-						{content.ctaButtonText || defaults.ctaButtonText}
-					</a>
-				</div>
-			</section>
+			{content.isCtaVisible && (
+				<section className="cta-section">
+					<div className="section-container">
+						<h2>{content.ctaTitle || defaults.ctaTitle}</h2>
+						<p>{content.ctaDescription || defaults.ctaDescription}</p>
+						<a
+							href={content.ctaButtonUrl || defaults.ctaButtonUrl}
+							className="btn btn-primary btn-large"
+							target="_blank"
+							rel="noopener noreferrer"
+						>
+							{content.ctaButtonText || defaults.ctaButtonText}
+						</a>
+					</div>
+				</section>
+			)}
 
 			{/* Footer */}
 			<footer className="main-footer">

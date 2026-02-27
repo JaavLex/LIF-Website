@@ -602,9 +602,34 @@ a:hover {
   font-size: 0.9rem;
 }
 
+/* presentation-video-section */
+.presentation-video-section {
+  background: var(--background);
+}
+
+.video-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+}
+
+.video-card {
+  display: flex;
+  justify-content: center;
+}
+
+.video-card iframe {
+  width: 100%;
+  max-width: 800px;   /* smaller, less intrusive */
+  aspect-ratio: 16 / 9;
+  border: none;
+  border-radius: 12px;
+}
+
+
 /* Features Section */
 .features-section {
-  background: var(--background);
+  background: var(--background-secondary);
 }
 
 .features-grid {
@@ -644,7 +669,7 @@ a:hover {
 
 /* News Section */
 .news-section {
-  background: var(--background-secondary);
+  background: var(--background);
 }
 
 .news-grid {
