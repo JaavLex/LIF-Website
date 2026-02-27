@@ -623,7 +623,6 @@ a:hover {
 }
 
 .feature-card:hover {
-  border-color: var(--accent);
   transform: translateY(-5px);
 }
 
