@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "cross-env NODE_OPTIONS=--no-deprecation next dev",
+    "dev:test": "cross-env NODE_OPTIONS=--no-deprecation MONGODB_URI=mongodb://lif:LIFWebsite2026@127.0.0.1:27017/lif-website-dev?authSource=lif-website next dev",
     "build": "cross-env NODE_OPTIONS=--no-deprecation next build",
     "start": "cross-env NODE_OPTIONS=--no-deprecation next start",
     "lint": "cross-env NODE_OPTIONS=--no-deprecation next lint",
