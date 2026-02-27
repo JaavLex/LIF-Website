@@ -1,7 +1,11 @@
 import Link from 'next/link';
 import { getPayload } from 'payload';
 import config from '@payload-config';
+import { Navbar } from '@/components/Navbar';
+import type { Media } from '@/payload-types';
+
 export const dynamic = 'force-dynamic';
+
 export default async function PostsPage() {
 	const payload = await getPayload({ config });
 
@@ -15,42 +19,66 @@ export default async function PostsPage() {
 		sort: '-publishedDate',
 	});
 
+	// Fetch navigation and homepage for navbar
+	let navigation;
+	let homepage;
+	try {
+		navigation = await payload.findGlobal({ slug: 'navigation' });
+	} catch {
+		navigation = null;
+	}
+	try {
+		homepage = await payload.findGlobal({ slug: 'homepage' });
+	} catch {
+		homepage = null;
+	}
+
+	const logoMedia = homepage?.logo as Media | null | undefined;
+	const logoUrl = logoMedia?.url || undefined;
+
 	return (
-		<main className="container">
-			<Link href="/" className="back-link">
-				← Retour à l'accueil
-			</Link>
+		<>
+			<Navbar
+				logoUrl={logoUrl}
+				links={navigation?.links ?? undefined}
+				discordUrl={navigation?.discordUrl ?? undefined}
+			/>
+			<main className="container">
+				<Link href="/" className="back-link">
+					← Retour à l'accueil
+				</Link>
 
-			<header className="page-header">
-				<h1>Actualités</h1>
-			</header>
+				<header className="page-header">
+					<h1>Actualités</h1>
+				</header>
 
-			{posts.docs.length > 0 ? (
-				<ul className="list">
-					{posts.docs.map(post => (
-						<li key={post.id}>
-							<Link href={`/posts/${post.slug}`}>
-								<h3>{post.title}</h3>
-								{post.publishedDate && (
-									<p className="post-meta">
-										{new Date(post.publishedDate).toLocaleDateString('fr-FR', {
-											year: 'numeric',
-											month: 'long',
-											day: 'numeric',
-										})}
-									</p>
-								)}
-								{post.excerpt && <p>{post.excerpt}</p>}
-							</Link>
-						</li>
-					))}
-				</ul>
-			) : (
-				<p>
-					Aucun article pour le moment.{' '}
-					<Link href="/admin">Créez-en un dans le panneau d'administration</Link>.
-				</p>
-			)}
-		</main>
+				{posts.docs.length > 0 ? (
+					<ul className="list">
+						{posts.docs.map(post => (
+							<li key={post.id}>
+								<Link href={`/posts/${post.slug}`}>
+									<h3>{post.title}</h3>
+									{post.publishedDate && (
+										<p className="post-meta">
+											{new Date(post.publishedDate).toLocaleDateString('fr-FR', {
+												year: 'numeric',
+												month: 'long',
+												day: 'numeric',
+											})}
+										</p>
+									)}
+									{post.excerpt && <p>{post.excerpt}</p>}
+								</Link>
+							</li>
+						))}
+					</ul>
+				) : (
+					<p>
+						Aucun article pour le moment.{' '}
+						<Link href="/admin">Créez-en un dans le panneau d'administration</Link>.
+					</p>
+				)}
+			</main>
+		</>
 	);
 }

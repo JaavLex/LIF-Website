@@ -120,6 +120,42 @@ export const Pages: CollectionConfig = {
 						},
 					],
 				},
+				{
+					slug: 'googleDocsEmbed',
+					labels: {
+						singular: 'Google Docs Embed',
+						plural: 'Google Docs Embeds',
+					},
+					fields: [
+						{
+							name: 'title',
+							label: 'Titre de la section',
+							type: 'text',
+							admin: {
+								description: 'Titre optionnel affiché au-dessus du document',
+							},
+						},
+						{
+							name: 'googleDocsUrl',
+							label: 'URL Google Docs',
+							type: 'text',
+							required: true,
+							admin: {
+								description:
+									'Collez l\'URL complète du document Google Docs (doit être partagé en lecture publique). Ex: https://docs.google.com/document/d/DOCUMENT_ID/edit',
+							},
+						},
+						{
+							name: 'height',
+							label: 'Hauteur (en pixels)',
+							type: 'number',
+							defaultValue: 800,
+							admin: {
+								description: 'Hauteur de l\'iframe en pixels',
+							},
+						},
+					],
+				},
 			],
 		},
 		{

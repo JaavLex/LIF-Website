@@ -3,12 +3,41 @@
 import Link from 'next/link';
 import Image from 'next/image';
 
-interface NavbarProps {
-	logoUrl?: string;
-	discordUrl: string;
+interface NavLink {
+	id?: string | null;
+	label: string;
+	type: 'internal' | 'external' | 'anchor';
+	page?: { slug: string } | string | null;
+	url?: string | null;
+	openInNewTab?: boolean | null;
+	isHighlighted?: boolean | null;
 }
 
-export function Navbar({ logoUrl, discordUrl }: NavbarProps) {
+interface NavbarProps {
+	logoUrl?: string;
+	links?: NavLink[] | null;
+	discordUrl?: string | null;
+}
+
+export function Navbar({ logoUrl, links, discordUrl }: NavbarProps) {
+	const getHref = (link: NavLink): string => {
+		if (link.type === 'internal' && link.page) {
+			const slug = typeof link.page === 'string' ? link.page : link.page.slug;
+			return `/${slug}`;
+		}
+		return link.url || '#';
+	};
+
+	// Default links if none provided
+	const defaultLinks: NavLink[] = [
+		{ label: 'Accueil', type: 'internal', page: { slug: '' } },
+		{ label: 'Serveurs', type: 'anchor', url: '/#serveurs' },
+		{ label: 'Règlement', type: 'internal', page: { slug: 'reglement' } },
+		{ label: 'Actualités', type: 'internal', page: { slug: 'posts' } },
+	];
+
+	const navLinks = links && links.length > 0 ? links : defaultLinks;
+
 	return (
 		<nav className="navbar">
 			<div className="nav-container">
@@ -28,18 +57,53 @@ export function Navbar({ logoUrl, discordUrl }: NavbarProps) {
 					</div>
 				</Link>
 				<div className="nav-links">
-					<Link href="/">Accueil</Link>
-					<a href="/#serveurs">Serveurs</a>
-					<Link href="/reglement">Règlement</Link>
-					<Link href="/posts">Actualités</Link>
-					<a
-						href={discordUrl}
-						target="_blank"
-						rel="noopener noreferrer"
-						className="discord-btn"
-					>
-						Discord
-					</a>
+					{navLinks.map((link, index) => {
+						const href = getHref(link);
+						const isExternal = link.type === 'external';
+
+						if (link.isHighlighted) {
+							return (
+								<a
+									key={link.id || index}
+									href={href}
+									target={link.openInNewTab ? '_blank' : undefined}
+									rel={link.openInNewTab ? 'noopener noreferrer' : undefined}
+									className="discord-btn"
+								>
+									{link.label}
+								</a>
+							);
+						}
+
+						if (isExternal || link.type === 'anchor') {
+							return (
+								<a
+									key={link.id || index}
+									href={href}
+									target={link.openInNewTab ? '_blank' : undefined}
+									rel={link.openInNewTab ? 'noopener noreferrer' : undefined}
+								>
+									{link.label}
+								</a>
+							);
+						}
+
+						return (
+							<Link key={link.id || index} href={href}>
+								{link.label}
+							</Link>
+						);
+					})}
+					{discordUrl && (
+						<a
+							href={discordUrl}
+							target="_blank"
+							rel="noopener noreferrer"
+							className="discord-btn"
+						>
+							Discord
+						</a>
+					)}
 				</div>
 			</div>
 		</nav>

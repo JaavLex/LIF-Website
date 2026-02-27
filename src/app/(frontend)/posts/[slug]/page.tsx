@@ -5,6 +5,9 @@ import { getPayload } from 'payload';
 import config from '@payload-config';
 import type { Metadata } from 'next';
 import { RichText } from '@payloadcms/richtext-lexical/react';
+import { Navbar } from '@/components/Navbar';
+import type { Media } from '@/payload-types';
+
 export const dynamic = 'force-dynamic';
 type Props = {
 	params: Promise<{ slug: string }>;
@@ -53,30 +56,53 @@ export default async function PostPage({ params }: Props) {
 		notFound();
 	}
 
-	return (
-		<main className="container">
-			<Link href="/" className="back-link">
-				← Retour à l'accueil
-			</Link>
+	// Fetch navigation and homepage for navbar
+	let navigation;
+	let homepage;
+	try {
+		navigation = await payload.findGlobal({ slug: 'navigation' });
+	} catch {
+		navigation = null;
+	}
+	try {
+		homepage = await payload.findGlobal({ slug: 'homepage' });
+	} catch {
+		homepage = null;
+	}
 
-			<article>
-				<header className="page-header">
-					<h1>{post.title}</h1>
-					<div className="post-meta">
-						{post.publishedDate && (
-							<time dateTime={post.publishedDate}>
-								{new Date(post.publishedDate).toLocaleDateString('fr-FR', {
-									year: 'numeric',
-									month: 'long',
-									day: 'numeric',
-								})}
-							</time>
-						)}
-						{post.author && typeof post.author === 'object' && post.author.name && (
-							<span> • Par {post.author.name}</span>
-						)}
-					</div>
-				</header>
+	const logoMedia = homepage?.logo as Media | null | undefined;
+	const logoUrl = logoMedia?.url || undefined;
+
+	return (
+		<>
+			<Navbar
+				logoUrl={logoUrl}
+				links={navigation?.links ?? undefined}
+				discordUrl={navigation?.discordUrl ?? undefined}
+			/>
+			<main className="container">
+				<Link href="/" className="back-link">
+					← Retour à l'accueil
+				</Link>
+
+				<article>
+					<header className="page-header">
+						<h1>{post.title}</h1>
+						<div className="post-meta">
+							{post.publishedDate && (
+								<time dateTime={post.publishedDate}>
+									{new Date(post.publishedDate).toLocaleDateString('fr-FR', {
+										year: 'numeric',
+										month: 'long',
+										day: 'numeric',
+									})}
+								</time>
+							)}
+							{post.author && typeof post.author === 'object' && post.author.name && (
+								<span> • Par {post.author.name}</span>
+							)}
+						</div>
+					</header>
 
 				{post.featuredImage && typeof post.featuredImage === 'object' && (
 					<Image
@@ -96,7 +122,7 @@ export default async function PostPage({ params }: Props) {
 					</div>
 				)}
 
-				{post.categories && post.categories.length > 0 && (
+					{post.categories && post.categories.length > 0 && (
 					<div className="post-categories">
 						<strong>Catégories :</strong>{' '}
 						{post.categories.map(
@@ -109,7 +135,8 @@ export default async function PostPage({ params }: Props) {
 						)}
 					</div>
 				)}
-			</article>
-		</main>
+				</article>
+			</main>
+		</>
 	);
 }

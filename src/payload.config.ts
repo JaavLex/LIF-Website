@@ -10,6 +10,7 @@ import { Media } from './collections/Media';
 import { Pages } from './collections/Pages';
 import { Posts } from './collections/Posts';
 import { Homepage } from './globals/Homepage';
+import { Navigation } from './globals/Navigation';
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -25,7 +26,7 @@ export default buildConfig({
 		},
 	},
 	collections: [Users, Media, Pages, Posts],
-	globals: [Homepage],
+	globals: [Homepage, Navigation],
 	editor: lexicalEditor(),
 	secret: process.env.PAYLOAD_SECRET || 'your-secret-key',
 	typescript: {

@@ -5,6 +5,10 @@ import { getPayload } from 'payload';
 import config from '@payload-config';
 import type { Metadata } from 'next';
 import { RichText } from '@payloadcms/richtext-lexical/react';
+import { Navbar } from '@/components/Navbar';
+import { GoogleDocsEmbed } from '@/components/GoogleDocsEmbed';
+import type { Media } from '@/payload-types';
+
 export const dynamic = 'force-dynamic';
 type Props = {
 	params: Promise<{ slug: string }>;
@@ -52,28 +56,51 @@ export default async function Page({ params }: Props) {
 		notFound();
 	}
 
+	// Fetch navigation and homepage for navbar
+	let navigation;
+	let homepage;
+	try {
+		navigation = await payload.findGlobal({ slug: 'navigation' });
+	} catch {
+		navigation = null;
+	}
+	try {
+		homepage = await payload.findGlobal({ slug: 'homepage' });
+	} catch {
+		homepage = null;
+	}
+
+	const logoMedia = homepage?.logo as Media | null | undefined;
+	const logoUrl = logoMedia?.url || undefined;
+
 	return (
-		<main className="container">
-			<Link href="/" className="back-link">
-				← Retour à l'accueil
-			</Link>
+		<>
+			<Navbar
+				logoUrl={logoUrl}
+				links={navigation?.links ?? undefined}
+				discordUrl={navigation?.discordUrl ?? undefined}
+			/>
+			<main className="container">
+				<Link href="/" className="back-link">
+					← Retour à l'accueil
+				</Link>
 
-			<article>
-				<header className="page-header">
-					<h1>{page.title}</h1>
-				</header>
+				<article>
+					<header className="page-header">
+						<h1>{page.title}</h1>
+					</header>
 
-				{page.heroImage && typeof page.heroImage === 'object' && (
-					<Image
-						src={page.heroImage.url || ''}
-						alt={page.heroImage.alt || page.title}
-						width={1200}
-						height={400}
-						className="hero-image"
-					/>
-				)}
+					{page.heroImage && typeof page.heroImage === 'object' && (
+						<Image
+							src={page.heroImage.url || ''}
+							alt={page.heroImage.alt || page.title}
+							width={1200}
+							height={400}
+							className="hero-image"
+						/>
+					)}
 
-				{page.layout?.map((block: any, index: number) => (
+					{page.layout?.map((block: any, index: number) => (
 					<div key={index} className="block">
 						{block.blockType === 'hero' && (
 							<div className="hero-block">
@@ -122,9 +149,18 @@ export default async function Page({ params }: Props) {
 								)}
 							</div>
 						)}
+
+						{block.blockType === 'googleDocsEmbed' && block.googleDocsUrl && (
+							<GoogleDocsEmbed
+								title={block.title}
+								googleDocsUrl={block.googleDocsUrl}
+								height={block.height}
+							/>
+						)}
 					</div>
 				))}
-			</article>
-		</main>
+				</article>
+			</main>
+		</>
 	);
 }

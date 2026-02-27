@@ -93,9 +93,11 @@ export interface Config {
   fallbackLocale: null;
   globals: {
     homepage: Homepage;
+    navigation: Navigation;
   };
   globalsSelect: {
     homepage: HomepageSelect<false> | HomepageSelect<true>;
+    navigation: NavigationSelect<false> | NavigationSelect<true>;
   };
   locale: null;
   user: User;
@@ -256,6 +258,23 @@ export interface Page {
             id?: string | null;
             blockName?: string | null;
             blockType: 'imageGallery';
+          }
+        | {
+            /**
+             * Titre optionnel affiché au-dessus du document
+             */
+            title?: string | null;
+            /**
+             * Collez l'URL complète du document Google Docs (doit être partagé en lecture publique). Ex: https://docs.google.com/document/d/DOCUMENT_ID/edit
+             */
+            googleDocsUrl: string;
+            /**
+             * Hauteur de l'iframe en pixels
+             */
+            height?: number | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'googleDocsEmbed';
           }
       )[]
     | null;
@@ -520,6 +539,15 @@ export interface PagesSelect<T extends boolean = true> {
               id?: T;
               blockName?: T;
             };
+        googleDocsEmbed?:
+          | T
+          | {
+              title?: T;
+              googleDocsUrl?: T;
+              height?: T;
+              id?: T;
+              blockName?: T;
+            };
       };
   meta?:
     | T
@@ -689,6 +717,39 @@ export interface Homepage {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "navigation".
+ */
+export interface Navigation {
+  id: string;
+  /**
+   * Gérez les liens affichés dans la barre de navigation
+   */
+  links?:
+    | {
+        label: string;
+        type: 'internal' | 'external' | 'anchor';
+        page?: (string | null) | Page;
+        /**
+         * URL complète pour externe, ou #section pour ancre
+         */
+        url?: string | null;
+        openInNewTab?: boolean | null;
+        /**
+         * Affiche le lien comme un bouton (ex: Discord)
+         */
+        isHighlighted?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * URL du serveur Discord (utilisé pour le bouton Discord)
+   */
+  discordUrl?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "homepage_select".
  */
 export interface HomepageSelect<T extends boolean = true> {
@@ -737,6 +798,27 @@ export interface HomepageSelect<T extends boolean = true> {
   discordUrl?: T;
   youtubeUrl?: T;
   twitterUrl?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "navigation_select".
+ */
+export interface NavigationSelect<T extends boolean = true> {
+  links?:
+    | T
+    | {
+        label?: T;
+        type?: T;
+        page?: T;
+        url?: T;
+        openInNewTab?: T;
+        isHighlighted?: T;
+        id?: T;
+      };
+  discordUrl?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

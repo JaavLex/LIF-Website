@@ -88,6 +88,14 @@ export default async function Home() {
 		homepage = null;
 	}
 
+	// Fetch navigation from global
+	let navigation;
+	try {
+		navigation = await payload.findGlobal({ slug: 'navigation' });
+	} catch {
+		navigation = null;
+	}
+
 	// Merge with defaults
 	const content = { ...defaults, ...homepage };
 
@@ -148,7 +156,8 @@ export default async function Home() {
 			{/* Navigation */}
 			<Navbar
 				logoUrl={logoUrl}
-				discordUrl={content.discordUrl || defaults.discordUrl}
+				links={navigation?.links ?? undefined}
+				discordUrl={navigation?.discordUrl ?? content.discordUrl ?? defaults.discordUrl}
 			/>
 
 			{/* Hero Section */}
