@@ -142,7 +142,7 @@ export const Pages: CollectionConfig = {
 							required: true,
 							admin: {
 								description:
-									'Collez l\'URL complète du document Google Docs (doit être partagé en lecture publique). Ex: https://docs.google.com/document/d/DOCUMENT_ID/edit',
+									"Collez l'URL complète du document Google Docs (doit être partagé en lecture publique). Ex: https://docs.google.com/document/d/DOCUMENT_ID/edit",
 							},
 						},
 						{
@@ -151,7 +151,7 @@ export const Pages: CollectionConfig = {
 							type: 'number',
 							defaultValue: 800,
 							admin: {
-								description: 'Hauteur de l\'iframe en pixels',
+								description: "Hauteur de l'iframe en pixels",
 							},
 						},
 					],

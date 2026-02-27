@@ -98,43 +98,43 @@ export default async function PostPage({ params }: Props) {
 									})}
 								</time>
 							)}
-							{post.author && typeof post.author === 'object' && post.author.name && (
-								<span> • Par {post.author.name}</span>
-							)}
+							{post.author &&
+								typeof post.author === 'object' &&
+								post.author.name && <span> • Par {post.author.name}</span>}
 						</div>
 					</header>
 
-				{post.featuredImage && typeof post.featuredImage === 'object' && (
-					<Image
-						src={post.featuredImage.url || ''}
-						alt={post.featuredImage.alt || post.title}
-						width={1200}
-						height={600}
-						className="hero-image"
-					/>
-				)}
+					{post.featuredImage && typeof post.featuredImage === 'object' && (
+						<Image
+							src={post.featuredImage.url || ''}
+							alt={post.featuredImage.alt || post.title}
+							width={1200}
+							height={600}
+							className="hero-image"
+						/>
+					)}
 
-				{post.excerpt && <p className="post-excerpt">{post.excerpt}</p>}
+					{post.excerpt && <p className="post-excerpt">{post.excerpt}</p>}
 
-				{post.content && (
-					<div className="post-content">
-						<RichText data={post.content} />
-					</div>
-				)}
+					{post.content && (
+						<div className="post-content">
+							<RichText data={post.content} />
+						</div>
+					)}
 
 					{post.categories && post.categories.length > 0 && (
-					<div className="post-categories">
-						<strong>Catégories :</strong>{' '}
-						{post.categories.map(
-							(cat: { category?: string | null }, index: number) => (
-								<span key={index}>
-									{cat.category}
-									{index < post.categories!.length - 1 && ', '}
-								</span>
-							),
-						)}
-					</div>
-				)}
+						<div className="post-categories">
+							<strong>Catégories :</strong>{' '}
+							{post.categories.map(
+								(cat: { category?: string | null }, index: number) => (
+									<span key={index}>
+										{cat.category}
+										{index < post.categories!.length - 1 && ', '}
+									</span>
+								),
+							)}
+						</div>
+					)}
 				</article>
 			</main>
 		</>

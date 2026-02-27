@@ -15,21 +15,21 @@ export function GoogleDocsEmbed({
 		// https://docs.google.com/document/d/DOCUMENT_ID/edit
 		// https://docs.google.com/document/d/DOCUMENT_ID/preview
 		// https://docs.google.com/document/d/e/DOCUMENT_ID/pub
-		
+
 		const docIdMatch = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
 		const pubMatch = url.match(/\/d\/e\/([a-zA-Z0-9_-]+)\/pub/);
-		
+
 		if (pubMatch) {
 			// Already a published URL, use as-is with embedded=true
 			return url.includes('?') ? `${url}&embedded=true` : `${url}?embedded=true`;
 		}
-		
+
 		if (docIdMatch) {
 			const docId = docIdMatch[1];
 			// Use preview mode for better embedded experience
 			return `https://docs.google.com/document/d/${docId}/preview`;
 		}
-		
+
 		// Fallback: return original URL
 		return url;
 	};

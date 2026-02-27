@@ -157,7 +157,9 @@ export default async function Home() {
 			<Navbar
 				logoUrl={logoUrl}
 				links={navigation?.links ?? undefined}
-				discordUrl={navigation?.discordUrl ?? content.discordUrl ?? defaults.discordUrl}
+				discordUrl={
+					navigation?.discordUrl ?? content.discordUrl ?? defaults.discordUrl
+				}
 			/>
 
 			{/* Hero Section */}
