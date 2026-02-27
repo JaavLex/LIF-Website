@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { getPayload } from 'payload';
 import config from '@payload-config';
-
+export const dynamic = 'force-dynamic';
 export default async function PostsPage() {
 	const payload = await getPayload({ config });
 

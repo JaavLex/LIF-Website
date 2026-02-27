@@ -5,7 +5,7 @@ import { getPayload } from 'payload';
 import config from '@payload-config';
 import type { Metadata } from 'next';
 import { RichText } from '@payloadcms/richtext-lexical/react';
-
+export const dynamic = 'force-dynamic';
 type Props = {
 	params: Promise<{ slug: string }>;
 };

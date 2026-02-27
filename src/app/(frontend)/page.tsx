@@ -8,6 +8,8 @@ import { NewsSection } from '@/components/NewsSection';
 import { Navbar } from '@/components/Navbar';
 import type { Media } from '@/payload-types';
 
+export const dynamic = 'force-dynamic';
+
 // Default values for when the global isn't configured yet
 const defaults = {
 	heroTitle: 'Légion Internationale Francophone',
