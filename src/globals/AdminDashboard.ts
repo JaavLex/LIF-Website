@@ -81,7 +81,7 @@ export const AdminDashboard: GlobalConfig = {
 					admin: {
 						description: 'Format hexadécimal, ex: #4a7c23',
 					},
-					validate: value => {
+					validate: (value: string | null | undefined) => {
 						if (!value) return 'La couleur est requise';
 						return /^#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{6})$/.test(value)
 							? true
