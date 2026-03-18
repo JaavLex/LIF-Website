@@ -9,6 +9,7 @@ import { Users } from './collections/Users';
 import { Media } from './collections/Media';
 import { Pages } from './collections/Pages';
 import { Posts } from './collections/Posts';
+import { AdminDashboard } from './globals/AdminDashboard';
 import { Homepage } from './globals/Homepage';
 import { Navigation } from './globals/Navigation';
 
@@ -26,7 +27,7 @@ export default buildConfig({
 		},
 	},
 	collections: [Users, Media, Pages, Posts],
-	globals: [Homepage, Navigation],
+	globals: [Homepage, Navigation, AdminDashboard],
 	editor: lexicalEditor(),
 	secret: process.env.PAYLOAD_SECRET || 'your-secret-key',
 	typescript: {

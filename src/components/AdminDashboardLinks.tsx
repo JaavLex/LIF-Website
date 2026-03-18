@@ -1,8 +1,16 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
-const links = [
+type DashboardLink = {
+	title?: string;
+	description?: string;
+	url?: string;
+	icon?: string;
+	color?: string;
+};
+
+const fallbackLinks: DashboardLink[] = [
 	{
 		title: 'Métriques',
 		description: 'Surveillance et performances des serveurs',
@@ -26,16 +34,60 @@ const links = [
 	},
 ];
 
+const isHexColor = (value?: string): value is string => {
+	if (!value) return false;
+	return /^#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{6})$/.test(value);
+};
+
+const normalizeLinks = (links: DashboardLink[] | undefined): DashboardLink[] => {
+	if (!Array.isArray(links) || links.length === 0) {
+		return fallbackLinks;
+	}
+
+	const normalized = links
+		.filter(link => link?.url && link?.title)
+		.map(link => ({
+			title: link.title?.trim() || 'Lien',
+			description: link.description?.trim() || '',
+			url: link.url?.trim() || '#',
+			icon: link.icon?.trim() || '🔗',
+			color: isHexColor(link.color?.trim()) ? link.color?.trim() : '#4a7c23',
+		}));
+
+	return normalized.length > 0 ? normalized : fallbackLinks;
+};
+
 const styles: Record<string, React.CSSProperties> = {
 	container: {
 		padding: '2rem',
 		marginTop: '2rem',
 	},
+	header: {
+		display: 'flex',
+		alignItems: 'center',
+		justifyContent: 'space-between',
+		gap: '1rem',
+		marginBottom: '1.5rem',
+	},
 	title: {
 		fontSize: '1.25rem',
 		fontWeight: 600,
-		marginBottom: '1.5rem',
+		margin: 0,
 		color: 'var(--theme-text)',
+	},
+	configureButton: {
+		display: 'inline-flex',
+		alignItems: 'center',
+		justifyContent: 'center',
+		padding: '0.55rem 0.9rem',
+		borderRadius: '8px',
+		border: '1px solid var(--theme-elevation-200)',
+		background: 'var(--theme-elevation-50)',
+		color: 'var(--theme-text)',
+		fontSize: '0.85rem',
+		fontWeight: 600,
+		textDecoration: 'none',
+		transition: 'background 0.2s ease, transform 0.2s ease',
 	},
 	grid: {
 		display: 'grid',
@@ -69,16 +121,69 @@ const styles: Record<string, React.CSSProperties> = {
 		opacity: 0.9,
 		textAlign: 'center' as const,
 	},
+	loading: {
+		fontSize: '0.9rem',
+		opacity: 0.8,
+		color: 'var(--theme-text)',
+	},
 };
 
 export const AdminDashboardLinks: React.FC = () => {
+	const [links, setLinks] = useState<DashboardLink[]>(fallbackLinks);
+	const [isLoading, setIsLoading] = useState(true);
+
+	useEffect(() => {
+		let isMounted = true;
+
+		const loadLinks = async () => {
+			try {
+				const response = await fetch('/api/globals/admin-dashboard?depth=0', {
+					headers: {
+						'Content-Type': 'application/json',
+					},
+				});
+
+				if (!response.ok) {
+					throw new Error('Impossible de charger les liens');
+				}
+
+				const data = (await response.json()) as { links?: DashboardLink[] };
+				if (isMounted) {
+					setLinks(normalizeLinks(data.links));
+				}
+			} catch {
+				if (isMounted) {
+					setLinks(fallbackLinks);
+				}
+			} finally {
+				if (isMounted) {
+					setIsLoading(false);
+				}
+			}
+		};
+
+		void loadLinks();
+
+		return () => {
+			isMounted = false;
+		};
+	}, []);
+
+	const visibleLinks = useMemo(() => normalizeLinks(links), [links]);
+
 	return (
 		<div style={styles.container}>
-			<h2 style={styles.title}>Accès rapides</h2>
+			<div style={styles.header}>
+				<h2 style={styles.title}>Accès rapides</h2>
+				<a href="/admin/globals/admin-dashboard" style={styles.configureButton}>
+					Configurer les liens
+				</a>
+			</div>
+			{isLoading ? <p style={styles.loading}>Chargement des liens...</p> : null}
 			<div style={styles.grid}>
-				{links.map(link => (
+				{visibleLinks.map(link => (
 					<a
-						key={link.url}
+						key={`${link.url}-${link.title}`}
 						href={link.url}
 						target="_blank"
 						rel="noopener noreferrer"
