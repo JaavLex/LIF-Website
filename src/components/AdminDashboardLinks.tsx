@@ -19,13 +19,6 @@ const fallbackLinks: DashboardLink[] = [
 		color: '#4a7c23',
 	},
 	{
-		title: 'Base de données',
-		description: 'Interface de gestion MongoDB',
-		url: 'https://mongo.lif-arma.com',
-		icon: '🗄️',
-		color: '#13aa52',
-	},
-	{
 		title: 'Panel Serveurs',
 		description: 'Tableau de bord des serveurs de jeu',
 		url: 'https://panel.lif-arma.com',
