@@ -68,8 +68,19 @@ function renderNode(node: LexicalNode, index: number): React.ReactNode {
 export function RichTextRenderer({
 	content,
 }: {
-	content: LexicalContent | null | undefined;
+	content: LexicalContent | string | null | undefined;
 }) {
-	if (!content?.root) return null;
+	if (!content) return null;
+	// Handle plain text strings (from old data or invalid saves)
+	if (typeof content === 'string') {
+		return (
+			<>
+				{content.split('\n').map((line, i) => (
+					<p key={i}>{line}</p>
+				))}
+			</>
+		);
+	}
+	if (!content.root) return null;
 	return <>{renderNode(content.root, 0)}</>;
 }

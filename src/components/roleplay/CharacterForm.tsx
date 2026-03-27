@@ -5,6 +5,48 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 
+// Convert plain text to Lexical JSON for Payload richText fields
+function textToLexical(text: string): any {
+	if (!text || !text.trim()) return undefined;
+	const paragraphs = text.split('\n');
+	return {
+		root: {
+			type: 'root',
+			children: paragraphs.map(p => ({
+				type: 'paragraph',
+				children: p.trim()
+					? [{ type: 'text', text: p, mode: 'normal', detail: 0, format: 0, style: '', version: 1 }]
+					: [],
+				direction: 'ltr',
+				format: '',
+				indent: 0,
+				version: 1,
+				textFormat: 0,
+				textStyle: '',
+			})),
+			direction: 'ltr',
+			format: '',
+			indent: 0,
+			version: 1,
+		},
+	};
+}
+
+// Convert Lexical JSON to plain text for editing in textarea
+function lexicalToText(content: any): string {
+	if (!content) return '';
+	if (typeof content === 'string') return content;
+	if (!content.root?.children) return '';
+	return content.root.children
+		.map((node: any) => {
+			if (node.children) {
+				return node.children.map((child: any) => child.text || '').join('');
+			}
+			return '';
+		})
+		.join('\n');
+}
+
 interface SessionUser {
 	userId: number;
 	discordId: string;
@@ -64,9 +106,9 @@ export function CharacterForm({
 		faction: editData?.faction || '',
 		unit: editData?.unit?.id || editData?.unit || '',
 		isMainCharacter: editData?.isMainCharacter || false,
-		civilianBackground: editData?.civilianBackground || '',
-		militaryBackground: editData?.militaryBackground || '',
-		legalBackground: editData?.legalBackground || '',
+		civilianBackground: lexicalToText(editData?.civilianBackground),
+		militaryBackground: lexicalToText(editData?.militaryBackground),
+		legalBackground: lexicalToText(editData?.legalBackground),
 		// Admin-only fields
 		status: editData?.status || 'in-service',
 		rank: editData?.rank?.id || editData?.rank || '',
@@ -132,13 +174,16 @@ export function CharacterForm({
 				const formData = new FormData();
 				formData.append('file', avatarFile);
 				formData.append('alt', `Photo de ${form.firstName} ${form.lastName}`);
-				const uploadRes = await fetch('/api/media', {
+				const uploadRes = await fetch('/api/upload', {
 					method: 'POST',
 					body: formData,
 				});
 				if (uploadRes.ok) {
 					const uploadData = await uploadRes.json();
-					avatarId = uploadData.doc?.id || uploadData.id;
+					avatarId = uploadData.id;
+				} else {
+					const errData = await uploadRes.json().catch(() => ({}));
+					throw new Error(errData.message || "Erreur lors de l'upload de l'avatar");
 				}
 			}
 
@@ -166,10 +211,13 @@ export function CharacterForm({
 				body.specialisations = filteredSpecs.map(s => ({ name: s }));
 			}
 
-			// Rich text backgrounds as simple text (will be stored as lexical)
-			if (form.civilianBackground) body.civilianBackground = form.civilianBackground;
-			if (form.militaryBackground) body.militaryBackground = form.militaryBackground;
-			if (form.legalBackground) body.legalBackground = form.legalBackground;
+			// Rich text backgrounds: convert plain text to Lexical JSON
+			const civilianLexical = textToLexical(form.civilianBackground);
+			const militaryLexical = textToLexical(form.militaryBackground);
+			const legalLexical = textToLexical(form.legalBackground);
+			if (civilianLexical) body.civilianBackground = civilianLexical;
+			if (militaryLexical) body.militaryBackground = militaryLexical;
+			if (legalLexical) body.legalBackground = legalLexical;
 
 			// Rank: auto-detected from Discord roles (not user-settable)
 			if (detectedRank && !editData) {
