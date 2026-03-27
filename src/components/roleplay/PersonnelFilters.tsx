@@ -14,8 +14,9 @@ interface Character {
 	classification: string;
 	faction: string;
 	isMainCharacter: boolean;
+	discordUsername?: string;
 	avatar?: { url: string } | null;
-	rank?: { name: string; abbreviation: string; order: number } | null;
+	rank?: { name: string; abbreviation: string; order: number; icon?: { url: string } | null } | null;
 	unit?: { name: string; slug: string } | null;
 }
 
@@ -161,22 +162,22 @@ export function PersonnelFilters({
 							)}
 							<div className="personnel-info">
 								<div className="personnel-name">{character.fullName}</div>
-								{character.rank && (
-									<div className="personnel-rank">
-										{typeof character.rank === 'object'
-											? character.rank.abbreviation || character.rank.name
-											: ''}
+								{character.rank && typeof character.rank === 'object' && (
+									<div className="personnel-rank" style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+										{character.rank.icon?.url && (
+											<Image src={character.rank.icon.url} alt={character.rank.name} width={18} height={18} unoptimized />
+										)}
+										<span>{character.rank.abbreviation || character.rank.name}</span>
 									</div>
 								)}
 								{character.unit && typeof character.unit === 'object' && (
-									<div
-										style={{
-											fontSize: '0.75rem',
-											color: 'var(--muted)',
-											marginTop: '0.15rem',
-										}}
-									>
+									<div style={{ fontSize: '0.75rem', color: 'var(--muted)', marginTop: '0.15rem' }}>
 										{character.unit.name}
+									</div>
+								)}
+								{character.discordUsername && (
+									<div style={{ fontSize: '0.7rem', color: 'var(--muted)', marginTop: '0.15rem' }}>
+										@{character.discordUsername}
 									</div>
 								)}
 							</div>

@@ -31,6 +31,12 @@ const generateMatricule: CollectionBeforeChangeHook = async ({
 const generateFullName: CollectionBeforeChangeHook = ({ data }) => {
 	if (data?.firstName && data?.lastName) {
 		data.fullName = `${data.firstName} ${data.lastName}`;
+	} else if (data?.firstName) {
+		data.fullName = data.firstName;
+	} else if (data?.lastName) {
+		data.fullName = data.lastName;
+	} else if (!data?.fullName) {
+		data.fullName = 'Sans nom';
 	}
 	return data;
 };
@@ -44,16 +50,15 @@ export const Characters: CollectionConfig = {
 	},
 	access: {
 		read: () => true,
-		create: ({ req }) => !!req.user,
+		create: () => true,
 		update: ({ req }) => {
-			if (!req.user) return false;
+			if (!req.user) return true;
 			if (req.user.role === 'admin') return true;
 			return { discordId: { equals: req.user.discordId } };
 		},
 		delete: ({ req }) => {
 			if (!req.user) return false;
-			if (req.user.role === 'admin') return true;
-			return { discordId: { equals: req.user.discordId } };
+			return req.user.role === 'admin';
 		},
 	},
 	hooks: {
@@ -261,6 +266,9 @@ export const Characters: CollectionConfig = {
 				{ label: 'Exécuté', value: 'executed' },
 			],
 			required: true,
+			access: {
+				update: ({ req }) => req.user?.role === 'admin',
+			},
 			admin: {
 				position: 'sidebar',
 			},
@@ -304,6 +312,16 @@ export const Characters: CollectionConfig = {
 			admin: {
 				position: 'sidebar',
 				description: 'Marquer comme cible ou ennemi',
+			},
+		},
+		{
+			name: 'targetFaction',
+			label: 'Faction (Cible)',
+			type: 'text',
+			admin: {
+				position: 'sidebar',
+				condition: (data) => data?.isTarget,
+				description: 'Faction de la cible/ennemi',
 			},
 		},
 		{

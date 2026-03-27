@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 
 interface SessionUser {
 	userId: number;
@@ -15,6 +16,10 @@ interface SessionUser {
 interface Rank {
 	id: number;
 	name: string;
+	abbreviation: string;
+	order: number;
+	discordRoleId?: string;
+	icon?: { url: string } | null;
 }
 
 interface Unit {
@@ -26,16 +31,25 @@ export function CharacterForm({
 	ranks,
 	units,
 	editData,
+	isAdmin,
 }: {
 	ranks: Rank[];
 	units: Unit[];
 	editData?: any;
+	isAdmin?: boolean;
 }) {
 	const router = useRouter();
 	const [user, setUser] = useState<SessionUser | null>(null);
 	const [loading, setLoading] = useState(true);
 	const [submitting, setSubmitting] = useState(false);
 	const [error, setError] = useState('');
+	const [avatarFile, setAvatarFile] = useState<File | null>(null);
+	const [avatarPreview, setAvatarPreview] = useState<string | null>(
+		editData?.avatar?.url || null,
+	);
+	const [specialisations, setSpecialisations] = useState<string[]>(
+		editData?.specialisations?.map((s: any) => s.name) || [''],
+	);
 
 	const [form, setForm] = useState({
 		firstName: editData?.firstName || '',
@@ -48,10 +62,27 @@ export function CharacterForm({
 		motto: editData?.motto || '',
 		previousUnit: editData?.previousUnit || '',
 		faction: editData?.faction || '',
-		rank: editData?.rank?.id || editData?.rank || '',
 		unit: editData?.unit?.id || editData?.unit || '',
+		isMainCharacter: editData?.isMainCharacter || false,
+		civilianBackground: editData?.civilianBackground || '',
+		militaryBackground: editData?.militaryBackground || '',
+		legalBackground: editData?.legalBackground || '',
+		// Admin-only fields
 		status: editData?.status || 'in-service',
+		rank: editData?.rank?.id || editData?.rank || '',
+		isTarget: editData?.isTarget || false,
+		targetFaction: editData?.targetFaction || '',
 	});
+
+	// Determine rank from Discord roles
+	const detectedRank = (() => {
+		if (!user) return null;
+		// Find the highest rank matching user's Discord roles
+		const matchingRanks = ranks
+			.filter(r => r.discordRoleId && user.roles.includes(r.discordRoleId))
+			.sort((a, b) => b.order - a.order);
+		return matchingRanks[0] || ranks.find(r => r.order === 1) || null;
+	})();
 
 	useEffect(() => {
 		fetch('/api/auth/me')
@@ -66,8 +97,27 @@ export function CharacterForm({
 	const handleChange = (
 		e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
 	) => {
-		setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
+		const target = e.target;
+		if (target instanceof HTMLInputElement && target.type === 'checkbox') {
+			setForm(prev => ({ ...prev, [target.name]: target.checked }));
+		} else {
+			setForm(prev => ({ ...prev, [target.name]: target.value }));
+		}
 	};
+
+	const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const file = e.target.files?.[0];
+		if (file) {
+			setAvatarFile(file);
+			setAvatarPreview(URL.createObjectURL(file));
+		}
+	};
+
+	const addSpecialisation = () => setSpecialisations(prev => [...prev, '']);
+	const removeSpecialisation = (index: number) =>
+		setSpecialisations(prev => prev.filter((_, i) => i !== index));
+	const updateSpecialisation = (index: number, value: string) =>
+		setSpecialisations(prev => prev.map((s, i) => (i === index ? value : s)));
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
@@ -76,6 +126,22 @@ export function CharacterForm({
 		setError('');
 
 		try {
+			// Upload avatar if changed
+			let avatarId = editData?.avatar?.id || editData?.avatar || undefined;
+			if (avatarFile) {
+				const formData = new FormData();
+				formData.append('file', avatarFile);
+				formData.append('alt', `Photo de ${form.firstName} ${form.lastName}`);
+				const uploadRes = await fetch('/api/media', {
+					method: 'POST',
+					body: formData,
+				});
+				if (uploadRes.ok) {
+					const uploadData = await uploadRes.json();
+					avatarId = uploadData.doc?.id || uploadData.id;
+				}
+			}
+
 			const body: any = {
 				firstName: form.firstName,
 				lastName: form.lastName,
@@ -83,8 +149,7 @@ export function CharacterForm({
 				physicalDescription: form.physicalDescription || undefined,
 				motto: form.motto || undefined,
 				previousUnit: form.previousUnit || undefined,
-				faction: form.faction || undefined,
-				status: form.status,
+				isMainCharacter: form.isMainCharacter,
 				discordId: user.discordId,
 				discordUsername: user.discordUsername,
 			};
@@ -92,8 +157,33 @@ export function CharacterForm({
 			if (form.dateOfBirth) body.dateOfBirth = form.dateOfBirth;
 			if (form.height) body.height = parseInt(form.height);
 			if (form.weight) body.weight = parseInt(form.weight);
-			if (form.rank) body.rank = parseInt(form.rank);
 			if (form.unit) body.unit = parseInt(form.unit);
+			if (avatarId) body.avatar = avatarId;
+
+			// Specialisations
+			const filteredSpecs = specialisations.filter(s => s.trim());
+			if (filteredSpecs.length > 0) {
+				body.specialisations = filteredSpecs.map(s => ({ name: s }));
+			}
+
+			// Rich text backgrounds as simple text (will be stored as lexical)
+			if (form.civilianBackground) body.civilianBackground = form.civilianBackground;
+			if (form.militaryBackground) body.militaryBackground = form.militaryBackground;
+			if (form.legalBackground) body.legalBackground = form.legalBackground;
+
+			// Rank: auto-detected from Discord roles (not user-settable)
+			if (detectedRank && !editData) {
+				body.rank = detectedRank.id;
+			}
+
+			// Admin-only fields
+			if (isAdmin) {
+				body.status = form.status;
+				if (form.rank) body.rank = parseInt(form.rank);
+				body.faction = form.faction || undefined;
+				body.isTarget = form.isTarget;
+				if (form.isTarget && form.targetFaction) body.targetFaction = form.targetFaction;
+			}
 
 			const url = editData ? `/api/characters/${editData.id}` : '/api/characters';
 
@@ -119,10 +209,7 @@ export function CharacterForm({
 
 	if (loading) {
 		return (
-			<div
-				className="terminal-panel"
-				style={{ textAlign: 'center', padding: '3rem' }}
-			>
+			<div className="terminal-panel" style={{ textAlign: 'center', padding: '3rem' }}>
 				<p style={{ color: 'var(--muted)' }}>Chargement...</p>
 			</div>
 		);
@@ -133,17 +220,15 @@ export function CharacterForm({
 			<div className="terminal-panel">
 				<div className="auth-section">
 					<h2>Authentification requise</h2>
-					<p>
-						Vous devez être connecté via Discord pour créer ou modifier un
-						personnage.
-					</p>
-					<a href="/api/auth/discord" className="discord-login-btn">
-						Connexion Discord
-					</a>
+					<p>Vous devez être connecté via Discord pour créer ou modifier un personnage.</p>
+					<a href="/api/auth/discord" className="discord-login-btn">Connexion Discord</a>
 				</div>
 			</div>
 		);
 	}
+
+	const labelStyle = { display: 'block' as const, fontSize: '0.8rem', color: 'var(--muted)', marginBottom: '0.35rem' };
+	const gridTwo = { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' };
 
 	return (
 		<form onSubmit={handleSubmit}>
@@ -151,402 +236,218 @@ export function CharacterForm({
 				<h1>{editData ? 'Modifier le dossier' : 'Nouveau dossier personnel'}</h1>
 
 				{error && (
-					<div
-						style={{
-							padding: '0.75rem 1rem',
-							background: 'rgba(139, 38, 53, 0.15)',
-							border: '1px solid var(--danger)',
-							color: 'var(--danger)',
-							marginBottom: '1.5rem',
-							fontSize: '0.9rem',
-						}}
-					>
+					<div style={{ padding: '0.75rem 1rem', background: 'rgba(139, 38, 53, 0.15)', border: '1px solid var(--danger)', color: 'var(--danger)', marginBottom: '1.5rem', fontSize: '0.9rem' }}>
 						{error}
 					</div>
 				)}
 
-				<div
-					className="character-section"
-					style={{ border: 'none', padding: 0, background: 'transparent' }}
-				>
+				{/* --- Avatar & Rank Detection --- */}
+				<div style={{ display: 'flex', gap: '2rem', marginBottom: '2rem', alignItems: 'flex-start' }}>
+					<div>
+						<label style={labelStyle}>Photo du personnage</label>
+						<div
+							style={{
+								width: 120, height: 120, border: '2px dashed var(--border)',
+								display: 'flex', alignItems: 'center', justifyContent: 'center',
+								overflow: 'hidden', cursor: 'pointer', position: 'relative',
+							}}
+							onClick={() => document.getElementById('avatar-upload')?.click()}
+						>
+							{avatarPreview ? (
+								<Image src={avatarPreview} alt="Avatar" fill style={{ objectFit: 'cover' }} />
+							) : (
+								<span style={{ color: 'var(--muted)', fontSize: '0.8rem', textAlign: 'center' }}>Cliquer pour<br/>ajouter</span>
+							)}
+						</div>
+						<input id="avatar-upload" type="file" accept="image/*" onChange={handleAvatarChange} style={{ display: 'none' }} />
+					</div>
+
+					<div style={{ flex: 1 }}>
+						<label style={labelStyle}>Grade détecté (via Discord)</label>
+						<div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem', background: 'var(--bg-tertiary)', border: '1px solid var(--border)' }}>
+							{detectedRank?.icon?.url && (
+								<Image src={detectedRank.icon.url} alt={detectedRank.name} width={32} height={32} />
+							)}
+							<div>
+								<div style={{ fontWeight: 600 }}>{detectedRank?.name || 'Aucun grade détecté'}</div>
+								{detectedRank && <div style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>{detectedRank.abbreviation}</div>}
+							</div>
+						</div>
+						<p style={{ fontSize: '0.7rem', color: 'var(--muted)', marginTop: '0.35rem' }}>
+							Le grade est déterminé automatiquement par vos rôles Discord.
+						</p>
+
+						<div style={{ marginTop: '1rem' }}>
+							<label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+								<input type="checkbox" name="isMainCharacter" checked={form.isMainCharacter} onChange={handleChange} />
+								<span style={{ fontSize: '0.85rem' }}>Personnage principal</span>
+							</label>
+						</div>
+					</div>
+				</div>
+
+				{/* --- Identité --- */}
+				<div style={{ border: 'none', padding: 0, background: 'transparent' }}>
 					<h2 style={{ color: 'var(--primary)' }}>Identité</h2>
 
-					<div
-						style={{
-							display: 'grid',
-							gridTemplateColumns: '1fr 1fr',
-							gap: '1rem',
-							marginBottom: '1rem',
-						}}
-					>
+					<div style={gridTwo}>
 						<div>
-							<label
-								style={{
-									display: 'block',
-									fontSize: '0.8rem',
-									color: 'var(--muted)',
-									marginBottom: '0.35rem',
-								}}
-							>
-								Prénom *
-							</label>
-							<input
-								type="text"
-								name="firstName"
-								value={form.firstName}
-								onChange={handleChange}
-								required
-								className="filter-input"
-								style={{ width: '100%' }}
-							/>
+							<label style={labelStyle}>Prénom *</label>
+							<input type="text" name="firstName" value={form.firstName} onChange={handleChange} required className="filter-input" style={{ width: '100%' }} />
 						</div>
 						<div>
-							<label
-								style={{
-									display: 'block',
-									fontSize: '0.8rem',
-									color: 'var(--muted)',
-									marginBottom: '0.35rem',
-								}}
-							>
-								Nom *
-							</label>
-							<input
-								type="text"
-								name="lastName"
-								value={form.lastName}
-								onChange={handleChange}
-								required
-								className="filter-input"
-								style={{ width: '100%' }}
-							/>
+							<label style={labelStyle}>Nom *</label>
+							<input type="text" name="lastName" value={form.lastName} onChange={handleChange} required className="filter-input" style={{ width: '100%' }} />
 						</div>
 					</div>
 
-					<div
-						style={{
-							display: 'grid',
-							gridTemplateColumns: '1fr 1fr',
-							gap: '1rem',
-							marginBottom: '1rem',
-						}}
-					>
+					<div style={gridTwo}>
 						<div>
-							<label
-								style={{
-									display: 'block',
-									fontSize: '0.8rem',
-									color: 'var(--muted)',
-									marginBottom: '0.35rem',
-								}}
-							>
-								Date de naissance
-							</label>
-							<input
-								type="date"
-								name="dateOfBirth"
-								value={form.dateOfBirth}
-								onChange={handleChange}
-								className="filter-input"
-								style={{ width: '100%' }}
-							/>
+							<label style={labelStyle}>Date de naissance</label>
+							<input type="date" name="dateOfBirth" value={form.dateOfBirth} onChange={handleChange} className="filter-input" style={{ width: '100%' }} />
 						</div>
 						<div>
-							<label
-								style={{
-									display: 'block',
-									fontSize: '0.8rem',
-									color: 'var(--muted)',
-									marginBottom: '0.35rem',
-								}}
-							>
-								Lieu d&apos;origine
-							</label>
-							<input
-								type="text"
-								name="placeOfOrigin"
-								value={form.placeOfOrigin}
-								onChange={handleChange}
-								className="filter-input"
-								style={{ width: '100%' }}
-							/>
+							<label style={labelStyle}>Lieu d&apos;origine</label>
+							<input type="text" name="placeOfOrigin" value={form.placeOfOrigin} onChange={handleChange} className="filter-input" style={{ width: '100%' }} />
 						</div>
 					</div>
 
-					<div
-						style={{
-							display: 'grid',
-							gridTemplateColumns: '1fr 1fr',
-							gap: '1rem',
-							marginBottom: '1rem',
-						}}
-					>
+					<div style={gridTwo}>
 						<div>
-							<label
-								style={{
-									display: 'block',
-									fontSize: '0.8rem',
-									color: 'var(--muted)',
-									marginBottom: '0.35rem',
-								}}
-							>
-								Taille (cm)
-							</label>
-							<input
-								type="number"
-								name="height"
-								value={form.height}
-								onChange={handleChange}
-								className="filter-input"
-								style={{ width: '100%' }}
-							/>
+							<label style={labelStyle}>Taille (cm)</label>
+							<input type="number" name="height" value={form.height} onChange={handleChange} className="filter-input" style={{ width: '100%' }} />
 						</div>
 						<div>
-							<label
-								style={{
-									display: 'block',
-									fontSize: '0.8rem',
-									color: 'var(--muted)',
-									marginBottom: '0.35rem',
-								}}
-							>
-								Poids (kg)
-							</label>
-							<input
-								type="number"
-								name="weight"
-								value={form.weight}
-								onChange={handleChange}
-								className="filter-input"
-								style={{ width: '100%' }}
-							/>
+							<label style={labelStyle}>Poids (kg)</label>
+							<input type="number" name="weight" value={form.weight} onChange={handleChange} className="filter-input" style={{ width: '100%' }} />
 						</div>
 					</div>
 
 					<div style={{ marginBottom: '1rem' }}>
-						<label
-							style={{
-								display: 'block',
-								fontSize: '0.8rem',
-								color: 'var(--muted)',
-								marginBottom: '0.35rem',
-							}}
-						>
-							Description physique
-						</label>
-						<textarea
-							name="physicalDescription"
-							value={form.physicalDescription}
-							onChange={handleChange}
-							className="filter-input"
-							style={{ width: '100%', minHeight: '100px', resize: 'vertical' }}
-						/>
+						<label style={labelStyle}>Description physique</label>
+						<textarea name="physicalDescription" value={form.physicalDescription} onChange={handleChange} className="filter-input" style={{ width: '100%', minHeight: '100px', resize: 'vertical' }} />
 					</div>
 
 					<div style={{ marginBottom: '1rem' }}>
-						<label
-							style={{
-								display: 'block',
-								fontSize: '0.8rem',
-								color: 'var(--muted)',
-								marginBottom: '0.35rem',
-							}}
-						>
-							Devise
-						</label>
-						<input
-							type="text"
-							name="motto"
-							value={form.motto}
-							onChange={handleChange}
-							className="filter-input"
-							style={{ width: '100%' }}
-						/>
+						<label style={labelStyle}>Devise</label>
+						<input type="text" name="motto" value={form.motto} onChange={handleChange} className="filter-input" style={{ width: '100%' }} />
 					</div>
 				</div>
 
-				<div
-					className="character-section"
-					style={{
-						border: 'none',
-						padding: 0,
-						background: 'transparent',
-						marginTop: '1.5rem',
-					}}
-				>
+				{/* --- Parcours --- */}
+				<div style={{ border: 'none', padding: 0, background: 'transparent', marginTop: '1.5rem' }}>
+					<h2 style={{ color: 'var(--primary)' }}>Parcours</h2>
+
+					<div style={{ marginBottom: '1rem' }}>
+						<label style={labelStyle}>Parcours civil</label>
+						<textarea name="civilianBackground" value={form.civilianBackground} onChange={handleChange} className="filter-input" style={{ width: '100%', minHeight: '100px', resize: 'vertical' }} placeholder="Décrivez le parcours civil du personnage..." />
+					</div>
+
+					<div style={{ marginBottom: '1rem' }}>
+						<label style={labelStyle}>Parcours militaire</label>
+						<textarea name="militaryBackground" value={form.militaryBackground} onChange={handleChange} className="filter-input" style={{ width: '100%', minHeight: '100px', resize: 'vertical' }} placeholder="Décrivez le parcours militaire du personnage..." />
+					</div>
+
+					<div style={{ marginBottom: '1rem' }}>
+						<label style={labelStyle}>Parcours judiciaire</label>
+						<textarea name="legalBackground" value={form.legalBackground} onChange={handleChange} className="filter-input" style={{ width: '100%', minHeight: '100px', resize: 'vertical' }} placeholder="Casier judiciaire, infractions, etc." />
+					</div>
+				</div>
+
+				{/* --- Spécialisations --- */}
+				<div style={{ border: 'none', padding: 0, background: 'transparent', marginTop: '1.5rem' }}>
+					<h2 style={{ color: 'var(--primary)' }}>Spécialisations</h2>
+					{specialisations.map((spec, i) => (
+						<div key={i} style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
+							<input
+								type="text" value={spec}
+								onChange={e => updateSpecialisation(i, e.target.value)}
+								className="filter-input" style={{ flex: 1 }}
+								placeholder="Ex: Tireur d'élite, Médecin de combat..."
+							/>
+							<button type="button" onClick={() => removeSpecialisation(i)} style={{ background: 'none', border: '1px solid var(--danger)', color: 'var(--danger)', padding: '0 0.5rem', cursor: 'pointer' }}>×</button>
+						</div>
+					))}
+					<button type="button" onClick={addSpecialisation} style={{ background: 'none', border: '1px dashed var(--border)', color: 'var(--muted)', padding: '0.4rem 1rem', cursor: 'pointer', fontSize: '0.8rem' }}>
+						+ Ajouter une spécialisation
+					</button>
+				</div>
+
+				{/* --- Affectation --- */}
+				<div style={{ border: 'none', padding: 0, background: 'transparent', marginTop: '1.5rem' }}>
 					<h2 style={{ color: 'var(--primary)' }}>Affectation</h2>
 
-					<div
-						style={{
-							display: 'grid',
-							gridTemplateColumns: '1fr 1fr',
-							gap: '1rem',
-							marginBottom: '1rem',
-						}}
-					>
+					<div style={gridTwo}>
 						<div>
-							<label
-								style={{
-									display: 'block',
-									fontSize: '0.8rem',
-									color: 'var(--muted)',
-									marginBottom: '0.35rem',
-								}}
-							>
-								Grade
-							</label>
-							<select
-								name="rank"
-								value={form.rank}
-								onChange={handleChange}
-								className="filter-select"
-								style={{ width: '100%' }}
-							>
-								<option value="">— Aucun —</option>
-								{ranks.map(r => (
-									<option key={r.id} value={r.id}>
-										{r.name}
-									</option>
-								))}
-							</select>
-						</div>
-						<div>
-							<label
-								style={{
-									display: 'block',
-									fontSize: '0.8rem',
-									color: 'var(--muted)',
-									marginBottom: '0.35rem',
-								}}
-							>
-								Unité
-							</label>
-							<select
-								name="unit"
-								value={form.unit}
-								onChange={handleChange}
-								className="filter-select"
-								style={{ width: '100%' }}
-							>
+							<label style={labelStyle}>Unité</label>
+							<select name="unit" value={form.unit} onChange={handleChange} className="filter-select" style={{ width: '100%' }}>
 								<option value="">— Aucune —</option>
-								{units.map(u => (
-									<option key={u.id} value={u.id}>
-										{u.name}
-									</option>
-								))}
+								{units.map(u => (<option key={u.id} value={u.id}>{u.name}</option>))}
 							</select>
 						</div>
-					</div>
-
-					<div
-						style={{
-							display: 'grid',
-							gridTemplateColumns: '1fr 1fr',
-							gap: '1rem',
-							marginBottom: '1rem',
-						}}
-					>
 						<div>
-							<label
-								style={{
-									display: 'block',
-									fontSize: '0.8rem',
-									color: 'var(--muted)',
-									marginBottom: '0.35rem',
-								}}
-							>
-								Unité précédente
-							</label>
-							<input
-								type="text"
-								name="previousUnit"
-								value={form.previousUnit}
-								onChange={handleChange}
-								className="filter-input"
-								style={{ width: '100%' }}
-							/>
+							<label style={labelStyle}>Unité précédente</label>
+							<input type="text" name="previousUnit" value={form.previousUnit} onChange={handleChange} className="filter-input" style={{ width: '100%' }} />
 						</div>
-						<div>
-							<label
-								style={{
-									display: 'block',
-									fontSize: '0.8rem',
-									color: 'var(--muted)',
-									marginBottom: '0.35rem',
-								}}
-							>
-								Faction
-							</label>
-							<input
-								type="text"
-								name="faction"
-								value={form.faction}
-								onChange={handleChange}
-								className="filter-input"
-								style={{ width: '100%' }}
-							/>
-						</div>
-					</div>
-
-					<div>
-						<label
-							style={{
-								display: 'block',
-								fontSize: '0.8rem',
-								color: 'var(--muted)',
-								marginBottom: '0.35rem',
-							}}
-						>
-							Statut
-						</label>
-						<select
-							name="status"
-							value={form.status}
-							onChange={handleChange}
-							className="filter-select"
-							style={{ width: '100%' }}
-						>
-							<option value="in-service">En service</option>
-							<option value="kia">KIA (Mort au combat)</option>
-							<option value="mia">MIA (Disparu)</option>
-							<option value="retired">Retraité</option>
-							<option value="honourable-discharge">Réformé avec honneur</option>
-							<option value="dishonourable-discharge">Réformé sans honneur</option>
-							<option value="executed">Exécuté</option>
-						</select>
 					</div>
 				</div>
 
-				<div
-					style={{
-						marginTop: '2rem',
-						display: 'flex',
-						gap: '1rem',
-						justifyContent: 'flex-end',
-					}}
-				>
-					<Link
-						href="/roleplay"
-						className="session-btn"
-						style={{ padding: '0.75rem 1.5rem' }}
-					>
+				{/* --- Admin-only section --- */}
+				{isAdmin && (
+					<div style={{ border: '1px solid var(--primary)', padding: '1.5rem', marginTop: '1.5rem', background: 'rgba(139, 69, 19, 0.05)' }}>
+						<h2 style={{ color: 'var(--primary)', marginTop: 0 }}>Administration</h2>
+
+						<div style={gridTwo}>
+							<div>
+								<label style={labelStyle}>Grade (override admin)</label>
+								<select name="rank" value={form.rank} onChange={handleChange} className="filter-select" style={{ width: '100%' }}>
+									<option value="">— Auto (Discord) —</option>
+									{ranks.map(r => (<option key={r.id} value={r.id}>{r.name}</option>))}
+								</select>
+							</div>
+							<div>
+								<label style={labelStyle}>Statut</label>
+								<select name="status" value={form.status} onChange={handleChange} className="filter-select" style={{ width: '100%' }}>
+									<option value="in-service">En service</option>
+									<option value="kia">KIA (Mort au combat)</option>
+									<option value="mia">MIA (Disparu)</option>
+									<option value="retired">Retraité</option>
+									<option value="honourable-discharge">Réformé avec honneur</option>
+									<option value="dishonourable-discharge">Réformé sans honneur</option>
+									<option value="executed">Exécuté</option>
+								</select>
+							</div>
+						</div>
+
+						<div style={gridTwo}>
+							<div>
+								<label style={labelStyle}>Faction</label>
+								<input type="text" name="faction" value={form.faction} onChange={handleChange} className="filter-input" style={{ width: '100%' }} />
+							</div>
+							<div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
+								<label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+									<input type="checkbox" name="isTarget" checked={form.isTarget} onChange={handleChange} />
+									<span style={{ fontSize: '0.85rem' }}>Cible / Ennemi</span>
+								</label>
+							</div>
+						</div>
+
+						{form.isTarget && (
+							<div style={{ marginTop: '0.5rem' }}>
+								<label style={labelStyle}>Faction de la cible</label>
+								<input type="text" name="targetFaction" value={form.targetFaction} onChange={handleChange} className="filter-input" style={{ width: '100%' }} />
+							</div>
+						)}
+					</div>
+				)}
+
+				{/* --- Submit --- */}
+				<div style={{ marginTop: '2rem', display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
+					<Link href="/roleplay" className="session-btn" style={{ padding: '0.75rem 1.5rem' }}>
 						Annuler
 					</Link>
-					<button
-						type="submit"
-						disabled={submitting}
-						className="discord-login-btn"
-						style={{
-							background: 'var(--primary)',
-							padding: '0.75rem 1.5rem',
-							opacity: submitting ? 0.6 : 1,
-						}}
-					>
-						{submitting
-							? 'Enregistrement...'
-							: editData
-								? 'Mettre à jour'
-								: 'Créer le dossier'}
+					<button type="submit" disabled={submitting} className="discord-login-btn" style={{ background: 'var(--primary)', padding: '0.75rem 1.5rem', opacity: submitting ? 0.6 : 1 }}>
+						{submitting ? 'Enregistrement...' : editData ? 'Mettre à jour' : 'Créer le dossier'}
 					</button>
 				</div>
 			</div>

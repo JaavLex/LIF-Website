@@ -59,6 +59,11 @@ export async function PATCH(
 			delete body.classification;
 			delete body.militaryId;
 			delete body.isArchived;
+			delete body.status;
+			delete body.rank;
+			delete body.isTarget;
+			delete body.targetFaction;
+			delete body.etatMajorNotes;
 		}
 
 		const doc = await payload.update({

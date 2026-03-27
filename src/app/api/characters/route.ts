@@ -21,6 +21,50 @@ export async function POST(request: NextRequest) {
 		body.discordId = session.discordId;
 		body.discordUsername = session.discordUsername;
 
+		// Check if user is admin
+		const user = await payload.find({
+			collection: 'users',
+			where: { discordId: { equals: session.discordId } },
+			limit: 1,
+		});
+		const isAdmin = user.docs[0]?.role === 'admin';
+
+		// Non-admins: strip admin-only fields, auto-assign rank from Discord roles
+		if (!isAdmin) {
+			delete body.status;
+			delete body.rank;
+			delete body.classification;
+			delete body.militaryId;
+			delete body.isArchived;
+			delete body.isTarget;
+			delete body.targetFaction;
+			delete body.etatMajorNotes;
+
+			// Auto-assign rank from Discord roles
+			if (session.roles?.length) {
+				const ranks = await payload.find({
+					collection: 'ranks',
+					where: { discordRoleId: { in: session.roles } },
+					sort: '-order',
+					limit: 1,
+				});
+				if (ranks.docs.length > 0) {
+					body.rank = ranks.docs[0].id;
+				} else {
+					// Default to lowest rank (Recrue)
+					const defaultRank = await payload.find({
+						collection: 'ranks',
+						sort: 'order',
+						limit: 1,
+					});
+					if (defaultRank.docs.length > 0) body.rank = defaultRank.docs[0].id;
+				}
+			}
+
+			// Default status for new characters
+			body.status = 'in-service';
+		}
+
 		const doc = await payload.create({
 			collection: 'characters',
 			data: body,

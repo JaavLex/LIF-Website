@@ -2,8 +2,11 @@ import { getPayloadClient } from '@/lib/payload';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
+import { cookies } from 'next/headers';
 import { RichTextRenderer } from '@/components/roleplay/RichTextRenderer';
 import { CharacterTimeline } from '@/components/roleplay/CharacterTimeline';
+import { SyncRankButton } from '@/components/roleplay/SyncRankButton';
+import { verifySession } from '@/lib/session';
 
 export const dynamic = 'force-dynamic';
 
@@ -57,6 +60,12 @@ export default async function CharacterPage({
 	const superior =
 		typeof character.superiorOfficer === 'object' ? character.superiorOfficer : null;
 
+	// Check if current user is the owner
+	const cookieStore = await cookies();
+	const token = cookieStore.get('roleplay-session')?.value;
+	const session = token ? verifySession(token) : null;
+	const isOwner = session?.discordId === character.discordId;
+
 	return (
 		<div className="terminal-container">
 			<Link
@@ -90,10 +99,27 @@ export default async function CharacterPage({
 			</div>
 
 			<div className="terminal-panel">
-				<h1>
-					{rank && <>{rank.abbreviation || rank.name} </>}
-					{character.fullName}
-				</h1>
+				<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+					<h1 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+						{rank?.icon?.url && (
+							<Image src={rank.icon.url} alt={rank.name} width={32} height={32} unoptimized />
+						)}
+						{rank && <>{rank.abbreviation || rank.name} </>}
+						{character.fullName}
+					</h1>
+					{isOwner && (
+						<div style={{ display: 'flex', gap: '0.5rem' }}>
+							<SyncRankButton characterId={character.id} />
+							<Link
+								href={`/roleplay/personnage/${character.id}/modifier`}
+								className="session-btn"
+								style={{ padding: '0.5rem 1rem', fontSize: '0.85rem', whiteSpace: 'nowrap' }}
+							>
+								Modifier
+							</Link>
+						</div>
+					)}
+				</div>
 
 				<div className="character-detail">
 					{/* Sidebar */}
@@ -122,7 +148,12 @@ export default async function CharacterPage({
 							</div>
 							<div className="info-row">
 								<span className="info-label">Grade</span>
-								<span className="info-value">{rank?.name || '—'}</span>
+								<span className="info-value" style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+									{rank?.icon?.url && (
+										<Image src={rank.icon.url} alt={rank.name} width={20} height={20} unoptimized />
+									)}
+									{rank?.name || '—'}
+								</span>
 							</div>
 							<div className="info-row">
 								<span className="info-label">Statut</span>
@@ -140,6 +171,12 @@ export default async function CharacterPage({
 								<div className="info-row">
 									<span className="info-label">Faction</span>
 									<span className="info-value">{character.faction}</span>
+								</div>
+							)}
+							{character.discordUsername && (
+								<div className="info-row">
+									<span className="info-label">Discord</span>
+									<span className="info-value">@{character.discordUsername}</span>
 								</div>
 							)}
 						</div>
