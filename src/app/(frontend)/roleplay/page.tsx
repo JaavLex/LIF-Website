@@ -57,11 +57,17 @@ export default async function RoleplayPage() {
 					</div>
 					<div className="status-item">
 						<span className="status-indicator" />
-						<span>{characters.totalDocs} dossier{characters.totalDocs !== 1 ? 's' : ''} enregistré{characters.totalDocs !== 1 ? 's' : ''}</span>
+						<span>
+							{characters.totalDocs} dossier{characters.totalDocs !== 1 ? 's' : ''}{' '}
+							enregistré{characters.totalDocs !== 1 ? 's' : ''}
+						</span>
 					</div>
 					<div className="status-item">
 						<span className="status-indicator" />
-						<span>{characters.docs.filter((c: any) => c.status === 'in-service').length} en service actif</span>
+						<span>
+							{characters.docs.filter((c: any) => c.status === 'in-service').length}{' '}
+							en service actif
+						</span>
 					</div>
 				</div>
 

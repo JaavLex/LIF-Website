@@ -24,7 +24,7 @@ export const CharacterTimeline: CollectionConfig = {
 		},
 		{
 			name: 'type',
-			label: 'Type d\'événement',
+			label: "Type d'événement",
 			type: 'select',
 			required: true,
 			options: [

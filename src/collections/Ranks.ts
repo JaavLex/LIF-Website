@@ -56,7 +56,7 @@ export const Ranks: CollectionConfig = {
 			type: 'text',
 			defaultValue: '#c9a227',
 			admin: {
-				description: 'Couleur hex pour l\'affichage (ex: #c9a227)',
+				description: "Couleur hex pour l'affichage (ex: #c9a227)",
 			},
 		},
 	],

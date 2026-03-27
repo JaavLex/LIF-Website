@@ -22,10 +22,22 @@ export default async function LorePage() {
 	if (!showLore) {
 		return (
 			<div className="terminal-container">
-				<div className="terminal-panel" style={{ textAlign: 'center', padding: '4rem' }}>
+				<div
+					className="terminal-panel"
+					style={{ textAlign: 'center', padding: '4rem' }}
+				>
 					<h2 style={{ color: 'var(--muted)' }}>Section en cours de rédaction</h2>
-					<p style={{ color: 'var(--muted)', marginTop: '1rem' }}>Le lore sera disponible prochainement.</p>
-					<Link href="/roleplay" style={{ color: 'var(--primary)', marginTop: '1rem', display: 'inline-block' }}>
+					<p style={{ color: 'var(--muted)', marginTop: '1rem' }}>
+						Le lore sera disponible prochainement.
+					</p>
+					<Link
+						href="/roleplay"
+						style={{
+							color: 'var(--primary)',
+							marginTop: '1rem',
+							display: 'inline-block',
+						}}
+					>
 						← Retour à la base de données
 					</Link>
 				</div>
@@ -35,7 +47,15 @@ export default async function LorePage() {
 
 	return (
 		<div className="terminal-container">
-			<Link href="/roleplay" style={{ color: 'var(--muted)', fontSize: '0.85rem', display: 'inline-block', marginBottom: '1rem' }}>
+			<Link
+				href="/roleplay"
+				style={{
+					color: 'var(--muted)',
+					fontSize: '0.85rem',
+					display: 'inline-block',
+					marginBottom: '1rem',
+				}}
+			>
 				← Retour à la base de données
 			</Link>
 
@@ -48,9 +68,7 @@ export default async function LorePage() {
 					</div>
 					<span className="terminal-title">ARCHIVES — LORE & HISTORIQUE</span>
 				</div>
-				<div className="terminal-header-right">
-					CLASSIFICATION: PUBLIC
-				</div>
+				<div className="terminal-header-right">CLASSIFICATION: PUBLIC</div>
 			</div>
 
 			<div className="terminal-panel">
@@ -81,7 +99,14 @@ export default async function LorePage() {
 										/>
 									)}
 									{block.caption && (
-										<p style={{ textAlign: 'center', color: 'var(--muted)', fontSize: '0.85rem', marginTop: '0.5rem' }}>
+										<p
+											style={{
+												textAlign: 'center',
+												color: 'var(--muted)',
+												fontSize: '0.85rem',
+												marginTop: '0.5rem',
+											}}
+										>
 											{block.caption}
 										</p>
 									)}
@@ -92,18 +117,19 @@ export default async function LorePage() {
 								<div key={index} className="lore-section">
 									{block.title && <h2>{block.title}</h2>}
 									<div className="lore-gallery">
-										{block.images?.map((img: any, i: number) => (
-											img.image?.url && (
-												<Image
-													key={i}
-													src={img.image.url}
-													alt={img.caption || ''}
-													width={400}
-													height={300}
-													unoptimized
-												/>
-											)
-										))}
+										{block.images?.map(
+											(img: any, i: number) =>
+												img.image?.url && (
+													<Image
+														key={i}
+														src={img.image.url}
+														alt={img.caption || ''}
+														width={400}
+														height={300}
+														unoptimized
+													/>
+												),
+										)}
 									</div>
 								</div>
 							);
@@ -114,7 +140,17 @@ export default async function LorePage() {
 
 				{timelineEvents.length > 0 && (
 					<>
-						<h2 style={{ color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '2px', marginTop: '3rem', marginBottom: '1.5rem', paddingBottom: '0.5rem', borderBottom: '1px solid var(--primary)' }}>
+						<h2
+							style={{
+								color: 'var(--primary)',
+								textTransform: 'uppercase',
+								letterSpacing: '2px',
+								marginTop: '3rem',
+								marginBottom: '1.5rem',
+								paddingBottom: '0.5rem',
+								borderBottom: '1px solid var(--primary)',
+							}}
+						>
 							Chronologie
 						</h2>
 						<div className="timeline">
@@ -129,9 +165,7 @@ export default async function LorePage() {
 									</div>
 									<div className="timeline-title">{event.title}</div>
 									{event.description && (
-										<div className="timeline-description">
-											{event.description}
-										</div>
+										<div className="timeline-description">{event.description}</div>
 									)}
 								</div>
 							))}
@@ -140,8 +174,11 @@ export default async function LorePage() {
 				)}
 
 				{loreBlocks.length === 0 && timelineEvents.length === 0 && (
-					<div style={{ textAlign: 'center', padding: '3rem', color: 'var(--muted)' }}>
-						Le lore n&apos;a pas encore été rédigé. Consultez cette page ultérieurement.
+					<div
+						style={{ textAlign: 'center', padding: '3rem', color: 'var(--muted)' }}
+					>
+						Le lore n&apos;a pas encore été rédigé. Consultez cette page
+						ultérieurement.
 					</div>
 				)}
 			</div>

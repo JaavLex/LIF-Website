@@ -62,22 +62,29 @@ export async function getDiscordUser(accessToken: string): Promise<DiscordUser> 
 	return response.json() as Promise<DiscordUser>;
 }
 
-export async function getGuildMember(userId: string): Promise<DiscordGuildMember | null> {
+export async function getGuildMember(
+	userId: string,
+): Promise<DiscordGuildMember | null> {
 	const guildId = process.env.DISCORD_GUILD_ID;
 	const botToken = process.env.DISCORD_BOT_TOKEN;
 
 	if (!guildId || !botToken) return null;
 
-	const response = await fetch(`${DISCORD_API}/guilds/${guildId}/members/${userId}`, {
-		headers: { Authorization: `Bot ${botToken}` },
-	});
+	const response = await fetch(
+		`${DISCORD_API}/guilds/${guildId}/members/${userId}`,
+		{
+			headers: { Authorization: `Bot ${botToken}` },
+		},
+	);
 
 	if (!response.ok) return null;
 
 	return response.json() as Promise<DiscordGuildMember>;
 }
 
-export async function getGuildRoles(): Promise<Array<{ id: string; name: string; color: number; position: number }>> {
+export async function getGuildRoles(): Promise<
+	Array<{ id: string; name: string; color: number; position: number }>
+> {
 	const guildId = process.env.DISCORD_GUILD_ID;
 	const botToken = process.env.DISCORD_BOT_TOKEN;
 

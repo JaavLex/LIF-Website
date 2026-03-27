@@ -32,7 +32,10 @@ export async function PATCH(
 		});
 
 		if (!existing) {
-			return NextResponse.json({ message: 'Personnage non trouvé' }, { status: 404 });
+			return NextResponse.json(
+				{ message: 'Personnage non trouvé' },
+				{ status: 404 },
+			);
 		}
 
 		// Check if user is admin or owner

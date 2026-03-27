@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPayloadClient } from '@/lib/payload';
-import { getDiscordTokens, getDiscordUser, getGuildMember, getDiscordAvatarUrl } from '@/lib/discord';
+import {
+	getDiscordTokens,
+	getDiscordUser,
+	getGuildMember,
+	getDiscordAvatarUrl,
+} from '@/lib/discord';
 import { signSession } from '@/lib/session';
 import crypto from 'crypto';
 

@@ -55,16 +55,18 @@ export function CharacterForm({
 
 	useEffect(() => {
 		fetch('/api/auth/me')
-			.then((res) => (res.ok ? res.json() : null))
-			.then((data) => {
+			.then(res => (res.ok ? res.json() : null))
+			.then(data => {
 				if (data?.authenticated) setUser(data.user);
 			})
 			.catch(() => {})
 			.finally(() => setLoading(false));
 	}, []);
 
-	const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-		setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+	const handleChange = (
+		e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
+	) => {
+		setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
 	};
 
 	const handleSubmit = async (e: React.FormEvent) => {
@@ -93,9 +95,7 @@ export function CharacterForm({
 			if (form.rank) body.rank = parseInt(form.rank);
 			if (form.unit) body.unit = parseInt(form.unit);
 
-			const url = editData
-				? `/api/characters/${editData.id}`
-				: '/api/characters';
+			const url = editData ? `/api/characters/${editData.id}` : '/api/characters';
 
 			const res = await fetch(url, {
 				method: editData ? 'PATCH' : 'POST',
@@ -119,7 +119,10 @@ export function CharacterForm({
 
 	if (loading) {
 		return (
-			<div className="terminal-panel" style={{ textAlign: 'center', padding: '3rem' }}>
+			<div
+				className="terminal-panel"
+				style={{ textAlign: 'center', padding: '3rem' }}
+			>
 				<p style={{ color: 'var(--muted)' }}>Chargement...</p>
 			</div>
 		);
@@ -130,7 +133,10 @@ export function CharacterForm({
 			<div className="terminal-panel">
 				<div className="auth-section">
 					<h2>Authentification requise</h2>
-					<p>Vous devez être connecté via Discord pour créer ou modifier un personnage.</p>
+					<p>
+						Vous devez être connecté via Discord pour créer ou modifier un
+						personnage.
+					</p>
 					<a href="/api/auth/discord" className="discord-login-btn">
 						Connexion Discord
 					</a>
@@ -145,24 +151,43 @@ export function CharacterForm({
 				<h1>{editData ? 'Modifier le dossier' : 'Nouveau dossier personnel'}</h1>
 
 				{error && (
-					<div style={{
-						padding: '0.75rem 1rem',
-						background: 'rgba(139, 38, 53, 0.15)',
-						border: '1px solid var(--danger)',
-						color: 'var(--danger)',
-						marginBottom: '1.5rem',
-						fontSize: '0.9rem',
-					}}>
+					<div
+						style={{
+							padding: '0.75rem 1rem',
+							background: 'rgba(139, 38, 53, 0.15)',
+							border: '1px solid var(--danger)',
+							color: 'var(--danger)',
+							marginBottom: '1.5rem',
+							fontSize: '0.9rem',
+						}}
+					>
 						{error}
 					</div>
 				)}
 
-				<div className="character-section" style={{ border: 'none', padding: 0, background: 'transparent' }}>
+				<div
+					className="character-section"
+					style={{ border: 'none', padding: 0, background: 'transparent' }}
+				>
 					<h2 style={{ color: 'var(--primary)' }}>Identité</h2>
 
-					<div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+					<div
+						style={{
+							display: 'grid',
+							gridTemplateColumns: '1fr 1fr',
+							gap: '1rem',
+							marginBottom: '1rem',
+						}}
+					>
 						<div>
-							<label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--muted)', marginBottom: '0.35rem' }}>
+							<label
+								style={{
+									display: 'block',
+									fontSize: '0.8rem',
+									color: 'var(--muted)',
+									marginBottom: '0.35rem',
+								}}
+							>
 								Prénom *
 							</label>
 							<input
@@ -176,7 +201,14 @@ export function CharacterForm({
 							/>
 						</div>
 						<div>
-							<label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--muted)', marginBottom: '0.35rem' }}>
+							<label
+								style={{
+									display: 'block',
+									fontSize: '0.8rem',
+									color: 'var(--muted)',
+									marginBottom: '0.35rem',
+								}}
+							>
 								Nom *
 							</label>
 							<input
@@ -191,9 +223,23 @@ export function CharacterForm({
 						</div>
 					</div>
 
-					<div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+					<div
+						style={{
+							display: 'grid',
+							gridTemplateColumns: '1fr 1fr',
+							gap: '1rem',
+							marginBottom: '1rem',
+						}}
+					>
 						<div>
-							<label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--muted)', marginBottom: '0.35rem' }}>
+							<label
+								style={{
+									display: 'block',
+									fontSize: '0.8rem',
+									color: 'var(--muted)',
+									marginBottom: '0.35rem',
+								}}
+							>
 								Date de naissance
 							</label>
 							<input
@@ -206,7 +252,14 @@ export function CharacterForm({
 							/>
 						</div>
 						<div>
-							<label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--muted)', marginBottom: '0.35rem' }}>
+							<label
+								style={{
+									display: 'block',
+									fontSize: '0.8rem',
+									color: 'var(--muted)',
+									marginBottom: '0.35rem',
+								}}
+							>
 								Lieu d&apos;origine
 							</label>
 							<input
@@ -220,9 +273,23 @@ export function CharacterForm({
 						</div>
 					</div>
 
-					<div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+					<div
+						style={{
+							display: 'grid',
+							gridTemplateColumns: '1fr 1fr',
+							gap: '1rem',
+							marginBottom: '1rem',
+						}}
+					>
 						<div>
-							<label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--muted)', marginBottom: '0.35rem' }}>
+							<label
+								style={{
+									display: 'block',
+									fontSize: '0.8rem',
+									color: 'var(--muted)',
+									marginBottom: '0.35rem',
+								}}
+							>
 								Taille (cm)
 							</label>
 							<input
@@ -235,7 +302,14 @@ export function CharacterForm({
 							/>
 						</div>
 						<div>
-							<label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--muted)', marginBottom: '0.35rem' }}>
+							<label
+								style={{
+									display: 'block',
+									fontSize: '0.8rem',
+									color: 'var(--muted)',
+									marginBottom: '0.35rem',
+								}}
+							>
 								Poids (kg)
 							</label>
 							<input
@@ -250,7 +324,14 @@ export function CharacterForm({
 					</div>
 
 					<div style={{ marginBottom: '1rem' }}>
-						<label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--muted)', marginBottom: '0.35rem' }}>
+						<label
+							style={{
+								display: 'block',
+								fontSize: '0.8rem',
+								color: 'var(--muted)',
+								marginBottom: '0.35rem',
+							}}
+						>
 							Description physique
 						</label>
 						<textarea
@@ -263,7 +344,14 @@ export function CharacterForm({
 					</div>
 
 					<div style={{ marginBottom: '1rem' }}>
-						<label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--muted)', marginBottom: '0.35rem' }}>
+						<label
+							style={{
+								display: 'block',
+								fontSize: '0.8rem',
+								color: 'var(--muted)',
+								marginBottom: '0.35rem',
+							}}
+						>
 							Devise
 						</label>
 						<input
@@ -277,12 +365,34 @@ export function CharacterForm({
 					</div>
 				</div>
 
-				<div className="character-section" style={{ border: 'none', padding: 0, background: 'transparent', marginTop: '1.5rem' }}>
+				<div
+					className="character-section"
+					style={{
+						border: 'none',
+						padding: 0,
+						background: 'transparent',
+						marginTop: '1.5rem',
+					}}
+				>
 					<h2 style={{ color: 'var(--primary)' }}>Affectation</h2>
 
-					<div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+					<div
+						style={{
+							display: 'grid',
+							gridTemplateColumns: '1fr 1fr',
+							gap: '1rem',
+							marginBottom: '1rem',
+						}}
+					>
 						<div>
-							<label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--muted)', marginBottom: '0.35rem' }}>
+							<label
+								style={{
+									display: 'block',
+									fontSize: '0.8rem',
+									color: 'var(--muted)',
+									marginBottom: '0.35rem',
+								}}
+							>
 								Grade
 							</label>
 							<select
@@ -293,13 +403,22 @@ export function CharacterForm({
 								style={{ width: '100%' }}
 							>
 								<option value="">— Aucun —</option>
-								{ranks.map((r) => (
-									<option key={r.id} value={r.id}>{r.name}</option>
+								{ranks.map(r => (
+									<option key={r.id} value={r.id}>
+										{r.name}
+									</option>
 								))}
 							</select>
 						</div>
 						<div>
-							<label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--muted)', marginBottom: '0.35rem' }}>
+							<label
+								style={{
+									display: 'block',
+									fontSize: '0.8rem',
+									color: 'var(--muted)',
+									marginBottom: '0.35rem',
+								}}
+							>
 								Unité
 							</label>
 							<select
@@ -310,16 +429,32 @@ export function CharacterForm({
 								style={{ width: '100%' }}
 							>
 								<option value="">— Aucune —</option>
-								{units.map((u) => (
-									<option key={u.id} value={u.id}>{u.name}</option>
+								{units.map(u => (
+									<option key={u.id} value={u.id}>
+										{u.name}
+									</option>
 								))}
 							</select>
 						</div>
 					</div>
 
-					<div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+					<div
+						style={{
+							display: 'grid',
+							gridTemplateColumns: '1fr 1fr',
+							gap: '1rem',
+							marginBottom: '1rem',
+						}}
+					>
 						<div>
-							<label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--muted)', marginBottom: '0.35rem' }}>
+							<label
+								style={{
+									display: 'block',
+									fontSize: '0.8rem',
+									color: 'var(--muted)',
+									marginBottom: '0.35rem',
+								}}
+							>
 								Unité précédente
 							</label>
 							<input
@@ -332,7 +467,14 @@ export function CharacterForm({
 							/>
 						</div>
 						<div>
-							<label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--muted)', marginBottom: '0.35rem' }}>
+							<label
+								style={{
+									display: 'block',
+									fontSize: '0.8rem',
+									color: 'var(--muted)',
+									marginBottom: '0.35rem',
+								}}
+							>
 								Faction
 							</label>
 							<input
@@ -347,7 +489,14 @@ export function CharacterForm({
 					</div>
 
 					<div>
-						<label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--muted)', marginBottom: '0.35rem' }}>
+						<label
+							style={{
+								display: 'block',
+								fontSize: '0.8rem',
+								color: 'var(--muted)',
+								marginBottom: '0.35rem',
+							}}
+						>
 							Statut
 						</label>
 						<select
@@ -368,7 +517,14 @@ export function CharacterForm({
 					</div>
 				</div>
 
-				<div style={{ marginTop: '2rem', display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
+				<div
+					style={{
+						marginTop: '2rem',
+						display: 'flex',
+						gap: '1rem',
+						justifyContent: 'flex-end',
+					}}
+				>
 					<Link
 						href="/roleplay"
 						className="session-btn"
@@ -386,7 +542,11 @@ export function CharacterForm({
 							opacity: submitting ? 0.6 : 1,
 						}}
 					>
-						{submitting ? 'Enregistrement...' : editData ? 'Mettre à jour' : 'Créer le dossier'}
+						{submitting
+							? 'Enregistrement...'
+							: editData
+								? 'Mettre à jour'
+								: 'Créer le dossier'}
 					</button>
 				</div>
 			</div>

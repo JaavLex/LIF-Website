@@ -22,7 +22,7 @@ interface TimelineEvent {
 export function CharacterTimeline({ events }: { events: TimelineEvent[] }) {
 	return (
 		<div className="timeline">
-			{events.map((event) => (
+			{events.map(event => (
 				<div key={event.id} className={`timeline-item ${event.type}`}>
 					<div className="timeline-date">
 						{new Date(event.date).toLocaleDateString('fr-FR', {
@@ -31,7 +31,12 @@ export function CharacterTimeline({ events }: { events: TimelineEvent[] }) {
 							day: 'numeric',
 						})}
 					</div>
-					<span className="timeline-type" style={{ color: `var(--${event.type === 'promotion' || event.type === 'medal' ? 'accent' : event.type === 'wound' || event.type === 'disciplinary' ? 'danger' : 'primary'})` }}>
+					<span
+						className="timeline-type"
+						style={{
+							color: `var(--${event.type === 'promotion' || event.type === 'medal' ? 'accent' : event.type === 'wound' || event.type === 'disciplinary' ? 'danger' : 'primary'})`,
+						}}
+					>
 						{TYPE_LABELS[event.type] || event.type}
 					</span>
 					<div className="timeline-title">{event.title}</div>

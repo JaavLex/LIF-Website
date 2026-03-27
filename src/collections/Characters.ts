@@ -1,6 +1,10 @@
 import type { CollectionConfig, CollectionBeforeChangeHook } from 'payload';
 
-const generateMatricule: CollectionBeforeChangeHook = async ({ data, operation, req }) => {
+const generateMatricule: CollectionBeforeChangeHook = async ({
+	data,
+	operation,
+	req,
+}) => {
 	if (operation === 'create' && !data?.militaryId) {
 		const payload = req.payload;
 
@@ -10,7 +14,7 @@ const generateMatricule: CollectionBeforeChangeHook = async ({ data, operation, 
 		try {
 			const roleplayConfig = await payload.findGlobal({ slug: 'roleplay' });
 			if (roleplayConfig?.matriculePrefix) prefix = roleplayConfig.matriculePrefix;
-				if (roleplayConfig?.matriculeYear) year = String(roleplayConfig.matriculeYear);
+			if (roleplayConfig?.matriculeYear) year = String(roleplayConfig.matriculeYear);
 		} catch {
 			// Use defaults if global not found
 		}
@@ -95,12 +99,15 @@ export const Characters: CollectionConfig = {
 									label: 'Date de naissance',
 									type: 'date',
 									admin: {
-										date: { pickerAppearance: 'dayOnly', displayFormat: 'dd/MM/yyyy' },
+										date: {
+											pickerAppearance: 'dayOnly',
+											displayFormat: 'dd/MM/yyyy',
+										},
 									},
 								},
 								{
 									name: 'placeOfOrigin',
-									label: 'Lieu d\'origine',
+									label: "Lieu d'origine",
 									type: 'text',
 								},
 							],
@@ -350,7 +357,7 @@ export const Characters: CollectionConfig = {
 			type: 'date',
 			admin: {
 				position: 'sidebar',
-				condition: (data) => data?.isArchived,
+				condition: data => data?.isArchived,
 			},
 		},
 	],

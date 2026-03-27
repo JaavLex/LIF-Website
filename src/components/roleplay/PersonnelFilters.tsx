@@ -57,7 +57,7 @@ export function PersonnelFilters({
 	const [unitFilter, setUnitFilter] = useState('all');
 
 	const filtered = useMemo(() => {
-		return characters.filter((c) => {
+		return characters.filter(c => {
 			if (search) {
 				const q = search.toLowerCase();
 				const matches =
@@ -69,11 +69,13 @@ export function PersonnelFilters({
 			}
 			if (statusFilter !== 'all' && c.status !== statusFilter) return false;
 			if (rankFilter !== 'all') {
-				const rankId = typeof c.rank === 'object' && c.rank ? (c.rank as any).id : c.rank;
+				const rankId =
+					typeof c.rank === 'object' && c.rank ? (c.rank as any).id : c.rank;
 				if (String(rankId) !== rankFilter) return false;
 			}
 			if (unitFilter !== 'all') {
-				const unitId = typeof c.unit === 'object' && c.unit ? (c.unit as any).id : c.unit;
+				const unitId =
+					typeof c.unit === 'object' && c.unit ? (c.unit as any).id : c.unit;
 				if (String(unitId) !== unitFilter) return false;
 			}
 			return true;
@@ -88,12 +90,12 @@ export function PersonnelFilters({
 					className="filter-input"
 					placeholder="Rechercher par nom ou matricule..."
 					value={search}
-					onChange={(e) => setSearch(e.target.value)}
+					onChange={e => setSearch(e.target.value)}
 				/>
 				<select
 					className="filter-select"
 					value={statusFilter}
-					onChange={(e) => setStatusFilter(e.target.value)}
+					onChange={e => setStatusFilter(e.target.value)}
 				>
 					<option value="all">Tous les statuts</option>
 					{Object.entries(STATUS_LABELS).map(([value, label]) => (
@@ -105,10 +107,10 @@ export function PersonnelFilters({
 				<select
 					className="filter-select"
 					value={rankFilter}
-					onChange={(e) => setRankFilter(e.target.value)}
+					onChange={e => setRankFilter(e.target.value)}
 				>
 					<option value="all">Tous les grades</option>
-					{ranks.map((r) => (
+					{ranks.map(r => (
 						<option key={r.id} value={r.id}>
 							{r.name}
 						</option>
@@ -117,10 +119,10 @@ export function PersonnelFilters({
 				<select
 					className="filter-select"
 					value={unitFilter}
-					onChange={(e) => setUnitFilter(e.target.value)}
+					onChange={e => setUnitFilter(e.target.value)}
 				>
 					<option value="all">Toutes les unités</option>
-					{units.map((u) => (
+					{units.map(u => (
 						<option key={u.id} value={u.id}>
 							{u.name}
 						</option>
@@ -128,12 +130,14 @@ export function PersonnelFilters({
 				</select>
 			</div>
 
-			<div style={{ marginBottom: '1rem', fontSize: '0.8rem', color: 'var(--muted)' }}>
+			<div
+				style={{ marginBottom: '1rem', fontSize: '0.8rem', color: 'var(--muted)' }}
+			>
 				{filtered.length} résultat{filtered.length !== 1 ? 's' : ''}
 			</div>
 
 			<div className="personnel-grid">
-				{filtered.map((character) => (
+				{filtered.map(character => (
 					<Link
 						key={character.id}
 						href={`/roleplay/personnage/${character.id}`}
@@ -165,7 +169,13 @@ export function PersonnelFilters({
 									</div>
 								)}
 								{character.unit && typeof character.unit === 'object' && (
-									<div style={{ fontSize: '0.75rem', color: 'var(--muted)', marginTop: '0.15rem' }}>
+									<div
+										style={{
+											fontSize: '0.75rem',
+											color: 'var(--muted)',
+											marginTop: '0.15rem',
+										}}
+									>
 										{character.unit.name}
 									</div>
 								)}

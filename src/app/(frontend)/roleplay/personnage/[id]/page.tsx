@@ -17,7 +17,11 @@ const STATUS_LABELS: Record<string, string> = {
 	executed: 'Exécuté',
 };
 
-export default async function CharacterPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function CharacterPage({
+	params,
+}: {
+	params: Promise<{ id: string }>;
+}) {
 	const { id } = await params;
 	const payload = await getPayloadClient();
 
@@ -50,11 +54,20 @@ export default async function CharacterPage({ params }: { params: Promise<{ id: 
 
 	const rank = typeof character.rank === 'object' ? character.rank : null;
 	const unit = typeof character.unit === 'object' ? character.unit : null;
-	const superior = typeof character.superiorOfficer === 'object' ? character.superiorOfficer : null;
+	const superior =
+		typeof character.superiorOfficer === 'object' ? character.superiorOfficer : null;
 
 	return (
 		<div className="terminal-container">
-			<Link href="/roleplay" style={{ color: 'var(--muted)', fontSize: '0.85rem', display: 'inline-block', marginBottom: '1rem' }}>
+			<Link
+				href="/roleplay"
+				style={{
+					color: 'var(--muted)',
+					fontSize: '0.85rem',
+					display: 'inline-block',
+					marginBottom: '1rem',
+				}}
+			>
 				← Retour à la base de données
 			</Link>
 
@@ -65,7 +78,9 @@ export default async function CharacterPage({ params }: { params: Promise<{ id: 
 						<span className="terminal-dot yellow" />
 						<span className="terminal-dot red" />
 					</div>
-					<span className="terminal-title">DOSSIER PERSONNEL — {character.militaryId || 'N/A'}</span>
+					<span className="terminal-title">
+						DOSSIER PERSONNEL — {character.militaryId || 'N/A'}
+					</span>
 				</div>
 				<div className="terminal-header-right">
 					<span className={`classification-badge ${character.classification}`}>
@@ -94,7 +109,8 @@ export default async function CharacterPage({ params }: { params: Promise<{ id: 
 							/>
 						) : (
 							<div className="character-photo-placeholder">
-								{character.firstName?.[0]}{character.lastName?.[0]}
+								{character.firstName?.[0]}
+								{character.lastName?.[0]}
 							</div>
 						)}
 
@@ -164,7 +180,10 @@ export default async function CharacterPage({ params }: { params: Promise<{ id: 
 								<div className="info-row">
 									<span className="info-label">Supérieur</span>
 									<span className="info-value">
-										<Link href={`/roleplay/personnage/${superior.id}`} style={{ color: 'var(--primary)' }}>
+										<Link
+											href={`/roleplay/personnage/${superior.id}`}
+											style={{ color: 'var(--primary)' }}
+										>
 											{superior.fullName}
 										</Link>
 									</span>
@@ -175,7 +194,14 @@ export default async function CharacterPage({ params }: { params: Promise<{ id: 
 						{character.motto && (
 							<div className="character-info-block">
 								<h3>Devise</h3>
-								<p style={{ fontStyle: 'italic', color: 'var(--accent)', textAlign: 'center', padding: '0.5rem 0' }}>
+								<p
+									style={{
+										fontStyle: 'italic',
+										color: 'var(--accent)',
+										textAlign: 'center',
+										padding: '0.5rem 0',
+									}}
+								>
 									&laquo; {character.motto} &raquo;
 								</p>
 							</div>
@@ -206,14 +232,25 @@ export default async function CharacterPage({ params }: { params: Promise<{ id: 
 							<div className="character-section">
 								<h2>Spécialisations</h2>
 								<div className="character-section-content">
-									<ul style={{ listStyle: 'none', padding: 0, display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+									<ul
+										style={{
+											listStyle: 'none',
+											padding: 0,
+											display: 'flex',
+											gap: '0.5rem',
+											flexWrap: 'wrap',
+										}}
+									>
 										{character.specialisations.map((s: any, i: number) => (
-											<li key={i} style={{
-												padding: '0.25rem 0.75rem',
-												border: '1px solid var(--primary)',
-												fontSize: '0.85rem',
-												color: 'var(--primary)',
-											}}>
+											<li
+												key={i}
+												style={{
+													padding: '0.25rem 0.75rem',
+													border: '1px solid var(--primary)',
+													fontSize: '0.85rem',
+													color: 'var(--primary)',
+												}}
+											>
 												{s.name}
 											</li>
 										))}
@@ -261,7 +298,9 @@ export default async function CharacterPage({ params }: { params: Promise<{ id: 
 						{timeline.docs.length > 0 && (
 							<div className="character-section">
 								<h2>Historique</h2>
-								<CharacterTimeline events={JSON.parse(JSON.stringify(timeline.docs))} />
+								<CharacterTimeline
+									events={JSON.parse(JSON.stringify(timeline.docs))}
+								/>
 							</div>
 						)}
 					</div>

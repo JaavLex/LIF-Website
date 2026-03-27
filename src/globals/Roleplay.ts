@@ -164,7 +164,10 @@ export const Roleplay: GlobalConfig = {
 									type: 'date',
 									required: true,
 									admin: {
-										date: { pickerAppearance: 'dayOnly', displayFormat: 'dd/MM/yyyy' },
+										date: {
+											pickerAppearance: 'dayOnly',
+											displayFormat: 'dd/MM/yyyy',
+										},
 									},
 								},
 								{

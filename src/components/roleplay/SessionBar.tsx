@@ -18,8 +18,8 @@ export function SessionBar() {
 
 	useEffect(() => {
 		fetch('/api/auth/me')
-			.then((res) => res.ok ? res.json() : null)
-			.then((data) => {
+			.then(res => (res.ok ? res.json() : null))
+			.then(data => {
 				if (data?.authenticated) setUser(data.user);
 			})
 			.catch(() => {})
@@ -33,7 +33,11 @@ export function SessionBar() {
 			<div className="session-bar">
 				<span style={{ color: 'var(--muted)' }}>NON AUTHENTIFIÉ</span>
 				<div className="session-actions">
-					<a href="/api/auth/discord" className="discord-login-btn" style={{ padding: '0.35rem 1rem', fontSize: '0.8rem' }}>
+					<a
+						href="/api/auth/discord"
+						className="discord-login-btn"
+						style={{ padding: '0.35rem 1rem', fontSize: '0.8rem' }}
+					>
 						Connexion Discord
 					</a>
 				</div>

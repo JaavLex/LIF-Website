@@ -65,7 +65,11 @@ function renderNode(node: LexicalNode, index: number): React.ReactNode {
 	}
 }
 
-export function RichTextRenderer({ content }: { content: LexicalContent | null | undefined }) {
+export function RichTextRenderer({
+	content,
+}: {
+	content: LexicalContent | null | undefined;
+}) {
 	if (!content?.root) return null;
 	return <>{renderNode(content.root, 0)}</>;
 }

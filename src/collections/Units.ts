@@ -16,7 +16,7 @@ export const Units: CollectionConfig = {
 	fields: [
 		{
 			name: 'name',
-			label: 'Nom de l\'unité',
+			label: "Nom de l'unité",
 			type: 'text',
 			required: true,
 		},
@@ -63,7 +63,7 @@ export const Units: CollectionConfig = {
 			defaultValue: '#4a7c23',
 			admin: {
 				position: 'sidebar',
-				description: 'Couleur hex pour l\'affichage',
+				description: "Couleur hex pour l'affichage",
 			},
 		},
 	],
