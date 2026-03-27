@@ -10,7 +10,7 @@ export function SyncRankButton({ characterId }: { characterId: number }) {
 	const handleSync = async () => {
 		setLoading(true);
 		try {
-			const res = await fetch(`/api/characters/${characterId}/sync-rank`, {
+			const res = await fetch(`/api/roleplay/characters/${characterId}/sync-rank`, {
 				method: 'POST',
 			});
 			if (res.ok) {

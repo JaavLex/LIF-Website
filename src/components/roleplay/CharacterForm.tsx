@@ -233,7 +233,7 @@ export function CharacterForm({
 				if (form.isTarget && form.targetFaction) body.targetFaction = form.targetFaction;
 			}
 
-			const url = editData ? `/api/characters/${editData.id}` : '/api/characters';
+			const url = editData ? `/api/roleplay/characters/${editData.id}` : '/api/roleplay/characters';
 
 			const res = await fetch(url, {
 				method: editData ? 'PATCH' : 'POST',
