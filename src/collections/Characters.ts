@@ -58,7 +58,11 @@ export const Characters: CollectionConfig = {
 		},
 		delete: ({ req }) => {
 			if (!req.user) return false;
-			return req.user.role === 'admin';
+			if (req.user.role === 'admin') return true;
+			if (req.user.discordId) {
+				return { discordId: { equals: req.user.discordId } };
+			}
+			return false;
 		},
 	},
 	hooks: {
