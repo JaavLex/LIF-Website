@@ -71,6 +71,10 @@ export interface Config {
     media: Media;
     pages: Page;
     posts: Post;
+    characters: Character;
+    'character-timeline': CharacterTimeline;
+    ranks: Rank;
+    units: Unit;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -82,6 +86,10 @@ export interface Config {
     media: MediaSelect<false> | MediaSelect<true>;
     pages: PagesSelect<false> | PagesSelect<true>;
     posts: PostsSelect<false> | PostsSelect<true>;
+    characters: CharactersSelect<false> | CharactersSelect<true>;
+    'character-timeline': CharacterTimelineSelect<false> | CharacterTimelineSelect<true>;
+    ranks: RanksSelect<false> | RanksSelect<true>;
+    units: UnitsSelect<false> | UnitsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -95,11 +103,13 @@ export interface Config {
     homepage: Homepage;
     navigation: Navigation;
     'admin-dashboard': AdminDashboard;
+    roleplay: Roleplay;
   };
   globalsSelect: {
     homepage: HomepageSelect<false> | HomepageSelect<true>;
     navigation: NavigationSelect<false> | NavigationSelect<true>;
     'admin-dashboard': AdminDashboardSelect<false> | AdminDashboardSelect<true>;
+    roleplay: RoleplaySelect<false> | RoleplaySelect<true>;
   };
   locale: null;
   user: User;
@@ -134,6 +144,19 @@ export interface User {
   id: number;
   name?: string | null;
   role: 'admin' | 'editor' | 'user';
+  discordId?: string | null;
+  discordUsername?: string | null;
+  discordAvatar?: string | null;
+  discordRoles?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  isGuildMember?: boolean | null;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -332,6 +355,226 @@ export interface Post {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "characters".
+ */
+export interface Character {
+  id: number;
+  fullName?: string | null;
+  firstName: string;
+  lastName: string;
+  dateOfBirth?: string | null;
+  placeOfOrigin?: string | null;
+  height?: number | null;
+  weight?: number | null;
+  physicalDescription?: string | null;
+  avatar?: (number | null) | Media;
+  motto?: string | null;
+  previousUnit?: string | null;
+  specialisations?:
+    | {
+        name: string;
+        id?: string | null;
+      }[]
+    | null;
+  civilianBackground?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  militaryBackground?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  legalBackground?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Supporte les sections expurgées (classifiées)
+   */
+  miscellaneous?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Visible uniquement par les administrateurs
+   */
+  etatMajorNotes?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Généré automatiquement (ex: DA-2042-001)
+   */
+  militaryId?: string | null;
+  rank?: (number | null) | Rank;
+  /**
+   * Si activé, le grade ne sera pas synchronisé depuis Discord
+   */
+  rankOverride?: boolean | null;
+  status: 'in-service' | 'kia' | 'mia' | 'retired' | 'honourable-discharge' | 'dishonourable-discharge' | 'executed';
+  classification?: ('public' | 'restricted' | 'classified') | null;
+  faction?: string | null;
+  isMainCharacter?: boolean | null;
+  /**
+   * Marquer comme cible ou ennemi
+   */
+  isTarget?: boolean | null;
+  unit?: (number | null) | Unit;
+  superiorOfficer?: (number | null) | Character;
+  discordId?: string | null;
+  discordUsername?: string | null;
+  isArchived?: boolean | null;
+  archivedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ranks".
+ */
+export interface Rank {
+  id: number;
+  name: string;
+  /**
+   * Ex: Sdt, Cpl, Sgt, Adj, Lt, Cpt, Cdt, Col, Gén
+   */
+  abbreviation: string;
+  /**
+   * Plus le nombre est élevé, plus le grade est haut
+   */
+  order: number;
+  /**
+   * ID du rôle Discord correspondant à ce grade
+   */
+  discordRoleId?: string | null;
+  icon?: (number | null) | Media;
+  /**
+   * Couleur hex pour l'affichage (ex: #c9a227)
+   */
+  color?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "units".
+ */
+export interface Unit {
+  id: number;
+  name: string;
+  slug: string;
+  description?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  insignia?: (number | null) | Media;
+  commander?: (number | null) | Character;
+  parentUnit?: (number | null) | Unit;
+  /**
+   * Couleur hex pour l'affichage
+   */
+  color?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "character-timeline".
+ */
+export interface CharacterTimeline {
+  id: number;
+  character: number | Character;
+  type: 'promotion' | 'mutation' | 'wound' | 'mission' | 'disciplinary' | 'medal' | 'training' | 'other';
+  title: string;
+  description?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  date: string;
+  image?: (number | null) | Media;
+  classification?: ('public' | 'confidential' | 'secret') | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -369,6 +612,22 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'posts';
         value: number | Post;
+      } | null)
+    | ({
+        relationTo: 'characters';
+        value: number | Character;
+      } | null)
+    | ({
+        relationTo: 'character-timeline';
+        value: number | CharacterTimeline;
+      } | null)
+    | ({
+        relationTo: 'ranks';
+        value: number | Rank;
+      } | null)
+    | ({
+        relationTo: 'units';
+        value: number | Unit;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -419,6 +678,11 @@ export interface PayloadMigration {
 export interface UsersSelect<T extends boolean = true> {
   name?: T;
   role?: T;
+  discordId?: T;
+  discordUsername?: T;
+  discordAvatar?: T;
+  discordRoles?: T;
+  isGuildMember?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -587,6 +851,94 @@ export interface PostsSelect<T extends boolean = true> {
         description?: T;
         image?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "characters_select".
+ */
+export interface CharactersSelect<T extends boolean = true> {
+  fullName?: T;
+  firstName?: T;
+  lastName?: T;
+  dateOfBirth?: T;
+  placeOfOrigin?: T;
+  height?: T;
+  weight?: T;
+  physicalDescription?: T;
+  avatar?: T;
+  motto?: T;
+  previousUnit?: T;
+  specialisations?:
+    | T
+    | {
+        name?: T;
+        id?: T;
+      };
+  civilianBackground?: T;
+  militaryBackground?: T;
+  legalBackground?: T;
+  miscellaneous?: T;
+  etatMajorNotes?: T;
+  militaryId?: T;
+  rank?: T;
+  rankOverride?: T;
+  status?: T;
+  classification?: T;
+  faction?: T;
+  isMainCharacter?: T;
+  isTarget?: T;
+  unit?: T;
+  superiorOfficer?: T;
+  discordId?: T;
+  discordUsername?: T;
+  isArchived?: T;
+  archivedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "character-timeline_select".
+ */
+export interface CharacterTimelineSelect<T extends boolean = true> {
+  character?: T;
+  type?: T;
+  title?: T;
+  description?: T;
+  date?: T;
+  image?: T;
+  classification?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ranks_select".
+ */
+export interface RanksSelect<T extends boolean = true> {
+  name?: T;
+  abbreviation?: T;
+  order?: T;
+  discordRoleId?: T;
+  icon?: T;
+  color?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "units_select".
+ */
+export interface UnitsSelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
+  description?: T;
+  insignia?: T;
+  commander?: T;
+  parentUnit?: T;
+  color?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -797,6 +1149,86 @@ export interface AdminDashboard {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "roleplay".
+ */
+export interface Roleplay {
+  id: number;
+  headerTitle?: string | null;
+  headerSubtitle?: string | null;
+  headerLogo?: (number | null) | Media;
+  headerBackground?: (number | null) | Media;
+  isLoreVisible?: boolean | null;
+  loreTitle?: string | null;
+  loreSections?:
+    | (
+        | {
+            title?: string | null;
+            content: {
+              root: {
+                type: string;
+                children: {
+                  type: any;
+                  version: number;
+                  [k: string]: unknown;
+                }[];
+                direction: ('ltr' | 'rtl') | null;
+                format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                indent: number;
+                version: number;
+              };
+              [k: string]: unknown;
+            };
+            backgroundImage?: (number | null) | Media;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'loreText';
+          }
+        | {
+            image: number | Media;
+            caption?: string | null;
+            fullWidth?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'loreBanner';
+          }
+        | {
+            title?: string | null;
+            images?:
+              | {
+                  image: number | Media;
+                  caption?: string | null;
+                  id?: string | null;
+                }[]
+              | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'loreGallery';
+          }
+      )[]
+    | null;
+  isTimelineVisible?: boolean | null;
+  timelineTitle?: string | null;
+  timelineEvents?:
+    | {
+        date: string;
+        title: string;
+        description?: string | null;
+        image?: (number | null) | Media;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Ex: DA pour DA-2042-001
+   */
+  matriculePrefix?: string | null;
+  matriculeYear?: number | null;
+  discordSyncInterval?: number | null;
+  defaultFaction?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "homepage_select".
  */
 export interface HomepageSelect<T extends boolean = true> {
@@ -893,6 +1325,72 @@ export interface AdminDashboardSelect<T extends boolean = true> {
         color?: T;
         id?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "roleplay_select".
+ */
+export interface RoleplaySelect<T extends boolean = true> {
+  headerTitle?: T;
+  headerSubtitle?: T;
+  headerLogo?: T;
+  headerBackground?: T;
+  isLoreVisible?: T;
+  loreTitle?: T;
+  loreSections?:
+    | T
+    | {
+        loreText?:
+          | T
+          | {
+              title?: T;
+              content?: T;
+              backgroundImage?: T;
+              id?: T;
+              blockName?: T;
+            };
+        loreBanner?:
+          | T
+          | {
+              image?: T;
+              caption?: T;
+              fullWidth?: T;
+              id?: T;
+              blockName?: T;
+            };
+        loreGallery?:
+          | T
+          | {
+              title?: T;
+              images?:
+                | T
+                | {
+                    image?: T;
+                    caption?: T;
+                    id?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+      };
+  isTimelineVisible?: T;
+  timelineTitle?: T;
+  timelineEvents?:
+    | T
+    | {
+        date?: T;
+        title?: T;
+        description?: T;
+        image?: T;
+        id?: T;
+      };
+  matriculePrefix?: T;
+  matriculeYear?: T;
+  discordSyncInterval?: T;
+  defaultFaction?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

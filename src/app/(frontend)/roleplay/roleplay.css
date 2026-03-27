@@ -1,0 +1,739 @@
+/* ============================
+   MILITARY TERMINAL UI
+   Roleplay Section Styles
+   ============================ */
+
+/* Terminal base */
+.terminal {
+  font-family: 'Courier New', 'Lucida Console', Monaco, monospace;
+  min-height: 100vh;
+  padding-top: 80px;
+}
+
+.terminal-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+/* CRT Scanline overlay */
+.terminal::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 9999;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.03) 2px,
+    rgba(0, 0, 0, 0.03) 4px
+  );
+}
+
+/* Terminal header */
+.terminal-header {
+  border: 1px solid var(--primary);
+  border-bottom: none;
+  padding: 1rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(74, 124, 35, 0.1);
+}
+
+.terminal-header-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.terminal-header-dots {
+  display: flex;
+  gap: 6px;
+}
+
+.terminal-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+}
+
+.terminal-dot.red { background: var(--danger); }
+.terminal-dot.yellow { background: var(--accent); }
+.terminal-dot.green { background: var(--primary); }
+
+.terminal-title {
+  font-size: 0.85rem;
+  color: var(--primary);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.terminal-header-right {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+/* Terminal panel (main content area) */
+.terminal-panel {
+  border: 1px solid var(--primary);
+  background: rgba(12, 15, 10, 0.95);
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+
+.terminal-panel h1,
+.terminal-panel h2,
+.terminal-panel h3 {
+  color: var(--primary);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.terminal-panel h1 {
+  font-size: 1.75rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--primary);
+}
+
+.terminal-panel h2 {
+  font-size: 1.25rem;
+  margin-bottom: 1rem;
+}
+
+/* Prompt text cursor blink */
+.terminal-prompt::after {
+  content: '█';
+  animation: blink 1s step-end infinite;
+  color: var(--primary);
+}
+
+@keyframes blink {
+  50% { opacity: 0; }
+}
+
+/* System status line */
+.system-status {
+  display: flex;
+  gap: 2rem;
+  padding: 1rem 0;
+  border-bottom: 1px dashed var(--border);
+  margin-bottom: 1.5rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+  flex-wrap: wrap;
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.status-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--primary);
+  box-shadow: 0 0 6px var(--primary);
+}
+
+.status-indicator.warning { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
+.status-indicator.danger { background: var(--danger); box-shadow: 0 0 6px var(--danger); }
+
+/* HUD Card */
+.hud-card {
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+  padding: 1.5rem;
+  position: relative;
+  transition: border-color 0.3s;
+}
+
+.hud-card:hover {
+  border-color: var(--primary);
+}
+
+.hud-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: var(--primary);
+}
+
+.hud-card.classified::before { background: var(--danger); }
+.hud-card.restricted::before { background: var(--accent); }
+
+/* Classification badges */
+.classification-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border: 1px solid;
+  font-family: 'Courier New', monospace;
+}
+
+.classification-badge.public {
+  color: var(--primary);
+  border-color: var(--primary);
+  background: rgba(74, 124, 35, 0.1);
+}
+
+.classification-badge.restricted {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: rgba(201, 162, 39, 0.1);
+}
+
+.classification-badge.classified {
+  color: var(--danger);
+  border-color: var(--danger);
+  background: rgba(139, 38, 53, 0.1);
+}
+
+/* Status badges */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border-radius: 2px;
+}
+
+.status-badge.in-service { color: var(--primary); background: rgba(74, 124, 35, 0.15); }
+.status-badge.kia { color: var(--danger); background: rgba(139, 38, 53, 0.15); }
+.status-badge.mia { color: var(--accent); background: rgba(201, 162, 39, 0.15); }
+.status-badge.retired { color: var(--muted); background: rgba(139, 154, 125, 0.15); }
+
+/* Personnel Grid */
+.personnel-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 1.5rem;
+}
+
+.personnel-card {
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+  padding: 0;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  text-decoration: none;
+  color: var(--foreground);
+  display: block;
+}
+
+.personnel-card:hover {
+  border-color: var(--primary);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+  color: var(--foreground);
+}
+
+.personnel-card-header {
+  display: flex;
+  gap: 1rem;
+  padding: 1.25rem;
+  align-items: flex-start;
+}
+
+.personnel-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 0;
+  border: 1px solid var(--border);
+  object-fit: cover;
+  flex-shrink: 0;
+  background: var(--background-secondary);
+}
+
+.personnel-avatar-placeholder {
+  width: 64px;
+  height: 64px;
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  font-size: 1.5rem;
+  flex-shrink: 0;
+  background: var(--background-secondary);
+}
+
+.personnel-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.personnel-name {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--foreground);
+  margin-bottom: 0.25rem;
+}
+
+.personnel-rank {
+  font-size: 0.8rem;
+  color: var(--primary);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.personnel-card-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1.25rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.75rem;
+}
+
+.personnel-id {
+  color: var(--muted);
+  font-family: 'Courier New', monospace;
+}
+
+/* Character Detail Page */
+.character-detail {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 2rem;
+}
+
+.character-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.character-photo {
+  width: 100%;
+  aspect-ratio: 3/4;
+  object-fit: cover;
+  border: 1px solid var(--border);
+}
+
+.character-photo-placeholder {
+  width: 100%;
+  aspect-ratio: 3/4;
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  font-size: 3rem;
+  background: var(--background-secondary);
+}
+
+.character-info-block {
+  border: 1px solid var(--border);
+  padding: 1rem;
+  background: var(--card-bg);
+}
+
+.character-info-block h3 {
+  font-size: 0.8rem;
+  color: var(--primary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.35rem 0;
+  font-size: 0.85rem;
+  border-bottom: 1px dashed rgba(45, 52, 37, 0.5);
+}
+
+.info-row:last-child {
+  border-bottom: none;
+}
+
+.info-label {
+  color: var(--muted);
+}
+
+.info-value {
+  color: var(--foreground);
+  font-weight: 500;
+  text-align: right;
+}
+
+.character-main {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.character-section {
+  border: 1px solid var(--border);
+  padding: 1.5rem;
+  background: var(--card-bg);
+}
+
+.character-section h2 {
+  font-size: 1rem;
+  color: var(--primary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--primary);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.character-section-content {
+  font-size: 0.95rem;
+  line-height: 1.7;
+  color: var(--foreground);
+}
+
+.character-section-content p {
+  margin-bottom: 0.75rem;
+}
+
+/* Redacted text */
+.redacted {
+  background: var(--foreground);
+  color: var(--foreground);
+  cursor: not-allowed;
+  user-select: none;
+  padding: 0 0.25rem;
+}
+
+/* Timeline */
+.timeline {
+  position: relative;
+  padding-left: 2rem;
+}
+
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 7px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--border);
+}
+
+.timeline-item {
+  position: relative;
+  padding-bottom: 1.5rem;
+  padding-left: 1.5rem;
+}
+
+.timeline-item::before {
+  content: '';
+  position: absolute;
+  left: -2rem;
+  top: 0.5rem;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--primary);
+  border: 2px solid var(--background);
+  z-index: 1;
+}
+
+.timeline-item.promotion::before { background: var(--accent); }
+.timeline-item.wound::before { background: var(--danger); }
+.timeline-item.medal::before { background: gold; }
+.timeline-item.disciplinary::before { background: var(--danger); }
+
+.timeline-date {
+  font-size: 0.75rem;
+  color: var(--muted);
+  font-family: 'Courier New', monospace;
+  margin-bottom: 0.25rem;
+}
+
+.timeline-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--foreground);
+  margin-bottom: 0.25rem;
+}
+
+.timeline-description {
+  font-size: 0.85rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.timeline-type {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: 0.1rem 0.4rem;
+  font-weight: 600;
+  display: inline-block;
+  margin-bottom: 0.25rem;
+}
+
+/* Search & Filters */
+.filters-bar {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.filter-input {
+  flex: 1;
+  min-width: 200px;
+  padding: 0.75rem 1rem;
+  background: var(--background-secondary);
+  border: 1px solid var(--border);
+  color: var(--foreground);
+  font-family: 'Courier New', monospace;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.filter-input:focus {
+  border-color: var(--primary);
+}
+
+.filter-input::placeholder {
+  color: var(--muted);
+}
+
+.filter-select {
+  padding: 0.75rem 1rem;
+  background: var(--background-secondary);
+  border: 1px solid var(--border);
+  color: var(--foreground);
+  font-family: 'Courier New', monospace;
+  font-size: 0.9rem;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 2rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238b9a7d' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+}
+
+.filter-select:focus {
+  border-color: var(--primary);
+}
+
+/* Auth / Login */
+.auth-section {
+  text-align: center;
+  padding: 4rem 2rem;
+}
+
+.auth-section h2 {
+  font-size: 1.5rem;
+  color: var(--primary);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 1rem;
+}
+
+.auth-section p {
+  color: var(--muted);
+  margin-bottom: 2rem;
+}
+
+.discord-login-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 2rem;
+  background: #5865F2;
+  color: white;
+  font-weight: 600;
+  font-size: 1rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s;
+  text-decoration: none;
+}
+
+.discord-login-btn:hover {
+  background: #4752c4;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(88, 101, 242, 0.3);
+  color: white;
+}
+
+/* User session bar */
+.session-bar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--border);
+  margin-bottom: 1.5rem;
+  font-size: 0.85rem;
+  background: var(--card-bg);
+}
+
+.session-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+}
+
+.session-name {
+  color: var(--foreground);
+  font-weight: 600;
+}
+
+.session-actions {
+  margin-left: auto;
+  display: flex;
+  gap: 0.75rem;
+}
+
+.session-btn {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.8rem;
+  font-family: 'Courier New', monospace;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+}
+
+.session-btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.session-btn.danger:hover {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+/* Lore section */
+.lore-section {
+  margin-bottom: 2rem;
+}
+
+.lore-banner {
+  width: 100%;
+  max-height: 300px;
+  object-fit: cover;
+  border: 1px solid var(--border);
+  margin-bottom: 1.5rem;
+}
+
+.lore-text {
+  line-height: 1.8;
+  font-size: 0.95rem;
+}
+
+.lore-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.lore-gallery img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border: 1px solid var(--border);
+  transition: border-color 0.2s;
+}
+
+.lore-gallery img:hover {
+  border-color: var(--primary);
+}
+
+/* Mobile hamburger */
+.hamburger-menu {
+  display: none;
+  background: transparent;
+  border: none;
+  color: var(--foreground);
+  cursor: pointer;
+  padding: 0.5rem;
+}
+
+/* Responsive roleplay */
+@media (max-width: 768px) {
+  .character-detail {
+    grid-template-columns: 1fr;
+  }
+
+  .character-sidebar {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .character-photo,
+  .character-photo-placeholder {
+    width: 120px;
+    height: 160px;
+    aspect-ratio: auto;
+  }
+
+  .personnel-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .filters-bar {
+    flex-direction: column;
+  }
+
+  .filter-input,
+  .filter-select {
+    width: 100%;
+  }
+
+  .terminal-header {
+    flex-direction: column;
+    gap: 0.5rem;
+    text-align: center;
+  }
+
+  .system-status {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .session-bar {
+    flex-wrap: wrap;
+  }
+
+  .hamburger-menu {
+    display: block;
+  }
+}

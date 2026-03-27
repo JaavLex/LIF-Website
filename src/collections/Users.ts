@@ -22,5 +22,54 @@ export const Users: CollectionConfig = {
 			defaultValue: 'user',
 			required: true,
 		},
+		// Discord OAuth fields
+		{
+			name: 'discordId',
+			label: 'Discord ID',
+			type: 'text',
+			unique: true,
+			index: true,
+			admin: {
+				readOnly: true,
+				position: 'sidebar',
+			},
+		},
+		{
+			name: 'discordUsername',
+			label: 'Discord Username',
+			type: 'text',
+			admin: {
+				readOnly: true,
+				position: 'sidebar',
+			},
+		},
+		{
+			name: 'discordAvatar',
+			label: 'Discord Avatar URL',
+			type: 'text',
+			admin: {
+				readOnly: true,
+				position: 'sidebar',
+			},
+		},
+		{
+			name: 'discordRoles',
+			label: 'Discord Roles',
+			type: 'json',
+			admin: {
+				readOnly: true,
+				position: 'sidebar',
+			},
+		},
+		{
+			name: 'isGuildMember',
+			label: 'Membre du serveur Discord',
+			type: 'checkbox',
+			defaultValue: false,
+			admin: {
+				readOnly: true,
+				position: 'sidebar',
+			},
+		},
 	],
 };

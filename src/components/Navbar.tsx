@@ -32,6 +32,7 @@ export function Navbar({ logoUrl, links, discordUrl }: NavbarProps) {
 	const defaultLinks: NavLink[] = [
 		{ label: 'Accueil', type: 'internal', page: { slug: '' } },
 		{ label: 'Serveurs', type: 'anchor', url: '/#serveurs' },
+		{ label: 'Roleplay', type: 'internal', page: { slug: 'roleplay' } },
 		{ label: 'Règlement', type: 'internal', page: { slug: 'reglement' } },
 		{ label: 'Actualités', type: 'internal', page: { slug: 'posts' } },
 	];
