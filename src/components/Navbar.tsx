@@ -7,7 +7,7 @@ interface NavLink {
 	id?: string | null;
 	label: string;
 	type: 'internal' | 'external' | 'anchor';
-	page?: { slug: string } | string | null;
+	page?: { slug: string } | string | number | null;
 	url?: string | null;
 	openInNewTab?: boolean | null;
 	isHighlighted?: boolean | null;
@@ -22,8 +22,8 @@ interface NavbarProps {
 export function Navbar({ logoUrl, links, discordUrl }: NavbarProps) {
 	const getHref = (link: NavLink): string => {
 		if (link.type === 'internal' && link.page) {
-			const slug = typeof link.page === 'string' ? link.page : link.page.slug;
-			return `/${slug}`;
+			if (typeof link.page === 'object') return `/${link.page.slug}`;
+			if (typeof link.page === 'string') return `/${link.page}`;
 		}
 		return link.url || '#';
 	};
