@@ -10,8 +10,8 @@ const defaultLinks = [
 	},
 	{
 		title: 'Base de données',
-		description: 'Interface de gestion MongoDB',
-		url: 'https://mongo.lif-arma.com',
+		description: 'Interface de gestion des bases de données',
+		url: 'https://database.lif-arma.com',
 		icon: '🗄️',
 		color: '#13aa52',
 	},

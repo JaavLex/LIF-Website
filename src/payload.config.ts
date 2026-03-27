@@ -1,4 +1,4 @@
-import { mongooseAdapter } from '@payloadcms/db-mongodb';
+import { postgresAdapter } from '@payloadcms/db-postgres';
 import { lexicalEditor } from '@payloadcms/richtext-lexical';
 import path from 'path';
 import { buildConfig } from 'payload';
@@ -29,12 +29,14 @@ export default buildConfig({
 	collections: [Users, Media, Pages, Posts],
 	globals: [Homepage, Navigation, AdminDashboard],
 	editor: lexicalEditor(),
-	secret: process.env.PAYLOAD_SECRET || 'your-secret-key',
+	secret: process.env.PAYLOAD_SECRET || 'dev-secret-key',
 	typescript: {
 		outputFile: path.resolve(dirname, 'payload-types.ts'),
 	},
-	db: mongooseAdapter({
-		url: process.env.MONGODB_URI || 'mongodb://127.0.0.1/lif-website',
+	db: postgresAdapter({
+		pool: {
+			connectionString: process.env.DATABASE_URI,
+		},
 	}),
 	sharp,
 	plugins: [],

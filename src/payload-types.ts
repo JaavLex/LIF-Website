@@ -88,16 +88,18 @@ export interface Config {
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
   };
   db: {
-    defaultIDType: string;
+    defaultIDType: number;
   };
   fallbackLocale: null;
   globals: {
     homepage: Homepage;
     navigation: Navigation;
+    'admin-dashboard': AdminDashboard;
   };
   globalsSelect: {
     homepage: HomepageSelect<false> | HomepageSelect<true>;
     navigation: NavigationSelect<false> | NavigationSelect<true>;
+    'admin-dashboard': AdminDashboardSelect<false> | AdminDashboardSelect<true>;
   };
   locale: null;
   user: User;
@@ -129,7 +131,7 @@ export interface UserAuthOperations {
  * via the `definition` "users".
  */
 export interface User {
-  id: string;
+  id: number;
   name?: string | null;
   role: 'admin' | 'editor' | 'user';
   updatedAt: string;
@@ -156,7 +158,7 @@ export interface User {
  * via the `definition` "media".
  */
 export interface Media {
-  id: string;
+  id: number;
   alt: string;
   caption?: string | null;
   updatedAt: string;
@@ -202,17 +204,17 @@ export interface Media {
  * via the `definition` "pages".
  */
 export interface Page {
-  id: string;
+  id: number;
   title: string;
   slug: string;
   status?: ('draft' | 'published') | null;
-  heroImage?: (string | null) | Media;
+  heroImage?: (number | null) | Media;
   layout?:
     | (
         | {
             heading: string;
             subheading?: string | null;
-            backgroundImage?: (string | null) | Media;
+            backgroundImage?: (number | null) | Media;
             ctaText?: string | null;
             ctaLink?: string | null;
             id?: string | null;
@@ -251,7 +253,7 @@ export interface Page {
         | {
             images?:
               | {
-                  image: string | Media;
+                  image: number | Media;
                   id?: string | null;
                 }[]
               | null;
@@ -281,7 +283,7 @@ export interface Page {
   meta?: {
     title?: string | null;
     description?: string | null;
-    image?: (string | null) | Media;
+    image?: (number | null) | Media;
   };
   updatedAt: string;
   createdAt: string;
@@ -291,13 +293,13 @@ export interface Page {
  * via the `definition` "posts".
  */
 export interface Post {
-  id: string;
+  id: number;
   title: string;
   slug: string;
   status?: ('draft' | 'published') | null;
   publishedDate?: string | null;
-  author?: (string | null) | User;
-  featuredImage?: (string | null) | Media;
+  author?: (number | null) | User;
+  featuredImage?: (number | null) | Media;
   excerpt?: string | null;
   content?: {
     root: {
@@ -323,7 +325,7 @@ export interface Post {
   meta?: {
     title?: string | null;
     description?: string | null;
-    image?: (string | null) | Media;
+    image?: (number | null) | Media;
   };
   updatedAt: string;
   createdAt: string;
@@ -333,7 +335,7 @@ export interface Post {
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
-  id: string;
+  id: number;
   key: string;
   data:
     | {
@@ -350,28 +352,28 @@ export interface PayloadKv {
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
-  id: string;
+  id: number;
   document?:
     | ({
         relationTo: 'users';
-        value: string | User;
+        value: number | User;
       } | null)
     | ({
         relationTo: 'media';
-        value: string | Media;
+        value: number | Media;
       } | null)
     | ({
         relationTo: 'pages';
-        value: string | Page;
+        value: number | Page;
       } | null)
     | ({
         relationTo: 'posts';
-        value: string | Post;
+        value: number | Post;
       } | null);
   globalSlug?: string | null;
   user: {
     relationTo: 'users';
-    value: string | User;
+    value: number | User;
   };
   updatedAt: string;
   createdAt: string;
@@ -381,10 +383,10 @@ export interface PayloadLockedDocument {
  * via the `definition` "payload-preferences".
  */
 export interface PayloadPreference {
-  id: string;
+  id: number;
   user: {
     relationTo: 'users';
-    value: string | User;
+    value: number | User;
   };
   key?: string | null;
   value?:
@@ -404,7 +406,7 @@ export interface PayloadPreference {
  * via the `definition` "payload-migrations".
  */
 export interface PayloadMigration {
-  id: string;
+  id: number;
   name?: string | null;
   batch?: number | null;
   updatedAt: string;
@@ -633,15 +635,15 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
  * via the `definition` "homepage".
  */
 export interface Homepage {
-  id: string;
+  id: number;
   /**
    * Logo affiché dans la navbar et au-dessus du titre principal
    */
-  logo?: (string | null) | Media;
+  logo?: (number | null) | Media;
   /**
    * Image de fond pour la section principale (hero)
    */
-  heroBackground?: (string | null) | Media;
+  heroBackground?: (number | null) | Media;
   heroTitle: string;
   /**
    * Ce mot apparaîtra en doré dans le titre
@@ -734,7 +736,7 @@ export interface Homepage {
  * via the `definition` "navigation".
  */
 export interface Navigation {
-  id: string;
+  id: number;
   /**
    * Gérez les liens affichés dans la barre de navigation
    */
@@ -742,7 +744,7 @@ export interface Navigation {
     | {
         label: string;
         type: 'internal' | 'external' | 'anchor';
-        page?: (string | null) | Page;
+        page?: (number | null) | Page;
         /**
          * URL complète pour externe, ou #section pour ancre
          */
@@ -759,6 +761,37 @@ export interface Navigation {
    * URL du serveur Discord (utilisé pour le bouton Discord)
    */
   discordUrl?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "admin-dashboard".
+ */
+export interface AdminDashboard {
+  id: number;
+  /**
+   * Ajoutez des cartes de lien affichées sous le dashboard admin. Utilisez le bouton pour ajouter un nouveau lien.
+   */
+  links?:
+    | {
+        title: string;
+        description: string;
+        /**
+         * Ex: https://monitor.lif-arma.com
+         */
+        url: string;
+        /**
+         * Emoji ou texte court (ex: 📊, 🖥️, DB)
+         */
+        icon: string;
+        /**
+         * Format hexadécimal, ex: #4a7c23
+         */
+        color: string;
+        id?: string | null;
+      }[]
+    | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -841,6 +874,25 @@ export interface NavigationSelect<T extends boolean = true> {
         id?: T;
       };
   discordUrl?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "admin-dashboard_select".
+ */
+export interface AdminDashboardSelect<T extends boolean = true> {
+  links?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        url?: T;
+        icon?: T;
+        color?: T;
+        id?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
