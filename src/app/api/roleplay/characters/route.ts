@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPayloadClient } from '@/lib/payload';
 import { verifySession } from '@/lib/session';
+import { checkAdminPermissions } from '@/lib/admin';
 
 export async function POST(request: NextRequest) {
 	const token = request.cookies.get('roleplay-session')?.value;
@@ -21,13 +22,8 @@ export async function POST(request: NextRequest) {
 		body.discordId = session.discordId;
 		body.discordUsername = session.discordUsername;
 
-		// Check if user is admin
-		const user = await payload.find({
-			collection: 'users',
-			where: { discordId: { equals: session.discordId } },
-			limit: 1,
-		});
-		const isAdmin = user.docs[0]?.role === 'admin';
+		// Check if user is admin (via DB role or Discord roles)
+		const { isAdmin } = await checkAdminPermissions(session);
 
 		// Non-admins: strip admin-only fields, auto-assign rank from Discord roles
 		if (!isAdmin) {

@@ -7,6 +7,7 @@ import { RichTextRenderer } from '@/components/roleplay/RichTextRenderer';
 import { CharacterTimeline } from '@/components/roleplay/CharacterTimeline';
 import { SyncRankButton } from '@/components/roleplay/SyncRankButton';
 import { verifySession } from '@/lib/session';
+import { checkAdminPermissions } from '@/lib/admin';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,6 +19,13 @@ const STATUS_LABELS: Record<string, string> = {
 	'honourable-discharge': 'Réformé avec honneur',
 	'dishonourable-discharge': 'Réformé sans honneur',
 	executed: 'Exécuté',
+};
+
+const THREAT_LABELS: Record<string, string> = {
+	low: 'Faible',
+	moderate: 'Modéré',
+	high: 'Élevé',
+	critical: 'Critique',
 };
 
 export default async function CharacterPage({
@@ -42,7 +50,7 @@ export default async function CharacterPage({
 		notFound();
 	}
 
-	if (!character || character.isArchived) notFound();
+	if (!character) notFound();
 
 	// Fetch timeline events
 	const timeline = await payload.find({
@@ -60,11 +68,23 @@ export default async function CharacterPage({
 	const superior =
 		typeof character.superiorOfficer === 'object' ? character.superiorOfficer : null;
 
-	// Check if current user is the owner
+	// Check if current user is the owner or admin
 	const cookieStore = await cookies();
 	const token = cookieStore.get('roleplay-session')?.value;
 	const session = token ? verifySession(token) : null;
 	const isOwner = session?.discordId === character.discordId;
+
+	let isAdmin = false;
+	let adminPermissions: any = null;
+	if (session) {
+		adminPermissions = await checkAdminPermissions(session);
+		isAdmin = adminPermissions.isAdmin;
+	}
+
+	// Archived characters only visible to admins
+	if (character.isArchived && !isAdmin) notFound();
+
+	const canEdit = isOwner || isAdmin;
 
 	return (
 		<div className="terminal-container">
@@ -80,6 +100,23 @@ export default async function CharacterPage({
 				← Retour à la base de données
 			</Link>
 
+			{/* Admin indicator */}
+			{isAdmin && adminPermissions && (
+				<div className="admin-indicator">
+					<span className="admin-indicator-dot" />
+					<span>MODE ADMIN</span>
+					<span className="admin-role-name">{adminPermissions.roleName}</span>
+				</div>
+			)}
+
+			{/* Archived banner */}
+			{character.isArchived && (
+				<div className="archived-banner">
+					DOSSIER ARCHIVÉ
+					{character.archiveReason && <span> — {character.archiveReason}</span>}
+				</div>
+			)}
+
 			<div className="terminal-header">
 				<div className="terminal-header-left">
 					<div className="terminal-header-dots">
@@ -88,7 +125,7 @@ export default async function CharacterPage({
 						<span className="terminal-dot red" />
 					</div>
 					<span className="terminal-title">
-						DOSSIER PERSONNEL — {character.militaryId || 'N/A'}
+						{character.isTarget ? 'FICHE CIBLE' : 'DOSSIER PERSONNEL'} — {character.militaryId || 'N/A'}
 					</span>
 				</div>
 				<div className="terminal-header-right">
@@ -101,15 +138,16 @@ export default async function CharacterPage({
 			<div className="terminal-panel">
 				<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
 					<h1 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+						{character.isMainCharacter && <span className="main-character-badge" title="Personnage principal">★</span>}
 						{rank?.icon?.url && (
 							<Image src={rank.icon.url} alt={rank.name} width={32} height={32} unoptimized />
 						)}
 						{rank && <>{rank.abbreviation || rank.name} </>}
 						{character.fullName}
 					</h1>
-					{isOwner && (
+					{canEdit && (
 						<div style={{ display: 'flex', gap: '0.5rem' }}>
-							<SyncRankButton characterId={character.id} />
+							{isOwner && <SyncRankButton characterId={character.id} />}
 							<Link
 								href={`/roleplay/personnage/${character.id}/modifier`}
 								className="session-btn"
@@ -149,10 +187,12 @@ export default async function CharacterPage({
 							<div className="info-row">
 								<span className="info-label">Grade</span>
 								<span className="info-value" style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-									{rank?.icon?.url && (
+									{rank?.icon?.url ? (
 										<Image src={rank.icon.url} alt={rank.name} width={20} height={20} unoptimized />
+									) : (
+										<span style={{ color: 'var(--muted)' }}>—</span>
 									)}
-									{rank?.name || '—'}
+									{rank?.name || 'Aucun grade'}
 								</span>
 							</div>
 							<div className="info-row">
@@ -165,12 +205,43 @@ export default async function CharacterPage({
 							</div>
 							<div className="info-row">
 								<span className="info-label">Unité</span>
-								<span className="info-value">{unit?.name || '—'}</span>
+								<span className="info-value" style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+									{unit?.insignia?.url && (
+										<Image src={unit.insignia.url} alt={unit.name} width={18} height={18} unoptimized />
+									)}
+									{unit?.name || '—'}
+								</span>
 							</div>
 							{character.faction && (
 								<div className="info-row">
 									<span className="info-label">Faction</span>
 									<span className="info-value">{character.faction}</span>
+								</div>
+							)}
+							{character.isTarget && (
+								<>
+									{character.targetFaction && (
+										<div className="info-row">
+											<span className="info-label">Faction cible</span>
+											<span className="info-value" style={{ color: 'var(--danger)' }}>{character.targetFaction}</span>
+										</div>
+									)}
+									{character.threatLevel && (
+										<div className="info-row">
+											<span className="info-label">Menace</span>
+											<span className="info-value">
+												<span className={`threat-badge ${character.threatLevel}`}>
+													{THREAT_LABELS[character.threatLevel] || character.threatLevel}
+												</span>
+											</span>
+										</div>
+									)}
+								</>
+							)}
+							{character.isMainCharacter && (
+								<div className="info-row">
+									<span className="info-label">Type</span>
+									<span className="info-value" style={{ color: 'var(--accent)' }}>Personnage principal</span>
 								</div>
 							)}
 							{character.discordUsername && (
@@ -332,12 +403,29 @@ export default async function CharacterPage({
 							</div>
 						)}
 
-						{timeline.docs.length > 0 && (
+						{/* Admin notes - only visible to admins */}
+						{isAdmin && character.etatMajorNotes && (
+							<div className="character-section admin-section">
+								<h2>Notes État-Major (Admin)</h2>
+								<div className="character-section-content">
+									<RichTextRenderer content={character.etatMajorNotes} />
+								</div>
+							</div>
+						)}
+
+						{timeline.docs.length > 0 ? (
 							<div className="character-section">
 								<h2>Historique</h2>
 								<CharacterTimeline
 									events={JSON.parse(JSON.stringify(timeline.docs))}
 								/>
+							</div>
+						) : (
+							<div className="character-section">
+								<h2>Historique</h2>
+								<div className="empty-state-inline">
+									Aucun événement enregistré dans l&apos;historique.
+								</div>
 							</div>
 						)}
 					</div>

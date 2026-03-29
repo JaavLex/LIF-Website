@@ -687,6 +687,548 @@
   padding: 0.5rem;
 }
 
+/* ============================
+   TERMINAL LOADING SCREEN
+   ============================ */
+
+.terminal-loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10000;
+  background: var(--background);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.8s ease;
+}
+
+.terminal-loading-overlay.fade-out {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.terminal-loading-scanlines {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.06) 2px,
+    rgba(0, 0, 0, 0.06) 4px
+  );
+}
+
+.terminal-loading-screen {
+  font-family: 'Courier New', 'Lucida Console', Monaco, monospace;
+  width: 90%;
+  max-width: 700px;
+  padding: 2rem;
+  position: relative;
+  z-index: 1;
+}
+
+.terminal-loading-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.terminal-loading-logo {
+  color: var(--primary);
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 3px;
+}
+
+.terminal-loading-version {
+  font-size: 0.7rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.terminal-loading-content {
+  min-height: 200px;
+}
+
+.terminal-loading-line {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.85rem;
+  min-height: 1.4em;
+  color: var(--foreground);
+  opacity: 0.9;
+}
+
+.terminal-loading-line.completed {
+  color: var(--muted);
+}
+
+.terminal-loading-line.active {
+  color: var(--foreground);
+}
+
+.terminal-loading-prefix {
+  color: var(--primary);
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.terminal-loading-check {
+  color: var(--primary);
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.terminal-cursor {
+  display: inline-block;
+  color: var(--primary);
+  animation: blink 0.7s step-end infinite;
+  margin-left: 2px;
+}
+
+.terminal-loading-access {
+  margin-top: 2rem;
+  padding: 0.75rem;
+  border: 1px solid var(--primary);
+  text-align: center;
+  color: var(--primary);
+  font-weight: 700;
+  font-size: 0.85rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  background: rgba(74, 124, 35, 0.1);
+  animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================
+   DISCORD DISCLAIMER
+   ============================ */
+
+.disclaimer-panel {
+  border: 1px solid var(--accent);
+  background: rgba(201, 162, 39, 0.08);
+  padding: 2rem;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.disclaimer-icon {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  display: block;
+}
+
+.disclaimer-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 0.75rem;
+}
+
+.disclaimer-message {
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.disclaimer-restrictions {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1.5rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.disclaimer-restrictions li {
+  color: var(--accent);
+  font-size: 0.8rem;
+  font-family: 'Courier New', monospace;
+}
+
+.disclaimer-restrictions li::before {
+  content: '⚠ ';
+}
+
+.disclaimer-discord-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 2rem;
+  background: #5865F2;
+  color: white;
+  font-weight: 600;
+  font-size: 0.9rem;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.3s;
+}
+
+.disclaimer-discord-btn:hover {
+  background: #4752c4;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(88, 101, 242, 0.3);
+  color: white;
+}
+
+/* ============================
+   ADMIN INDICATOR
+   ============================ */
+
+.admin-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--danger);
+  background: rgba(139, 38, 53, 0.1);
+  margin-bottom: 1rem;
+  font-size: 0.8rem;
+}
+
+.admin-indicator-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--danger);
+  box-shadow: 0 0 6px var(--danger);
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.admin-role-name {
+  color: var(--danger);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.admin-perm-level {
+  color: var(--muted);
+  margin-left: auto;
+  font-size: 0.75rem;
+}
+
+/* ============================
+   PERSONNEL TABS
+   ============================ */
+
+.personnel-tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid var(--border);
+}
+
+.personnel-tab {
+  padding: 0.75rem 1.5rem;
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  font-family: 'Courier New', monospace;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  position: relative;
+  transition: color 0.2s;
+}
+
+.personnel-tab:hover {
+  color: var(--foreground);
+}
+
+.personnel-tab.active {
+  color: var(--primary);
+  font-weight: 700;
+}
+
+.personnel-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--primary);
+}
+
+.personnel-tab .tab-count {
+  display: inline-block;
+  margin-left: 0.5rem;
+  padding: 0.1rem 0.4rem;
+  font-size: 0.7rem;
+  background: rgba(74, 124, 35, 0.2);
+  color: var(--primary);
+  border-radius: 2px;
+}
+
+.personnel-tab.active .tab-count {
+  background: rgba(74, 124, 35, 0.3);
+}
+
+/* ============================
+   STATUS SEPARATORS
+   ============================ */
+
+.status-separator {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 1.5rem 0 1rem 0;
+  grid-column: 1 / -1;
+}
+
+.status-separator:first-child {
+  margin-top: 0;
+}
+
+.separator-line {
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.separator-label {
+  font-size: 0.75rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.separator-count {
+  font-size: 0.7rem;
+  color: var(--muted);
+  opacity: 0.7;
+}
+
+/* ============================
+   MAIN CHARACTER BADGE
+   ============================ */
+
+.main-character-badge {
+  color: var(--accent);
+  font-size: 1rem;
+  margin-left: 0.35rem;
+}
+
+/* ============================
+   TARGET CARD STYLES
+   ============================ */
+
+.personnel-card.target-card {
+  border-color: var(--danger);
+}
+
+.personnel-card.target-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: var(--danger);
+}
+
+.personnel-card.target-card:hover {
+  border-color: var(--danger);
+  box-shadow: 0 8px 30px rgba(139, 38, 53, 0.2);
+}
+
+.target-faction-info {
+  font-size: 0.75rem;
+  color: var(--danger);
+  opacity: 0.8;
+  margin-top: 0.2rem;
+}
+
+/* ============================
+   THREAT LEVEL BADGES
+   ============================ */
+
+.threat-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.15rem 0.5rem;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border: 1px solid;
+  font-family: 'Courier New', monospace;
+}
+
+.threat-badge.low {
+  color: var(--primary);
+  border-color: var(--primary);
+  background: rgba(74, 124, 35, 0.1);
+}
+
+.threat-badge.moderate {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: rgba(201, 162, 39, 0.1);
+}
+
+.threat-badge.high {
+  color: #e67e22;
+  border-color: #e67e22;
+  background: rgba(230, 126, 34, 0.1);
+}
+
+.threat-badge.critical {
+  color: var(--danger);
+  border-color: var(--danger);
+  background: rgba(139, 38, 53, 0.15);
+  animation: pulse-threat 2s ease-in-out infinite;
+}
+
+@keyframes pulse-threat {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* ============================
+   UNIT INSIGNIA
+   ============================ */
+
+.unit-insignia-small {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.personnel-unit-info {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-top: 0.25rem;
+}
+
+/* ============================
+   EMPTY STATES
+   ============================ */
+
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  grid-column: 1 / -1;
+}
+
+.empty-state-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.empty-state-title {
+  font-size: 1rem;
+  color: var(--muted);
+  margin-bottom: 0.5rem;
+}
+
+.empty-state-desc {
+  font-size: 0.85rem;
+  color: var(--muted);
+  opacity: 0.7;
+}
+
+.empty-state-inline {
+  text-align: center;
+  padding: 2rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+  border: 1px dashed var(--border);
+}
+
+/* ============================
+   ARCHIVED BANNER
+   ============================ */
+
+.archived-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  background: rgba(139, 38, 53, 0.1);
+  border: 1px solid var(--danger);
+  margin-bottom: 1.5rem;
+  font-size: 0.85rem;
+}
+
+.archived-banner-icon {
+  font-size: 1.25rem;
+}
+
+.archived-banner-text {
+  color: var(--danger);
+  font-weight: 600;
+}
+
+.archived-banner-reason {
+  color: var(--muted);
+  font-size: 0.8rem;
+  margin-top: 0.25rem;
+}
+
+.archived-banner-date {
+  margin-left: auto;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+/* ============================
+   ADMIN SECTION (Character Detail)
+   ============================ */
+
+.admin-section {
+  border: 1px solid var(--danger);
+  background: rgba(139, 38, 53, 0.05);
+}
+
+.admin-section h2 {
+  color: var(--danger) !important;
+  border-bottom-color: var(--danger) !important;
+}
+
 /* Responsive roleplay */
 @media (max-width: 768px) {
   .character-detail {
@@ -735,5 +1277,30 @@
 
   .hamburger-menu {
     display: block;
+  }
+
+  .personnel-tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .personnel-tab {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
+    white-space: nowrap;
+  }
+
+  .terminal-loading-screen {
+    width: 95%;
+    padding: 1rem;
+  }
+
+  .admin-indicator {
+    flex-wrap: wrap;
+    font-size: 0.75rem;
+  }
+
+  .disclaimer-panel {
+    padding: 1.5rem 1rem;
   }
 }

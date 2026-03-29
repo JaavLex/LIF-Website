@@ -75,6 +75,8 @@ export interface Config {
     'character-timeline': CharacterTimeline;
     ranks: Rank;
     units: Unit;
+    factions: Faction;
+    intelligence: Intelligence;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -90,6 +92,8 @@ export interface Config {
     'character-timeline': CharacterTimelineSelect<false> | CharacterTimelineSelect<true>;
     ranks: RanksSelect<false> | RanksSelect<true>;
     units: UnitsSelect<false> | UnitsSelect<true>;
+    factions: FactionsSelect<false> | FactionsSelect<true>;
+    intelligence: IntelligenceSelect<false> | IntelligenceSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -474,12 +478,22 @@ export interface Character {
    * Marquer comme cible ou ennemi
    */
   isTarget?: boolean | null;
+  /**
+   * Faction de la cible/ennemi
+   */
+  targetFaction?: string | null;
   unit?: (number | null) | Unit;
   superiorOfficer?: (number | null) | Character;
   discordId?: string | null;
   discordUsername?: string | null;
+  /**
+   * Niveau de menace de la cible
+   */
+  threatLevel?: ('low' | 'moderate' | 'high' | 'critical') | null;
   isArchived?: boolean | null;
   archivedAt?: string | null;
+  archivedBy?: string | null;
+  archiveReason?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -575,6 +589,89 @@ export interface CharacterTimeline {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "factions".
+ */
+export interface Faction {
+  id: number;
+  name: string;
+  slug: string;
+  type?: ('allied' | 'neutral' | 'hostile') | null;
+  description?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  logo?: (number | null) | Media;
+  /**
+   * Couleur hex pour l'affichage
+   */
+  color?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "intelligence".
+ */
+export interface Intelligence {
+  id: number;
+  title: string;
+  date: string;
+  description: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  type: 'observation' | 'interception' | 'reconnaissance' | 'infiltration' | 'sigint' | 'humint' | 'other';
+  /**
+   * Coordonnées géographiques (ex: 48.8566, 2.3522)
+   */
+  coordinates?: string | null;
+  media?:
+    | {
+        file: number | Media;
+        caption?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Personnage cible lié à ce renseignement
+   */
+  linkedTarget?: (number | null) | Character;
+  linkedFaction?: (number | null) | Faction;
+  /**
+   * Personnage qui a posté ce renseignement
+   */
+  postedBy?: (number | null) | Character;
+  postedByDiscordId?: string | null;
+  postedByDiscordUsername?: string | null;
+  status?: ('to-investigate' | 'verified' | 'false-info' | 'inconclusive') | null;
+  classification?: ('public' | 'restricted' | 'classified') | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -628,6 +725,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'units';
         value: number | Unit;
+      } | null)
+    | ({
+        relationTo: 'factions';
+        value: number | Faction;
+      } | null)
+    | ({
+        relationTo: 'intelligence';
+        value: number | Intelligence;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -889,12 +994,16 @@ export interface CharactersSelect<T extends boolean = true> {
   faction?: T;
   isMainCharacter?: T;
   isTarget?: T;
+  targetFaction?: T;
   unit?: T;
   superiorOfficer?: T;
   discordId?: T;
   discordUsername?: T;
+  threatLevel?: T;
   isArchived?: T;
   archivedAt?: T;
+  archivedBy?: T;
+  archiveReason?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -939,6 +1048,47 @@ export interface UnitsSelect<T extends boolean = true> {
   commander?: T;
   parentUnit?: T;
   color?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "factions_select".
+ */
+export interface FactionsSelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
+  type?: T;
+  description?: T;
+  logo?: T;
+  color?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "intelligence_select".
+ */
+export interface IntelligenceSelect<T extends boolean = true> {
+  title?: T;
+  date?: T;
+  description?: T;
+  type?: T;
+  coordinates?: T;
+  media?:
+    | T
+    | {
+        file?: T;
+        caption?: T;
+        id?: T;
+      };
+  linkedTarget?: T;
+  linkedFaction?: T;
+  postedBy?: T;
+  postedByDiscordId?: T;
+  postedByDiscordUsername?: T;
+  status?: T;
+  classification?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1224,6 +1374,32 @@ export interface Roleplay {
   matriculeYear?: number | null;
   discordSyncInterval?: number | null;
   defaultFaction?: string | null;
+  loadingEnabled?: boolean | null;
+  loadingMessages?:
+    | {
+        message: string;
+        id?: string | null;
+      }[]
+    | null;
+  disclaimerEnabled?: boolean | null;
+  disclaimerTitle?: string | null;
+  disclaimerMessage?: string | null;
+  discordInviteUrl?: string | null;
+  /**
+   * Rôles Discord qui ont accès à l'administration
+   */
+  adminRoles?:
+    | {
+        roleId: string;
+        roleName?: string | null;
+        permissionLevel?: ('full' | 'limited') | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Rôle Discord autorisant la publication de renseignements
+   */
+  intelligenceRoleId?: string | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -1391,6 +1567,26 @@ export interface RoleplaySelect<T extends boolean = true> {
   matriculeYear?: T;
   discordSyncInterval?: T;
   defaultFaction?: T;
+  loadingEnabled?: T;
+  loadingMessages?:
+    | T
+    | {
+        message?: T;
+        id?: T;
+      };
+  disclaimerEnabled?: T;
+  disclaimerTitle?: T;
+  disclaimerMessage?: T;
+  discordInviteUrl?: T;
+  adminRoles?:
+    | T
+    | {
+        roleId?: T;
+        roleName?: T;
+        permissionLevel?: T;
+        id?: T;
+      };
+  intelligenceRoleId?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

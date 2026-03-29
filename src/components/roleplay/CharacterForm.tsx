@@ -114,6 +114,7 @@ export function CharacterForm({
 		rank: editData?.rank?.id || editData?.rank || '',
 		isTarget: editData?.isTarget || false,
 		targetFaction: editData?.targetFaction || '',
+		threatLevel: editData?.threatLevel || '',
 	});
 
 	// Determine rank from Discord roles
@@ -231,6 +232,7 @@ export function CharacterForm({
 				body.faction = form.faction || undefined;
 				body.isTarget = form.isTarget;
 				if (form.isTarget && form.targetFaction) body.targetFaction = form.targetFaction;
+				if (form.isTarget && form.threatLevel) body.threatLevel = form.threatLevel;
 			}
 
 			const url = editData ? `/api/roleplay/characters/${editData.id}` : '/api/roleplay/characters';
@@ -482,8 +484,22 @@ export function CharacterForm({
 
 						{form.isTarget && (
 							<div style={{ marginTop: '0.5rem' }}>
-								<label style={labelStyle}>Faction de la cible</label>
-								<input type="text" name="targetFaction" value={form.targetFaction} onChange={handleChange} className="filter-input" style={{ width: '100%' }} />
+								<div style={gridTwo}>
+									<div>
+										<label style={labelStyle}>Faction de la cible</label>
+										<input type="text" name="targetFaction" value={form.targetFaction} onChange={handleChange} className="filter-input" style={{ width: '100%' }} />
+									</div>
+									<div>
+										<label style={labelStyle}>Niveau de menace</label>
+										<select name="threatLevel" value={form.threatLevel} onChange={handleChange} className="filter-select" style={{ width: '100%' }}>
+											<option value="">— Non défini —</option>
+											<option value="low">Faible</option>
+											<option value="moderate">Modéré</option>
+											<option value="high">Élevé</option>
+											<option value="critical">Critique</option>
+										</select>
+									</div>
+								</div>
 							</div>
 						)}
 					</div>

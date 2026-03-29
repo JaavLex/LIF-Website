@@ -1,22 +1,52 @@
 import { getPayloadClient } from '@/lib/payload';
 import Link from 'next/link';
 import Image from 'next/image';
+import { cookies } from 'next/headers';
 import { PersonnelFilters } from '@/components/roleplay/PersonnelFilters';
 import { SessionBar } from '@/components/roleplay/SessionBar';
+import { DiscordDisclaimer } from '@/components/roleplay/DiscordDisclaimer';
+import { verifySession } from '@/lib/session';
+import { checkAdminPermissions } from '@/lib/admin';
 
 export const dynamic = 'force-dynamic';
 
 export default async function RoleplayPage() {
 	const payload = await getPayloadClient();
 
+	// Get session
+	const cookieStore = await cookies();
+	const token = cookieStore.get('roleplay-session')?.value;
+	const session = token ? verifySession(token) : null;
+
+	// Check admin
+	let isAdmin = false;
+	let adminPermissions: any = null;
+	if (session) {
+		adminPermissions = await checkAdminPermissions(session);
+		isAdmin = adminPermissions.isAdmin;
+	}
+
+	// Check guild membership for disclaimer
+	let showDisclaimer = false;
+	let disclaimerConfig: any = null;
+	if (session) {
+		const user = await payload.find({
+			collection: 'users',
+			where: { discordId: { equals: session.discordId } },
+			limit: 1,
+		});
+		const userData = user.docs[0];
+		if (userData && !userData.isGuildMember) {
+			showDisclaimer = true;
+		}
+	}
+
 	const [characters, ranks, units, roleplayConfig] = await Promise.all([
 		payload.find({
 			collection: 'characters',
-			where: {
-				isArchived: { not_equals: true },
-			},
+			where: isAdmin ? {} : { isArchived: { not_equals: true } },
 			sort: '-createdAt',
-			limit: 100,
+			limit: 500,
 			depth: 2,
 		}),
 		payload.find({
@@ -27,6 +57,7 @@ export default async function RoleplayPage() {
 		payload.find({
 			collection: 'units',
 			limit: 100,
+			depth: 1,
 		}),
 		payload.findGlobal({ slug: 'roleplay' }).catch(() => null),
 	]);
@@ -38,8 +69,33 @@ export default async function RoleplayPage() {
 	const showLore = (roleplayConfig as any)?.isLoreVisible !== false;
 	const showTimeline = (roleplayConfig as any)?.isTimelineVisible !== false;
 
+	disclaimerConfig = {
+		title: (roleplayConfig as any)?.disclaimerTitle || 'ACCÈS RESTREINT',
+		message: (roleplayConfig as any)?.disclaimerMessage,
+		inviteUrl: (roleplayConfig as any)?.discordInviteUrl,
+	};
+
 	return (
 		<div className="terminal-container">
+			{/* Discord disclaimer */}
+			{showDisclaimer && (
+				<DiscordDisclaimer
+					title={disclaimerConfig.title}
+					message={disclaimerConfig.message}
+					inviteUrl={disclaimerConfig.inviteUrl}
+				/>
+			)}
+
+			{/* Admin mode indicator */}
+			{isAdmin && adminPermissions && (
+				<div className="admin-indicator">
+					<span className="admin-indicator-dot" />
+					<span>MODE ADMIN</span>
+					<span className="admin-role-name">{adminPermissions.roleName}</span>
+					<span className="admin-perm-level">({adminPermissions.level === 'full' ? 'Complet' : 'Limité'})</span>
+				</div>
+			)}
+
 			{/* Hero header with logo and background */}
 			<div
 				className="roleplay-hero"
@@ -137,7 +193,7 @@ export default async function RoleplayPage() {
 					<div className="status-item">
 						<span className="status-indicator" />
 						<span>
-							{characters.docs.filter((c: any) => c.status === 'in-service').length}{' '}
+							{characters.docs.filter((c: any) => c.status === 'in-service' && !c.isTarget).length}{' '}
 							en service actif
 						</span>
 					</div>
@@ -147,6 +203,8 @@ export default async function RoleplayPage() {
 					characters={JSON.parse(JSON.stringify(characters.docs))}
 					ranks={JSON.parse(JSON.stringify(ranks.docs))}
 					units={JSON.parse(JSON.stringify(units.docs))}
+					sessionDiscordId={session?.discordId}
+					isAdmin={isAdmin}
 				/>
 			</div>
 

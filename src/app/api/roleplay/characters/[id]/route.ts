@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPayloadClient } from '@/lib/payload';
 import { verifySession } from '@/lib/session';
+import { checkAdminPermissions } from '@/lib/admin';
 
 export async function PATCH(
 	request: NextRequest,
@@ -38,14 +39,8 @@ export async function PATCH(
 			);
 		}
 
-		// Check if user is admin or owner
-		const user = await payload.find({
-			collection: 'users',
-			where: { discordId: { equals: session.discordId } },
-			limit: 1,
-		});
-
-		const isAdmin = user.docs[0]?.role === 'admin';
+		// Check if user is admin (via DB role or Discord roles) or owner
+		const { isAdmin } = await checkAdminPermissions(session);
 		const isOwner = existing.discordId === session.discordId;
 
 		if (!isAdmin && !isOwner) {

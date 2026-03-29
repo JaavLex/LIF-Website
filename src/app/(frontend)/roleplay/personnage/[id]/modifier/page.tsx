@@ -4,6 +4,7 @@ import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
 import { CharacterForm } from '@/components/roleplay/CharacterForm';
 import { verifySession } from '@/lib/session';
+import { checkAdminPermissions } from '@/lib/admin';
 
 export const dynamic = 'force-dynamic';
 
@@ -38,13 +39,8 @@ export default async function EditCharacterPage({
 
 	if (!character) notFound();
 
-	// Check ownership or admin
-	const user = await payload.find({
-		collection: 'users',
-		where: { discordId: { equals: session.discordId } },
-		limit: 1,
-	});
-	const isAdmin = user.docs[0]?.role === 'admin';
+	// Check ownership or admin (Discord role-based)
+	const { isAdmin } = await checkAdminPermissions(session);
 	const isOwner = character.discordId === session.discordId;
 
 	if (!isAdmin && !isOwner) redirect('/roleplay');

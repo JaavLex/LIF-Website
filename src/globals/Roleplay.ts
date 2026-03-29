@@ -223,6 +223,111 @@ export const Roleplay: GlobalConfig = {
 						},
 					],
 				},
+				{
+					label: 'Écran de chargement',
+					fields: [
+						{
+							name: 'loadingEnabled',
+							label: 'Activer l\'écran de chargement terminal',
+							type: 'checkbox',
+							defaultValue: true,
+						},
+						{
+							name: 'loadingMessages',
+							label: 'Messages de chargement',
+							type: 'array',
+							defaultValue: [
+								{ message: 'Chargement de la base de données...' },
+								{ message: 'Authentification Discord...' },
+								{ message: 'Vérification des habilitations...' },
+								{ message: 'Synchronisation des dossiers...' },
+								{ message: 'Accès autorisé.' },
+							],
+							fields: [
+								{
+									name: 'message',
+									label: 'Message',
+									type: 'text',
+									required: true,
+								},
+							],
+						},
+					],
+				},
+				{
+					label: 'Avertissement Discord',
+					fields: [
+						{
+							name: 'disclaimerEnabled',
+							label: 'Activer l\'avertissement',
+							type: 'checkbox',
+							defaultValue: true,
+						},
+						{
+							name: 'disclaimerTitle',
+							label: 'Titre',
+							type: 'text',
+							defaultValue: 'ACCÈS RESTREINT',
+						},
+						{
+							name: 'disclaimerMessage',
+							label: 'Message',
+							type: 'textarea',
+							defaultValue: 'Vous devez être membre du serveur Discord et avoir complété votre entrée en service pour accéder à toutes les fonctionnalités.',
+						},
+						{
+							name: 'discordInviteUrl',
+							label: 'URL d\'invitation Discord',
+							type: 'text',
+							defaultValue: '',
+						},
+					],
+				},
+				{
+					label: 'Rôles Admin',
+					fields: [
+						{
+							name: 'adminRoles',
+							label: 'Rôles Discord administrateurs',
+							type: 'array',
+							admin: {
+								description: 'Rôles Discord qui ont accès à l\'administration',
+							},
+							fields: [
+								{
+									name: 'roleId',
+									label: 'ID du rôle Discord',
+									type: 'text',
+									required: true,
+								},
+								{
+									name: 'roleName',
+									label: 'Nom du rôle',
+									type: 'text',
+								},
+								{
+									name: 'permissionLevel',
+									label: 'Niveau de permission',
+									type: 'select',
+									options: [
+										{ label: 'Complet', value: 'full' },
+										{ label: 'Limité', value: 'limited' },
+									],
+									defaultValue: 'full',
+								},
+							],
+						},
+						{
+							name: 'intelligenceRoleId',
+							label: 'ID du rôle Discord Renseignement',
+							type: 'text',
+							defaultValue: '1424804277813248091',
+							admin: {
+								description: 'Rôle Discord autorisant la publication de renseignements',
+							},
+						},
+					],
+				},
 			],
 		},
 	],

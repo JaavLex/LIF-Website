@@ -365,7 +365,23 @@ export const Characters: CollectionConfig = {
 				readOnly: true,
 			},
 		},
-		// Soft delete
+		{
+			name: 'threatLevel',
+			label: 'Niveau de menace',
+			type: 'select',
+			options: [
+				{ label: 'Faible', value: 'low' },
+				{ label: 'Modéré', value: 'moderate' },
+				{ label: 'Élevé', value: 'high' },
+				{ label: 'Critique', value: 'critical' },
+			],
+			admin: {
+				position: 'sidebar',
+				condition: (data) => data?.isTarget,
+				description: 'Niveau de menace de la cible',
+			},
+		},
+		// Soft delete / Archive
 		{
 			name: 'isArchived',
 			type: 'checkbox',
@@ -377,6 +393,25 @@ export const Characters: CollectionConfig = {
 		{
 			name: 'archivedAt',
 			type: 'date',
+			admin: {
+				position: 'sidebar',
+				condition: data => data?.isArchived,
+			},
+		},
+		{
+			name: 'archivedBy',
+			label: 'Archivé par',
+			type: 'text',
+			admin: {
+				position: 'sidebar',
+				condition: data => data?.isArchived,
+				readOnly: true,
+			},
+		},
+		{
+			name: 'archiveReason',
+			label: "Raison de l'archivage",
+			type: 'text',
 			admin: {
 				position: 'sidebar',
 				condition: data => data?.isArchived,

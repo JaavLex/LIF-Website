@@ -13,6 +13,8 @@ import { Characters } from './collections/Characters';
 import { CharacterTimeline } from './collections/CharacterTimeline';
 import { Ranks } from './collections/Ranks';
 import { Units } from './collections/Units';
+import { Factions } from './collections/Factions';
+import { Intelligence } from './collections/Intelligence';
 import { AdminDashboard } from './globals/AdminDashboard';
 import { Homepage } from './globals/Homepage';
 import { Navigation } from './globals/Navigation';
@@ -40,6 +42,8 @@ export default buildConfig({
 		CharacterTimeline,
 		Ranks,
 		Units,
+		Factions,
+		Intelligence,
 	],
 	globals: [Homepage, Navigation, AdminDashboard, Roleplay],
 	editor: lexicalEditor(),
