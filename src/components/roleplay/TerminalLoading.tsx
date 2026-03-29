@@ -16,13 +16,24 @@ const DEFAULT_MESSAGES = [
 ];
 
 export function TerminalLoading({ messages = DEFAULT_MESSAGES, onComplete }: TerminalLoadingProps) {
+	const effectiveMessages = messages.length > 0 ? messages : DEFAULT_MESSAGES;
 	const [visibleLines, setVisibleLines] = useState<string[]>([]);
 	const [currentIndex, setCurrentIndex] = useState(0);
 	const [typing, setTyping] = useState('');
 	const [charIndex, setCharIndex] = useState(0);
 	const [complete, setComplete] = useState(false);
 
-	const currentMessage = messages[currentIndex];
+	const currentMessage = effectiveMessages[currentIndex];
+
+	// Safety timeout — force complete after 15 seconds max
+	useEffect(() => {
+		const timer = setTimeout(() => {
+			if (!complete) {
+				setComplete(true);
+			}
+		}, 15000);
+		return () => clearTimeout(timer);
+	}, [complete]);
 
 	// Typing effect
 	useEffect(() => {
@@ -43,7 +54,7 @@ export function TerminalLoading({ messages = DEFAULT_MESSAGES, onComplete }: Ter
 				setTyping('');
 				setCharIndex(0);
 
-				if (currentIndex + 1 < messages.length) {
+				if (currentIndex + 1 < effectiveMessages.length) {
 					setCurrentIndex(currentIndex + 1);
 				} else {
 					setComplete(true);
@@ -51,7 +62,7 @@ export function TerminalLoading({ messages = DEFAULT_MESSAGES, onComplete }: Ter
 			}, delay);
 			return () => clearTimeout(timer);
 		}
-	}, [charIndex, currentIndex, currentMessage, messages, complete]);
+	}, [charIndex, currentIndex, currentMessage, effectiveMessages, complete]);
 
 	// Fade out after completion
 	useEffect(() => {

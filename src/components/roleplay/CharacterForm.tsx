@@ -499,9 +499,9 @@ export function CharacterForm({
 
 						<div style={gridTwo}>
 							<div>
-								<label style={labelStyle}>Grade (override admin)</label>
+								<label style={labelStyle}>{form.isNpc ? 'Grade' : 'Grade (override admin)'}</label>
 								<select name="rank" value={form.rank} onChange={handleChange} className="filter-select" style={{ width: '100%' }}>
-									<option value="">— Auto (Discord) —</option>
+									<option value="">{form.isNpc ? '— Aucun grade —' : '— Auto (Discord) —'}</option>
 									{ranks.map(r => (<option key={r.id} value={r.id}>{r.name}</option>))}
 								</select>
 							</div>
