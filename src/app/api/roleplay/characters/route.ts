@@ -18,12 +18,18 @@ export async function POST(request: NextRequest) {
 		const body = await request.json();
 		const payload = await getPayloadClient();
 
-		// Ensure discordId matches session
-		body.discordId = session.discordId;
-		body.discordUsername = session.discordUsername;
-
 		// Check if user is admin (via DB role or Discord roles)
 		const { isAdmin } = await checkAdminPermissions(session);
+
+		// NPC creation: admin can create without discord link
+		const isNpcCreation = isAdmin && body.isNpc;
+		delete body.isNpc;
+
+		if (!isNpcCreation) {
+			// Ensure discordId matches session for non-NPC
+			body.discordId = session.discordId;
+			body.discordUsername = session.discordUsername;
+		}
 
 		// Non-admins: strip admin-only fields, auto-assign rank from Discord roles
 		if (!isAdmin) {

@@ -74,11 +74,13 @@ export function CharacterForm({
 	units,
 	editData,
 	isAdmin,
+	allCharacters,
 }: {
 	ranks: Rank[];
 	units: Unit[];
 	editData?: any;
 	isAdmin?: boolean;
+	allCharacters?: { id: number; fullName: string }[];
 }) {
 	const router = useRouter();
 	const [user, setUser] = useState<SessionUser | null>(null);
@@ -115,6 +117,14 @@ export function CharacterForm({
 		isTarget: editData?.isTarget || false,
 		targetFaction: editData?.targetFaction || '',
 		threatLevel: editData?.threatLevel || '',
+		classification: editData?.classification || 'public',
+		miscellaneous: lexicalToText(editData?.miscellaneous),
+		etatMajorNotes: lexicalToText(editData?.etatMajorNotes),
+		superiorOfficer: editData?.superiorOfficer?.id || editData?.superiorOfficer || '',
+		isArchived: editData?.isArchived || false,
+		archiveReason: editData?.archiveReason || '',
+		rankOverride: editData?.rankOverride || false,
+		isNpc: editData ? !editData.discordId : false,
 	});
 
 	// Determine rank from Discord roles
@@ -164,7 +174,8 @@ export function CharacterForm({
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
-		if (!user) return;
+		const isNpcMode = isAdmin && form.isNpc;
+		if (!user && !isNpcMode) return;
 		setSubmitting(true);
 		setError('');
 
@@ -196,9 +207,15 @@ export function CharacterForm({
 				motto: form.motto || undefined,
 				previousUnit: form.previousUnit || undefined,
 				isMainCharacter: form.isMainCharacter,
-				discordId: user.discordId,
-				discordUsername: user.discordUsername,
 			};
+
+			// Only set discord info for non-NPC characters
+			if (!isNpcMode && user) {
+				body.discordId = user.discordId;
+				body.discordUsername = user.discordUsername;
+			} else if (isNpcMode) {
+				body.isNpc = true;
+			}
 
 			if (form.dateOfBirth) body.dateOfBirth = form.dateOfBirth;
 			if (form.height) body.height = parseInt(form.height);
@@ -220,8 +237,8 @@ export function CharacterForm({
 			if (militaryLexical) body.militaryBackground = militaryLexical;
 			if (legalLexical) body.legalBackground = legalLexical;
 
-			// Rank: auto-detected from Discord roles (not user-settable)
-			if (detectedRank && !editData) {
+			// Rank: auto-detected from Discord roles (not user-settable) — only for non-NPC
+			if (detectedRank && !editData && !isNpcMode) {
 				body.rank = detectedRank.id;
 			}
 
@@ -233,6 +250,16 @@ export function CharacterForm({
 				body.isTarget = form.isTarget;
 				if (form.isTarget && form.targetFaction) body.targetFaction = form.targetFaction;
 				if (form.isTarget && form.threatLevel) body.threatLevel = form.threatLevel;
+				body.classification = form.classification;
+				body.rankOverride = form.rankOverride;
+				if (form.superiorOfficer) body.superiorOfficer = parseInt(form.superiorOfficer);
+				body.isArchived = form.isArchived;
+				if (form.isArchived && form.archiveReason) body.archiveReason = form.archiveReason;
+
+				const miscLexical = textToLexical(form.miscellaneous);
+				if (miscLexical) body.miscellaneous = miscLexical;
+				const notesLexical = textToLexical(form.etatMajorNotes);
+				if (notesLexical) body.etatMajorNotes = notesLexical;
 			}
 
 			const url = editData ? `/api/roleplay/characters/${editData.id}` : '/api/roleplay/characters';
@@ -265,7 +292,7 @@ export function CharacterForm({
 		);
 	}
 
-	if (!user) {
+	if (!user && !isAdmin) {
 		return (
 			<div className="terminal-panel">
 				<div className="auth-section">
@@ -313,19 +340,29 @@ export function CharacterForm({
 					</div>
 
 					<div style={{ flex: 1 }}>
-						<label style={labelStyle}>Grade détecté (via Discord)</label>
-						<div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem', background: 'var(--bg-tertiary)', border: '1px solid var(--border)' }}>
-							{detectedRank?.icon?.url && (
-								<Image src={detectedRank.icon.url} alt={detectedRank.name} width={32} height={32} />
-							)}
-							<div>
-								<div style={{ fontWeight: 600 }}>{detectedRank?.name || 'Aucun grade détecté'}</div>
-								{detectedRank && <div style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>{detectedRank.abbreviation}</div>}
+						{!(isAdmin && form.isNpc) && (
+							<>
+								<label style={labelStyle}>Grade détecté (via Discord)</label>
+								<div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem', background: 'var(--bg-tertiary)', border: '1px solid var(--border)' }}>
+									{detectedRank?.icon?.url && (
+										<Image src={detectedRank.icon.url} alt={detectedRank.name} width={32} height={32} />
+									)}
+									<div>
+										<div style={{ fontWeight: 600 }}>{detectedRank?.name || 'Aucun grade détecté'}</div>
+										{detectedRank && <div style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>{detectedRank.abbreviation}</div>}
+									</div>
+								</div>
+								<p style={{ fontSize: '0.7rem', color: 'var(--muted)', marginTop: '0.35rem' }}>
+									Le grade est déterminé automatiquement par vos rôles Discord.
+								</p>
+							</>
+						)}
+
+						{isAdmin && form.isNpc && (
+							<div style={{ padding: '0.75rem', background: 'rgba(139, 69, 19, 0.1)', border: '1px solid var(--primary)', marginBottom: '0.5rem' }}>
+								<span style={{ fontSize: '0.85rem', color: 'var(--primary)' }}>Mode PNJ — Pas de compte Discord lié</span>
 							</div>
-						</div>
-						<p style={{ fontSize: '0.7rem', color: 'var(--muted)', marginTop: '0.35rem' }}>
-							Le grade est déterminé automatiquement par vos rôles Discord.
-						</p>
+						)}
 
 						<div style={{ marginTop: '1rem' }}>
 							<label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
@@ -447,6 +484,19 @@ export function CharacterForm({
 					<div style={{ border: '1px solid var(--primary)', padding: '1.5rem', marginTop: '1.5rem', background: 'rgba(139, 69, 19, 0.05)' }}>
 						<h2 style={{ color: 'var(--primary)', marginTop: 0 }}>Administration</h2>
 
+						{/* NPC toggle - only on create */}
+						{!editData && (
+							<div style={{ marginBottom: '1rem', paddingBottom: '1rem', borderBottom: '1px solid var(--border)' }}>
+								<label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+									<input type="checkbox" name="isNpc" checked={form.isNpc} onChange={handleChange} />
+									<span style={{ fontSize: '0.85rem', color: 'var(--primary)' }}>Fiche PNJ (non lié à un compte Discord)</span>
+								</label>
+								<p style={{ fontSize: '0.7rem', color: 'var(--muted)', marginTop: '0.25rem', marginLeft: '1.5rem' }}>
+									Le personnage ne sera pas lié à un compte Discord et le grade ne sera pas requis.
+								</p>
+							</div>
+						)}
+
 						<div style={gridTwo}>
 							<div>
 								<label style={labelStyle}>Grade (override admin)</label>
@@ -471,10 +521,32 @@ export function CharacterForm({
 
 						<div style={gridTwo}>
 							<div>
+								<label style={labelStyle}>Classification</label>
+								<select name="classification" value={form.classification} onChange={handleChange} className="filter-select" style={{ width: '100%' }}>
+									<option value="public">Public</option>
+									<option value="restricted">Restreint</option>
+									<option value="classified">Classifié</option>
+								</select>
+							</div>
+							<div>
+								<label style={labelStyle}>Officier supérieur</label>
+								<select name="superiorOfficer" value={form.superiorOfficer} onChange={handleChange} className="filter-select" style={{ width: '100%' }}>
+									<option value="">— Aucun —</option>
+									{(allCharacters || []).map(c => (<option key={c.id} value={c.id}>{c.fullName}</option>))}
+								</select>
+							</div>
+						</div>
+
+						<div style={gridTwo}>
+							<div>
 								<label style={labelStyle}>Faction</label>
 								<input type="text" name="faction" value={form.faction} onChange={handleChange} className="filter-input" style={{ width: '100%' }} />
 							</div>
-							<div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
+							<div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', justifyContent: 'flex-end' }}>
+								<label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+									<input type="checkbox" name="rankOverride" checked={form.rankOverride} onChange={handleChange} />
+									<span style={{ fontSize: '0.85rem' }}>Grade forcé (désactive sync Discord)</span>
+								</label>
 								<label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
 									<input type="checkbox" name="isTarget" checked={form.isTarget} onChange={handleChange} />
 									<span style={{ fontSize: '0.85rem' }}>Cible / Ennemi</span>
@@ -502,6 +574,30 @@ export function CharacterForm({
 								</div>
 							</div>
 						)}
+
+						<div style={{ marginTop: '1rem' }}>
+							<label style={labelStyle}>Informations complémentaires (Divers)</label>
+							<textarea name="miscellaneous" value={form.miscellaneous} onChange={handleChange} className="filter-input" style={{ width: '100%', minHeight: '80px', resize: 'vertical' }} placeholder="Informations complémentaires visibles par tous..." />
+						</div>
+
+						<div style={{ marginTop: '1rem' }}>
+							<label style={labelStyle}>Notes État-Major (admin uniquement)</label>
+							<textarea name="etatMajorNotes" value={form.etatMajorNotes} onChange={handleChange} className="filter-input" style={{ width: '100%', minHeight: '80px', resize: 'vertical' }} placeholder="Visibles uniquement par les administrateurs..." />
+						</div>
+
+						{/* Archive section */}
+						<div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--border)' }}>
+							<label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', marginBottom: '0.5rem' }}>
+								<input type="checkbox" name="isArchived" checked={form.isArchived} onChange={handleChange} />
+								<span style={{ fontSize: '0.85rem', color: 'var(--danger)' }}>Archiver ce dossier</span>
+							</label>
+							{form.isArchived && (
+								<div style={{ marginLeft: '1.5rem' }}>
+									<label style={labelStyle}>Raison de l&apos;archivage</label>
+									<input type="text" name="archiveReason" value={form.archiveReason} onChange={handleChange} className="filter-input" style={{ width: '100%' }} placeholder="Raison de l'archivage..." />
+								</div>
+							)}
+						</div>
 					</div>
 				)}
 

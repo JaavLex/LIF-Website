@@ -6,6 +6,7 @@ import { cookies } from 'next/headers';
 import { RichTextRenderer } from '@/components/roleplay/RichTextRenderer';
 import { CharacterTimeline } from '@/components/roleplay/CharacterTimeline';
 import { SyncRankButton } from '@/components/roleplay/SyncRankButton';
+import { AddTimelineEvent } from '@/components/roleplay/AddTimelineEvent';
 import { verifySession } from '@/lib/session';
 import { checkAdminPermissions } from '@/lib/admin';
 
@@ -415,14 +416,20 @@ export default async function CharacterPage({
 
 						{timeline.docs.length > 0 ? (
 							<div className="character-section">
-								<h2>Historique</h2>
+								<h2 style={{ display: 'flex', alignItems: 'center' }}>
+									Historique
+									{isAdmin && <AddTimelineEvent characterId={character.id} />}
+								</h2>
 								<CharacterTimeline
 									events={JSON.parse(JSON.stringify(timeline.docs))}
 								/>
 							</div>
 						) : (
 							<div className="character-section">
-								<h2>Historique</h2>
+								<h2 style={{ display: 'flex', alignItems: 'center' }}>
+									Historique
+									{isAdmin && <AddTimelineEvent characterId={character.id} />}
+								</h2>
 								<div className="empty-state-inline">
 									Aucun événement enregistré dans l&apos;historique.
 								</div>

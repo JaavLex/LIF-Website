@@ -14,6 +14,9 @@ export default async function NewCharacterPage() {
 		payload.find({ collection: 'units', limit: 100 }),
 	]);
 
+	// Fetch all characters for admin superior officer selector
+	let allCharacters: any[] = [];
+
 	// Check if current user is admin
 	const cookieStore = await cookies();
 	const token = cookieStore.get('roleplay-session')?.value;
@@ -26,6 +29,10 @@ export default async function NewCharacterPage() {
 			limit: 1,
 		});
 		isAdmin = user.docs[0]?.role === 'admin';
+		if (isAdmin) {
+			const chars = await payload.find({ collection: 'characters', limit: 500, depth: 0, sort: 'fullName' });
+			allCharacters = chars.docs.map((c: any) => ({ id: c.id, fullName: c.fullName }));
+		}
 	}
 
 	return (
@@ -58,6 +65,7 @@ export default async function NewCharacterPage() {
 				ranks={JSON.parse(JSON.stringify(ranks.docs))}
 				units={JSON.parse(JSON.stringify(units.docs))}
 				isAdmin={isAdmin}
+				allCharacters={allCharacters}
 			/>
 		</div>
 	);

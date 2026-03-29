@@ -50,6 +50,12 @@ export default async function EditCharacterPage({
 		payload.find({ collection: 'units', limit: 100 }),
 	]);
 
+	let allCharacters: any[] = [];
+	if (isAdmin) {
+		const chars = await payload.find({ collection: 'characters', limit: 500, depth: 0, sort: 'fullName' });
+		allCharacters = chars.docs.map((c: any) => ({ id: c.id, fullName: c.fullName }));
+	}
+
 	return (
 		<div className="terminal-container">
 			<Link
@@ -83,6 +89,7 @@ export default async function EditCharacterPage({
 				units={JSON.parse(JSON.stringify(units.docs))}
 				editData={JSON.parse(JSON.stringify(character))}
 				isAdmin={isAdmin}
+				allCharacters={allCharacters}
 			/>
 		</div>
 	);
