@@ -3,6 +3,7 @@ import { cookies } from 'next/headers';
 import Link from 'next/link';
 import { CharacterForm } from '@/components/roleplay/CharacterForm';
 import { verifySession } from '@/lib/session';
+import { checkAdminPermissions } from '@/lib/admin';
 
 export const dynamic = 'force-dynamic';
 
@@ -23,12 +24,8 @@ export default async function NewCharacterPage() {
 	const session = token ? verifySession(token) : null;
 	let isAdmin = false;
 	if (session) {
-		const user = await payload.find({
-			collection: 'users',
-			where: { discordId: { equals: session.discordId } },
-			limit: 1,
-		});
-		isAdmin = user.docs[0]?.role === 'admin';
+		const adminPermissions = await checkAdminPermissions(session);
+		isAdmin = adminPermissions.isAdmin;
 		if (isAdmin) {
 			const chars = await payload.find({ collection: 'characters', limit: 500, depth: 0, sort: 'fullName' });
 			allCharacters = chars.docs.map((c: any) => ({ id: c.id, fullName: c.fullName }));

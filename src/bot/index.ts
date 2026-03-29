@@ -11,7 +11,7 @@ import {
 const BOT_TOKEN = process.env.DISCORD_BOT_TOKEN;
 const CLIENT_ID = process.env.DISCORD_CLIENT_ID;
 const GUILD_ID = process.env.DISCORD_GUILD_ID;
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://lfrp.fr';
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://lif-arma.com';
 const DATABASE_URI = process.env.DATABASE_URI;
 
 if (!BOT_TOKEN || !CLIENT_ID || !GUILD_ID) {
@@ -134,7 +134,7 @@ const client = new Client({
 	intents: [GatewayIntentBits.Guilds],
 });
 
-client.on('ready', () => {
+client.on('clientReady', () => {
 	console.log(`Bot logged in as ${client.user?.tag}`);
 });
 

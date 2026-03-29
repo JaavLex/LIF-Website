@@ -422,6 +422,7 @@ export default async function CharacterPage({
 								</h2>
 								<CharacterTimeline
 									events={JSON.parse(JSON.stringify(timeline.docs))}
+									isAdmin={isAdmin}
 								/>
 							</div>
 						) : (

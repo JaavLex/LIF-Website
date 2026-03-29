@@ -85,6 +85,7 @@ export function IntelligenceList({
 	const [showForm, setShowForm] = useState(false);
 	const [submitting, setSubmitting] = useState(false);
 	const [error, setError] = useState('');
+	const [mediaFiles, setMediaFiles] = useState<{ file: File; caption: string }[]>([]);
 
 	const [form, setForm] = useState({
 		title: '',
@@ -109,6 +110,21 @@ export function IntelligenceList({
 		setSubmitting(true);
 		setError('');
 		try {
+			// Upload media files first
+			const uploadedMedia: { file: number; caption: string }[] = [];
+			for (const m of mediaFiles) {
+				const formData = new FormData();
+				formData.append('file', m.file);
+				formData.append('alt', m.caption || m.file.name);
+				const uploadRes = await fetch('/api/upload', { method: 'POST', body: formData });
+				if (!uploadRes.ok) {
+					const errData = await uploadRes.json().catch(() => ({}));
+					throw new Error(errData.message || "Erreur lors de l'upload d'un fichier");
+				}
+				const uploadData = await uploadRes.json();
+				uploadedMedia.push({ file: uploadData.id, caption: m.caption });
+			}
+
 			const body: any = {
 				title: form.title,
 				date: form.date,
@@ -120,6 +136,7 @@ export function IntelligenceList({
 			if (form.linkedTarget) body.linkedTarget = parseInt(form.linkedTarget);
 			if (form.linkedFaction) body.linkedFaction = parseInt(form.linkedFaction);
 			if (form.postedBy) body.postedBy = parseInt(form.postedBy);
+			if (uploadedMedia.length > 0) body.media = uploadedMedia;
 
 			const res = await fetch('/api/roleplay/intelligence', {
 				method: 'POST',
@@ -270,6 +287,46 @@ export function IntelligenceList({
 									))}
 								</select>
 							</div>
+						</div>
+						<div style={{ marginBottom: '1rem' }}>
+							<label style={labelStyle}>Photos / Fichiers joints</label>
+							{mediaFiles.map((m, i) => (
+								<div key={i} style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem', alignItems: 'center' }}>
+									<span style={{ fontSize: '0.8rem', color: 'var(--text)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.file.name}</span>
+									<input
+										type="text"
+										value={m.caption}
+										onChange={e => {
+											const updated = [...mediaFiles];
+											updated[i] = { ...updated[i], caption: e.target.value };
+											setMediaFiles(updated);
+										}}
+										className="filter-input"
+										style={{ width: '200px' }}
+										placeholder="Légende (optionnel)"
+									/>
+									<button type="button" onClick={() => setMediaFiles(mediaFiles.filter((_, j) => j !== i))} style={{ background: 'none', border: '1px solid var(--danger)', color: 'var(--danger)', padding: '0 0.5rem', cursor: 'pointer' }}>×</button>
+								</div>
+							))}
+							<button
+								type="button"
+								onClick={() => {
+									const input = document.createElement('input');
+									input.type = 'file';
+									input.accept = 'image/*,.pdf,.doc,.docx';
+									input.multiple = true;
+									input.onchange = () => {
+										if (input.files) {
+											const newFiles = Array.from(input.files).map(f => ({ file: f, caption: '' }));
+											setMediaFiles(prev => [...prev, ...newFiles]);
+										}
+									};
+									input.click();
+								}}
+								style={{ background: 'none', border: '1px dashed var(--border)', color: 'var(--muted)', padding: '0.4rem 1rem', cursor: 'pointer', fontSize: '0.8rem' }}
+							>
+								+ Ajouter des fichiers
+							</button>
 						</div>
 						<div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
 							<button type="button" onClick={() => setShowForm(false)} className="session-btn" style={{ padding: '0.5rem 1rem' }}>Annuler</button>
