@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPayloadClient } from '@/lib/payload';
 import { verifySession } from '@/lib/session';
+import { checkAdminPermissions } from '@/lib/admin';
 
 export async function GET(
 	_request: NextRequest,
@@ -48,13 +49,8 @@ export async function PATCH(
 	try {
 		const payload = await getPayloadClient();
 
-		// Check admin status
-		const user = await payload.find({
-			collection: 'users',
-			where: { discordId: { equals: session.discordId } },
-			limit: 1,
-		});
-		const isAdmin = user.docs[0]?.role === 'admin';
+		// Check admin status (DB role + Discord roles)
+		const { isAdmin } = await checkAdminPermissions(session);
 
 		// Get existing report to check ownership
 		const existing = await payload.findByID({ collection: 'intelligence', id: docId, depth: 0 });
@@ -114,14 +110,9 @@ export async function DELETE(
 	try {
 		const payload = await getPayloadClient();
 
-		const user = await payload.find({
-			collection: 'users',
-			where: { discordId: { equals: session.discordId } },
-			limit: 1,
-		});
-		const isAdmin = user.docs[0]?.role === 'admin';
+		const { isAdmin: isDeleteAdmin } = await checkAdminPermissions(session);
 
-		if (!isAdmin) {
+		if (!isDeleteAdmin) {
 			return NextResponse.json({ message: 'Non autorisé' }, { status: 403 });
 		}
 

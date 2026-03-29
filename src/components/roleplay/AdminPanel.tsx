@@ -2,13 +2,31 @@
 
 import { useState } from 'react';
 
-export function AdminPanel() {
+interface UnitItem {
+	id: number;
+	name: string;
+	slug: string;
+	color?: string;
+	insignia?: { url?: string } | null;
+}
+
+interface FactionItem {
+	id: number;
+	name: string;
+	slug: string;
+	type?: string;
+	color?: string;
+	logo?: { url?: string } | null;
+}
+
+export function AdminPanel({ units, factions }: { units: UnitItem[]; factions: FactionItem[] }) {
 	const [showUnitForm, setShowUnitForm] = useState(false);
 	const [showFactionForm, setShowFactionForm] = useState(false);
 	const [submitting, setSubmitting] = useState(false);
 	const [error, setError] = useState('');
 	const [success, setSuccess] = useState('');
-
+	const [localUnits, setLocalUnits] = useState(units);
+	const [localFactions, setLocalFactions] = useState(factions);
 	const [unitForm, setUnitForm] = useState({ name: '', slug: '', color: '#4a7c23' });
 	const [unitInsignia, setUnitInsignia] = useState<File | null>(null);
 	const [factionForm, setFactionForm] = useState({ name: '', slug: '', type: 'neutral' as string, color: '#8b4513' });
@@ -201,6 +219,75 @@ export function AdminPanel() {
 						{submitting ? 'Création...' : 'Créer la faction'}
 					</button>
 				</form>
+			)}
+
+			{/* Existing Units */}
+			{localUnits.length > 0 && (
+				<div style={{ marginBottom: '1rem' }}>
+					<h3 style={{ fontSize: '0.95rem', color: 'var(--primary)', marginBottom: '0.5rem' }}>Unités existantes</h3>
+					<div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+						{localUnits.map(unit => (
+							<div key={unit.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.4rem 0.75rem', background: 'var(--bg-secondary)', border: '1px solid var(--border)' }}>
+								<div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+									{unit.insignia?.url && <img src={unit.insignia.url} alt="" style={{ width: 20, height: 20, objectFit: 'contain' }} />}
+									<span style={{ fontSize: '0.85rem', color: unit.color || 'var(--text)' }}>{unit.name}</span>
+								</div>
+								<button
+									type="button"
+									onClick={async () => {
+										if (!confirm(`Supprimer l'unité "${unit.name}" ?`)) return;
+										try {
+											const res = await fetch(`/api/roleplay/units/${unit.id}`, { method: 'DELETE' });
+											if (!res.ok) throw new Error('Erreur suppression');
+											setLocalUnits(prev => prev.filter(u => u.id !== unit.id));
+											setSuccess(`Unité "${unit.name}" supprimée`);
+										} catch {
+											setError('Erreur lors de la suppression');
+										}
+									}}
+									style={{ background: 'none', border: 'none', color: 'var(--danger)', cursor: 'pointer', fontSize: '0.8rem', padding: '0.2rem 0.5rem' }}
+								>
+									✕
+								</button>
+							</div>
+						))}
+					</div>
+				</div>
+			)}
+
+			{/* Existing Factions */}
+			{localFactions.length > 0 && (
+				<div style={{ marginBottom: '1rem' }}>
+					<h3 style={{ fontSize: '0.95rem', color: 'var(--primary)', marginBottom: '0.5rem' }}>Factions existantes</h3>
+					<div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+						{localFactions.map(faction => (
+							<div key={faction.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.4rem 0.75rem', background: 'var(--bg-secondary)', border: '1px solid var(--border)' }}>
+								<div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+									{faction.logo?.url && <img src={faction.logo.url} alt="" style={{ width: 20, height: 20, objectFit: 'contain' }} />}
+									<span style={{ fontSize: '0.85rem', color: faction.color || 'var(--text)' }}>{faction.name}</span>
+									<span style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>({faction.type || 'neutre'})</span>
+								</div>
+								<button
+									type="button"
+									onClick={async () => {
+										if (!confirm(`Supprimer la faction "${faction.name}" ?`)) return;
+										try {
+											const res = await fetch(`/api/roleplay/factions/${faction.id}`, { method: 'DELETE' });
+											if (!res.ok) throw new Error('Erreur suppression');
+											setLocalFactions(prev => prev.filter(f => f.id !== faction.id));
+											setSuccess(`Faction "${faction.name}" supprimée`);
+										} catch {
+											setError('Erreur lors de la suppression');
+										}
+									}}
+									style={{ background: 'none', border: 'none', color: 'var(--danger)', cursor: 'pointer', fontSize: '0.8rem', padding: '0.2rem 0.5rem' }}
+								>
+									✕
+								</button>
+							</div>
+						))}
+					</div>
+				</div>
 			)}
 		</div>
 	);

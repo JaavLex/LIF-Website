@@ -185,7 +185,7 @@ export default async function RoleplayPage() {
 
 			<SessionBar />
 
-			{isAdmin && <AdminPanel />}
+			{isAdmin && <AdminPanel units={JSON.parse(JSON.stringify(units.docs))} factions={JSON.parse(JSON.stringify(factions.docs))} />}
 
 			<div className="terminal-header">
 				<div className="terminal-header-left">

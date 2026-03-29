@@ -82,6 +82,7 @@ export function IntelligenceList({
 	factions: { id: number; name: string }[];
 	sessionDiscordId: string | null;
 }) {
+	const [localReports, setLocalReports] = useState(reports);
 	const [filterType, setFilterType] = useState('');
 	const [filterStatus, setFilterStatus] = useState('');
 	const [expanded, setExpanded] = useState<number | null>(null);
@@ -120,7 +121,7 @@ export function IntelligenceList({
 		classification: 'restricted',
 	});
 
-	const filtered = reports.filter(r => {
+	const filtered = localReports.filter(r => {
 		if (filterType && r.type !== filterType) return false;
 		if (filterStatus && r.status !== filterStatus) return false;
 		return true;
@@ -185,7 +186,9 @@ export function IntelligenceList({
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ status: newStatus }),
 			});
-			if (res.ok) window.location.reload();
+			if (res.ok) {
+				setLocalReports(prev => prev.map(r => r.id === reportId ? { ...r, status: newStatus } : r));
+			}
 		} catch { /* ignore */ }
 	};
 
