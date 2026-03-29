@@ -77,6 +77,54 @@ export async function PATCH(
 	}
 }
 
+const DELETE_ROLE_IDS = [
+	'1483514085718098153',
+	'1425007335574601738',
+];
+
+export async function DELETE(
+	request: NextRequest,
+	{ params }: { params: Promise<{ id: string }> },
+) {
+	const { id } = await params;
+	const token = request.cookies.get('roleplay-session')?.value;
+	if (!token) {
+		return NextResponse.json({ message: 'Non authentifié' }, { status: 401 });
+	}
+
+	const session = verifySession(token);
+	if (!session) {
+		return NextResponse.json({ message: 'Session invalide' }, { status: 401 });
+	}
+
+	const characterId = parseInt(id, 10);
+	if (isNaN(characterId)) {
+		return NextResponse.json({ message: 'ID invalide' }, { status: 400 });
+	}
+
+	// Only specific roles can delete
+	const hasDeleteRole = session.roles?.some((r: string) => DELETE_ROLE_IDS.includes(r));
+	if (!hasDeleteRole) {
+		return NextResponse.json({ message: 'Non autorisé — seuls certains rôles peuvent supprimer un dossier' }, { status: 403 });
+	}
+
+	try {
+		const payload = await getPayloadClient();
+		await payload.delete({
+			collection: 'characters',
+			id: characterId,
+		});
+
+		return NextResponse.json({ success: true });
+	} catch (error: any) {
+		console.error('Character deletion error:', error);
+		return NextResponse.json(
+			{ message: error.message || 'Erreur lors de la suppression' },
+			{ status: 400 },
+		);
+	}
+}
+
 export async function GET(
 	_request: NextRequest,
 	{ params }: { params: Promise<{ id: string }> },

@@ -7,8 +7,14 @@ import { RichTextRenderer } from '@/components/roleplay/RichTextRenderer';
 import { CharacterTimeline } from '@/components/roleplay/CharacterTimeline';
 import { SyncRankButton } from '@/components/roleplay/SyncRankButton';
 import { AddTimelineEvent } from '@/components/roleplay/AddTimelineEvent';
+import { DeleteCharacterButton } from '@/components/roleplay/DeleteCharacterButton';
 import { verifySession } from '@/lib/session';
 import { checkAdminPermissions } from '@/lib/admin';
+
+const DELETE_ROLE_IDS = [
+	'1483514085718098153',
+	'1425007335574601738',
+];
 
 export const dynamic = 'force-dynamic';
 
@@ -86,6 +92,7 @@ export default async function CharacterPage({
 	if (character.isArchived && !isAdmin) notFound();
 
 	const canEdit = isOwner || isAdmin;
+	const canDelete = session?.roles?.some((r: string) => DELETE_ROLE_IDS.includes(r)) || false;
 
 	return (
 		<div className="terminal-container">
@@ -146,16 +153,21 @@ export default async function CharacterPage({
 						{rank && <>{rank.abbreviation || rank.name} </>}
 						{character.fullName}
 					</h1>
-					{canEdit && (
+					{(canEdit || canDelete) && (
 						<div style={{ display: 'flex', gap: '0.5rem' }}>
 							{isOwner && <SyncRankButton characterId={character.id} />}
-							<Link
-								href={`/roleplay/personnage/${character.id}/modifier`}
-								className="session-btn"
-								style={{ padding: '0.5rem 1rem', fontSize: '0.85rem', whiteSpace: 'nowrap' }}
-							>
-								Modifier
-							</Link>
+							{canEdit && (
+								<Link
+									href={`/roleplay/personnage/${character.id}/modifier`}
+									className="session-btn"
+									style={{ padding: '0.5rem 1rem', fontSize: '0.85rem', whiteSpace: 'nowrap' }}
+								>
+									Modifier
+								</Link>
+							)}
+							{canDelete && (
+								<DeleteCharacterButton characterId={character.id} characterName={character.fullName} />
+							)}
 						</div>
 					)}
 				</div>

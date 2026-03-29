@@ -6,6 +6,7 @@ import { PersonnelFilters } from '@/components/roleplay/PersonnelFilters';
 import { SessionBar } from '@/components/roleplay/SessionBar';
 import { DiscordDisclaimer } from '@/components/roleplay/DiscordDisclaimer';
 import { IntelligenceList } from '@/components/roleplay/IntelligenceList';
+import { AdminPanel } from '@/components/roleplay/AdminPanel';
 import { verifySession } from '@/lib/session';
 import { checkAdminPermissions } from '@/lib/admin';
 
@@ -183,6 +184,8 @@ export default async function RoleplayPage() {
 			</div>
 
 			<SessionBar />
+
+			{isAdmin && <AdminPanel />}
 
 			<div className="terminal-header">
 				<div className="terminal-header-left">
