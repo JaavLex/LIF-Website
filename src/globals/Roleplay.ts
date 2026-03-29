@@ -221,6 +221,14 @@ export const Roleplay: GlobalConfig = {
 							type: 'text',
 							defaultValue: 'LIF',
 						},
+						{
+							name: 'notificationChannelId',
+							label: 'ID du salon de notifications Discord',
+							type: 'text',
+							admin: {
+								description: 'Configuré via la commande /notificationdb du bot',
+							},
+						},
 					],
 				},
 				{

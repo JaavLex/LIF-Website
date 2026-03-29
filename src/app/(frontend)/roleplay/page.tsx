@@ -257,6 +257,7 @@ export default async function RoleplayPage() {
 					userCharacters={JSON.parse(JSON.stringify(userCharacters))}
 					allCharacters={JSON.parse(JSON.stringify(characters.docs))}
 					factions={JSON.parse(JSON.stringify(factions.docs))}
+					sessionDiscordId={session?.discordId || null}
 				/>
 			</div>
 

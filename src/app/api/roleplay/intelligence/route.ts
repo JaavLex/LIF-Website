@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPayloadClient } from '@/lib/payload';
 import { verifySession } from '@/lib/session';
+import { notifyNewIntelligence } from '@/lib/discord-notify';
 
 export async function GET() {
 	try {
@@ -68,6 +69,16 @@ export async function POST(request: NextRequest) {
 			collection: 'intelligence',
 			data: body,
 		});
+
+		// Send Discord notification (non-blocking)
+		const fullDoc = await payload.findByID({ collection: 'intelligence', id: doc.id, depth: 2 });
+		notifyNewIntelligence({
+			id: doc.id as number,
+			title: (fullDoc as any).title,
+			type: (fullDoc as any).type,
+			classification: (fullDoc as any).classification,
+			postedBy: typeof (fullDoc as any).postedBy === 'object' ? (fullDoc as any).postedBy : null,
+		}).catch(() => {});
 
 		return NextResponse.json({ id: doc.id, doc });
 	} catch (error: any) {

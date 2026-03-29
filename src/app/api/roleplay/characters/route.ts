@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getPayloadClient } from '@/lib/payload';
 import { verifySession } from '@/lib/session';
 import { checkAdminPermissions } from '@/lib/admin';
+import { notifyNewCharacter } from '@/lib/discord-notify';
 
 export async function POST(request: NextRequest) {
 	const token = request.cookies.get('roleplay-session')?.value;
@@ -71,6 +72,16 @@ export async function POST(request: NextRequest) {
 			collection: 'characters',
 			data: body,
 		});
+
+		// Send Discord notification (non-blocking)
+		const fullDoc = await payload.findByID({ collection: 'characters', id: doc.id, depth: 2 });
+		notifyNewCharacter({
+			id: doc.id as number,
+			fullName: (fullDoc as any).fullName,
+			discordUsername: (fullDoc as any).discordUsername,
+			rank: typeof (fullDoc as any).rank === 'object' ? (fullDoc as any).rank : null,
+			unit: typeof (fullDoc as any).unit === 'object' ? (fullDoc as any).unit : null,
+		}).catch(() => {});
 
 		return NextResponse.json({ id: doc.id, doc });
 	} catch (error: any) {

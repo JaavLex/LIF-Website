@@ -35,6 +35,7 @@ export async function POST(request: NextRequest) {
 				slug: body.slug,
 				type: body.type || 'neutral',
 				color: body.color || '#8b4513',
+				...(body.logo ? { logo: body.logo } : {}),
 			},
 		});
 

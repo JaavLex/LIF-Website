@@ -10,7 +10,22 @@ export function AdminPanel() {
 	const [success, setSuccess] = useState('');
 
 	const [unitForm, setUnitForm] = useState({ name: '', slug: '', color: '#4a7c23' });
+	const [unitInsignia, setUnitInsignia] = useState<File | null>(null);
 	const [factionForm, setFactionForm] = useState({ name: '', slug: '', type: 'neutral' as string, color: '#8b4513' });
+	const [factionLogo, setFactionLogo] = useState<File | null>(null);
+
+	const uploadFile = async (file: File): Promise<number> => {
+		const formData = new FormData();
+		formData.append('file', file);
+		formData.append('alt', file.name);
+		const res = await fetch('/api/upload', { method: 'POST', body: formData });
+		if (!res.ok) {
+			const data = await res.json().catch(() => ({}));
+			throw new Error(data.message || "Erreur lors de l'upload");
+		}
+		const data = await res.json();
+		return data.id;
+	};
 
 	const handleUnitSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
@@ -18,10 +33,18 @@ export function AdminPanel() {
 		setError('');
 		setSuccess('');
 		try {
+			let insigniaId: number | undefined;
+			if (unitInsignia) {
+				insigniaId = await uploadFile(unitInsignia);
+			}
+
+			const body: any = { ...unitForm };
+			if (insigniaId) body.insignia = insigniaId;
+
 			const res = await fetch('/api/roleplay/units', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify(unitForm),
+				body: JSON.stringify(body),
 			});
 			if (!res.ok) {
 				const data = await res.json().catch(() => ({}));
@@ -29,6 +52,7 @@ export function AdminPanel() {
 			}
 			setSuccess(`Unité "${unitForm.name}" créée`);
 			setUnitForm({ name: '', slug: '', color: '#4a7c23' });
+			setUnitInsignia(null);
 			setShowUnitForm(false);
 			setTimeout(() => window.location.reload(), 1000);
 		} catch (err: any) {
@@ -44,10 +68,18 @@ export function AdminPanel() {
 		setError('');
 		setSuccess('');
 		try {
+			let logoId: number | undefined;
+			if (factionLogo) {
+				logoId = await uploadFile(factionLogo);
+			}
+
+			const body: any = { ...factionForm };
+			if (logoId) body.logo = logoId;
+
 			const res = await fetch('/api/roleplay/factions', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify(factionForm),
+				body: JSON.stringify(body),
 			});
 			if (!res.ok) {
 				const data = await res.json().catch(() => ({}));
@@ -55,6 +87,7 @@ export function AdminPanel() {
 			}
 			setSuccess(`Faction "${factionForm.name}" créée`);
 			setFactionForm({ name: '', slug: '', type: 'neutral', color: '#8b4513' });
+			setFactionLogo(null);
 			setShowFactionForm(false);
 			setTimeout(() => window.location.reload(), 1000);
 		} catch (err: any) {
@@ -107,6 +140,19 @@ export function AdminPanel() {
 							<input type="color" value={unitForm.color} onChange={e => setUnitForm(f => ({ ...f, color: e.target.value }))} style={{ width: '100%', height: '32px', border: '1px solid var(--border)', background: 'transparent', cursor: 'pointer' }} />
 						</div>
 					</div>
+					<div style={{ marginBottom: '1rem' }}>
+						<label style={labelStyle}>Insigne</label>
+						<div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+							<button
+								type="button"
+								onClick={() => { const input = document.createElement('input'); input.type = 'file'; input.accept = 'image/*'; input.onchange = () => { if (input.files?.[0]) setUnitInsignia(input.files[0]); }; input.click(); }}
+								style={{ background: 'none', border: '1px dashed var(--border)', color: 'var(--muted)', padding: '0.4rem 1rem', cursor: 'pointer', fontSize: '0.8rem' }}
+							>
+								{unitInsignia ? '🔄 Changer' : '+ Ajouter un insigne'}
+							</button>
+							{unitInsignia && <span style={{ fontSize: '0.8rem', color: 'var(--text)' }}>{unitInsignia.name}</span>}
+						</div>
+					</div>
 					<button type="submit" disabled={submitting} className="discord-login-btn" style={{ background: 'var(--primary)', padding: '0.5rem 1rem', opacity: submitting ? 0.6 : 1 }}>
 						{submitting ? 'Création...' : 'Créer l\'unité'}
 					</button>
@@ -136,6 +182,19 @@ export function AdminPanel() {
 						<div>
 							<label style={labelStyle}>Couleur</label>
 							<input type="color" value={factionForm.color} onChange={e => setFactionForm(f => ({ ...f, color: e.target.value }))} style={{ width: '100%', height: '32px', border: '1px solid var(--border)', background: 'transparent', cursor: 'pointer' }} />
+						</div>
+					</div>
+					<div style={{ marginBottom: '1rem' }}>
+						<label style={labelStyle}>Logo</label>
+						<div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+							<button
+								type="button"
+								onClick={() => { const input = document.createElement('input'); input.type = 'file'; input.accept = 'image/*'; input.onchange = () => { if (input.files?.[0]) setFactionLogo(input.files[0]); }; input.click(); }}
+								style={{ background: 'none', border: '1px dashed var(--border)', color: 'var(--muted)', padding: '0.4rem 1rem', cursor: 'pointer', fontSize: '0.8rem' }}
+							>
+								{factionLogo ? '🔄 Changer' : '+ Ajouter un logo'}
+							</button>
+							{factionLogo && <span style={{ fontSize: '0.8rem', color: 'var(--text)' }}>{factionLogo.name}</span>}
 						</div>
 					</div>
 					<button type="submit" disabled={submitting} className="discord-login-btn" style={{ background: 'var(--primary)', padding: '0.5rem 1rem', opacity: submitting ? 0.6 : 1 }}>

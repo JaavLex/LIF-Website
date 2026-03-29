@@ -48,7 +48,7 @@ export async function PATCH(
 	try {
 		const payload = await getPayloadClient();
 
-		// Only admins can update intelligence
+		// Check admin status
 		const user = await payload.find({
 			collection: 'users',
 			where: { discordId: { equals: session.discordId } },
@@ -56,11 +56,25 @@ export async function PATCH(
 		});
 		const isAdmin = user.docs[0]?.role === 'admin';
 
-		if (!isAdmin) {
+		// Get existing report to check ownership
+		const existing = await payload.findByID({ collection: 'intelligence', id: docId, depth: 0 });
+
+		// Check if user owns this report (postedByDiscordId matches session)
+		const isOwner = (existing as any).postedByDiscordId === session.discordId;
+
+		if (!isAdmin && !isOwner) {
 			return NextResponse.json({ message: 'Non autorisé' }, { status: 403 });
 		}
 
 		const body = await request.json();
+
+		// Non-admins cannot update status
+		if (!isAdmin) {
+			delete body.status;
+			delete body.postedByDiscordId;
+			delete body.postedByDiscordUsername;
+		}
+
 		const doc = await payload.update({
 			collection: 'intelligence',
 			id: docId,
