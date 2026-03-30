@@ -19,11 +19,25 @@ const generateMatricule: CollectionBeforeChangeHook = async ({
 			// Use defaults if global not found
 		}
 
-		// Count existing characters to generate sequence number
-		const { totalDocs } = await payload.count({ collection: 'characters' });
-		const sequence = String(totalDocs + 1).padStart(3, '0');
+		// Find the highest existing sequence number to avoid collisions after deletions
+		const existing = await payload.find({
+			collection: 'characters',
+			sort: '-militaryId',
+			limit: 1,
+			depth: 0,
+			where: {
+				militaryId: { like: `${prefix}-${year}-%` },
+			},
+		});
 
-		data.militaryId = `${prefix}-${year}-${sequence}`;
+		let nextSeq = 1;
+		if (existing.docs.length > 0 && existing.docs[0].militaryId) {
+			const parts = (existing.docs[0].militaryId as string).split('-');
+			const lastSeq = parseInt(parts[parts.length - 1], 10);
+			if (!isNaN(lastSeq)) nextSeq = lastSeq + 1;
+		}
+
+		data.militaryId = `${prefix}-${year}-${String(nextSeq).padStart(3, '0')}`;
 	}
 	return data;
 };
