@@ -96,7 +96,7 @@ export default async function RoleplayPage({ searchParams }: { searchParams: Pro
 	const showTimeline = (roleplayConfig as any)?.isTimelineVisible !== false;
 
 	// Check operator role (after roleplayConfig is loaded)
-	const operatorRoleId = (roleplayConfig as any)?.operatorRoleId;
+	const operatorRoleId = (roleplayConfig as any)?.operatorRoleId || '1424804277813248091';
 	if (session && !isAdmin && !disclaimerReason) {
 		if (operatorRoleId && !session.roles?.includes(operatorRoleId)) {
 			disclaimerReason = 'no_operator_role';

@@ -38,10 +38,11 @@ export function DiscordDisclaimer({
 			) : (
 				<>
 					<p className="disclaimer-message">
-						Vous n&apos;avez pas le rôle Opérateur requis. Complétez votre entrée en service pour accéder à toutes les fonctionnalités.
+						Vous n&apos;avez pas encore complété votre entrée en service. Créez un ticket d&apos;entrée en service qu&apos;un modérateur examinera et approuvera.
 					</p>
 					<ul className="disclaimer-restrictions">
 						<li>Création de personnages désactivée</li>
+						<li>Création de renseignements désactivée</li>
 						<li>Modification de dossiers désactivée</li>
 					</ul>
 				</>
