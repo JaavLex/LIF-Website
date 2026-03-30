@@ -242,9 +242,9 @@ async function handleNouveauRenseignement(interaction: ChatInputCommandInteracti
 async function handleNotificationDb(interaction: ChatInputCommandInteraction) {
 	const channel = interaction.options.getChannel('salon', true);
 
-	if (channel.type !== ChannelType.GuildText) {
+	if (channel.type !== ChannelType.GuildText && channel.type !== ChannelType.GuildAnnouncement) {
 		await interaction.reply({
-			content: '❌ Veuillez sélectionner un salon textuel.',
+			content: '❌ Veuillez sélectionner un salon textuel ou d\'annonces.',
 			ephemeral: true,
 		});
 		return;
