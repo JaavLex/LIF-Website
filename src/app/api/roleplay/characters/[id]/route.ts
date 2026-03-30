@@ -55,10 +55,10 @@ export async function PATCH(
 		delete body.discordUsername;
 
 		// Admin reassign: allow full admins to change linked Discord account
-		if (isAdmin && body.linkedDiscordId) {
+		if (isAdmin && body.linkedDiscordId !== undefined) {
 			const { isAdmin: isFullAdmin, level } = await checkAdminPermissions(session);
 			if (isFullAdmin && level === 'full') {
-				body.discordId = body.linkedDiscordId;
+				body.discordId = body.linkedDiscordId || '';
 				body.discordUsername = body.linkedDiscordUsername || '';
 			}
 		}

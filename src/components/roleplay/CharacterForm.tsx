@@ -288,15 +288,13 @@ export function CharacterForm({
 				if (form.isArchived && form.archiveReason)
 					body.archiveReason = form.archiveReason;
 
-				const miscLexical = textToLexical(form.miscellaneous);
-				if (miscLexical) body.miscellaneous = miscLexical;
-				const notesLexical = textToLexical(form.etatMajorNotes);
-				if (notesLexical) body.etatMajorNotes = notesLexical;
+					body.miscellaneous = textToLexical(form.miscellaneous) || null;
+					body.etatMajorNotes = textToLexical(form.etatMajorNotes) || null;
 
 				// Admin reassign linked Discord account
-				if (editData && linkedDiscordId && linkedDiscordId !== editData.discordId) {
+				if (editData && linkedDiscordId !== (editData.discordId || '')) {
 					const selectedUser = allUsers?.find(u => u.discordId === linkedDiscordId);
-					body.linkedDiscordId = linkedDiscordId;
+					body.linkedDiscordId = linkedDiscordId || '';
 					body.linkedDiscordUsername = selectedUser?.discordUsername || '';
 				}
 			}

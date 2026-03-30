@@ -193,20 +193,37 @@ export function PersonnelFilters({
 		unitFilter,
 	]);
 
-	// Group by status for separators
-	const groupedByStatus = useMemo(() => {
-		const groups: { status: string; characters: Character[] }[] = [];
+	// Group by status, then by rank within each status
+	const groupedByStatusAndRank = useMemo(() => {
+		const statusGroups: { status: string; rankGroups: { rank: Rank | null; characters: Character[] }[] }[] = [];
 		let currentStatus = '';
+		let currentRankGroups: { rank: Rank | null; characters: Character[] }[] = [];
 
 		for (const c of filtered) {
 			if (c.status !== currentStatus) {
+				if (currentRankGroups.length > 0) {
+					statusGroups.push({ status: currentStatus, rankGroups: currentRankGroups });
+				}
 				currentStatus = c.status;
-				groups.push({ status: currentStatus, characters: [c] });
+				currentRankGroups = [];
+			}
+
+			const charRank = typeof c.rank === 'object' && c.rank ? c.rank : null;
+			const rankId = charRank?.id ?? -1;
+			const lastRankGroup = currentRankGroups[currentRankGroups.length - 1];
+
+			if (lastRankGroup && (lastRankGroup.rank?.id ?? -1) === rankId) {
+				lastRankGroup.characters.push(c);
 			} else {
-				groups[groups.length - 1].characters.push(c);
+				currentRankGroups.push({ rank: charRank, characters: [c] });
 			}
 		}
-		return groups;
+
+		if (currentRankGroups.length > 0) {
+			statusGroups.push({ status: currentStatus, rankGroups: currentRankGroups });
+		}
+
+		return statusGroups;
 	}, [filtered]);
 
 	const tabs: { key: TabType; label: string; count: number }[] = [
@@ -293,172 +310,207 @@ export function PersonnelFilters({
 				{filtered.length} résultat{filtered.length !== 1 ? 's' : ''}
 			</div>
 
-			{/* Render grouped by status with separators */}
-			{groupedByStatus.map(group => (
-				<div key={group.status}>
+			{/* Render grouped by status then by rank */}
+			{groupedByStatusAndRank.map(statusGroup => (
+				<div key={statusGroup.status}>
 					<div className="status-separator">
-						<span className={`status-badge ${group.status}`}>
-							{STATUS_LABELS[group.status] || group.status}
+						<span className={`status-badge ${statusGroup.status}`}>
+							{STATUS_LABELS[statusGroup.status] || statusGroup.status}
 						</span>
 						<span className="separator-line" />
-						<span className="separator-count">{group.characters.length}</span>
+						<span className="separator-count">
+							{statusGroup.rankGroups.reduce((sum, rg) => sum + rg.characters.length, 0)}
+						</span>
 					</div>
-					<div className="personnel-grid">
-						{group.characters.map(character => (
-							<Link
-								key={character.id}
-								href={`/roleplay/personnage/${character.id}`}
-								className={`personnel-card ${activeTab === 'targets' ? 'target-card' : ''}`}
-							>
-								<div className="personnel-card-header">
-									{character.avatar?.url ? (
-										<Image
-											src={character.avatar.url}
-											alt={character.fullName}
-											width={64}
-											height={64}
-											className="personnel-avatar"
-											unoptimized
-										/>
-									) : (
-										<div className="personnel-avatar-placeholder">
-											{character.firstName?.[0]}
-											{character.lastName?.[0]}
-										</div>
-									)}
-									<div className="personnel-info">
-										<div className="personnel-name">
-											{character.isMainCharacter && (
-												<span
-													className="main-character-badge"
-													title="Personnage principal"
-												>
-													★
-												</span>
-											)}
-											{character.fullName}
-										</div>
-										{character.rank && typeof character.rank === 'object' && (
-											<div
-												className="personnel-rank"
-												style={{
-													display: 'flex',
-													alignItems: 'center',
-													gap: '0.35rem',
-												}}
-											>
-												{character.rank.icon?.url && (
-													<Image
-														src={character.rank.icon.url}
-														alt={character.rank.name}
-														width={18}
-														height={18}
-														unoptimized
-													/>
-												)}
-												<span>
-													{character.rank.abbreviation || character.rank.name}
-												</span>
-											</div>
-										)}
-										{!character.rank && (
-											<div
-												className="personnel-rank"
-												style={{ color: 'var(--muted)' }}
-											>
-												Aucun grade
-											</div>
-										)}
-										{character.unit && typeof character.unit === 'object' && (
-											<div className="personnel-unit-info">
-												{character.unit.insignia?.url && (
-													<Image
-														src={character.unit.insignia.url}
-														alt={character.unit.name}
-														width={16}
-														height={16}
-														className="unit-insignia-small"
-														unoptimized
-													/>
-												)}
-												<span>{character.unit.name}</span>
-											</div>
-										)}
-										{/* Faction display */}
-										{!character.isTarget && character.faction && (() => {
-											const factionObj = factions?.find(f => f.name === character.faction);
-											return (
-												<div className="personnel-unit-info" style={{ color: factionObj?.color || 'var(--muted)' }}>
-													{factionObj?.logo?.url && (
-														<Image
-															src={factionObj.logo.url}
-															alt={character.faction}
-															width={16}
-															height={16}
-															style={{ objectFit: 'contain' }}
-															unoptimized
-														/>
-													)}
-													<span>{character.faction}</span>
-												</div>
-											);
-										})()}
-										{/* Target-specific: faction and threat */}
-										{character.isTarget && character.targetFaction && (() => {
-											const factionObj = factions?.find(f => f.name === character.targetFaction);
-											return (
-												<div className="target-faction-info" style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-													{factionObj?.logo?.url && (
-														<Image
-															src={factionObj.logo.url}
-															alt={character.targetFaction}
-															width={16}
-															height={16}
-															style={{ objectFit: 'contain' }}
-															unoptimized
-														/>
-													)}
-													<span>{character.targetFaction}</span>
-												</div>
-											);
-										})()}
-										{character.isTarget && character.threatLevel && (
-											<span className={`threat-badge ${character.threatLevel}`}>
-												{THREAT_LABELS[character.threatLevel] ||
-													character.threatLevel}
-											</span>
-										)}
-										{character.discordUsername && (
-											<div
-												style={{
-													fontSize: '0.7rem',
-													color: 'var(--muted)',
-													marginTop: '0.15rem',
-												}}
-											>
-												@{character.discordUsername}
-											</div>
-										)}
-									</div>
-								</div>
-								<div className="personnel-card-meta">
-									<span className="personnel-id">{character.militaryId || '—'}</span>
-									<div
-										style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}
+					{statusGroup.rankGroups.map((rankGroup, rgIdx) => (
+						<div key={rgIdx}>
+							<div style={{
+								display: 'flex',
+								alignItems: 'center',
+								gap: '0.5rem',
+								margin: '0.75rem 0 0.4rem',
+								paddingLeft: '0.25rem',
+							}}>
+								{rankGroup.rank?.icon?.url && (
+									<Image
+										src={rankGroup.rank.icon.url}
+										alt={rankGroup.rank.name}
+										width={20}
+										height={20}
+										unoptimized
+									/>
+								)}
+								<span style={{
+									fontSize: '0.8rem',
+									color: 'var(--muted)',
+									fontWeight: 600,
+									textTransform: 'uppercase',
+									letterSpacing: '0.05em',
+								}}>
+									{rankGroup.rank ? rankGroup.rank.name : 'Aucun grade'}
+								</span>
+								<span style={{ fontSize: '0.7rem', color: 'var(--muted)' }}>
+									({rankGroup.characters.length})
+								</span>
+							</div>
+							<div className="personnel-grid">
+								{rankGroup.characters.map(character => (
+									<Link
+										key={character.id}
+										href={`/roleplay/personnage/${character.id}`}
+										className={`personnel-card ${activeTab === 'targets' ? 'target-card' : ''}`}
 									>
-										<span className={`status-badge ${character.status}`}>
-											{STATUS_LABELS[character.status] || character.status}
-										</span>
-										<span
-											className={`classification-badge ${character.classification}`}
-										>
-											{character.classification}
-										</span>
-									</div>
-								</div>
-							</Link>
-						))}
-					</div>
+										<div className="personnel-card-header">
+											{character.avatar?.url ? (
+												<Image
+													src={character.avatar.url}
+													alt={character.fullName}
+													width={64}
+													height={64}
+													className="personnel-avatar"
+													unoptimized
+												/>
+											) : (
+												<div className="personnel-avatar-placeholder">
+													{character.firstName?.[0]}
+													{character.lastName?.[0]}
+												</div>
+											)}
+											<div className="personnel-info">
+												<div className="personnel-name">
+													{character.isMainCharacter && (
+														<span
+															className="main-character-badge"
+															title="Personnage principal"
+														>
+															★
+														</span>
+													)}
+													{character.fullName}
+												</div>
+												{character.rank && typeof character.rank === 'object' && (
+													<div
+														className="personnel-rank"
+														style={{
+															display: 'flex',
+															alignItems: 'center',
+															gap: '0.35rem',
+														}}
+													>
+														{character.rank.icon?.url && (
+															<Image
+																src={character.rank.icon.url}
+																alt={character.rank.name}
+																width={18}
+																height={18}
+																unoptimized
+															/>
+														)}
+														<span>
+															{character.rank.abbreviation || character.rank.name}
+														</span>
+													</div>
+												)}
+												{!character.rank && (
+													<div
+														className="personnel-rank"
+														style={{ color: 'var(--muted)' }}
+													>
+														Aucun grade
+													</div>
+												)}
+												{character.unit && typeof character.unit === 'object' && (
+													<div className="personnel-unit-info">
+														{character.unit.insignia?.url && (
+															<Image
+																src={character.unit.insignia.url}
+																alt={character.unit.name}
+																width={16}
+																height={16}
+																className="unit-insignia-small"
+																unoptimized
+															/>
+														)}
+														<span>{character.unit.name}</span>
+													</div>
+												)}
+												{/* Faction display */}
+												{!character.isTarget && character.faction && (() => {
+													const factionObj = factions?.find(f => f.name === character.faction);
+													return (
+														<div className="personnel-unit-info" style={{ color: factionObj?.color || 'var(--muted)' }}>
+															{factionObj?.logo?.url && (
+																<Image
+																	src={factionObj.logo.url}
+																	alt={character.faction}
+																	width={16}
+																	height={16}
+																	style={{ objectFit: 'contain' }}
+																	unoptimized
+																/>
+															)}
+															<span>{character.faction}</span>
+														</div>
+													);
+												})()}
+												{/* Target-specific: faction and threat */}
+												{character.isTarget && character.targetFaction && (() => {
+													const factionObj = factions?.find(f => f.name === character.targetFaction);
+													return (
+														<div className="target-faction-info" style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+															{factionObj?.logo?.url && (
+																<Image
+																	src={factionObj.logo.url}
+																	alt={character.targetFaction}
+																	width={16}
+																	height={16}
+																	style={{ objectFit: 'contain' }}
+																	unoptimized
+																/>
+															)}
+															<span>{character.targetFaction}</span>
+														</div>
+													);
+												})()}
+												{character.isTarget && character.threatLevel && (
+													<span className={`threat-badge ${character.threatLevel}`}>
+														{THREAT_LABELS[character.threatLevel] ||
+															character.threatLevel}
+													</span>
+												)}
+												{character.discordUsername && (
+													<div
+														style={{
+															fontSize: '0.7rem',
+															color: 'var(--muted)',
+															marginTop: '0.15rem',
+														}}
+													>
+														@{character.discordUsername}
+													</div>
+												)}
+											</div>
+										</div>
+										<div className="personnel-card-meta">
+											<span className="personnel-id">{character.militaryId || '—'}</span>
+											<div
+												style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}
+											>
+												<span className={`status-badge ${character.status}`}>
+													{STATUS_LABELS[character.status] || character.status}
+												</span>
+												<span
+													className={`classification-badge ${character.classification}`}
+												>
+													{character.classification}
+												</span>
+											</div>
+										</div>
+									</Link>
+								))}
+							</div>
+						</div>
+					))}
 				</div>
 			))}
 
