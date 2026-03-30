@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 
 interface UnitItem {
 	id: number;
@@ -33,7 +34,7 @@ export function AdminPanel({
 	const [success, setSuccess] = useState('');
 	const [localUnits, setLocalUnits] = useState(units);
 	const [localFactions, setLocalFactions] = useState(factions);
-	const [unitForm, setUnitForm] = useState({ name: '', slug: '', color: '#4a7c23' });
+	const [unitForm, setUnitForm] = useState({ name: '', slug: '', color: '#4a7c23', parentFaction: '' });
 	const [unitInsignia, setUnitInsignia] = useState<File | null>(null);
 	const [factionForm, setFactionForm] = useState({
 		name: '',
@@ -69,6 +70,8 @@ export function AdminPanel({
 
 			const body: any = { ...unitForm };
 			if (insigniaId) body.insignia = insigniaId;
+			if (body.parentFaction) body.parentFaction = parseInt(body.parentFaction);
+			else delete body.parentFaction;
 
 			const res = await fetch('/api/roleplay/units', {
 				method: 'POST',
@@ -80,7 +83,7 @@ export function AdminPanel({
 				throw new Error(data.message || 'Erreur');
 			}
 			setSuccess(`Unité "${unitForm.name}" créée`);
-			setUnitForm({ name: '', slug: '', color: '#4a7c23' });
+			setUnitForm({ name: '', slug: '', color: '#4a7c23', parentFaction: '' });
 			setUnitInsignia(null);
 			setShowUnitForm(false);
 			setTimeout(() => window.location.reload(), 1000);
@@ -307,6 +310,22 @@ export function AdminPanel({
 							)}
 						</div>
 					</div>
+					<div style={{ marginBottom: '1rem' }}>
+						<label style={labelStyle}>Faction parente</label>
+						<select
+							value={unitForm.parentFaction}
+							onChange={e => setUnitForm(f => ({ ...f, parentFaction: e.target.value }))}
+							className="filter-select"
+							style={{ width: '100%' }}
+						>
+							<option value="">— Aucune —</option>
+							{localFactions.map(f => (
+								<option key={f.id} value={f.id}>
+									{f.name}
+								</option>
+							))}
+						</select>
+					</div>
 					<button
 						type="submit"
 						disabled={submitting}
@@ -487,14 +506,16 @@ export function AdminPanel({
 											style={{ width: 20, height: 20, objectFit: 'contain' }}
 										/>
 									)}
-									<span
+									<Link
+										href={`/roleplay/unite/${unit.slug}`}
 										style={{
 											fontSize: '0.85rem',
 											color: unit.color || 'var(--text)',
+											textDecoration: 'none',
 										}}
 									>
 										{unit.name}
-									</span>
+									</Link>
 								</div>
 								<button
 									type="button"
@@ -563,14 +584,16 @@ export function AdminPanel({
 											style={{ width: 20, height: 20, objectFit: 'contain' }}
 										/>
 									)}
-									<span
+									<Link
+										href={`/roleplay/faction/${faction.slug}`}
 										style={{
 											fontSize: '0.85rem',
 											color: faction.color || 'var(--text)',
+											textDecoration: 'none',
 										}}
 									>
 										{faction.name}
-									</span>
+									</Link>
 									<span style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>
 										({faction.type || 'neutre'})
 									</span>

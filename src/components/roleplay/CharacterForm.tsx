@@ -128,7 +128,7 @@ export function CharacterForm({
 		physicalDescription: editData?.physicalDescription || '',
 		motto: editData?.motto || '',
 		previousUnit: editData?.previousUnit || '',
-		faction: editData?.faction || '',
+		faction: editData?.faction || 'LIF',
 		unit: editData?.unit?.id || editData?.unit || '',
 		isMainCharacter: editData?.isMainCharacter || false,
 		civilianBackground: lexicalToText(editData?.civilianBackground),
@@ -264,6 +264,11 @@ export function CharacterForm({
 			// Rank: auto-detected from Discord roles (not user-settable) — only for non-NPC
 			if (detectedRank && !editData && !isNpcMode) {
 				body.rank = detectedRank.id;
+			}
+
+			// Faction — sent for all users (default LIF), but only admin can change it
+			if (!editData) {
+				body.faction = form.faction || 'LIF';
 			}
 
 			// Admin-only fields
@@ -765,6 +770,37 @@ export function CharacterForm({
 							/>
 						</div>
 					</div>
+
+					<div style={gridTwo}>
+						<div>
+							<label style={labelStyle}>Faction{!isAdmin && ' (défini par l\'administration)'}</label>
+							{isAdmin ? (
+								<select
+									name="faction"
+									value={form.faction}
+									onChange={handleChange}
+									className="filter-select"
+									style={{ width: '100%' }}
+								>
+									<option value="">— Aucune —</option>
+									{(factions || []).map(f => (
+										<option key={f.id} value={f.name}>
+											{f.name}{f.type ? ` (${f.type})` : ''}
+										</option>
+									))}
+								</select>
+							) : (
+								<input
+									type="text"
+									value={form.faction || '—'}
+									readOnly
+									disabled
+									className="filter-input"
+									style={{ width: '100%', opacity: 0.7 }}
+								/>
+							)}
+						</div>
+					</div>
 				</div>
 
 				{/* --- Admin-only section --- */}
@@ -930,23 +966,6 @@ export function CharacterForm({
 						</div>
 
 						<div style={gridTwo}>
-							<div>
-								<label style={labelStyle}>Faction</label>
-								<select
-									name="faction"
-									value={form.faction}
-									onChange={handleChange}
-									className="filter-select"
-									style={{ width: '100%' }}
-								>
-									<option value="">— Aucune —</option>
-									{(factions || []).map(f => (
-										<option key={f.id} value={f.name}>
-											{f.name}{f.type ? ` (${f.type})` : ''}
-										</option>
-									))}
-								</select>
-							</div>
 							<div
 								style={{
 									display: 'flex',

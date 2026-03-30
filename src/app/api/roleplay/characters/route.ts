@@ -42,6 +42,10 @@ export async function POST(request: NextRequest) {
 			delete body.isTarget;
 			delete body.targetFaction;
 			delete body.etatMajorNotes;
+			delete body.faction;
+
+			// Default faction for non-NPC characters
+			body.faction = 'LIF';
 
 			// Auto-assign rank from Discord roles
 			if (session.roles?.length) {

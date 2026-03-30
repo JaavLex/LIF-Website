@@ -70,6 +70,17 @@ export default async function CharacterPage({
 	const superior =
 		typeof character.superiorOfficer === 'object' ? character.superiorOfficer : null;
 
+	// Fetch factions for logo/color display
+	const factionsResult = await payload
+		.find({ collection: 'factions', limit: 100, depth: 1 })
+		.catch(() => ({ docs: [] }));
+	const factionObj = character.faction
+		? factionsResult.docs.find((f: any) => f.name === character.faction)
+		: null;
+	const targetFactionObj = character.targetFaction
+		? factionsResult.docs.find((f: any) => f.name === character.targetFaction)
+		: null;
+
 	// Check if current user is the owner or admin
 	const cookieStore = await cookies();
 	const token = cookieStore.get('roleplay-session')?.value;
@@ -259,13 +270,51 @@ export default async function CharacterPage({
 											unoptimized
 										/>
 									)}
-									{unit?.name || '—'}
+									{unit ? (
+										<Link
+											href={`/roleplay/unite/${unit.slug}`}
+											style={{ color: unit.color || 'var(--primary)' }}
+										>
+											{unit.name}
+										</Link>
+									) : (
+										'—'
+									)}
 								</span>
 							</div>
 							{character.faction && (
 								<div className="info-row">
 									<span className="info-label">Faction</span>
-									<span className="info-value">{character.faction}</span>
+									<span
+										className="info-value"
+										style={{
+											display: 'flex',
+											alignItems: 'center',
+											gap: '0.35rem',
+											color: (factionObj as any)?.color || 'inherit',
+										}}
+									>
+										{(factionObj as any)?.logo?.url && (
+											<Image
+												src={(factionObj as any).logo.url}
+												alt={character.faction}
+												width={18}
+												height={18}
+												style={{ objectFit: 'contain' }}
+												unoptimized
+											/>
+										)}
+										{(factionObj as any)?.slug ? (
+											<Link
+												href={`/roleplay/faction/${(factionObj as any).slug}`}
+												style={{ color: (factionObj as any)?.color || 'var(--primary)' }}
+											>
+												{character.faction}
+											</Link>
+										) : (
+											character.faction
+										)}
+									</span>
 								</div>
 							)}
 							{character.isTarget && (
@@ -275,8 +324,23 @@ export default async function CharacterPage({
 											<span className="info-label">Faction cible</span>
 											<span
 												className="info-value"
-												style={{ color: 'var(--danger)' }}
+												style={{
+													display: 'flex',
+													alignItems: 'center',
+													gap: '0.35rem',
+													color: (targetFactionObj as any)?.color || 'var(--danger)',
+												}}
 											>
+												{(targetFactionObj as any)?.logo?.url && (
+													<Image
+														src={(targetFactionObj as any).logo.url}
+														alt={character.targetFaction}
+														width={18}
+														height={18}
+														style={{ objectFit: 'contain' }}
+														unoptimized
+													/>
+												)}
 												{character.targetFaction}
 											</span>
 										</div>

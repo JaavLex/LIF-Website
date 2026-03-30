@@ -296,6 +296,7 @@ export default async function RoleplayPage({
 					characters={JSON.parse(JSON.stringify(characters.docs))}
 					ranks={JSON.parse(JSON.stringify(ranks.docs))}
 					units={JSON.parse(JSON.stringify(units.docs))}
+					factions={JSON.parse(JSON.stringify(factions.docs))}
 					sessionDiscordId={session?.discordId}
 					isAdmin={isAdmin}
 				/>

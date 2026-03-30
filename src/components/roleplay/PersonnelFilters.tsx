@@ -43,6 +43,15 @@ interface Unit {
 	slug: string;
 }
 
+interface FactionItem {
+	id: number;
+	name: string;
+	slug: string;
+	type?: string;
+	color?: string;
+	logo?: { url?: string } | null;
+}
+
 const STATUS_LABELS: Record<string, string> = {
 	'in-service': 'En service',
 	kia: 'KIA',
@@ -76,12 +85,14 @@ export function PersonnelFilters({
 	characters,
 	ranks,
 	units,
+	factions,
 	sessionDiscordId,
 	isAdmin,
 }: {
 	characters: Character[];
 	ranks: Rank[];
 	units: Unit[];
+	factions?: FactionItem[];
 	sessionDiscordId?: string;
 	isAdmin?: boolean;
 }) {
@@ -373,12 +384,44 @@ export function PersonnelFilters({
 												<span>{character.unit.name}</span>
 											</div>
 										)}
+										{/* Faction display */}
+										{!character.isTarget && character.faction && (() => {
+											const factionObj = factions?.find(f => f.name === character.faction);
+											return (
+												<div className="personnel-unit-info" style={{ color: factionObj?.color || 'var(--muted)' }}>
+													{factionObj?.logo?.url && (
+														<Image
+															src={factionObj.logo.url}
+															alt={character.faction}
+															width={16}
+															height={16}
+															style={{ objectFit: 'contain' }}
+															unoptimized
+														/>
+													)}
+													<span>{character.faction}</span>
+												</div>
+											);
+										})()}
 										{/* Target-specific: faction and threat */}
-										{character.isTarget && character.targetFaction && (
-											<div className="target-faction-info">
-												{character.targetFaction}
-											</div>
-										)}
+										{character.isTarget && character.targetFaction && (() => {
+											const factionObj = factions?.find(f => f.name === character.targetFaction);
+											return (
+												<div className="target-faction-info" style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+													{factionObj?.logo?.url && (
+														<Image
+															src={factionObj.logo.url}
+															alt={character.targetFaction}
+															width={16}
+															height={16}
+															style={{ objectFit: 'contain' }}
+															unoptimized
+														/>
+													)}
+													<span>{character.targetFaction}</span>
+												</div>
+											);
+										})()}
 										{character.isTarget && character.threatLevel && (
 											<span className={`threat-badge ${character.threatLevel}`}>
 												{THREAT_LABELS[character.threatLevel] ||

@@ -75,6 +75,7 @@ export async function PATCH(
 			delete body.isTarget;
 			delete body.targetFaction;
 			delete body.etatMajorNotes;
+			delete body.faction;
 		}
 
 		const oldStatus = existing.status;

@@ -48,10 +48,10 @@ export const Units: CollectionConfig = {
 			relationTo: 'characters',
 		},
 		{
-			name: 'parentUnit',
-			label: 'Unité parente',
+			name: 'parentFaction',
+			label: 'Faction parente',
 			type: 'relationship',
-			relationTo: 'units',
+			relationTo: 'factions',
 			admin: {
 				position: 'sidebar',
 			},
