@@ -1536,12 +1536,18 @@
 	border-color: var(--primary);
 }
 
-/* Admin Tutorial Debug Button */
-.tutorial-debug-btn {
+/* Tutorial Buttons Container */
+.tutorial-buttons {
 	position: fixed;
 	bottom: 12px;
-	right: 12px;
+	left: 12px;
 	z-index: 1002;
+	display: flex;
+	gap: 0.5rem;
+	flex-direction: column;
+}
+
+.tutorial-debug-btn {
 	padding: 0.35rem 0.75rem;
 	font-family: 'Courier New', monospace;
 	font-size: 0.7rem;
@@ -1557,6 +1563,17 @@
 .tutorial-debug-btn:hover {
 	background: rgba(74, 124, 35, 0.25);
 	border-color: var(--primary);
+}
+
+.tutorial-admin-btn {
+	color: #c9a040;
+	border-color: rgba(201, 160, 64, 0.4);
+	background: rgba(201, 160, 64, 0.08);
+}
+
+.tutorial-admin-btn:hover {
+	background: rgba(201, 160, 64, 0.2);
+	border-color: #c9a040;
 }
 
 /* Tutorial responsive */
@@ -1579,8 +1596,8 @@
 		justify-content: flex-end;
 	}
 
-	.tutorial-debug-btn {
+	.tutorial-buttons {
 		bottom: 60px;
-		right: 12px;
+		left: 12px;
 	}
 }

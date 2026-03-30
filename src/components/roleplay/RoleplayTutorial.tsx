@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 
 const TUTORIAL_SEEN_KEY = 'lif-roleplay-tutorial-seen';
+const ADMIN_TUTORIAL_SEEN_KEY = 'lif-roleplay-admin-tutorial-seen';
 
 interface TutorialStep {
 	id: string;
@@ -10,71 +11,80 @@ interface TutorialStep {
 	title: string;
 	content: string;
 	position: 'top' | 'bottom' | 'left' | 'right' | 'center';
+	adminOnly?: boolean;
 }
 
-const STEPS: TutorialStep[] = [
+const USER_STEPS: TutorialStep[] = [
 	{
 		id: 'welcome',
 		target: null,
 		title: 'BIENVENUE, OPÉRATEUR',
 		content:
-			"Première connexion détectée. Ce briefing va vous présenter les systèmes de la Base de Données du Personnel. Utilisez les flèches du clavier ou les boutons pour naviguer.",
+			"Première connexion détectée. Ce briefing va vous guider à travers les systèmes de la Base de Données. Naviguez avec les boutons ou les flèches du clavier.",
 		position: 'center',
-	},
-	{
-		id: 'hero',
-		target: '[data-tutorial="hero"]',
-		title: 'IDENTIFICATION DE LA BASE',
-		content:
-			"L'en-tête affiche l'identité visuelle de votre unité — logo, désignation et classification d'accès.",
-		position: 'bottom',
 	},
 	{
 		id: 'session',
 		target: '[data-tutorial="session-bar"]',
-		title: 'AUTHENTIFICATION',
+		title: 'CONNEXION DISCORD',
 		content:
-			'Connectez-vous via Discord pour accéder à votre dossier personnel, créer un personnage et utiliser les fonctionnalités avancées.',
+			'Connectez-vous avec votre compte Discord pour accéder à vos dossiers, créer un personnage et soumettre des renseignements.',
 		position: 'bottom',
 	},
 	{
-		id: 'navigation',
+		id: 'lore',
 		target: '[data-tutorial="navigation"]',
-		title: 'NAVIGATION',
+		title: 'LORE & CHRONOLOGIE',
 		content:
-			'Accédez aux différents modules : Lore & Chronologie, et autres sections spécialisées disponibles.',
+			"Ce bouton vous donne accès à l'univers du roleplay — l'histoire, le contexte et la chronologie des événements.",
 		position: 'bottom',
 	},
 	{
 		id: 'personnel',
 		target: '[data-tutorial="personnel-panel"]',
-		title: 'BASE DE DONNÉES DU PERSONNEL',
+		title: 'REGISTRE DU PERSONNEL',
 		content:
-			'Le registre principal. Tous les dossiers du personnel enregistré sont consultables ici.',
+			'Tous les dossiers du personnel sont répertoriés ici. Cliquez sur une fiche pour consulter le profil complet : identité, grade, unité, historique...',
 		position: 'top',
 	},
 	{
 		id: 'filters',
 		target: '[data-tutorial="filters"]',
-		title: 'FILTRES & ONGLETS',
+		title: 'RECHERCHE & FILTRES',
 		content:
-			'Basculez entre Personnel, Cibles et Vos Personnages. Filtrez par statut, grade ou unité. Recherchez par nom ou matricule.',
+			"Les onglets Personnel, Cibles et Mes Personnages permettent de trier l'affichage. Utilisez la barre de recherche et les filtres par statut, grade ou unité.",
 		position: 'bottom',
+	},
+	{
+		id: 'create-char',
+		target: null,
+		title: 'CRÉER UN PERSONNAGE',
+		content:
+			"Une fois connecté, cliquez sur « Nouveau Personnage » dans la barre de session. Remplissez la fiche : nom, prénom, date de naissance, lieu d'origine, description physique, et background (civil, militaire, judiciaire). Ajoutez vos spécialisations et un avatar.",
+		position: 'center',
 	},
 	{
 		id: 'intelligence',
 		target: '[data-tutorial="intelligence"]',
-		title: 'SECTION RENSEIGNEMENTS',
+		title: 'RENSEIGNEMENTS',
 		content:
-			'Les rapports de renseignement terrain sont répertoriés ici. Les agents disposant des autorisations requises peuvent soumettre de nouveaux rapports.',
+			'La section renseignements regroupe les rapports terrain. Les agents autorisés peuvent consulter et filtrer les rapports existants.',
 		position: 'top',
+	},
+	{
+		id: 'create-intel',
+		target: null,
+		title: 'SOUMETTRE UN RAPPORT',
+		content:
+			"Pour créer un rapport de renseignement, cliquez sur « Nouveau rapport ». Renseignez le titre, la date, le type (observation, reconnaissance, SIGINT...), la description, et éventuellement les coordonnées et médias associés. Liez une cible ou faction si applicable.",
+		position: 'center',
 	},
 	{
 		id: 'audio',
 		target: '[data-tutorial="audio-controls"]',
 		title: 'CONTRÔLES AUDIO',
 		content:
-			"Activez ou coupez la musique d'ambiance et réglez le volume. Vos préférences sont sauvegardées automatiquement.",
+			"Coupez ou activez la musique d'ambiance et réglez le volume. Vos préférences sont sauvegardées automatiquement.",
 		position: 'top',
 	},
 	{
@@ -82,24 +92,113 @@ const STEPS: TutorialStep[] = [
 		target: null,
 		title: 'BRIEFING TERMINÉ',
 		content:
-			'Tous les systèmes sont opérationnels. Cliquez sur un dossier pour consulter les détails complets. Bonne exploration, opérateur.',
+			"Vous êtes prêt. Explorez les dossiers, créez votre personnage et contribuez aux renseignements. Vous pouvez relancer ce tutoriel à tout moment via le bouton en bas à gauche.",
 		position: 'center',
 	},
 ];
 
+const ADMIN_STEPS: TutorialStep[] = [
+	{
+		id: 'admin-welcome',
+		target: null,
+		title: 'BRIEFING ADMINISTRATEUR',
+		content:
+			"Ce briefing complémentaire couvre les fonctionnalités réservées aux administrateurs. Vous pouvez le relancer depuis le bouton « Tutoriel Admin » en bas à gauche.",
+		position: 'center',
+		adminOnly: true,
+	},
+	{
+		id: 'admin-panel',
+		target: '[data-tutorial="admin-panel"]',
+		title: 'PANNEAU D\'ADMINISTRATION',
+		content:
+			"Ce panneau vous permet de créer et gérer les Unités et Factions. Ajoutez une unité avec nom, slug, couleur et insigne. Ajoutez une faction avec type (alliée, ennemie, neutre), couleur et logo.",
+		position: 'bottom',
+		adminOnly: true,
+	},
+	{
+		id: 'admin-archives',
+		target: '[data-tutorial="filters"]',
+		title: 'ONGLET ARCHIVES',
+		content:
+			"En tant qu'admin, vous disposez d'un onglet « Archives » supplémentaire dans les filtres. Il affiche tous les dossiers archivés, masqués aux utilisateurs normaux.",
+		position: 'bottom',
+		adminOnly: true,
+	},
+	{
+		id: 'admin-char-management',
+		target: null,
+		title: 'GESTION DES PERSONNAGES',
+		content:
+			"Sur chaque fiche personnage, vous pouvez : modifier le grade (avec override Discord), changer le statut (KIA, MIA, retraité...), définir la classification, marquer comme cible/ennemi avec niveau de menace, ajouter des notes État-Major, et archiver le dossier.",
+		position: 'center',
+		adminOnly: true,
+	},
+	{
+		id: 'admin-timeline',
+		target: null,
+		title: 'CHRONOLOGIE DES PERSONNAGES',
+		content:
+			"Vous pouvez ajouter des événements à la chronologie de chaque personnage (promotion, mutation, blessure, médaille, sanction...) et supprimer des événements existants. Chaque événement a un type, une date, un titre et une classification.",
+		position: 'center',
+		adminOnly: true,
+	},
+	{
+		id: 'admin-intel',
+		target: '[data-tutorial="intelligence"]',
+		title: 'GESTION DES RENSEIGNEMENTS',
+		content:
+			"Vous pouvez modifier le statut de chaque rapport (à vérifier, vérifié, fausse info, non concluant), éditer ou supprimer n'importe quel rapport, et filtrer par statut — fonctions réservées aux admins.",
+		position: 'top',
+		adminOnly: true,
+	},
+	{
+		id: 'admin-npc',
+		target: null,
+		title: 'FICHES PNJ',
+		content:
+			"Lors de la création d'un personnage, vous pouvez cocher « Fiche PNJ » pour créer un personnage non lié à un compte Discord. Utile pour les personnages non-joueurs du roleplay.",
+		position: 'center',
+		adminOnly: true,
+	},
+	{
+		id: 'admin-complete',
+		target: null,
+		title: 'BRIEFING ADMIN TERMINÉ',
+		content:
+			"Vous maîtrisez maintenant l'ensemble des outils d'administration. Gérez les personnages, les renseignements, les unités et factions avec précision.",
+		position: 'center',
+		adminOnly: true,
+	},
+];
+
+type TutorialMode = 'user' | 'admin';
+
 export function RoleplayTutorial({ isAdmin }: { isAdmin?: boolean }) {
 	const [active, setActive] = useState(false);
+	const [mode, setMode] = useState<TutorialMode>('user');
 	const [currentStep, setCurrentStep] = useState(0);
 	const [spotlightRect, setSpotlightRect] = useState<DOMRect | null>(null);
 	const [tooltipStyle, setTooltipStyle] = useState<React.CSSProperties>({});
 	const animatingRef = useRef(false);
 
+	const steps = mode === 'admin' ? ADMIN_STEPS : USER_STEPS;
+
 	useEffect(() => {
 		if (!localStorage.getItem(TUTORIAL_SEEN_KEY)) {
-			const timer = setTimeout(() => setActive(true), 1000);
+			const timer = setTimeout(() => {
+				setMode('user');
+				setActive(true);
+			}, 1000);
+			return () => clearTimeout(timer);
+		} else if (isAdmin && !localStorage.getItem(ADMIN_TUTORIAL_SEEN_KEY)) {
+			const timer = setTimeout(() => {
+				setMode('admin');
+				setActive(true);
+			}, 1000);
 			return () => clearTimeout(timer);
 		}
-	}, []);
+	}, [isAdmin]);
 
 	const positionTooltip = useCallback((step: TutorialStep) => {
 		if (!step.target || step.position === 'center') {
@@ -179,13 +278,13 @@ export function RoleplayTutorial({ isAdmin }: { isAdmin?: boolean }) {
 	useEffect(() => {
 		if (!active) return;
 		animatingRef.current = true;
-		positionTooltip(STEPS[currentStep]);
-	}, [active, currentStep, positionTooltip]);
+		positionTooltip(steps[currentStep]);
+	}, [active, currentStep, positionTooltip, steps]);
 
 	useEffect(() => {
 		if (!active) return;
 		const handler = () => {
-			if (!animatingRef.current) positionTooltip(STEPS[currentStep]);
+			if (!animatingRef.current) positionTooltip(steps[currentStep]);
 		};
 		window.addEventListener('resize', handler);
 		window.addEventListener('scroll', handler, true);
@@ -193,47 +292,57 @@ export function RoleplayTutorial({ isAdmin }: { isAdmin?: boolean }) {
 			window.removeEventListener('resize', handler);
 			window.removeEventListener('scroll', handler, true);
 		};
-	}, [active, currentStep, positionTooltip]);
+	}, [active, currentStep, positionTooltip, steps]);
 
 	const closeTutorial = useCallback(() => {
-		localStorage.setItem(TUTORIAL_SEEN_KEY, '1');
+		if (mode === 'admin') {
+			localStorage.setItem(ADMIN_TUTORIAL_SEEN_KEY, '1');
+		} else {
+			localStorage.setItem(TUTORIAL_SEEN_KEY, '1');
+		}
 		setActive(false);
 		setCurrentStep(0);
-	}, []);
+	}, [mode]);
 
 	const goToStep = useCallback(
 		(direction: 'next' | 'prev') => {
 			if (animatingRef.current) return;
 
 			if (direction === 'next') {
-				if (currentStep >= STEPS.length - 1) {
+				if (currentStep >= steps.length - 1) {
 					closeTutorial();
 					return;
 				}
-				// Skip steps with missing targets
 				let next = currentStep + 1;
-				while (next < STEPS.length) {
-					const s = STEPS[next];
+				while (next < steps.length) {
+					const s = steps[next];
 					if (!s.target || s.position === 'center' || document.querySelector(s.target)) break;
 					next++;
 				}
-				if (next < STEPS.length) setCurrentStep(next);
+				if (next < steps.length) setCurrentStep(next);
 				else closeTutorial();
 			} else {
 				if (currentStep <= 0) return;
 				let prev = currentStep - 1;
 				while (prev >= 0) {
-					const s = STEPS[prev];
+					const s = steps[prev];
 					if (!s.target || s.position === 'center' || document.querySelector(s.target)) break;
 					prev--;
 				}
 				if (prev >= 0) setCurrentStep(prev);
 			}
 		},
-		[currentStep, closeTutorial],
+		[currentStep, closeTutorial, steps],
 	);
 
-	const startTutorial = useCallback(() => {
+	const startUserTutorial = useCallback(() => {
+		setMode('user');
+		setCurrentStep(0);
+		setActive(true);
+	}, []);
+
+	const startAdminTutorial = useCallback(() => {
+		setMode('admin');
 		setCurrentStep(0);
 		setActive(true);
 	}, []);
@@ -255,19 +364,31 @@ export function RoleplayTutorial({ isAdmin }: { isAdmin?: boolean }) {
 		return () => window.removeEventListener('keydown', handler);
 	}, [active, closeTutorial, goToStep]);
 
-	const step = STEPS[currentStep];
+	const step = steps[currentStep];
 
 	return (
 		<>
-			{isAdmin && !active && (
-				<button
-					type="button"
-					className="tutorial-debug-btn"
-					onClick={startTutorial}
-					title="Relancer le tutoriel interactif"
-				>
-					▶ TUTORIEL
-				</button>
+			{!active && (
+				<div className="tutorial-buttons">
+					<button
+						type="button"
+						className="tutorial-debug-btn"
+						onClick={startUserTutorial}
+						title="Relancer le tutoriel"
+					>
+						? TUTORIEL
+					</button>
+					{isAdmin && (
+						<button
+							type="button"
+							className="tutorial-debug-btn tutorial-admin-btn"
+							onClick={startAdminTutorial}
+							title="Tutoriel administrateur"
+						>
+							⚙ ADMIN
+						</button>
+					)}
+				</div>
 			)}
 
 			{active && (
@@ -289,7 +410,7 @@ export function RoleplayTutorial({ isAdmin }: { isAdmin?: boolean }) {
 					<div className="tutorial-tooltip" style={tooltipStyle}>
 						<div className="tutorial-tooltip-header">
 							<span className="tutorial-step-badge">
-								{currentStep + 1}/{STEPS.length}
+								{currentStep + 1}/{steps.length}
 							</span>
 							<h3 className="tutorial-tooltip-title">{step.title}</h3>
 							<button
@@ -327,7 +448,7 @@ export function RoleplayTutorial({ isAdmin }: { isAdmin?: boolean }) {
 									className="tutorial-btn tutorial-btn-next"
 									onClick={() => goToStep('next')}
 								>
-									{currentStep < STEPS.length - 1
+									{currentStep < steps.length - 1
 										? 'Suivant →'
 										: 'Terminer ✓'}
 								</button>
@@ -335,9 +456,9 @@ export function RoleplayTutorial({ isAdmin }: { isAdmin?: boolean }) {
 						</div>
 
 						<div className="tutorial-dots">
-							{STEPS.map((_, i) => (
+							{steps.map((_, i) => (
 								<span
-									key={STEPS[i].id}
+									key={steps[i].id}
 									className={`tutorial-dot${i === currentStep ? ' active' : ''}${i < currentStep ? ' completed' : ''}`}
 								/>
 							))}

@@ -242,10 +242,12 @@ export default async function RoleplayPage({
 			</div>
 
 			{isAdmin && (
-				<AdminPanel
-					units={JSON.parse(JSON.stringify(units.docs))}
-					factions={JSON.parse(JSON.stringify(factions.docs))}
-				/>
+				<div data-tutorial="admin-panel">
+					<AdminPanel
+						units={JSON.parse(JSON.stringify(units.docs))}
+						factions={JSON.parse(JSON.stringify(factions.docs))}
+					/>
+				</div>
 			)}
 
 			<div className="terminal-header">
