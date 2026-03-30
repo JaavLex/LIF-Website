@@ -127,25 +127,6 @@ export default async function RoleplayPage({ searchParams }: { searchParams: Pro
 				</div>
 			)}
 
-			{/* Discord disclaimer */}
-			{disclaimerReason && (
-				<DiscordDisclaimer
-					title={disclaimerConfig.title}
-					reason={disclaimerReason}
-					inviteUrl={disclaimerConfig.inviteUrl}
-				/>
-			)}
-
-			{/* Admin mode indicator */}
-			{isAdmin && adminPermissions && (
-				<div className="admin-indicator">
-					<span className="admin-indicator-dot" />
-					<span>MODE ADMIN</span>
-					<span className="admin-role-name">{adminPermissions.roleName}</span>
-					<span className="admin-perm-level">({adminPermissions.level === 'full' ? 'Complet' : 'Limité'})</span>
-				</div>
-			)}
-
 			{/* Hero header with logo and background */}
 			<div
 				className="roleplay-hero"
@@ -301,6 +282,23 @@ export default async function RoleplayPage({ searchParams }: { searchParams: Pro
 					← Retour au site principal
 				</Link>
 			</div>
+
+			{/* Fixed bottom-left overlays */}
+			{disclaimerReason && (
+				<DiscordDisclaimer
+					title={disclaimerConfig.title}
+					reason={disclaimerReason}
+					inviteUrl={disclaimerConfig.inviteUrl}
+				/>
+			)}
+			{isAdmin && adminPermissions && (
+				<div className="admin-indicator">
+					<span className="admin-indicator-dot" />
+					<span>MODE ADMIN</span>
+					<span className="admin-role-name">{adminPermissions.roleName}</span>
+					<span className="admin-perm-level">({adminPermissions.level === 'full' ? 'Complet' : 'Limité'})</span>
+				</div>
+			)}
 		</div>
 	);
 }
