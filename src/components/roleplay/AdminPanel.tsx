@@ -75,6 +75,8 @@ export function AdminPanel({
 	const isFullAccess = adminLevel === 'full';
 	const [showUnitForm, setShowUnitForm] = useState(false);
 	const [showFactionForm, setShowFactionForm] = useState(false);
+	const [showExistingUnits, setShowExistingUnits] = useState(false);
+	const [showExistingFactions, setShowExistingFactions] = useState(false);
 	const [submitting, setSubmitting] = useState(false);
 	const [error, setError] = useState('');
 	const [success, setSuccess] = useState('');
@@ -951,10 +953,18 @@ export function AdminPanel({
 							fontSize: '0.95rem',
 							color: 'var(--primary)',
 							marginBottom: '0.5rem',
+							cursor: 'pointer',
+							userSelect: 'none',
+							display: 'flex',
+							alignItems: 'center',
+							gap: '0.4rem',
 						}}
+						onClick={() => setShowExistingUnits(v => !v)}
 					>
-						Unités existantes
+						<span style={{ fontSize: '0.7rem', transition: 'transform 0.2s', display: 'inline-block', transform: showExistingUnits ? 'rotate(90deg)' : 'rotate(0deg)' }}>▶</span>
+						Unités existantes ({localUnits.length})
 					</h3>
+					{showExistingUnits && (
 					<div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
 						{localUnits.map(unit => (
 							<div
@@ -1036,6 +1046,7 @@ export function AdminPanel({
 							</div>
 						))}
 					</div>
+					)}
 				</div>
 			)}
 
@@ -1047,10 +1058,18 @@ export function AdminPanel({
 							fontSize: '0.95rem',
 							color: 'var(--primary)',
 							marginBottom: '0.5rem',
+							cursor: 'pointer',
+							userSelect: 'none',
+							display: 'flex',
+							alignItems: 'center',
+							gap: '0.4rem',
 						}}
+						onClick={() => setShowExistingFactions(v => !v)}
 					>
-						Factions existantes
+						<span style={{ fontSize: '0.7rem', transition: 'transform 0.2s', display: 'inline-block', transform: showExistingFactions ? 'rotate(90deg)' : 'rotate(0deg)' }}>▶</span>
+						Factions existantes ({localFactions.length})
 					</h3>
+					{showExistingFactions && (
 					<div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
 						{localFactions.map(faction => (
 							<div
@@ -1138,6 +1157,7 @@ export function AdminPanel({
 							</div>
 						))}
 					</div>
+					)}
 				</div>
 			)}
 		</div>

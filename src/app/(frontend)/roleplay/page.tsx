@@ -237,10 +237,76 @@ export default async function RoleplayPage({
 				)}
 			</div>
 
+			<div data-tutorial="session-bar">
+				<SessionBar canCreateCharacter={canCreateCharacter} />
+			</div>
+
+			{isAdmin && (
+				<div data-tutorial="admin-panel">
+					<AdminPanel
+						units={JSON.parse(JSON.stringify(units.docs))}
+						factions={JSON.parse(JSON.stringify(factions.docs))}
+						adminLevel={adminPermissions?.level === 'full' ? 'full' : 'limited'}
+					/>
+				</div>
+			)}
+
+			<div className="terminal-header">
+				<div className="terminal-header-left">
+					<div className="terminal-header-dots">
+						<span className="terminal-dot green" />
+						<span className="terminal-dot yellow" />
+						<span className="terminal-dot red" />
+					</div>
+					<span className="terminal-title">SYSTÈME DE GESTION DU PERSONNEL</span>
+				</div>
+				<div className="terminal-header-right">
+					LIF-PERSONNEL v2.0 | CLASSIFICATION: RESTREINT
+				</div>
+			</div>
+
+			<div className="terminal-panel" data-tutorial="personnel-panel">
+				<h1>BASE DE DONNÉES DU PERSONNEL</h1>
+
+				<div className="system-status">
+					<div className="status-item">
+						<span className="status-indicator" />
+						<span>Système opérationnel</span>
+					</div>
+					<div className="status-item">
+						<span className="status-indicator" />
+						<span>
+							{characters.totalDocs} dossier{characters.totalDocs !== 1 ? 's' : ''}{' '}
+							enregistré{characters.totalDocs !== 1 ? 's' : ''}
+						</span>
+					</div>
+					<div className="status-item">
+						<span className="status-indicator" />
+						<span>
+							{
+								characters.docs.filter(
+									(c: any) => c.status === 'in-service' && !c.isTarget,
+								).length
+							}{' '}
+							en service actif
+						</span>
+					</div>
+				</div>
+
+				<PersonnelFilters
+					characters={JSON.parse(JSON.stringify(characters.docs))}
+					ranks={JSON.parse(JSON.stringify(ranks.docs))}
+					units={JSON.parse(JSON.stringify(units.docs))}
+					factions={JSON.parse(JSON.stringify(factions.docs))}
+					sessionDiscordId={session?.discordId}
+					isAdmin={isAdmin}
+				/>
+			</div>
+
 			{/* Factions & Units section for all users */}
 			{(factions.docs.length > 0 || units.docs.length > 0) && (
 				<>
-					<div className="terminal-header" style={{ marginTop: '0.5rem' }}>
+					<div className="terminal-header" style={{ marginTop: '2rem' }}>
 						<div className="terminal-header-left">
 							<div className="terminal-header-dots">
 								<span className="terminal-dot green" />
@@ -327,72 +393,6 @@ export default async function RoleplayPage({
 					</div>
 				</>
 			)}
-
-			<div data-tutorial="session-bar">
-				<SessionBar canCreateCharacter={canCreateCharacter} />
-			</div>
-
-			{isAdmin && (
-				<div data-tutorial="admin-panel">
-					<AdminPanel
-						units={JSON.parse(JSON.stringify(units.docs))}
-						factions={JSON.parse(JSON.stringify(factions.docs))}
-						adminLevel={adminPermissions?.level === 'full' ? 'full' : 'limited'}
-					/>
-				</div>
-			)}
-
-			<div className="terminal-header">
-				<div className="terminal-header-left">
-					<div className="terminal-header-dots">
-						<span className="terminal-dot green" />
-						<span className="terminal-dot yellow" />
-						<span className="terminal-dot red" />
-					</div>
-					<span className="terminal-title">SYSTÈME DE GESTION DU PERSONNEL</span>
-				</div>
-				<div className="terminal-header-right">
-					LIF-PERSONNEL v2.0 | CLASSIFICATION: RESTREINT
-				</div>
-			</div>
-
-			<div className="terminal-panel" data-tutorial="personnel-panel">
-				<h1>BASE DE DONNÉES DU PERSONNEL</h1>
-
-				<div className="system-status">
-					<div className="status-item">
-						<span className="status-indicator" />
-						<span>Système opérationnel</span>
-					</div>
-					<div className="status-item">
-						<span className="status-indicator" />
-						<span>
-							{characters.totalDocs} dossier{characters.totalDocs !== 1 ? 's' : ''}{' '}
-							enregistré{characters.totalDocs !== 1 ? 's' : ''}
-						</span>
-					</div>
-					<div className="status-item">
-						<span className="status-indicator" />
-						<span>
-							{
-								characters.docs.filter(
-									(c: any) => c.status === 'in-service' && !c.isTarget,
-								).length
-							}{' '}
-							en service actif
-						</span>
-					</div>
-				</div>
-
-				<PersonnelFilters
-					characters={JSON.parse(JSON.stringify(characters.docs))}
-					ranks={JSON.parse(JSON.stringify(ranks.docs))}
-					units={JSON.parse(JSON.stringify(units.docs))}
-					factions={JSON.parse(JSON.stringify(factions.docs))}
-					sessionDiscordId={session?.discordId}
-					isAdmin={isAdmin}
-				/>
-			</div>
 
 			{/* Intelligence section */}
 			<div data-tutorial="intelligence" className="terminal-header" style={{ marginTop: '2rem' }}>
