@@ -16,6 +16,25 @@
   padding: 2rem;
 }
 
+.roleplay-audio-controls {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 1001;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border);
+  background: rgba(12, 15, 10, 0.92);
+  backdrop-filter: blur(8px);
+}
+
+.roleplay-audio-controls input[type='range'] {
+  width: 120px;
+  accent-color: var(--primary);
+}
+
 /* CRT Scanline overlay */
 .terminal::after {
   content: '';
