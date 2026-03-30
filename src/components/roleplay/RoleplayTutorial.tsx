@@ -534,24 +534,39 @@ export function RoleplayTutorial({ isAdmin, adminPermissions }: { isAdmin?: bool
 			switch (pos) {
 				case 'bottom': {
 					let topVal = rect.bottom + pad;
-					// Clamp: don't let tooltip overflow past bottom of viewport
-					if (topVal > vh - 180) topVal = vh - 180;
-					// If still no room below, switch to a safe top position
-					if (topVal < pad) topVal = pad;
-					style.top = topVal;
+					const spaceBelow = vh - topVal - pad;
+					const spaceAbove = rect.top - pad * 2;
+					// If not enough room below, try above
+					if (spaceBelow < 200 && spaceAbove > spaceBelow) {
+						const bottomVal = Math.max(pad, vh - rect.top + pad);
+						style.bottom = bottomVal;
+						style.maxHeight = vh - bottomVal - pad;
+					} else {
+						if (topVal > vh - 200) topVal = vh - 200;
+						if (topVal < pad) topVal = pad;
+						style.top = topVal;
+						style.maxHeight = vh - topVal - pad;
+					}
 					style.left = leftVal;
-					style.maxHeight = vh - topVal - pad;
 					style.overflowY = 'auto';
 					break;
 				}
 				case 'top': {
 					let bottomVal = vh - rect.top + pad;
-					// Clamp: don't let tooltip overflow past top of viewport
-					if (bottomVal > vh - 180) bottomVal = vh - 180;
-					if (bottomVal < pad) bottomVal = pad;
-					style.bottom = bottomVal;
+					const spaceAbove = rect.top - pad * 2;
+					const spaceBelow = vh - rect.bottom - pad * 2;
+					// If not enough room above, try below
+					if (spaceAbove < 200 && spaceBelow > spaceAbove) {
+						const topVal = Math.max(pad, rect.bottom + pad);
+						style.top = topVal;
+						style.maxHeight = vh - topVal - pad;
+					} else {
+						if (bottomVal > vh - 200) bottomVal = vh - 200;
+						if (bottomVal < pad) bottomVal = pad;
+						style.bottom = bottomVal;
+						style.maxHeight = vh - bottomVal - pad;
+					}
 					style.left = leftVal;
-					style.maxHeight = vh - bottomVal - pad;
 					style.overflowY = 'auto';
 					break;
 				}
