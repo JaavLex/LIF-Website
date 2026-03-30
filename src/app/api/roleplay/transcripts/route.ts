@@ -8,24 +8,46 @@ const TRANSCRIPT_CHANNEL_ID = '1435918189589696644';
 
 interface TranscriptInfo {
 	messageId: string;
+	ticketOwner: string;
+	ticketOwnerAvatar: string;
+	ticketName: string;
+	panelName: string;
+	participants: { count: number; name: string }[];
+	transcriptUrl: string;
+	downloadUrl: string;
 	filename: string;
-	url: string;
 	size: number;
 	timestamp: string;
-	ticketOwner: string;
-	participants: string[];
 }
 
-function extractTicketOwner(filename: string): string {
-	// Typical Ticket Tool filenames: transcript-entree-en-service-username.html
-	// or transcript-ticket-0001-username.html
-	const name = filename.replace(/\.html$/i, '');
-	const parts = name.split('-');
-	// The last meaningful part is often the username
-	if (parts.length > 1) {
-		return parts[parts.length - 1];
+function getEmbedField(embed: any, name: string): string {
+	const field = embed.fields?.find((f: any) => f.name === name);
+	return field?.value || '';
+}
+
+function parseParticipants(value: string): { count: number; name: string }[] {
+	if (!value) return [];
+	return value.split('\n').map(line => {
+		const trimmed = line.trim();
+		// Format: "9 - <@id> - username#0"
+		const match = trimmed.match(/^(\d+)\s*-\s*(?:<@!?\d+>\s*-\s*)?(.+)$/);
+		if (match) {
+			return { count: parseInt(match[1], 10), name: match[2].trim() };
+		}
+		return { count: 0, name: trimmed };
+	}).filter(p => p.name);
+}
+
+function getTranscriptUrl(msg: any): string {
+	// Look for the link button (style 5) in components
+	for (const row of msg.components || []) {
+		for (const comp of row.components || []) {
+			if (comp.style === 5 && comp.url) {
+				return comp.url;
+			}
+		}
 	}
-	return name;
+	return '';
 }
 
 async function fetchAllMessages(botToken: string): Promise<TranscriptInfo[]> {
@@ -54,80 +76,42 @@ async function fetchAllMessages(botToken: string): Promise<TranscriptInfo[]> {
 		}
 
 		for (const msg of messages) {
-			if (msg.attachments?.length) {
-				for (const att of msg.attachments) {
-					if (att.filename?.toLowerCase().endsWith('.html')) {
-						transcripts.push({
-							messageId: msg.id,
-							filename: att.filename,
-							url: att.url,
-							size: att.size || 0,
-							timestamp: msg.timestamp,
-							ticketOwner: extractTicketOwner(att.filename),
-							participants: [],
-						});
-					}
-				}
-			}
+			const embed = msg.embeds?.[0];
+			if (!embed) continue;
+
+			const ticketOwner = embed.author?.name || '';
+			const ticketOwnerAvatar = embed.author?.icon_url || '';
+			const ticketName = getEmbedField(embed, 'Ticket Name');
+			const panelName = getEmbedField(embed, 'Panel Name');
+			const participantsRaw = getEmbedField(embed, 'Users in transcript');
+			const participants = parseParticipants(participantsRaw);
+
+			const transcriptUrl = getTranscriptUrl(msg);
+			const attachment = msg.attachments?.find((a: any) => a.filename?.toLowerCase().endsWith('.html'));
+
+			transcripts.push({
+				messageId: msg.id,
+				ticketOwner,
+				ticketOwnerAvatar,
+				ticketName: ticketName || attachment?.filename || '',
+				panelName,
+				participants,
+				transcriptUrl,
+				downloadUrl: attachment?.url || '',
+				filename: attachment?.filename || '',
+				size: attachment?.size || 0,
+				timestamp: msg.timestamp,
+			});
 		}
 
 		lastMessageId = messages[messages.length - 1].id;
 
-		// Discord rate limit safety
 		if (messages.length < 100) {
 			hasMore = false;
 		}
 	}
 
 	return transcripts;
-}
-
-async function parseTranscriptParticipants(url: string): Promise<{ owner: string; participants: string[] }> {
-	try {
-		const response = await fetch(url);
-		if (!response.ok) return { owner: '', participants: [] };
-		const html = await response.text();
-
-		// Extract participants from Ticket Tool HTML transcripts
-		// Common patterns: author names in spans, divs with author info
-		const participants = new Set<string>();
-		let owner = '';
-
-		// Pattern: <span class="chatlog__author" ...>Username</span>
-		const authorPattern = /class="chatlog__author[^"]*"[^>]*title="([^"]+)"/g;
-		let match;
-		while ((match = authorPattern.exec(html)) !== null) {
-			participants.add(match[1]);
-		}
-
-		// Pattern: data-user-id with author name nearby
-		const authorPattern2 = /class="chatlog__author-name"[^>]*>([^<]+)</g;
-		while ((match = authorPattern2.exec(html)) !== null) {
-			participants.add(match[1].trim());
-		}
-
-		// Try to find ticket owner from the HTML title or header
-		const titleMatch = html.match(/<title>([^<]+)<\/title>/i);
-		if (titleMatch) {
-			const titleParts = titleMatch[1].split(/[-–—]/);
-			if (titleParts.length > 1) {
-				owner = titleParts[titleParts.length - 1].trim();
-			}
-		}
-
-		// Fallback: first participant is often the ticket creator (after the bot)
-		const participantArr = Array.from(participants).filter(
-			p => !p.toLowerCase().includes('ticket tool') && !p.toLowerCase().includes('bot'),
-		);
-
-		if (!owner && participantArr.length > 0) {
-			owner = participantArr[0];
-		}
-
-		return { owner, participants: participantArr };
-	} catch {
-		return { owner: '', participants: [] };
-	}
 }
 
 export async function GET() {
@@ -154,20 +138,6 @@ export async function GET() {
 
 	try {
 		const transcripts = await fetchAllMessages(botToken);
-
-		// Parse participants for each transcript (in parallel, batched)
-		const batchSize = 5;
-		for (let i = 0; i < transcripts.length; i += batchSize) {
-			const batch = transcripts.slice(i, i + batchSize);
-			const results = await Promise.all(
-				batch.map(t => parseTranscriptParticipants(t.url)),
-			);
-			for (let j = 0; j < batch.length; j++) {
-				const { owner, participants } = results[j];
-				if (owner) batch[j].ticketOwner = owner;
-				batch[j].participants = participants;
-			}
-		}
 
 		// Sort by timestamp descending
 		transcripts.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
