@@ -108,6 +108,22 @@ export function IntelligenceList({
 		status: 'to-investigate',
 	});
 	const [editMediaFiles, setEditMediaFiles] = useState<{ file: File; caption: string }[]>([]);
+	const [deletingId, setDeletingId] = useState<number | null>(null);
+
+	const handleDelete = async (id: number) => {
+		if (!confirm('Supprimer définitivement ce rapport de renseignement ?')) return;
+		setDeletingId(id);
+		try {
+			const res = await fetch(`/api/roleplay/intelligence/${id}`, { method: 'DELETE' });
+			if (!res.ok) throw new Error('Erreur lors de la suppression');
+			setLocalReports(prev => prev.filter(r => r.id !== id));
+			if (expanded === id) setExpanded(null);
+		} catch {
+			alert('Erreur lors de la suppression du rapport.');
+		} finally {
+			setDeletingId(null);
+		}
+	};
 
 	const [form, setForm] = useState({
 		title: '',
@@ -569,6 +585,17 @@ export function IntelligenceList({
 												style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem' }}
 											>
 												✏️ Modifier
+											</button>
+										)}
+										{isAdmin && (
+											<button
+												type="button"
+												onClick={e => { e.stopPropagation(); handleDelete(report.id); }}
+												disabled={deletingId === report.id}
+												className="session-btn"
+												style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem', color: 'var(--danger)', borderColor: 'var(--danger)' }}
+											>
+												{deletingId === report.id ? '⏳' : '🗑️ Supprimer'}
 											</button>
 										)}
 									</div>
