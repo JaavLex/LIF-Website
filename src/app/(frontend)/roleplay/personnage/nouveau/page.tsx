@@ -34,8 +34,9 @@ export default async function NewCharacterPage() {
 
 		// Check operator role
 		const roleplayConfig = await payload.findGlobal({ slug: 'roleplay' }).catch(() => null);
-		const operatorRoleId = (roleplayConfig as any)?.operatorRoleId || '1424804277813248091';
-		if (!session.roles?.includes(operatorRoleId)) redirect('/roleplay');
+		const operatorRoleId = (roleplayConfig as any)?.operatorRoleId;
+		if (operatorRoleId && !session.roles?.includes(operatorRoleId)) redirect('/roleplay');
+		if (!operatorRoleId) redirect('/roleplay');
 	}
 
 	const [ranks, units] = await Promise.all([

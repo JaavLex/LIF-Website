@@ -37,9 +37,9 @@ export async function POST(request: NextRequest) {
 
 		// Check if user has the intelligence role
 		const roleplayConfig = await payload.findGlobal({ slug: 'roleplay' }).catch(() => null);
-		const intelligenceRoleId = (roleplayConfig as any)?.intelligenceRoleId || '1424804277813248091';
+		const intelligenceRoleId = (roleplayConfig as any)?.intelligenceRoleId;
 
-		const hasIntelRole = session.roles?.includes(intelligenceRoleId);
+		const hasIntelRole = intelligenceRoleId && session.roles?.includes(intelligenceRoleId);
 		const user = await payload.find({
 			collection: 'users',
 			where: { discordId: { equals: session.discordId } },

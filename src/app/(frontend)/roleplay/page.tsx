@@ -70,8 +70,8 @@ export default async function RoleplayPage({ searchParams }: { searchParams: Pro
 	let hasIntelRole = false;
 	let userCharacters: any[] = [];
 	if (session) {
-		const intelligenceRoleId = (roleplayConfig as any)?.intelligenceRoleId || '1424804277813248091';
-		hasIntelRole = session.roles?.includes(intelligenceRoleId) || isAdmin;
+		const intelligenceRoleId = (roleplayConfig as any)?.intelligenceRoleId;
+		hasIntelRole = (intelligenceRoleId && session.roles?.includes(intelligenceRoleId)) || isAdmin;
 		if (hasIntelRole) {
 			const chars = await payload.find({
 				collection: 'characters',
@@ -96,12 +96,15 @@ export default async function RoleplayPage({ searchParams }: { searchParams: Pro
 	const showTimeline = (roleplayConfig as any)?.isTimelineVisible !== false;
 
 	// Check operator role (after roleplayConfig is loaded)
-	const operatorRoleId = (roleplayConfig as any)?.operatorRoleId || '1424804277813248091';
+	const operatorRoleId = (roleplayConfig as any)?.operatorRoleId;
+	const intelligenceRoleIdCheck = (roleplayConfig as any)?.intelligenceRoleId;
 	if (session && !isAdmin && !disclaimerReason) {
-		if (operatorRoleId && !session.roles?.includes(operatorRoleId)) {
+		const hasOperator = operatorRoleId ? session.roles?.includes(operatorRoleId) : false;
+		const hasIntel = intelligenceRoleIdCheck ? session.roles?.includes(intelligenceRoleIdCheck) : false;
+		if (!hasOperator && !hasIntel) {
 			disclaimerReason = 'no_operator_role';
-		} else if (!disclaimerReason) {
-			canCreateCharacter = true;
+		} else {
+			canCreateCharacter = !!hasOperator;
 		}
 	}
 

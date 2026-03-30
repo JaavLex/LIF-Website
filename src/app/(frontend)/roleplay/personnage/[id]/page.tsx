@@ -11,11 +11,6 @@ import { DeleteCharacterButton } from '@/components/roleplay/DeleteCharacterButt
 import { verifySession } from '@/lib/session';
 import { checkAdminPermissions } from '@/lib/admin';
 
-const DELETE_ROLE_IDS = [
-	'1483514085718098153',
-	'1425007335574601738',
-];
-
 export const dynamic = 'force-dynamic';
 
 const STATUS_LABELS: Record<string, string> = {
@@ -92,7 +87,7 @@ export default async function CharacterPage({
 	if (character.isArchived && !isAdmin) notFound();
 
 	const canEdit = isOwner || isAdmin;
-	const canDelete = session?.roles?.some((r: string) => DELETE_ROLE_IDS.includes(r)) || false;
+	const canDelete = isAdmin && adminPermissions?.level === 'full';
 
 	return (
 		<div className="terminal-container">

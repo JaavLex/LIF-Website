@@ -329,7 +329,6 @@ export const Roleplay: GlobalConfig = {
 							name: 'operatorRoleId',
 							label: 'ID du rôle Discord Opérateur',
 							type: 'text',
-							defaultValue: '',
 							admin: {
 								description: 'Rôle Discord requis pour créer/modifier des personnages',
 							},
@@ -338,7 +337,6 @@ export const Roleplay: GlobalConfig = {
 							name: 'intelligenceRoleId',
 							label: 'ID du rôle Discord Renseignement',
 							type: 'text',
-							defaultValue: '1424804277813248091',
 							admin: {
 								description: 'Rôle Discord autorisant la publication de renseignements',
 							},

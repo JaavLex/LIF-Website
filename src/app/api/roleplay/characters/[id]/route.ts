@@ -77,11 +77,6 @@ export async function PATCH(
 	}
 }
 
-const DELETE_ROLE_IDS = [
-	'1483514085718098153',
-	'1425007335574601738',
-];
-
 export async function DELETE(
 	request: NextRequest,
 	{ params }: { params: Promise<{ id: string }> },
@@ -102,10 +97,10 @@ export async function DELETE(
 		return NextResponse.json({ message: 'ID invalide' }, { status: 400 });
 	}
 
-	// Only specific roles can delete
-	const hasDeleteRole = session.roles?.some((r: string) => DELETE_ROLE_IDS.includes(r));
-	if (!hasDeleteRole) {
-		return NextResponse.json({ message: 'Non autorisé — seuls certains rôles peuvent supprimer un dossier' }, { status: 403 });
+	// Only full-permission admins can delete
+	const adminPerms = await checkAdminPermissions(session);
+	if (!adminPerms.isAdmin || adminPerms.level !== 'full') {
+		return NextResponse.json({ message: 'Non autorisé — seuls les administrateurs peuvent supprimer un dossier' }, { status: 403 });
 	}
 
 	try {
