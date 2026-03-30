@@ -678,6 +678,16 @@
   font-size: 0.95rem;
 }
 
+.lore-text ul,
+.lore-text ol {
+  padding-left: 1.5rem;
+  margin: 0.5rem 0;
+}
+
+.lore-text li {
+  margin-bottom: 0.25rem;
+}
+
 .lore-gallery {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
