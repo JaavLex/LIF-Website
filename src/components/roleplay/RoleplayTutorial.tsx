@@ -473,16 +473,24 @@ export function RoleplayTutorial({ isAdmin, adminPermissions }: { isAdmin?: bool
 	}, [isAdmin]);
 
 	const positionTooltip = useCallback((step: TutorialStep) => {
-		const centerStyle: React.CSSProperties = {
-			position: 'fixed',
-			top: '50%',
-			left: '50%',
-			transform: 'translate(-50%, -50%)',
-		};
+		const vw = window.innerWidth;
+		const vh = window.innerHeight;
+		const pad = 12;
+		const mobile = vw <= 768;
+		const tooltipW = mobile ? vw - pad * 2 : 380;
 
+		// Center positioning for steps without a target
 		if (!step.target || step.position === 'center') {
 			setSpotlightRect(null);
-			setTooltipStyle(centerStyle);
+			setTooltipStyle({
+				position: 'fixed',
+				top: '50%',
+				left: mobile ? pad : '50%',
+				width: mobile ? tooltipW : undefined,
+				transform: mobile ? 'translateY(-50%)' : 'translate(-50%, -50%)',
+				maxHeight: '85vh',
+				overflowY: 'auto',
+			});
 			animatingRef.current = false;
 			return;
 		}
@@ -490,7 +498,15 @@ export function RoleplayTutorial({ isAdmin, adminPermissions }: { isAdmin?: bool
 		const el = document.querySelector(step.target);
 		if (!el) {
 			setSpotlightRect(null);
-			setTooltipStyle(centerStyle);
+			setTooltipStyle({
+				position: 'fixed',
+				top: '50%',
+				left: mobile ? pad : '50%',
+				width: mobile ? tooltipW : undefined,
+				transform: mobile ? 'translateY(-50%)' : 'translate(-50%, -50%)',
+				maxHeight: '85vh',
+				overflowY: 'auto',
+			});
 			animatingRef.current = false;
 			return;
 		}
@@ -502,46 +518,50 @@ export function RoleplayTutorial({ isAdmin, adminPermissions }: { isAdmin?: bool
 			const rect = el.getBoundingClientRect();
 			setSpotlightRect(rect);
 
-			const pad = 16;
-			const vw = window.innerWidth;
-			const vh = window.innerHeight;
-			const tooltipMaxWidth = Math.min(380, vw - pad * 2);
 			const style: React.CSSProperties = { position: 'fixed' };
+			if (mobile) style.width = tooltipW;
 
 			// On narrow screens, left/right positions don't fit — fall back to bottom/top
 			let pos = step.position;
-			if (vw < 768 && (pos === 'left' || pos === 'right')) {
+			if (mobile && (pos === 'left' || pos === 'right')) {
 				pos = rect.top > vh / 2 ? 'top' : 'bottom';
 			}
 
+			const leftVal = mobile
+				? pad
+				: Math.max(pad, Math.min(rect.left + rect.width / 2 - tooltipW / 2, vw - tooltipW - pad));
+
 			switch (pos) {
-				case 'bottom':
-					style.top = Math.min(rect.bottom + pad, vh - 200);
-					style.left = Math.max(
-						pad,
-						Math.min(
-							rect.left + rect.width / 2 - tooltipMaxWidth / 2,
-							vw - tooltipMaxWidth - pad,
-						),
-					);
+				case 'bottom': {
+					let topVal = rect.bottom + pad;
+					// Clamp: don't let tooltip overflow past bottom of viewport
+					if (topVal > vh - 180) topVal = vh - 180;
+					// If still no room below, switch to a safe top position
+					if (topVal < pad) topVal = pad;
+					style.top = topVal;
+					style.left = leftVal;
+					style.maxHeight = vh - topVal - pad;
+					style.overflowY = 'auto';
 					break;
-				case 'top':
-					style.bottom = Math.min(vh - rect.top + pad, vh - 100);
-					style.left = Math.max(
-						pad,
-						Math.min(
-							rect.left + rect.width / 2 - tooltipMaxWidth / 2,
-							vw - tooltipMaxWidth - pad,
-						),
-					);
+				}
+				case 'top': {
+					let bottomVal = vh - rect.top + pad;
+					// Clamp: don't let tooltip overflow past top of viewport
+					if (bottomVal > vh - 180) bottomVal = vh - 180;
+					if (bottomVal < pad) bottomVal = pad;
+					style.bottom = bottomVal;
+					style.left = leftVal;
+					style.maxHeight = vh - bottomVal - pad;
+					style.overflowY = 'auto';
 					break;
+				}
 				case 'left':
-					style.top = rect.top + rect.height / 2;
+					style.top = Math.max(pad, Math.min(rect.top + rect.height / 2, vh - 200));
 					style.right = vw - rect.left + pad;
 					style.transform = 'translateY(-50%)';
 					break;
 				case 'right':
-					style.top = rect.top + rect.height / 2;
+					style.top = Math.max(pad, Math.min(rect.top + rect.height / 2, vh - 200));
 					style.left = rect.right + pad;
 					style.transform = 'translateY(-50%)';
 					break;

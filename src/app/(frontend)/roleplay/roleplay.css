@@ -1672,15 +1672,6 @@
 @media (max-width: 768px) {
 	.tutorial-tooltip {
 		max-width: calc(100vw - 1.5rem);
-		width: calc(100vw - 1.5rem);
-		left: 0.75rem !important;
-		right: 0.75rem !important;
-	}
-
-	.tutorial-tooltip.has-dummy-form {
-		max-width: calc(100vw - 1.5rem);
-		max-height: 65vh;
-		overflow-y: auto;
 	}
 
 	.tutorial-tooltip-header {
