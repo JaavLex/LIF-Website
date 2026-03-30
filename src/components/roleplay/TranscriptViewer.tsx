@@ -85,6 +85,27 @@ export function TranscriptViewer() {
 		return list;
 	}, [transcripts, search, selectedOwner, selectedPanel]);
 
+	const grouped = useMemo(() => {
+		const map = new Map<string, Transcript[]>();
+		for (const t of filtered) {
+			const key = t.ticketOwner || 'Inconnu';
+			if (!map.has(key)) map.set(key, []);
+			map.get(key)!.push(t);
+		}
+		return Array.from(map.entries()).sort((a, b) => a[0].localeCompare(b[0]));
+	}, [filtered]);
+
+	const [collapsedOwners, setCollapsedOwners] = useState<Set<string>>(new Set());
+
+	const toggleOwner = (owner: string) => {
+		setCollapsedOwners(prev => {
+			const next = new Set(prev);
+			if (next.has(owner)) next.delete(owner);
+			else next.add(owner);
+			return next;
+		});
+	};
+
 	const formatSize = (bytes: number) => {
 		if (bytes < 1024) return `${bytes} B`;
 		if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
@@ -154,9 +175,10 @@ export function TranscriptViewer() {
 			<div style={{ fontSize: '0.85rem', color: 'var(--muted)', marginBottom: '1rem' }}>
 				{filtered.length} transcript{filtered.length !== 1 ? 's' : ''} trouvé{filtered.length !== 1 ? 's' : ''}
 				{transcripts.length !== filtered.length && ` sur ${transcripts.length}`}
+				{' · '}{grouped.length} propriétaire{grouped.length !== 1 ? 's' : ''}
 			</div>
 
-			{/* Transcript list */}
+			{/* Transcript list grouped by owner */}
 			{filtered.length === 0 ? (
 				<div className="empty-state-inline">
 					{transcripts.length === 0
@@ -165,94 +187,124 @@ export function TranscriptViewer() {
 					}
 				</div>
 			) : (
-				<div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-					{filtered.map(t => (
-						<div
-							key={t.messageId}
-							style={{
-								border: '1px solid var(--border)',
-								padding: '0.75rem 1rem',
-								background: 'var(--bg-secondary)',
-								display: 'flex',
-								alignItems: 'center',
-								gap: '0.75rem',
-								flexWrap: 'wrap',
-							}}
-						>
-							{/* Avatar */}
-							{t.ticketOwnerAvatar && (
-								<Image
-									src={t.ticketOwnerAvatar}
-									alt={t.ticketOwner}
-									width={36}
-									height={36}
-									style={{ borderRadius: '50%', flexShrink: 0 }}
-									unoptimized
-								/>
-							)}
-
-							{/* Info */}
-							<div style={{ flex: 1, minWidth: '180px' }}>
-								<div style={{ fontSize: '0.95rem', fontWeight: 500, marginBottom: '0.15rem' }}>
-									{t.ticketOwner || 'Inconnu'}
-								</div>
-								<div style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>
-									{t.ticketName}
-								</div>
-							</div>
-
-							{/* Panel */}
-							<div style={{ minWidth: '120px' }}>
-								<span style={{
-									fontSize: '0.75rem',
-									padding: '0.15rem 0.5rem',
-									border: '1px solid var(--primary)',
-									color: 'var(--primary)',
-								}}>
-									{t.panelName || '—'}
-								</span>
-							</div>
-
-							{/* Date & size */}
-							<div style={{ fontSize: '0.8rem', color: 'var(--muted)', textAlign: 'right', minWidth: '100px' }}>
-								<div>{new Date(t.timestamp).toLocaleDateString('fr-FR', { year: 'numeric', month: 'short', day: 'numeric' })}</div>
-								{t.size > 0 && <div>{formatSize(t.size)}</div>}
-							</div>
-
-							{/* Actions */}
-							<div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0 }}>
+				<div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+					{grouped.map(([owner, tickets]) => {
+						const collapsed = collapsedOwners.has(owner);
+						const avatar = tickets[0]?.ticketOwnerAvatar;
+						return (
+							<div key={owner} style={{ border: '1px solid var(--border)', background: 'var(--bg-secondary)' }}>
+								{/* Owner header */}
 								<button
 									type="button"
-									onClick={() => setDetailTranscript(t)}
-									className="session-btn"
-									style={{ padding: '0.35rem 0.6rem', fontSize: '0.8rem', whiteSpace: 'nowrap' }}
+									onClick={() => toggleOwner(owner)}
+									style={{
+										width: '100%',
+										display: 'flex',
+										alignItems: 'center',
+										gap: '0.75rem',
+										padding: '0.75rem 1rem',
+										background: 'none',
+										border: 'none',
+										color: 'inherit',
+										cursor: 'pointer',
+										textAlign: 'left',
+										borderBottom: collapsed ? 'none' : '1px solid var(--border)',
+									}}
 								>
-									ℹ️ Détails
+									<span style={{ fontSize: '0.85rem', transition: 'transform 0.2s', transform: collapsed ? 'rotate(-90deg)' : 'rotate(0deg)' }}>▼</span>
+									{avatar && (
+										<Image
+											src={avatar}
+											alt={owner}
+											width={32}
+											height={32}
+											style={{ borderRadius: '50%', flexShrink: 0 }}
+											unoptimized
+										/>
+									)}
+									<span style={{ fontWeight: 600, fontSize: '0.95rem', flex: 1 }}>{owner}</span>
+									<span style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>
+										{tickets.length} ticket{tickets.length !== 1 ? 's' : ''}
+									</span>
 								</button>
-								{t.transcriptUrl && (
-									<a
-										href={t.transcriptUrl}
-										target="_blank"
-										rel="noopener noreferrer"
-										className="session-btn"
-										style={{ padding: '0.35rem 0.6rem', fontSize: '0.8rem', textDecoration: 'none', whiteSpace: 'nowrap' }}
-									>
-										👁 Voir
-									</a>
-								)}
-								{t.downloadUrl && (
-									<a
-										href={t.downloadUrl}
-										download={t.filename}
-										className="session-btn"
-										style={{ padding: '0.35rem 0.6rem', fontSize: '0.8rem', textDecoration: 'none', whiteSpace: 'nowrap' }}
-									>
-										⬇
-									</a>
+
+								{/* Tickets */}
+								{!collapsed && (
+									<div style={{ display: 'flex', flexDirection: 'column' }}>
+										{tickets.map(t => (
+											<div
+												key={t.messageId}
+												style={{
+													padding: '0.6rem 1rem 0.6rem 3.25rem',
+													display: 'flex',
+													alignItems: 'center',
+													gap: '0.75rem',
+													flexWrap: 'wrap',
+													borderBottom: '1px solid var(--border)',
+												}}
+											>
+												{/* Ticket name */}
+												<div style={{ flex: 1, minWidth: '180px' }}>
+													<div style={{ fontSize: '0.9rem' }}>{t.ticketName}</div>
+												</div>
+
+												{/* Panel */}
+												<div style={{ minWidth: '120px' }}>
+													<span style={{
+														fontSize: '0.75rem',
+														padding: '0.15rem 0.5rem',
+														border: '1px solid var(--primary)',
+														color: 'var(--primary)',
+													}}>
+														{t.panelName || '—'}
+													</span>
+												</div>
+
+												{/* Date & size */}
+												<div style={{ fontSize: '0.8rem', color: 'var(--muted)', textAlign: 'right', minWidth: '100px' }}>
+													<div>{new Date(t.timestamp).toLocaleDateString('fr-FR', { year: 'numeric', month: 'short', day: 'numeric' })}</div>
+													{t.size > 0 && <div>{formatSize(t.size)}</div>}
+												</div>
+
+												{/* Actions */}
+												<div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0 }}>
+													<button
+														type="button"
+														onClick={() => setDetailTranscript(t)}
+														className="session-btn"
+														style={{ padding: '0.35rem 0.6rem', fontSize: '0.8rem', whiteSpace: 'nowrap' }}
+													>
+														ℹ️ Détails
+													</button>
+													{t.transcriptUrl && (
+														<a
+															href={t.transcriptUrl}
+															target="_blank"
+															rel="noopener noreferrer"
+															className="session-btn"
+															style={{ padding: '0.35rem 0.6rem', fontSize: '0.8rem', textDecoration: 'none', whiteSpace: 'nowrap' }}
+														>
+															👁 Voir
+														</a>
+													)}
+													{t.downloadUrl && (
+														<a
+															href={t.downloadUrl}
+															download={t.filename}
+															className="session-btn"
+															style={{ padding: '0.35rem 0.6rem', fontSize: '0.8rem', textDecoration: 'none', whiteSpace: 'nowrap' }}
+														>
+															⬇
+														</a>
+													)}
+												</div>
+											</div>
+										))}
+									</div>
 								)}
 							</div>
-						</div>
-					))}
+						);
+					})}
 				</div>
 			)}
 
