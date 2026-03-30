@@ -94,7 +94,7 @@ function RoleplayAudio({ enabled }: { enabled: boolean }) {
 	return (
 		<>
 			<audio ref={audioRef} src="/song/LIFDB.mp3" loop preload="auto" />
-			<div className="roleplay-audio-controls">
+			<div className="roleplay-audio-controls" data-tutorial="audio-controls">
 				<button
 					type="button"
 					className="session-btn"

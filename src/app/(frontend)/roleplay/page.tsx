@@ -9,10 +9,15 @@ import { IntelligenceList } from '@/components/roleplay/IntelligenceList';
 import { AdminPanel } from '@/components/roleplay/AdminPanel';
 import { verifySession } from '@/lib/session';
 import { checkAdminPermissions } from '@/lib/admin';
+import { RoleplayTutorial } from '@/components/roleplay/RoleplayTutorial';
 
 export const dynamic = 'force-dynamic';
 
-export default async function RoleplayPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
+export default async function RoleplayPage({
+	searchParams,
+}: {
+	searchParams: Promise<{ error?: string }>;
+}) {
 	const { error: authError } = await searchParams;
 	const payload = await getPayloadClient();
 
@@ -71,7 +76,8 @@ export default async function RoleplayPage({ searchParams }: { searchParams: Pro
 	let userCharacters: any[] = [];
 	if (session) {
 		const intelligenceRoleId = (roleplayConfig as any)?.intelligenceRoleId;
-		hasIntelRole = (intelligenceRoleId && session.roles?.includes(intelligenceRoleId)) || isAdmin;
+		hasIntelRole =
+			(intelligenceRoleId && session.roles?.includes(intelligenceRoleId)) || isAdmin;
 		if (hasIntelRole) {
 			const chars = await payload.find({
 				collection: 'characters',
@@ -84,14 +90,24 @@ export default async function RoleplayPage({ searchParams }: { searchParams: Pro
 	}
 
 	const [intelligence, factions] = await Promise.all([
-		payload.find({ collection: 'intelligence', sort: '-date', limit: 200, depth: 2 }),
-		payload.find({ collection: 'factions', limit: 100, depth: 0 }).catch(() => ({ docs: [] })),
+		payload.find({
+			collection: 'intelligence',
+			sort: '-date',
+			limit: 200,
+			depth: 2,
+		}),
+		payload
+			.find({ collection: 'factions', limit: 100, depth: 0 })
+			.catch(() => ({ docs: [] })),
 	]);
 
 	const headerLogo = (roleplayConfig as any)?.headerLogo;
 	const headerBg = (roleplayConfig as any)?.headerBackground;
-	const headerTitle = (roleplayConfig as any)?.headerTitle || 'Dossiers du Personnel';
-	const headerSubtitle = (roleplayConfig as any)?.headerSubtitle || 'Base de données militaire — Accès autorisé';
+	const headerTitle =
+		(roleplayConfig as any)?.headerTitle || 'Dossiers du Personnel';
+	const headerSubtitle =
+		(roleplayConfig as any)?.headerSubtitle ||
+		'Base de données militaire — Accès autorisé';
 	const showLore = (roleplayConfig as any)?.isLoreVisible !== false;
 	const showTimeline = (roleplayConfig as any)?.isTimelineVisible !== false;
 
@@ -99,8 +115,12 @@ export default async function RoleplayPage({ searchParams }: { searchParams: Pro
 	const operatorRoleId = (roleplayConfig as any)?.operatorRoleId;
 	const intelligenceRoleIdCheck = (roleplayConfig as any)?.intelligenceRoleId;
 	if (session && !isAdmin && !disclaimerReason) {
-		const hasOperator = operatorRoleId ? session.roles?.includes(operatorRoleId) : false;
-		const hasIntel = intelligenceRoleIdCheck ? session.roles?.includes(intelligenceRoleIdCheck) : false;
+		const hasOperator = operatorRoleId
+			? session.roles?.includes(operatorRoleId)
+			: false;
+		const hasIntel = intelligenceRoleIdCheck
+			? session.roles?.includes(intelligenceRoleIdCheck)
+			: false;
 		if (!hasOperator && !hasIntel) {
 			disclaimerReason = 'no_operator_role';
 		} else {
@@ -114,7 +134,7 @@ export default async function RoleplayPage({ searchParams }: { searchParams: Pro
 	};
 
 	const errorMessages: Record<string, string> = {
-		no_code: 'Échec de l\'authentification Discord. Veuillez réessayer.',
+		no_code: "Échec de l'authentification Discord. Veuillez réessayer.",
 		auth_failed: 'Une erreur est survenue lors de la connexion. Veuillez réessayer.',
 	};
 
@@ -122,13 +142,24 @@ export default async function RoleplayPage({ searchParams }: { searchParams: Pro
 		<div className="terminal-container">
 			{/* Auth error banner */}
 			{authError && errorMessages[authError] && (
-				<div style={{ padding: '0.75rem 1rem', background: 'rgba(139,38,53,0.15)', border: '1px solid var(--danger)', color: 'var(--danger)', marginBottom: '1rem', fontSize: '0.9rem', textAlign: 'center' }}>
+				<div
+					style={{
+						padding: '0.75rem 1rem',
+						background: 'rgba(139,38,53,0.15)',
+						border: '1px solid var(--danger)',
+						color: 'var(--danger)',
+						marginBottom: '1rem',
+						fontSize: '0.9rem',
+						textAlign: 'center',
+					}}
+				>
 					{errorMessages[authError]}
 				</div>
 			)}
 
 			{/* Hero header with logo and background */}
 			<div
+				data-tutorial="hero"
 				className="roleplay-hero"
 				style={{
 					position: 'relative',
@@ -160,7 +191,13 @@ export default async function RoleplayPage({ searchParams }: { searchParams: Pro
 							unoptimized
 						/>
 					)}
-					<h1 style={{ fontSize: '1.8rem', letterSpacing: '3px', marginBottom: '0.5rem' }}>
+					<h1
+						style={{
+							fontSize: '1.8rem',
+							letterSpacing: '3px',
+							marginBottom: '0.5rem',
+						}}
+					>
 						{headerTitle}
 					</h1>
 					<p style={{ color: 'var(--muted)', fontSize: '0.95rem' }}>
@@ -171,6 +208,7 @@ export default async function RoleplayPage({ searchParams }: { searchParams: Pro
 
 			{/* Navigation */}
 			<div
+				data-tutorial="navigation"
 				style={{
 					display: 'flex',
 					gap: '1rem',
@@ -199,9 +237,16 @@ export default async function RoleplayPage({ searchParams }: { searchParams: Pro
 				)}
 			</div>
 
-			<SessionBar canCreateCharacter={canCreateCharacter} />
+			<div data-tutorial="session-bar">
+				<SessionBar canCreateCharacter={canCreateCharacter} />
+			</div>
 
-			{isAdmin && <AdminPanel units={JSON.parse(JSON.stringify(units.docs))} factions={JSON.parse(JSON.stringify(factions.docs))} />}
+			{isAdmin && (
+				<AdminPanel
+					units={JSON.parse(JSON.stringify(units.docs))}
+					factions={JSON.parse(JSON.stringify(factions.docs))}
+				/>
+			)}
 
 			<div className="terminal-header">
 				<div className="terminal-header-left">
@@ -217,7 +262,7 @@ export default async function RoleplayPage({ searchParams }: { searchParams: Pro
 				</div>
 			</div>
 
-			<div className="terminal-panel">
+			<div className="terminal-panel" data-tutorial="personnel-panel">
 				<h1>BASE DE DONNÉES DU PERSONNEL</h1>
 
 				<div className="system-status">
@@ -235,7 +280,11 @@ export default async function RoleplayPage({ searchParams }: { searchParams: Pro
 					<div className="status-item">
 						<span className="status-indicator" />
 						<span>
-							{characters.docs.filter((c: any) => c.status === 'in-service' && !c.isTarget).length}{' '}
+							{
+								characters.docs.filter(
+									(c: any) => c.status === 'in-service' && !c.isTarget,
+								).length
+							}{' '}
 							en service actif
 						</span>
 					</div>
@@ -251,7 +300,7 @@ export default async function RoleplayPage({ searchParams }: { searchParams: Pro
 			</div>
 
 			{/* Intelligence section */}
-			<div className="terminal-header" style={{ marginTop: '2rem' }}>
+			<div data-tutorial="intelligence" className="terminal-header" style={{ marginTop: '2rem' }}>
 				<div className="terminal-header-left">
 					<div className="terminal-header-dots">
 						<span className="terminal-dot green" />
@@ -261,7 +310,8 @@ export default async function RoleplayPage({ searchParams }: { searchParams: Pro
 					<span className="terminal-title">RENSEIGNEMENTS</span>
 				</div>
 				<div className="terminal-header-right">
-					LIF-INTEL v1.0 | {intelligence.totalDocs} rapport{intelligence.totalDocs !== 1 ? 's' : ''}
+					LIF-INTEL v1.0 | {intelligence.totalDocs} rapport
+					{intelligence.totalDocs !== 1 ? 's' : ''}
 				</div>
 			</div>
 
@@ -291,12 +341,16 @@ export default async function RoleplayPage({ searchParams }: { searchParams: Pro
 					inviteUrl={disclaimerConfig.inviteUrl}
 				/>
 			)}
+			<RoleplayTutorial isAdmin={isAdmin} />
+
 			{isAdmin && adminPermissions && (
 				<div className="admin-indicator">
 					<span className="admin-indicator-dot" />
 					<span>MODE ADMIN</span>
 					<span className="admin-role-name">{adminPermissions.roleName}</span>
-					<span className="admin-perm-level">({adminPermissions.level === 'full' ? 'Complet' : 'Limité'})</span>
+					<span className="admin-perm-level">
+						({adminPermissions.level === 'full' ? 'Complet' : 'Limité'})
+					</span>
 				</div>
 			)}
 		</div>

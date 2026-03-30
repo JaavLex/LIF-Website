@@ -19,7 +19,13 @@ interface Character {
 	threatLevel?: string;
 	discordUsername?: string;
 	avatar?: { url: string } | null;
-	rank?: { id: number; name: string; abbreviation: string; order: number; icon?: { url: string } | null } | null;
+	rank?: {
+		id: number;
+		name: string;
+		abbreviation: string;
+		order: number;
+		icon?: { url: string } | null;
+	} | null;
 	unit?: { name: string; slug: string; insignia?: { url: string } | null } | null;
 }
 
@@ -112,11 +118,16 @@ export function PersonnelFilters({
 
 	const getActiveList = () => {
 		switch (activeTab) {
-			case 'personnel': return personnel;
-			case 'targets': return targets;
-			case 'my-characters': return myCharacters;
-			case 'archives': return archives;
-			default: return personnel;
+			case 'personnel':
+				return personnel;
+			case 'targets':
+				return targets;
+			case 'my-characters':
+				return myCharacters;
+			case 'archives':
+				return archives;
+			default:
+				return personnel;
 		}
 	};
 
@@ -159,7 +170,17 @@ export function PersonnelFilters({
 		});
 
 		return result;
-	}, [activeTab, personnel, targets, myCharacters, archives, search, statusFilter, rankFilter, unitFilter]);
+	}, [
+		activeTab,
+		personnel,
+		targets,
+		myCharacters,
+		archives,
+		search,
+		statusFilter,
+		rankFilter,
+		unitFilter,
+	]);
 
 	// Group by status for separators
 	const groupedByStatus = useMemo(() => {
@@ -182,14 +203,18 @@ export function PersonnelFilters({
 		{ key: 'targets', label: 'Cibles', count: targets.length },
 	];
 	if (sessionDiscordId) {
-		tabs.push({ key: 'my-characters', label: 'Mes personnages', count: myCharacters.length });
+		tabs.push({
+			key: 'my-characters',
+			label: 'Mes personnages',
+			count: myCharacters.length,
+		});
 	}
 	if (isAdmin) {
 		tabs.push({ key: 'archives', label: 'Archives', count: archives.length });
 	}
 
 	return (
-		<>
+		<div data-tutorial="filters">
 			{/* Tabs */}
 			<div className="personnel-tabs">
 				{tabs.map(tab => (
@@ -292,19 +317,44 @@ export function PersonnelFilters({
 									)}
 									<div className="personnel-info">
 										<div className="personnel-name">
-											{character.isMainCharacter && <span className="main-character-badge" title="Personnage principal">★</span>}
+											{character.isMainCharacter && (
+												<span
+													className="main-character-badge"
+													title="Personnage principal"
+												>
+													★
+												</span>
+											)}
 											{character.fullName}
 										</div>
 										{character.rank && typeof character.rank === 'object' && (
-											<div className="personnel-rank" style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+											<div
+												className="personnel-rank"
+												style={{
+													display: 'flex',
+													alignItems: 'center',
+													gap: '0.35rem',
+												}}
+											>
 												{character.rank.icon?.url && (
-													<Image src={character.rank.icon.url} alt={character.rank.name} width={18} height={18} unoptimized />
+													<Image
+														src={character.rank.icon.url}
+														alt={character.rank.name}
+														width={18}
+														height={18}
+														unoptimized
+													/>
 												)}
-												<span>{character.rank.abbreviation || character.rank.name}</span>
+												<span>
+													{character.rank.abbreviation || character.rank.name}
+												</span>
 											</div>
 										)}
 										{!character.rank && (
-											<div className="personnel-rank" style={{ color: 'var(--muted)' }}>
+											<div
+												className="personnel-rank"
+												style={{ color: 'var(--muted)' }}
+											>
 												Aucun grade
 											</div>
 										)}
@@ -331,11 +381,18 @@ export function PersonnelFilters({
 										)}
 										{character.isTarget && character.threatLevel && (
 											<span className={`threat-badge ${character.threatLevel}`}>
-												{THREAT_LABELS[character.threatLevel] || character.threatLevel}
+												{THREAT_LABELS[character.threatLevel] ||
+													character.threatLevel}
 											</span>
 										)}
 										{character.discordUsername && (
-											<div style={{ fontSize: '0.7rem', color: 'var(--muted)', marginTop: '0.15rem' }}>
+											<div
+												style={{
+													fontSize: '0.7rem',
+													color: 'var(--muted)',
+													marginTop: '0.15rem',
+												}}
+											>
 												@{character.discordUsername}
 											</div>
 										)}
@@ -343,11 +400,15 @@ export function PersonnelFilters({
 								</div>
 								<div className="personnel-card-meta">
 									<span className="personnel-id">{character.militaryId || '—'}</span>
-									<div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+									<div
+										style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}
+									>
 										<span className={`status-badge ${character.status}`}>
 											{STATUS_LABELS[character.status] || character.status}
 										</span>
-										<span className={`classification-badge ${character.classification}`}>
+										<span
+											className={`classification-badge ${character.classification}`}
+										>
 											{character.classification}
 										</span>
 									</div>
@@ -363,10 +424,10 @@ export function PersonnelFilters({
 				<div className="empty-state">
 					{activeTab === 'personnel' && 'Aucun dossier personnel trouvé.'}
 					{activeTab === 'targets' && 'Aucune cible enregistrée.'}
-					{activeTab === 'my-characters' && 'Vous n\'avez aucun personnage.'}
+					{activeTab === 'my-characters' && "Vous n'avez aucun personnage."}
 					{activeTab === 'archives' && 'Aucun dossier archivé.'}
 				</div>
 			)}
-		</>
+		</div>
 	);
 }
