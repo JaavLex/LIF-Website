@@ -446,7 +446,7 @@ const ADMIN_STEPS: TutorialStep[] = [
 
 type TutorialMode = 'user' | 'admin';
 
-export function RoleplayTutorial({ isAdmin }: { isAdmin?: boolean }) {
+export function RoleplayTutorial({ isAdmin, adminPermissions }: { isAdmin?: boolean; adminPermissions?: { roleName: string; level: string } | null }) {
 	const [active, setActive] = useState(false);
 	const [mode, setMode] = useState<TutorialMode>('user');
 	const [currentStep, setCurrentStep] = useState(0);
@@ -659,6 +659,16 @@ export function RoleplayTutorial({ isAdmin }: { isAdmin?: boolean }) {
 						>
 							⚙ ADMIN
 						</button>
+					)}
+					{isAdmin && adminPermissions && (
+						<div className="admin-indicator">
+							<span className="admin-indicator-dot" />
+							<span>ADMIN</span>
+							<span className="admin-role-name">{adminPermissions.roleName}</span>
+							<span className="admin-perm-level">
+								({adminPermissions.level === 'full' ? 'Complet' : 'Limité'})
+							</span>
+						</div>
 					)}
 				</div>
 			)}

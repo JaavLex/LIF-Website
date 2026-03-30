@@ -343,18 +343,7 @@ export default async function RoleplayPage({
 					inviteUrl={disclaimerConfig.inviteUrl}
 				/>
 			)}
-			<RoleplayTutorial isAdmin={isAdmin} />
-
-			{isAdmin && adminPermissions && (
-				<div className="admin-indicator">
-					<span className="admin-indicator-dot" />
-					<span>MODE ADMIN</span>
-					<span className="admin-role-name">{adminPermissions.roleName}</span>
-					<span className="admin-perm-level">
-						({adminPermissions.level === 'full' ? 'Complet' : 'Limité'})
-					</span>
-				</div>
-			)}
+			<RoleplayTutorial isAdmin={isAdmin} adminPermissions={adminPermissions} />
 		</div>
 	);
 }
