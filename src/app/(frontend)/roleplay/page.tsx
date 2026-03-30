@@ -97,7 +97,7 @@ export default async function RoleplayPage({
 			depth: 2,
 		}),
 		payload
-			.find({ collection: 'factions', limit: 100, depth: 0 })
+			.find({ collection: 'factions', limit: 100, depth: 1 })
 			.catch(() => ({ docs: [] })),
 	]);
 
@@ -237,6 +237,97 @@ export default async function RoleplayPage({
 				)}
 			</div>
 
+			{/* Factions & Units section for all users */}
+			{(factions.docs.length > 0 || units.docs.length > 0) && (
+				<>
+					<div className="terminal-header" style={{ marginTop: '0.5rem' }}>
+						<div className="terminal-header-left">
+							<div className="terminal-header-dots">
+								<span className="terminal-dot green" />
+								<span className="terminal-dot yellow" />
+								<span className="terminal-dot red" />
+							</div>
+							<span className="terminal-title">ORGANISATIONS & UNITÉS</span>
+						</div>
+						<div className="terminal-header-right">
+							{factions.docs.length} faction{factions.docs.length !== 1 ? 's' : ''} | {units.docs.length} unité{units.docs.length !== 1 ? 's' : ''}
+						</div>
+					</div>
+					<div className="terminal-panel" style={{ marginBottom: '1.5rem' }}>
+						{factions.docs.length > 0 && (
+							<div style={{ marginBottom: '1.5rem' }}>
+								<h2 style={{ fontSize: '1.1rem', marginBottom: '0.75rem' }}>FACTIONS</h2>
+								<div className="orgs-grid">
+									{(factions.docs as any[]).map((faction: any) => (
+										<Link
+											key={faction.id}
+											href={`/roleplay/faction/${faction.slug}`}
+											className="org-card"
+											style={{ borderColor: faction.color || 'var(--border)' }}
+										>
+											{faction.logo?.url && (
+												<Image
+													src={faction.logo.url}
+													alt={faction.name}
+													width={36}
+													height={36}
+													style={{ objectFit: 'contain' }}
+													unoptimized
+												/>
+											)}
+											<div>
+												<div className="org-card-name" style={{ color: faction.color || 'var(--text)' }}>
+													{faction.name}
+												</div>
+												<div className="org-card-type">
+													{faction.type === 'allied' ? 'Alliée' : faction.type === 'hostile' ? 'Hostile' : 'Neutre'}
+												</div>
+											</div>
+										</Link>
+									))}
+								</div>
+							</div>
+						)}
+						{units.docs.length > 0 && (
+							<div>
+								<h2 style={{ fontSize: '1.1rem', marginBottom: '0.75rem' }}>UNITÉS</h2>
+								<div className="orgs-grid">
+									{(units.docs as any[]).map((unit: any) => (
+										<Link
+											key={unit.id}
+											href={`/roleplay/unite/${unit.slug}`}
+											className="org-card"
+											style={{ borderColor: unit.color || 'var(--border)' }}
+										>
+											{unit.insignia?.url && (
+												<Image
+													src={unit.insignia.url}
+													alt={unit.name}
+													width={36}
+													height={36}
+													style={{ objectFit: 'contain' }}
+													unoptimized
+												/>
+											)}
+											<div>
+												<div className="org-card-name" style={{ color: unit.color || 'var(--text)' }}>
+													{unit.name}
+												</div>
+												{unit.parentFaction && typeof unit.parentFaction === 'object' && (
+													<div className="org-card-type">
+														{unit.parentFaction.name}
+													</div>
+												)}
+											</div>
+										</Link>
+									))}
+								</div>
+							</div>
+						)}
+					</div>
+				</>
+			)}
+
 			<div data-tutorial="session-bar">
 				<SessionBar canCreateCharacter={canCreateCharacter} />
 			</div>
@@ -246,6 +337,7 @@ export default async function RoleplayPage({
 					<AdminPanel
 						units={JSON.parse(JSON.stringify(units.docs))}
 						factions={JSON.parse(JSON.stringify(factions.docs))}
+						adminLevel={adminPermissions?.level === 'full' ? 'full' : 'limited'}
 					/>
 				</div>
 			)}

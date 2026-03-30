@@ -36,6 +36,7 @@ export async function POST(request: NextRequest) {
 				color: body.color || '#4a7c23',
 				...(body.insignia ? { insignia: body.insignia } : {}),
 				...(body.parentFaction ? { parentFaction: body.parentFaction } : {}),
+				...(body.description ? { description: body.description } : {}),
 			},
 		});
 

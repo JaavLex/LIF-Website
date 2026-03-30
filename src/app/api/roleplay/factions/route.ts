@@ -53,6 +53,7 @@ export async function POST(request: NextRequest) {
 				type: body.type || 'neutral',
 				color: body.color || '#8b4513',
 				...(body.logo ? { logo: body.logo } : {}),
+				...(body.description ? { description: body.description } : {}),
 			},
 		});
 

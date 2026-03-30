@@ -1265,6 +1265,41 @@
   border-bottom-color: var(--danger) !important;
 }
 
+/* Organizations & Units Grid */
+.orgs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.75rem;
+}
+
+.org-card {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-left-width: 3px;
+  text-decoration: none;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.org-card:hover {
+  background: rgba(74, 124, 35, 0.08);
+}
+
+.org-card-name {
+  font-size: 0.9rem;
+  font-weight: bold;
+  font-family: 'Courier New', monospace;
+}
+
+.org-card-type {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-top: 0.15rem;
+}
+
 /* Responsive roleplay */
 @media (max-width: 768px) {
   .character-detail {
@@ -1284,6 +1319,10 @@
   }
 
   .personnel-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .orgs-grid {
     grid-template-columns: 1fr;
   }
 
