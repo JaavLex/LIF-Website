@@ -551,9 +551,17 @@ export function IntelligenceList({
 										</div>
 									)}
 
-									{/* Edit button */}
-									{canEditReport(report) && editingId !== report.id && (
-										<div style={{ marginTop: '0.75rem' }}>
+									{/* Action buttons */}
+									<div style={{ marginTop: '0.75rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+										<Link
+											href={`/roleplay/renseignement/${report.id}`}
+											className="session-btn"
+											style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem' }}
+											onClick={e => e.stopPropagation()}
+										>
+											📄 Ouvrir
+										</Link>
+										{canEditReport(report) && editingId !== report.id && (
 											<button
 												type="button"
 												onClick={e => { e.stopPropagation(); startEditing(report); }}
@@ -562,8 +570,8 @@ export function IntelligenceList({
 											>
 												✏️ Modifier
 											</button>
-										</div>
-									)}
+										)}
+									</div>
 
 									{/* Edit form */}
 									{editingId === report.id && (

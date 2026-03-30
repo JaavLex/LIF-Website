@@ -324,10 +324,11 @@ async function handleOuvrirRenseignements(interaction: ChatInputCommandInteracti
 			const postedBy = typeof report.postedBy === 'object' && report.postedBy ? report.postedBy.fullName : '—';
 			const date = new Date(report.date).toLocaleDateString('fr-FR');
 			const type = TYPE_LABELS_FR[report.type] || report.type;
+			const url = `${SITE_URL}/roleplay/renseignement/${report.id}`;
 
 			embed.addFields({
 				name: `📋 ${report.title}`,
-				value: `**Type:** ${type}\n**Date:** ${date}\n**Par:** ${postedBy}\n**Classification:** ${report.classification}`,
+				value: `**Type:** ${type}\n**Date:** ${date}\n**Par:** ${postedBy}\n**Classification:** ${report.classification}\n[Ouvrir le rapport](${url})`,
 				inline: reports.length <= 4,
 			});
 		}

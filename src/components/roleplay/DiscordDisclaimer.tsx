@@ -22,6 +22,7 @@ export function DiscordDisclaimer({
 					</p>
 					<ul className="disclaimer-restrictions">
 						<li>Création de personnages désactivée</li>
+						<li>Création de renseignements désactivée</li>
 						<li>Modification de dossiers désactivée</li>
 					</ul>
 					{inviteUrl && (
