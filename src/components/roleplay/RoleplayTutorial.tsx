@@ -12,7 +12,283 @@ interface TutorialStep {
 	content: string;
 	position: 'top' | 'bottom' | 'left' | 'right' | 'center';
 	adminOnly?: boolean;
+	dummyForm?: 'character' | 'intel' | 'admin-character' | 'admin-intel' | 'admin-timeline';
 }
+
+/* ─── Dummy form label style ─── */
+const dls: React.CSSProperties = {
+	display: 'block', fontSize: '0.7rem', color: 'var(--muted)',
+	marginBottom: '0.2rem', marginTop: '0.5rem',
+};
+const dinp: React.CSSProperties = {
+	width: '100%', padding: '0.3rem 0.5rem', fontSize: '0.75rem',
+	background: 'var(--bg-tertiary)', border: '1px solid var(--border)',
+	color: 'var(--text)', fontFamily: 'inherit',
+};
+const dsel: React.CSSProperties = { ...dinp };
+const dgrid: React.CSSProperties = {
+	display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem',
+};
+const dsec: React.CSSProperties = {
+	borderTop: '1px solid rgba(74,124,35,0.2)', paddingTop: '0.5rem', marginTop: '0.5rem',
+};
+
+function DummyCharacterForm() {
+	return (
+		<div className="tutorial-dummy-form">
+			<div className="tutorial-dummy-title">Aperçu — Création de personnage</div>
+			<div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
+				<div style={{ width: 60, height: 60, border: '1px dashed var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.6rem', color: 'var(--muted)', textAlign: 'center', flexShrink: 0 }}>
+					Avatar
+				</div>
+				<div style={{ flex: 1 }}>
+					<div style={{ fontSize: '0.7rem', padding: '0.3rem', background: 'var(--bg-tertiary)', border: '1px solid var(--border)', color: 'var(--muted)' }}>
+						Grade détecté via Discord
+					</div>
+				</div>
+			</div>
+
+			<div style={dsec}>
+				<div style={{ fontSize: '0.75rem', color: 'var(--primary)', fontWeight: 700, marginBottom: '0.3rem' }}>Identité</div>
+				<div style={dgrid}>
+					<div><span style={dls}>Prénom *</span><input style={dinp} value="Jean" readOnly /></div>
+					<div><span style={dls}>Nom *</span><input style={dinp} value="Dupont" readOnly /></div>
+				</div>
+				<div style={dgrid}>
+					<div><span style={dls}>Date de naissance</span><input style={dinp} value="1992-03-15" readOnly /></div>
+					<div><span style={dls}>Lieu d'origine</span><input style={dinp} value="Lyon, France" readOnly /></div>
+				</div>
+				<div style={dgrid}>
+					<div><span style={dls}>Taille (cm)</span><input style={dinp} value="182" readOnly /></div>
+					<div><span style={dls}>Poids (kg)</span><input style={dinp} value="78" readOnly /></div>
+				</div>
+			</div>
+
+			<div style={dsec}>
+				<div style={{ fontSize: '0.75rem', color: 'var(--primary)', fontWeight: 700, marginBottom: '0.3rem' }}>Parcours</div>
+				<span style={dls}>Parcours civil</span>
+				<textarea style={{ ...dinp, height: 32, resize: 'none' }} value="Ancien mécanicien..." readOnly />
+				<span style={dls}>Parcours militaire</span>
+				<textarea style={{ ...dinp, height: 32, resize: 'none' }} value="3 ans dans l'infanterie..." readOnly />
+				<span style={dls}>Parcours judiciaire</span>
+				<textarea style={{ ...dinp, height: 32, resize: 'none' }} value="Casier vierge" readOnly />
+			</div>
+
+			<div style={dsec}>
+				<div style={{ fontSize: '0.75rem', color: 'var(--primary)', fontWeight: 700, marginBottom: '0.3rem' }}>Spécialisations</div>
+				<div style={{ display: 'flex', gap: '0.3rem', marginBottom: '0.25rem' }}>
+					<input style={{ ...dinp, flex: 1 }} value="Tireur d'élite" readOnly />
+					<span style={{ color: 'var(--danger)', padding: '0 0.3rem', border: '1px solid var(--danger)', fontSize: '0.7rem', display: 'flex', alignItems: 'center' }}>×</span>
+				</div>
+				<div style={{ fontSize: '0.65rem', color: 'var(--muted)', border: '1px dashed var(--border)', padding: '0.2rem 0.5rem', textAlign: 'center' }}>+ Ajouter une spécialisation</div>
+			</div>
+
+			<div style={dsec}>
+				<div style={{ fontSize: '0.75rem', color: 'var(--primary)', fontWeight: 700, marginBottom: '0.3rem' }}>Affectation</div>
+				<div style={dgrid}>
+					<div><span style={dls}>Unité</span><select style={dsel} disabled><option>1ère Compagnie</option></select></div>
+					<div><span style={dls}>Unité précédente</span><input style={dinp} value="" readOnly /></div>
+				</div>
+			</div>
+
+			<div style={{ marginTop: '0.5rem', textAlign: 'center' }}>
+				<span className="tutorial-dummy-btn-submit">Créer le dossier</span>
+			</div>
+		</div>
+	);
+}
+
+function DummyIntelForm() {
+	return (
+		<div className="tutorial-dummy-form">
+			<div className="tutorial-dummy-title">Aperçu — Nouveau rapport de renseignement</div>
+			<div style={dgrid}>
+				<div><span style={dls}>Titre *</span><input style={dinp} value="Mouvement ennemi secteur Nord" readOnly /></div>
+				<div><span style={dls}>Date *</span><input style={dinp} value="2026-03-28" readOnly /></div>
+			</div>
+			<div style={dgrid}>
+				<div>
+					<span style={dls}>Type</span>
+					<select style={dsel} disabled>
+						<option>Observation</option>
+					</select>
+				</div>
+				<div>
+					<span style={dls}>Classification</span>
+					<select style={dsel} disabled>
+						<option>Restreint</option>
+					</select>
+				</div>
+			</div>
+			<span style={dls}>Description *</span>
+			<textarea style={{ ...dinp, height: 40, resize: 'none' }} value="Convoi de 3 véhicules repéré en direction du checkpoint Alpha..." readOnly />
+			<span style={dls}>Coordonnées</span>
+			<input style={dinp} value="48.8566, 2.3522" readOnly />
+			<div style={dgrid}>
+				<div>
+					<span style={dls}>Cible liée</span>
+					<select style={dsel} disabled><option>— Sélectionner —</option></select>
+				</div>
+				<div>
+					<span style={dls}>Faction liée</span>
+					<select style={dsel} disabled><option>— Sélectionner —</option></select>
+				</div>
+			</div>
+			<div style={dsec}>
+				<span style={dls}>Médias</span>
+				<div style={{ fontSize: '0.65rem', color: 'var(--muted)', border: '1px dashed var(--border)', padding: '0.3rem 0.5rem', textAlign: 'center' }}>
+					📎 Glisser ou cliquer pour ajouter des photos/vidéos
+				</div>
+			</div>
+			<div style={{ marginTop: '0.5rem', textAlign: 'center' }}>
+				<span className="tutorial-dummy-btn-submit">Soumettre le rapport</span>
+			</div>
+		</div>
+	);
+}
+
+function DummyAdminCharForm() {
+	return (
+		<div className="tutorial-dummy-form tutorial-dummy-admin">
+			<div className="tutorial-dummy-title">Aperçu — Section admin d'une fiche personnage</div>
+			<div style={dgrid}>
+				<div>
+					<span style={dls}>Grade (override admin)</span>
+					<select style={dsel} disabled><option>Sergent</option></select>
+				</div>
+				<div>
+					<span style={dls}>Statut</span>
+					<select style={dsel} disabled>
+						<option>En service</option>
+					</select>
+				</div>
+			</div>
+			<div style={dgrid}>
+				<div>
+					<span style={dls}>Classification</span>
+					<select style={dsel} disabled>
+						<option>Restreint</option>
+					</select>
+				</div>
+				<div>
+					<span style={dls}>Officier supérieur</span>
+					<select style={dsel} disabled><option>Cpt. Martin</option></select>
+				</div>
+			</div>
+			<div style={dgrid}>
+				<div>
+					<span style={dls}>Faction</span>
+					<input style={dinp} value="LIF" readOnly />
+				</div>
+				<div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', justifyContent: 'flex-end' }}>
+					<label style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.7rem', color: 'var(--text)' }}>
+						<input type="checkbox" checked readOnly /> Grade forcé
+					</label>
+					<label style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.7rem', color: 'var(--text)' }}>
+						<input type="checkbox" readOnly /> Cible / Ennemi
+					</label>
+				</div>
+			</div>
+			<div style={dsec}>
+				<label style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.7rem', color: 'var(--text)' }}>
+					<input type="checkbox" readOnly /> Fiche PNJ (non lié à Discord)
+				</label>
+			</div>
+			<span style={dls}>Notes État-Major</span>
+			<textarea style={{ ...dinp, height: 28, resize: 'none' }} value="Agent fiable, à surveiller..." readOnly />
+			<div style={dsec}>
+				<label style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.7rem', color: 'var(--danger)' }}>
+					<input type="checkbox" readOnly /> Archiver ce dossier
+				</label>
+			</div>
+		</div>
+	);
+}
+
+function DummyAdminIntelForm() {
+	return (
+		<div className="tutorial-dummy-form tutorial-dummy-admin">
+			<div className="tutorial-dummy-title">Aperçu — Actions admin sur un rapport</div>
+			<div style={{ fontSize: '0.72rem', color: 'var(--text)', marginBottom: '0.5rem' }}>
+				En tant qu'admin, sur chaque rapport vous pouvez :
+			</div>
+			<div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', marginBottom: '0.5rem' }}>
+				<span className="tutorial-dummy-status-btn active">À vérifier</span>
+				<span className="tutorial-dummy-status-btn">Vérifié ✓</span>
+				<span className="tutorial-dummy-status-btn">Fausse info ✗</span>
+				<span className="tutorial-dummy-status-btn">Non concluant</span>
+			</div>
+			<div style={{ display: 'flex', gap: '0.4rem', marginBottom: '0.5rem' }}>
+				<span className="tutorial-dummy-action-btn">✏️ Modifier</span>
+				<span className="tutorial-dummy-action-btn danger">🗑️ Supprimer</span>
+			</div>
+			<div style={dsec}>
+				<span style={dls}>Filtre par statut (admin)</span>
+				<select style={dsel} disabled>
+					<option>Tous les statuts</option>
+				</select>
+			</div>
+		</div>
+	);
+}
+
+function DummyAdminTimelineForm() {
+	return (
+		<div className="tutorial-dummy-form tutorial-dummy-admin">
+			<div className="tutorial-dummy-title">Aperçu — Gestion de la chronologie</div>
+			<div style={{ border: '1px solid var(--border)', padding: '0.4rem', marginBottom: '0.4rem' }}>
+				<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+					<div>
+						<span style={{ fontSize: '0.65rem', padding: '0.1rem 0.3rem', background: 'rgba(74,124,35,0.2)', color: 'var(--primary)', marginRight: '0.3rem' }}>PROMOTION</span>
+						<span style={{ fontSize: '0.7rem' }}>Passage au grade de Sergent</span>
+					</div>
+					<span style={{ color: 'var(--danger)', border: '1px solid var(--danger)', padding: '0.1rem 0.3rem', fontSize: '0.6rem' }}>✕</span>
+				</div>
+				<div style={{ fontSize: '0.6rem', color: 'var(--muted)' }}>15/03/2026</div>
+			</div>
+			<div style={{ border: '1px solid var(--border)', padding: '0.4rem', marginBottom: '0.5rem' }}>
+				<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+					<div>
+						<span style={{ fontSize: '0.65rem', padding: '0.1rem 0.3rem', background: 'rgba(139,69,19,0.2)', color: '#c9a040', marginRight: '0.3rem' }}>MÉDAILLE</span>
+						<span style={{ fontSize: '0.7rem' }}>Croix du mérite</span>
+					</div>
+					<span style={{ color: 'var(--danger)', border: '1px solid var(--danger)', padding: '0.1rem 0.3rem', fontSize: '0.6rem' }}>✕</span>
+				</div>
+				<div style={{ fontSize: '0.6rem', color: 'var(--muted)' }}>10/02/2026</div>
+			</div>
+			<div style={dsec}>
+				<div style={{ fontSize: '0.72rem', color: 'var(--primary)', marginBottom: '0.3rem', fontWeight: 700 }}>Nouvel événement</div>
+				<div style={dgrid}>
+					<div>
+						<span style={dls}>Type</span>
+						<select style={dsel} disabled>
+							<option>Promotion</option>
+						</select>
+					</div>
+					<div>
+						<span style={dls}>Date *</span>
+						<input style={dinp} value="2026-03-30" readOnly />
+					</div>
+				</div>
+				<span style={dls}>Titre *</span>
+				<input style={dinp} value="Promotion Caporal-Chef" readOnly />
+				<span style={dls}>Classification</span>
+				<select style={dsel} disabled><option>Public</option></select>
+				<div style={{ marginTop: '0.4rem', textAlign: 'center' }}>
+					<span className="tutorial-dummy-btn-submit">Ajouter</span>
+				</div>
+			</div>
+		</div>
+	);
+}
+
+const DUMMY_FORMS: Record<string, () => React.ReactNode> = {
+	'character': DummyCharacterForm,
+	'intel': DummyIntelForm,
+	'admin-character': DummyAdminCharForm,
+	'admin-intel': DummyAdminIntelForm,
+	'admin-timeline': DummyAdminTimelineForm,
+};
 
 const USER_STEPS: TutorialStep[] = [
 	{
@@ -44,7 +320,7 @@ const USER_STEPS: TutorialStep[] = [
 		target: '[data-tutorial="personnel-panel"]',
 		title: 'REGISTRE DU PERSONNEL',
 		content:
-			'Tous les dossiers du personnel sont répertoriés ici. Cliquez sur une fiche pour consulter le profil complet : identité, grade, unité, historique...',
+			'Tous les dossiers du personnel sont répertoriés ici. Cliquez sur une fiche pour consulter le profil complet.',
 		position: 'top',
 	},
 	{
@@ -52,7 +328,7 @@ const USER_STEPS: TutorialStep[] = [
 		target: '[data-tutorial="filters"]',
 		title: 'RECHERCHE & FILTRES',
 		content:
-			"Les onglets Personnel, Cibles et Mes Personnages permettent de trier l'affichage. Utilisez la barre de recherche et les filtres par statut, grade ou unité.",
+			"Les onglets Personnel, Cibles et Mes Personnages permettent de trier l'affichage. Utilisez la barre de recherche et les filtres.",
 		position: 'bottom',
 	},
 	{
@@ -60,15 +336,16 @@ const USER_STEPS: TutorialStep[] = [
 		target: null,
 		title: 'CRÉER UN PERSONNAGE',
 		content:
-			"Une fois connecté, cliquez sur « Nouveau Personnage » dans la barre de session. Remplissez la fiche : nom, prénom, date de naissance, lieu d'origine, description physique, et background (civil, militaire, judiciaire). Ajoutez vos spécialisations et un avatar.",
+			"Cliquez sur « Nouveau Personnage » dans la barre de session. Voici les champs à remplir :",
 		position: 'center',
+		dummyForm: 'character',
 	},
 	{
 		id: 'intelligence',
 		target: '[data-tutorial="intelligence"]',
 		title: 'RENSEIGNEMENTS',
 		content:
-			'La section renseignements regroupe les rapports terrain. Les agents autorisés peuvent consulter et filtrer les rapports existants.',
+			'La section renseignements regroupe les rapports terrain. Les agents autorisés peuvent consulter et filtrer les rapports.',
 		position: 'top',
 	},
 	{
@@ -76,15 +353,16 @@ const USER_STEPS: TutorialStep[] = [
 		target: null,
 		title: 'SOUMETTRE UN RAPPORT',
 		content:
-			"Pour créer un rapport de renseignement, cliquez sur « Nouveau rapport ». Renseignez le titre, la date, le type (observation, reconnaissance, SIGINT...), la description, et éventuellement les coordonnées et médias associés. Liez une cible ou faction si applicable.",
+			"Cliquez sur « Nouveau rapport » pour créer un renseignement. Voici le formulaire :",
 		position: 'center',
+		dummyForm: 'intel',
 	},
 	{
 		id: 'audio',
 		target: '[data-tutorial="audio-controls"]',
 		title: 'CONTRÔLES AUDIO',
 		content:
-			"Coupez ou activez la musique d'ambiance et réglez le volume. Vos préférences sont sauvegardées automatiquement.",
+			"Coupez ou activez la musique d'ambiance et réglez le volume. Vos préférences sont sauvegardées.",
 		position: 'top',
 	},
 	{
@@ -92,7 +370,7 @@ const USER_STEPS: TutorialStep[] = [
 		target: null,
 		title: 'BRIEFING TERMINÉ',
 		content:
-			"Vous êtes prêt. Explorez les dossiers, créez votre personnage et contribuez aux renseignements. Vous pouvez relancer ce tutoriel à tout moment via le bouton en bas à gauche.",
+			"Vous êtes prêt. Explorez les dossiers, créez votre personnage et contribuez aux renseignements. Relancez ce tutoriel via le bouton en bas à gauche.",
 		position: 'center',
 	},
 ];
@@ -103,7 +381,7 @@ const ADMIN_STEPS: TutorialStep[] = [
 		target: null,
 		title: 'BRIEFING ADMINISTRATEUR',
 		content:
-			"Ce briefing complémentaire couvre les fonctionnalités réservées aux administrateurs. Vous pouvez le relancer depuis le bouton « Tutoriel Admin » en bas à gauche.",
+			"Ce briefing couvre les fonctionnalités réservées aux administrateurs.",
 		position: 'center',
 		adminOnly: true,
 	},
@@ -112,7 +390,7 @@ const ADMIN_STEPS: TutorialStep[] = [
 		target: '[data-tutorial="admin-panel"]',
 		title: 'PANNEAU D\'ADMINISTRATION',
 		content:
-			"Ce panneau vous permet de créer et gérer les Unités et Factions. Ajoutez une unité avec nom, slug, couleur et insigne. Ajoutez une faction avec type (alliée, ennemie, neutre), couleur et logo.",
+			"Créez et gérez les Unités (nom, slug, couleur, insigne) et Factions (type, couleur, logo).",
 		position: 'bottom',
 		adminOnly: true,
 	},
@@ -121,7 +399,7 @@ const ADMIN_STEPS: TutorialStep[] = [
 		target: '[data-tutorial="filters"]',
 		title: 'ONGLET ARCHIVES',
 		content:
-			"En tant qu'admin, vous disposez d'un onglet « Archives » supplémentaire dans les filtres. Il affiche tous les dossiers archivés, masqués aux utilisateurs normaux.",
+			"L'onglet « Archives » affiche les dossiers archivés, masqués aux utilisateurs normaux.",
 		position: 'bottom',
 		adminOnly: true,
 	},
@@ -130,43 +408,37 @@ const ADMIN_STEPS: TutorialStep[] = [
 		target: null,
 		title: 'GESTION DES PERSONNAGES',
 		content:
-			"Sur chaque fiche personnage, vous pouvez : modifier le grade (avec override Discord), changer le statut (KIA, MIA, retraité...), définir la classification, marquer comme cible/ennemi avec niveau de menace, ajouter des notes État-Major, et archiver le dossier.",
+			"Sur chaque fiche, vous avez accès à une section admin avec ces contrôles :",
 		position: 'center',
 		adminOnly: true,
+		dummyForm: 'admin-character',
 	},
 	{
 		id: 'admin-timeline',
 		target: null,
-		title: 'CHRONOLOGIE DES PERSONNAGES',
+		title: 'CHRONOLOGIE',
 		content:
-			"Vous pouvez ajouter des événements à la chronologie de chaque personnage (promotion, mutation, blessure, médaille, sanction...) et supprimer des événements existants. Chaque événement a un type, une date, un titre et une classification.",
+			"Ajoutez et supprimez des événements dans l'historique de chaque personnage :",
 		position: 'center',
 		adminOnly: true,
+		dummyForm: 'admin-timeline',
 	},
 	{
 		id: 'admin-intel',
-		target: '[data-tutorial="intelligence"]',
+		target: null,
 		title: 'GESTION DES RENSEIGNEMENTS',
 		content:
-			"Vous pouvez modifier le statut de chaque rapport (à vérifier, vérifié, fausse info, non concluant), éditer ou supprimer n'importe quel rapport, et filtrer par statut — fonctions réservées aux admins.",
-		position: 'top',
-		adminOnly: true,
-	},
-	{
-		id: 'admin-npc',
-		target: null,
-		title: 'FICHES PNJ',
-		content:
-			"Lors de la création d'un personnage, vous pouvez cocher « Fiche PNJ » pour créer un personnage non lié à un compte Discord. Utile pour les personnages non-joueurs du roleplay.",
+			"Actions disponibles sur les rapports de renseignement en mode admin :",
 		position: 'center',
 		adminOnly: true,
+		dummyForm: 'admin-intel',
 	},
 	{
 		id: 'admin-complete',
 		target: null,
 		title: 'BRIEFING ADMIN TERMINÉ',
 		content:
-			"Vous maîtrisez maintenant l'ensemble des outils d'administration. Gérez les personnages, les renseignements, les unités et factions avec précision.",
+			"Vous maîtrisez les outils d'administration. Gérez les personnages, renseignements, unités et factions.",
 		position: 'center',
 		adminOnly: true,
 	},
@@ -407,7 +679,7 @@ export function RoleplayTutorial({ isAdmin }: { isAdmin?: boolean }) {
 						<div className="tutorial-backdrop" />
 					)}
 
-					<div className="tutorial-tooltip" style={tooltipStyle}>
+					<div className={`tutorial-tooltip${step.dummyForm ? ' has-dummy-form' : ''}`} style={tooltipStyle}>
 						<div className="tutorial-tooltip-header">
 							<span className="tutorial-step-badge">
 								{currentStep + 1}/{steps.length}
@@ -424,6 +696,12 @@ export function RoleplayTutorial({ isAdmin }: { isAdmin?: boolean }) {
 						</div>
 
 						<p className="tutorial-tooltip-content">{step.content}</p>
+
+						{step.dummyForm && DUMMY_FORMS[step.dummyForm] && (
+							<div className="tutorial-dummy-wrapper">
+								{DUMMY_FORMS[step.dummyForm]()}
+							</div>
+						)}
 
 						<div className="tutorial-tooltip-actions">
 							<button

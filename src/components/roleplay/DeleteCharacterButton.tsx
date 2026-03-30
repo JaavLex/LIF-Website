@@ -3,16 +3,29 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-export function DeleteCharacterButton({ characterId, characterName }: { characterId: number; characterName: string }) {
+export function DeleteCharacterButton({
+	characterId,
+	characterName,
+}: {
+	characterId: number;
+	characterName: string;
+}) {
 	const router = useRouter();
 	const [deleting, setDeleting] = useState(false);
 
 	const handleDelete = async () => {
-		if (!confirm(`Êtes-vous sûr de vouloir supprimer définitivement le dossier de ${characterName} ? Cette action est irréversible.`)) return;
+		if (
+			!confirm(
+				`Êtes-vous sûr de vouloir supprimer définitivement le dossier de ${characterName} ? Cette action est irréversible.`,
+			)
+		)
+			return;
 
 		setDeleting(true);
 		try {
-			const res = await fetch(`/api/roleplay/characters/${characterId}`, { method: 'DELETE' });
+			const res = await fetch(`/api/roleplay/characters/${characterId}`, {
+				method: 'DELETE',
+			});
 			if (res.ok) {
 				router.push('/roleplay');
 			} else {

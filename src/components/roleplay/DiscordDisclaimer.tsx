@@ -18,7 +18,8 @@ export function DiscordDisclaimer({
 			{reason === 'not_member' ? (
 				<>
 					<p className="disclaimer-message">
-						Vous n&apos;êtes pas membre du serveur Discord. Rejoignez le serveur pour accéder à toutes les fonctionnalités.
+						Vous n&apos;êtes pas membre du serveur Discord. Rejoignez le serveur pour
+						accéder à toutes les fonctionnalités.
 					</p>
 					<ul className="disclaimer-restrictions">
 						<li>Création de personnages désactivée</li>
@@ -39,7 +40,9 @@ export function DiscordDisclaimer({
 			) : (
 				<>
 					<p className="disclaimer-message">
-						Vous n&apos;avez pas encore complété votre entrée en service. Créez un ticket d&apos;entrée en service qu&apos;un modérateur examinera et approuvera.
+						Vous n&apos;avez pas encore complété votre entrée en service. Créez un
+						ticket d&apos;entrée en service qu&apos;un modérateur examinera et
+						approuvera.
 					</p>
 					<ul className="disclaimer-restrictions">
 						<li>Création de personnages désactivée</li>

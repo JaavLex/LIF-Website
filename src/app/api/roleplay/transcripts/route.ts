@@ -27,15 +27,18 @@ function getEmbedField(embed: any, name: string): string {
 
 function parseParticipants(value: string): { count: number; name: string }[] {
 	if (!value) return [];
-	return value.split('\n').map(line => {
-		const trimmed = line.trim();
-		// Format: "9 - <@id> - username#0"
-		const match = trimmed.match(/^(\d+)\s*-\s*(?:<@!?\d+>\s*-\s*)?(.+)$/);
-		if (match) {
-			return { count: parseInt(match[1], 10), name: match[2].trim() };
-		}
-		return { count: 0, name: trimmed };
-	}).filter(p => p.name);
+	return value
+		.split('\n')
+		.map(line => {
+			const trimmed = line.trim();
+			// Format: "9 - <@id> - username#0"
+			const match = trimmed.match(/^(\d+)\s*-\s*(?:<@!?\d+>\s*-\s*)?(.+)$/);
+			if (match) {
+				return { count: parseInt(match[1], 10), name: match[2].trim() };
+			}
+			return { count: 0, name: trimmed };
+		})
+		.filter(p => p.name);
 }
 
 function getTranscriptUrl(msg: any): string {
@@ -87,7 +90,9 @@ async function fetchAllMessages(botToken: string): Promise<TranscriptInfo[]> {
 			const participants = parseParticipants(participantsRaw);
 
 			const transcriptUrl = getTranscriptUrl(msg);
-			const attachment = msg.attachments?.find((a: any) => a.filename?.toLowerCase().endsWith('.html'));
+			const attachment = msg.attachments?.find((a: any) =>
+				a.filename?.toLowerCase().endsWith('.html'),
+			);
 
 			transcripts.push({
 				messageId: msg.id,
@@ -140,11 +145,16 @@ export async function GET() {
 		const transcripts = await fetchAllMessages(botToken);
 
 		// Sort by timestamp descending
-		transcripts.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+		transcripts.sort(
+			(a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
+		);
 
 		return NextResponse.json({ transcripts });
 	} catch (error) {
 		console.error('Error fetching transcripts:', error);
-		return NextResponse.json({ error: 'Erreur lors de la récupération des transcripts' }, { status: 500 });
+		return NextResponse.json(
+			{ error: 'Erreur lors de la récupération des transcripts' },
+			{ status: 500 },
+		);
 	}
 }

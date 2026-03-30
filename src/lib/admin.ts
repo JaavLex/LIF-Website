@@ -7,7 +7,9 @@ export interface AdminPermissions {
 	roleName: string | null;
 }
 
-export async function checkAdminPermissions(session: SessionData): Promise<AdminPermissions> {
+export async function checkAdminPermissions(
+	session: SessionData,
+): Promise<AdminPermissions> {
 	// Check DB admin role first
 	const payload = await getPayloadClient();
 	const user = await payload.find({

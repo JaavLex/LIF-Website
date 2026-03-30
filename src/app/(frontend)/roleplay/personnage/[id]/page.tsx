@@ -128,7 +128,8 @@ export default async function CharacterPage({
 						<span className="terminal-dot red" />
 					</div>
 					<span className="terminal-title">
-						{character.isTarget ? 'FICHE CIBLE' : 'DOSSIER PERSONNEL'} — {character.militaryId || 'N/A'}
+						{character.isTarget ? 'FICHE CIBLE' : 'DOSSIER PERSONNEL'} —{' '}
+						{character.militaryId || 'N/A'}
 					</span>
 				</div>
 				<div className="terminal-header-right">
@@ -139,11 +140,27 @@ export default async function CharacterPage({
 			</div>
 
 			<div className="terminal-panel">
-				<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+				<div
+					style={{
+						display: 'flex',
+						justifyContent: 'space-between',
+						alignItems: 'flex-start',
+					}}
+				>
 					<h1 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-						{character.isMainCharacter && <span className="main-character-badge" title="Personnage principal">★</span>}
+						{character.isMainCharacter && (
+							<span className="main-character-badge" title="Personnage principal">
+								★
+							</span>
+						)}
 						{rank?.icon?.url && (
-							<Image src={rank.icon.url} alt={rank.name} width={32} height={32} unoptimized />
+							<Image
+								src={rank.icon.url}
+								alt={rank.name}
+								width={32}
+								height={32}
+								unoptimized
+							/>
 						)}
 						{rank && <>{rank.abbreviation || rank.name} </>}
 						{character.fullName}
@@ -155,13 +172,20 @@ export default async function CharacterPage({
 								<Link
 									href={`/roleplay/personnage/${character.id}/modifier`}
 									className="session-btn"
-									style={{ padding: '0.5rem 1rem', fontSize: '0.85rem', whiteSpace: 'nowrap' }}
+									style={{
+										padding: '0.5rem 1rem',
+										fontSize: '0.85rem',
+										whiteSpace: 'nowrap',
+									}}
 								>
 									Modifier
 								</Link>
 							)}
 							{canDelete && (
-								<DeleteCharacterButton characterId={character.id} characterName={character.fullName} />
+								<DeleteCharacterButton
+									characterId={character.id}
+									characterName={character.fullName}
+								/>
 							)}
 						</div>
 					)}
@@ -194,9 +218,18 @@ export default async function CharacterPage({
 							</div>
 							<div className="info-row">
 								<span className="info-label">Grade</span>
-								<span className="info-value" style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+								<span
+									className="info-value"
+									style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}
+								>
 									{rank?.icon?.url ? (
-										<Image src={rank.icon.url} alt={rank.name} width={20} height={20} unoptimized />
+										<Image
+											src={rank.icon.url}
+											alt={rank.name}
+											width={20}
+											height={20}
+											unoptimized
+										/>
 									) : (
 										<span style={{ color: 'var(--muted)' }}>—</span>
 									)}
@@ -213,9 +246,18 @@ export default async function CharacterPage({
 							</div>
 							<div className="info-row">
 								<span className="info-label">Unité</span>
-								<span className="info-value" style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+								<span
+									className="info-value"
+									style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}
+								>
 									{unit?.insignia?.url && (
-										<Image src={unit.insignia.url} alt={unit.name} width={18} height={18} unoptimized />
+										<Image
+											src={unit.insignia.url}
+											alt={unit.name}
+											width={18}
+											height={18}
+											unoptimized
+										/>
 									)}
 									{unit?.name || '—'}
 								</span>
@@ -231,7 +273,12 @@ export default async function CharacterPage({
 									{character.targetFaction && (
 										<div className="info-row">
 											<span className="info-label">Faction cible</span>
-											<span className="info-value" style={{ color: 'var(--danger)' }}>{character.targetFaction}</span>
+											<span
+												className="info-value"
+												style={{ color: 'var(--danger)' }}
+											>
+												{character.targetFaction}
+											</span>
 										</div>
 									)}
 									{character.threatLevel && (
@@ -239,7 +286,8 @@ export default async function CharacterPage({
 											<span className="info-label">Menace</span>
 											<span className="info-value">
 												<span className={`threat-badge ${character.threatLevel}`}>
-													{THREAT_LABELS[character.threatLevel] || character.threatLevel}
+													{THREAT_LABELS[character.threatLevel] ||
+														character.threatLevel}
 												</span>
 											</span>
 										</div>
@@ -249,7 +297,9 @@ export default async function CharacterPage({
 							{character.isMainCharacter && (
 								<div className="info-row">
 									<span className="info-label">Type</span>
-									<span className="info-value" style={{ color: 'var(--accent)' }}>Personnage principal</span>
+									<span className="info-value" style={{ color: 'var(--accent)' }}>
+										Personnage principal
+									</span>
 								</div>
 							)}
 							{character.discordUsername && (

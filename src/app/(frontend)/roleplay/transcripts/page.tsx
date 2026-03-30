@@ -59,7 +59,10 @@ export default async function TranscriptsPage() {
 			</div>
 
 			<div style={{ textAlign: 'center', padding: '1rem' }}>
-				<Link href="/roleplay" style={{ color: 'var(--muted)', fontSize: '0.85rem' }}>
+				<Link
+					href="/roleplay"
+					style={{ color: 'var(--muted)', fontSize: '0.85rem' }}
+				>
 					← Retour à la base de données
 				</Link>
 			</div>

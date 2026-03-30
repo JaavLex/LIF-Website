@@ -324,7 +324,7 @@ export const Characters: CollectionConfig = {
 			type: 'text',
 			admin: {
 				position: 'sidebar',
-				condition: (data) => data?.isTarget,
+				condition: data => data?.isTarget,
 				description: 'Faction de la cible/ennemi',
 			},
 		},
@@ -377,7 +377,7 @@ export const Characters: CollectionConfig = {
 			],
 			admin: {
 				position: 'sidebar',
-				condition: (data) => data?.isTarget,
+				condition: data => data?.isTarget,
 				description: 'Niveau de menace de la cible',
 			},
 		},

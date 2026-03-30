@@ -21,18 +21,28 @@ interface TimelineEvent {
 	date: string;
 }
 
-export function CharacterTimeline({ events, isAdmin }: { events: TimelineEvent[]; isAdmin?: boolean }) {
+export function CharacterTimeline({
+	events,
+	isAdmin,
+}: {
+	events: TimelineEvent[];
+	isAdmin?: boolean;
+}) {
 	const [deleting, setDeleting] = useState<number | null>(null);
 
 	const handleDelete = async (eventId: number) => {
 		if (!confirm('Supprimer cet événement ?')) return;
 		setDeleting(eventId);
 		try {
-			const res = await fetch(`/api/roleplay/timeline?id=${eventId}`, { method: 'DELETE' });
+			const res = await fetch(`/api/roleplay/timeline?id=${eventId}`, {
+				method: 'DELETE',
+			});
 			if (res.ok) {
 				window.location.reload();
 			}
-		} catch { /* ignore */ } finally {
+		} catch {
+			/* ignore */
+		} finally {
 			setDeleting(null);
 		}
 	};
@@ -41,7 +51,13 @@ export function CharacterTimeline({ events, isAdmin }: { events: TimelineEvent[]
 		<div className="timeline">
 			{events.map(event => (
 				<div key={event.id} className={`timeline-item ${event.type}`}>
-					<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+					<div
+						style={{
+							display: 'flex',
+							justifyContent: 'space-between',
+							alignItems: 'flex-start',
+						}}
+					>
 						<div style={{ flex: 1 }}>
 							<div className="timeline-date">
 								{new Date(event.date).toLocaleDateString('fr-FR', {

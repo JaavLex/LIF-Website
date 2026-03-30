@@ -52,7 +52,12 @@ export default async function EditCharacterPage({
 
 	let allCharacters: any[] = [];
 	if (isAdmin) {
-		const chars = await payload.find({ collection: 'characters', limit: 500, depth: 0, sort: 'fullName' });
+		const chars = await payload.find({
+			collection: 'characters',
+			limit: 500,
+			depth: 0,
+			sort: 'fullName',
+		});
 		allCharacters = chars.docs.map((c: any) => ({ id: c.id, fullName: c.fullName }));
 	}
 

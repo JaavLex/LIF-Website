@@ -236,7 +236,7 @@ export const Roleplay: GlobalConfig = {
 					fields: [
 						{
 							name: 'loadingEnabled',
-							label: 'Activer l\'écran de chargement terminal',
+							label: "Activer l'écran de chargement terminal",
 							type: 'checkbox',
 							defaultValue: true,
 						},
@@ -267,7 +267,7 @@ export const Roleplay: GlobalConfig = {
 					fields: [
 						{
 							name: 'disclaimerEnabled',
-							label: 'Activer l\'avertissement',
+							label: "Activer l'avertissement",
 							type: 'checkbox',
 							defaultValue: true,
 						},
@@ -281,11 +281,12 @@ export const Roleplay: GlobalConfig = {
 							name: 'disclaimerMessage',
 							label: 'Message',
 							type: 'textarea',
-							defaultValue: 'Vous devez être membre du serveur Discord et avoir complété votre entrée en service pour accéder à toutes les fonctionnalités.',
+							defaultValue:
+								'Vous devez être membre du serveur Discord et avoir complété votre entrée en service pour accéder à toutes les fonctionnalités.',
 						},
 						{
 							name: 'discordInviteUrl',
-							label: 'URL d\'invitation Discord',
+							label: "URL d'invitation Discord",
 							type: 'text',
 							defaultValue: '',
 						},
@@ -299,7 +300,7 @@ export const Roleplay: GlobalConfig = {
 							label: 'Rôles Discord administrateurs',
 							type: 'array',
 							admin: {
-								description: 'Rôles Discord qui ont accès à l\'administration',
+								description: "Rôles Discord qui ont accès à l'administration",
 							},
 							fields: [
 								{
@@ -330,7 +331,8 @@ export const Roleplay: GlobalConfig = {
 							label: 'ID du rôle Discord Opérateur',
 							type: 'text',
 							admin: {
-								description: 'Rôle Discord requis pour créer/modifier des personnages',
+								description:
+									'Rôle Discord requis pour créer/modifier des personnages',
 							},
 						},
 						{
@@ -338,7 +340,8 @@ export const Roleplay: GlobalConfig = {
 							label: 'ID du rôle Discord Renseignement',
 							type: 'text',
 							admin: {
-								description: 'Rôle Discord autorisant la publication de renseignements',
+								description:
+									'Rôle Discord autorisant la publication de renseignements',
 							},
 						},
 					],

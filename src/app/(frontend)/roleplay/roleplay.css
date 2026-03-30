@@ -1539,7 +1539,7 @@
 /* Tutorial Buttons Container */
 .tutorial-buttons {
 	position: fixed;
-	bottom: 12px;
+	bottom: 3.5rem;
 	left: 12px;
 	z-index: 1002;
 	display: flex;
@@ -1576,6 +1576,89 @@
 	border-color: #c9a040;
 }
 
+/* Tutorial: Dummy form inside tooltip */
+.tutorial-tooltip.has-dummy-form {
+	max-width: 480px;
+	max-height: 80vh;
+	overflow-y: auto;
+}
+
+.tutorial-dummy-wrapper {
+	margin-top: 0.5rem;
+}
+
+.tutorial-dummy-form {
+	background: rgba(0, 0, 0, 0.3);
+	border: 1px solid var(--border);
+	padding: 0.6rem;
+	font-size: 0.75rem;
+}
+
+.tutorial-dummy-form.tutorial-dummy-admin {
+	border-color: rgba(201, 160, 64, 0.3);
+	background: rgba(201, 160, 64, 0.04);
+}
+
+.tutorial-dummy-title {
+	font-size: 0.72rem;
+	font-weight: 700;
+	color: var(--primary);
+	margin-bottom: 0.5rem;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+}
+
+.tutorial-dummy-admin .tutorial-dummy-title {
+	color: #c9a040;
+}
+
+.tutorial-dummy-form input,
+.tutorial-dummy-form textarea,
+.tutorial-dummy-form select {
+	pointer-events: none;
+	opacity: 0.85;
+}
+
+.tutorial-dummy-btn-submit {
+	display: inline-block;
+	padding: 0.3rem 1rem;
+	font-size: 0.7rem;
+	font-family: 'Courier New', monospace;
+	background: rgba(74, 124, 35, 0.2);
+	border: 1px solid var(--primary);
+	color: var(--primary);
+	letter-spacing: 0.5px;
+}
+
+.tutorial-dummy-status-btn {
+	padding: 0.2rem 0.5rem;
+	font-size: 0.6rem;
+	font-family: 'Courier New', monospace;
+	border: 1px solid var(--border);
+	color: var(--muted);
+	background: transparent;
+}
+
+.tutorial-dummy-status-btn.active {
+	border-color: #c9a040;
+	color: #c9a040;
+	background: rgba(201, 160, 64, 0.1);
+}
+
+.tutorial-dummy-action-btn {
+	padding: 0.2rem 0.5rem;
+	font-size: 0.6rem;
+	font-family: 'Courier New', monospace;
+	border: 1px solid var(--border);
+	color: var(--text);
+	background: transparent;
+}
+
+.tutorial-dummy-action-btn.danger {
+	border-color: var(--danger);
+	color: var(--danger);
+}
+
 /* Tutorial responsive */
 @media (max-width: 600px) {
 	.tutorial-tooltip {
@@ -1584,6 +1667,11 @@
 		left: 1rem !important;
 		right: 1rem !important;
 		transform: none !important;
+	}
+
+	.tutorial-tooltip.has-dummy-form {
+		max-width: calc(100vw - 2rem);
+		max-height: 70vh;
 	}
 
 	.tutorial-tooltip-actions {

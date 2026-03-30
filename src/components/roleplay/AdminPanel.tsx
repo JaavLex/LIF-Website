@@ -19,7 +19,13 @@ interface FactionItem {
 	logo?: { url?: string } | null;
 }
 
-export function AdminPanel({ units, factions }: { units: UnitItem[]; factions: FactionItem[] }) {
+export function AdminPanel({
+	units,
+	factions,
+}: {
+	units: UnitItem[];
+	factions: FactionItem[];
+}) {
 	const [showUnitForm, setShowUnitForm] = useState(false);
 	const [showFactionForm, setShowFactionForm] = useState(false);
 	const [submitting, setSubmitting] = useState(false);
@@ -29,7 +35,12 @@ export function AdminPanel({ units, factions }: { units: UnitItem[]; factions: F
 	const [localFactions, setLocalFactions] = useState(factions);
 	const [unitForm, setUnitForm] = useState({ name: '', slug: '', color: '#4a7c23' });
 	const [unitInsignia, setUnitInsignia] = useState<File | null>(null);
-	const [factionForm, setFactionForm] = useState({ name: '', slug: '', type: 'neutral' as string, color: '#8b4513' });
+	const [factionForm, setFactionForm] = useState({
+		name: '',
+		slug: '',
+		type: 'neutral' as string,
+		color: '#8b4513',
+	});
 	const [factionLogo, setFactionLogo] = useState<File | null>(null);
 
 	const uploadFile = async (file: File): Promise<number> => {
@@ -115,47 +126,153 @@ export function AdminPanel({ units, factions }: { units: UnitItem[]; factions: F
 		}
 	};
 
-	const labelStyle: React.CSSProperties = { display: 'block', fontSize: '0.8rem', color: 'var(--muted)', marginBottom: '0.35rem' };
+	const labelStyle: React.CSSProperties = {
+		display: 'block',
+		fontSize: '0.8rem',
+		color: 'var(--muted)',
+		marginBottom: '0.35rem',
+	};
 
 	return (
-		<div style={{ border: '1px solid var(--primary)', padding: '1.5rem', marginBottom: '1.5rem', background: 'rgba(139, 69, 19, 0.05)' }}>
-			<h2 style={{ color: 'var(--primary)', marginTop: 0, marginBottom: '1rem' }}>Administration</h2>
+		<div
+			style={{
+				border: '1px solid var(--primary)',
+				padding: '1.5rem',
+				marginBottom: '1.5rem',
+				background: 'rgba(139, 69, 19, 0.05)',
+			}}
+		>
+			<h2 style={{ color: 'var(--primary)', marginTop: 0, marginBottom: '1rem' }}>
+				Administration
+			</h2>
 
 			{error && (
-				<div style={{ padding: '0.5rem 0.75rem', background: 'rgba(139,38,53,0.15)', border: '1px solid var(--danger)', color: 'var(--danger)', marginBottom: '1rem', fontSize: '0.85rem' }}>
+				<div
+					style={{
+						padding: '0.5rem 0.75rem',
+						background: 'rgba(139,38,53,0.15)',
+						border: '1px solid var(--danger)',
+						color: 'var(--danger)',
+						marginBottom: '1rem',
+						fontSize: '0.85rem',
+					}}
+				>
 					{error}
 				</div>
 			)}
 			{success && (
-				<div style={{ padding: '0.5rem 0.75rem', background: 'rgba(74,124,35,0.15)', border: '1px solid var(--primary)', color: 'var(--primary)', marginBottom: '1rem', fontSize: '0.85rem' }}>
+				<div
+					style={{
+						padding: '0.5rem 0.75rem',
+						background: 'rgba(74,124,35,0.15)',
+						border: '1px solid var(--primary)',
+						color: 'var(--primary)',
+						marginBottom: '1rem',
+						fontSize: '0.85rem',
+					}}
+				>
 					{success}
 				</div>
 			)}
 
-			<div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
-				<button type="button" onClick={() => { setShowUnitForm(!showUnitForm); setShowFactionForm(false); }} className="session-btn" style={{ padding: '0.5rem 1rem', fontSize: '0.85rem' }}>
+			<div
+				style={{
+					display: 'flex',
+					gap: '0.75rem',
+					flexWrap: 'wrap',
+					marginBottom: '1rem',
+				}}
+			>
+				<button
+					type="button"
+					onClick={() => {
+						setShowUnitForm(!showUnitForm);
+						setShowFactionForm(false);
+					}}
+					className="session-btn"
+					style={{ padding: '0.5rem 1rem', fontSize: '0.85rem' }}
+				>
 					{showUnitForm ? 'Annuler' : '+ Nouvelle Unité'}
 				</button>
-				<button type="button" onClick={() => { setShowFactionForm(!showFactionForm); setShowUnitForm(false); }} className="session-btn" style={{ padding: '0.5rem 1rem', fontSize: '0.85rem' }}>
+				<button
+					type="button"
+					onClick={() => {
+						setShowFactionForm(!showFactionForm);
+						setShowUnitForm(false);
+					}}
+					className="session-btn"
+					style={{ padding: '0.5rem 1rem', fontSize: '0.85rem' }}
+				>
 					{showFactionForm ? 'Annuler' : '+ Nouvelle Faction'}
 				</button>
 			</div>
 
 			{showUnitForm && (
-				<form onSubmit={handleUnitSubmit} style={{ border: '1px solid var(--border)', padding: '1rem', marginBottom: '1rem', background: 'var(--bg-secondary)' }}>
-					<h3 style={{ marginTop: 0, fontSize: '1rem', color: 'var(--primary)' }}>Nouvelle Unité</h3>
-					<div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 120px', gap: '1rem', marginBottom: '1rem' }}>
+				<form
+					onSubmit={handleUnitSubmit}
+					style={{
+						border: '1px solid var(--border)',
+						padding: '1rem',
+						marginBottom: '1rem',
+						background: 'var(--bg-secondary)',
+					}}
+				>
+					<h3 style={{ marginTop: 0, fontSize: '1rem', color: 'var(--primary)' }}>
+						Nouvelle Unité
+					</h3>
+					<div
+						style={{
+							display: 'grid',
+							gridTemplateColumns: '1fr 1fr 120px',
+							gap: '1rem',
+							marginBottom: '1rem',
+						}}
+					>
 						<div>
 							<label style={labelStyle}>Nom *</label>
-							<input type="text" value={unitForm.name} onChange={e => setUnitForm(f => ({ ...f, name: e.target.value, slug: e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') }))} required className="filter-input" style={{ width: '100%' }} />
+							<input
+								type="text"
+								value={unitForm.name}
+								onChange={e =>
+									setUnitForm(f => ({
+										...f,
+										name: e.target.value,
+										slug: e.target.value
+											.toLowerCase()
+											.replace(/[^a-z0-9]+/g, '-')
+											.replace(/(^-|-$)/g, ''),
+									}))
+								}
+								required
+								className="filter-input"
+								style={{ width: '100%' }}
+							/>
 						</div>
 						<div>
 							<label style={labelStyle}>Slug</label>
-							<input type="text" value={unitForm.slug} onChange={e => setUnitForm(f => ({ ...f, slug: e.target.value }))} required className="filter-input" style={{ width: '100%' }} />
+							<input
+								type="text"
+								value={unitForm.slug}
+								onChange={e => setUnitForm(f => ({ ...f, slug: e.target.value }))}
+								required
+								className="filter-input"
+								style={{ width: '100%' }}
+							/>
 						</div>
 						<div>
 							<label style={labelStyle}>Couleur</label>
-							<input type="color" value={unitForm.color} onChange={e => setUnitForm(f => ({ ...f, color: e.target.value }))} style={{ width: '100%', height: '32px', border: '1px solid var(--border)', background: 'transparent', cursor: 'pointer' }} />
+							<input
+								type="color"
+								value={unitForm.color}
+								onChange={e => setUnitForm(f => ({ ...f, color: e.target.value }))}
+								style={{
+									width: '100%',
+									height: '32px',
+									border: '1px solid var(--border)',
+									background: 'transparent',
+									cursor: 'pointer',
+								}}
+							/>
 						</div>
 					</div>
 					<div style={{ marginBottom: '1rem' }}>
@@ -163,35 +280,108 @@ export function AdminPanel({ units, factions }: { units: UnitItem[]; factions: F
 						<div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
 							<button
 								type="button"
-								onClick={() => { const input = document.createElement('input'); input.type = 'file'; input.accept = 'image/*'; input.onchange = () => { if (input.files?.[0]) setUnitInsignia(input.files[0]); }; input.click(); }}
-								style={{ background: 'none', border: '1px dashed var(--border)', color: 'var(--muted)', padding: '0.4rem 1rem', cursor: 'pointer', fontSize: '0.8rem' }}
+								onClick={() => {
+									const input = document.createElement('input');
+									input.type = 'file';
+									input.accept = 'image/*';
+									input.onchange = () => {
+										if (input.files?.[0]) setUnitInsignia(input.files[0]);
+									};
+									input.click();
+								}}
+								style={{
+									background: 'none',
+									border: '1px dashed var(--border)',
+									color: 'var(--muted)',
+									padding: '0.4rem 1rem',
+									cursor: 'pointer',
+									fontSize: '0.8rem',
+								}}
 							>
 								{unitInsignia ? '🔄 Changer' : '+ Ajouter un insigne'}
 							</button>
-							{unitInsignia && <span style={{ fontSize: '0.8rem', color: 'var(--text)' }}>{unitInsignia.name}</span>}
+							{unitInsignia && (
+								<span style={{ fontSize: '0.8rem', color: 'var(--text)' }}>
+									{unitInsignia.name}
+								</span>
+							)}
 						</div>
 					</div>
-					<button type="submit" disabled={submitting} className="discord-login-btn" style={{ background: 'var(--primary)', padding: '0.5rem 1rem', opacity: submitting ? 0.6 : 1 }}>
-						{submitting ? 'Création...' : 'Créer l\'unité'}
+					<button
+						type="submit"
+						disabled={submitting}
+						className="discord-login-btn"
+						style={{
+							background: 'var(--primary)',
+							padding: '0.5rem 1rem',
+							opacity: submitting ? 0.6 : 1,
+						}}
+					>
+						{submitting ? 'Création...' : "Créer l'unité"}
 					</button>
 				</form>
 			)}
 
 			{showFactionForm && (
-				<form onSubmit={handleFactionSubmit} style={{ border: '1px solid var(--border)', padding: '1rem', marginBottom: '1rem', background: 'var(--bg-secondary)' }}>
-					<h3 style={{ marginTop: 0, fontSize: '1rem', color: 'var(--primary)' }}>Nouvelle Faction</h3>
-					<div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 140px 120px', gap: '1rem', marginBottom: '1rem' }}>
+				<form
+					onSubmit={handleFactionSubmit}
+					style={{
+						border: '1px solid var(--border)',
+						padding: '1rem',
+						marginBottom: '1rem',
+						background: 'var(--bg-secondary)',
+					}}
+				>
+					<h3 style={{ marginTop: 0, fontSize: '1rem', color: 'var(--primary)' }}>
+						Nouvelle Faction
+					</h3>
+					<div
+						style={{
+							display: 'grid',
+							gridTemplateColumns: '1fr 1fr 140px 120px',
+							gap: '1rem',
+							marginBottom: '1rem',
+						}}
+					>
 						<div>
 							<label style={labelStyle}>Nom *</label>
-							<input type="text" value={factionForm.name} onChange={e => setFactionForm(f => ({ ...f, name: e.target.value, slug: e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') }))} required className="filter-input" style={{ width: '100%' }} />
+							<input
+								type="text"
+								value={factionForm.name}
+								onChange={e =>
+									setFactionForm(f => ({
+										...f,
+										name: e.target.value,
+										slug: e.target.value
+											.toLowerCase()
+											.replace(/[^a-z0-9]+/g, '-')
+											.replace(/(^-|-$)/g, ''),
+									}))
+								}
+								required
+								className="filter-input"
+								style={{ width: '100%' }}
+							/>
 						</div>
 						<div>
 							<label style={labelStyle}>Slug</label>
-							<input type="text" value={factionForm.slug} onChange={e => setFactionForm(f => ({ ...f, slug: e.target.value }))} required className="filter-input" style={{ width: '100%' }} />
+							<input
+								type="text"
+								value={factionForm.slug}
+								onChange={e => setFactionForm(f => ({ ...f, slug: e.target.value }))}
+								required
+								className="filter-input"
+								style={{ width: '100%' }}
+							/>
 						</div>
 						<div>
 							<label style={labelStyle}>Type</label>
-							<select value={factionForm.type} onChange={e => setFactionForm(f => ({ ...f, type: e.target.value }))} className="filter-select" style={{ width: '100%' }}>
+							<select
+								value={factionForm.type}
+								onChange={e => setFactionForm(f => ({ ...f, type: e.target.value }))}
+								className="filter-select"
+								style={{ width: '100%' }}
+							>
 								<option value="allied">Alliée</option>
 								<option value="neutral">Neutre</option>
 								<option value="hostile">Hostile</option>
@@ -199,7 +389,20 @@ export function AdminPanel({ units, factions }: { units: UnitItem[]; factions: F
 						</div>
 						<div>
 							<label style={labelStyle}>Couleur</label>
-							<input type="color" value={factionForm.color} onChange={e => setFactionForm(f => ({ ...f, color: e.target.value }))} style={{ width: '100%', height: '32px', border: '1px solid var(--border)', background: 'transparent', cursor: 'pointer' }} />
+							<input
+								type="color"
+								value={factionForm.color}
+								onChange={e =>
+									setFactionForm(f => ({ ...f, color: e.target.value }))
+								}
+								style={{
+									width: '100%',
+									height: '32px',
+									border: '1px solid var(--border)',
+									background: 'transparent',
+									cursor: 'pointer',
+								}}
+							/>
 						</div>
 					</div>
 					<div style={{ marginBottom: '1rem' }}>
@@ -207,15 +410,43 @@ export function AdminPanel({ units, factions }: { units: UnitItem[]; factions: F
 						<div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
 							<button
 								type="button"
-								onClick={() => { const input = document.createElement('input'); input.type = 'file'; input.accept = 'image/*'; input.onchange = () => { if (input.files?.[0]) setFactionLogo(input.files[0]); }; input.click(); }}
-								style={{ background: 'none', border: '1px dashed var(--border)', color: 'var(--muted)', padding: '0.4rem 1rem', cursor: 'pointer', fontSize: '0.8rem' }}
+								onClick={() => {
+									const input = document.createElement('input');
+									input.type = 'file';
+									input.accept = 'image/*';
+									input.onchange = () => {
+										if (input.files?.[0]) setFactionLogo(input.files[0]);
+									};
+									input.click();
+								}}
+								style={{
+									background: 'none',
+									border: '1px dashed var(--border)',
+									color: 'var(--muted)',
+									padding: '0.4rem 1rem',
+									cursor: 'pointer',
+									fontSize: '0.8rem',
+								}}
 							>
 								{factionLogo ? '🔄 Changer' : '+ Ajouter un logo'}
 							</button>
-							{factionLogo && <span style={{ fontSize: '0.8rem', color: 'var(--text)' }}>{factionLogo.name}</span>}
+							{factionLogo && (
+								<span style={{ fontSize: '0.8rem', color: 'var(--text)' }}>
+									{factionLogo.name}
+								</span>
+							)}
 						</div>
 					</div>
-					<button type="submit" disabled={submitting} className="discord-login-btn" style={{ background: 'var(--primary)', padding: '0.5rem 1rem', opacity: submitting ? 0.6 : 1 }}>
+					<button
+						type="submit"
+						disabled={submitting}
+						className="discord-login-btn"
+						style={{
+							background: 'var(--primary)',
+							padding: '0.5rem 1rem',
+							opacity: submitting ? 0.6 : 1,
+						}}
+					>
 						{submitting ? 'Création...' : 'Créer la faction'}
 					</button>
 				</form>
@@ -224,20 +455,55 @@ export function AdminPanel({ units, factions }: { units: UnitItem[]; factions: F
 			{/* Existing Units */}
 			{localUnits.length > 0 && (
 				<div style={{ marginBottom: '1rem' }}>
-					<h3 style={{ fontSize: '0.95rem', color: 'var(--primary)', marginBottom: '0.5rem' }}>Unités existantes</h3>
+					<h3
+						style={{
+							fontSize: '0.95rem',
+							color: 'var(--primary)',
+							marginBottom: '0.5rem',
+						}}
+					>
+						Unités existantes
+					</h3>
 					<div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
 						{localUnits.map(unit => (
-							<div key={unit.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.4rem 0.75rem', background: 'var(--bg-secondary)', border: '1px solid var(--border)' }}>
-								<div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-									{unit.insignia?.url && <img src={unit.insignia.url} alt="" style={{ width: 20, height: 20, objectFit: 'contain' }} />}
-									<span style={{ fontSize: '0.85rem', color: unit.color || 'var(--text)' }}>{unit.name}</span>
+							<div
+								key={unit.id}
+								style={{
+									display: 'flex',
+									alignItems: 'center',
+									justifyContent: 'space-between',
+									padding: '0.4rem 0.75rem',
+									background: 'var(--bg-secondary)',
+									border: '1px solid var(--border)',
+								}}
+							>
+								<div
+									style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+								>
+									{unit.insignia?.url && (
+										<img
+											src={unit.insignia.url}
+											alt=""
+											style={{ width: 20, height: 20, objectFit: 'contain' }}
+										/>
+									)}
+									<span
+										style={{
+											fontSize: '0.85rem',
+											color: unit.color || 'var(--text)',
+										}}
+									>
+										{unit.name}
+									</span>
 								</div>
 								<button
 									type="button"
 									onClick={async () => {
 										if (!confirm(`Supprimer l'unité "${unit.name}" ?`)) return;
 										try {
-											const res = await fetch(`/api/roleplay/units/${unit.id}`, { method: 'DELETE' });
+											const res = await fetch(`/api/roleplay/units/${unit.id}`, {
+												method: 'DELETE',
+											});
 											if (!res.ok) throw new Error('Erreur suppression');
 											setLocalUnits(prev => prev.filter(u => u.id !== unit.id));
 											setSuccess(`Unité "${unit.name}" supprimée`);
@@ -245,7 +511,14 @@ export function AdminPanel({ units, factions }: { units: UnitItem[]; factions: F
 											setError('Erreur lors de la suppression');
 										}
 									}}
-									style={{ background: 'none', border: 'none', color: 'var(--danger)', cursor: 'pointer', fontSize: '0.8rem', padding: '0.2rem 0.5rem' }}
+									style={{
+										background: 'none',
+										border: 'none',
+										color: 'var(--danger)',
+										cursor: 'pointer',
+										fontSize: '0.8rem',
+										padding: '0.2rem 0.5rem',
+									}}
 								>
 									✕
 								</button>
@@ -258,29 +531,76 @@ export function AdminPanel({ units, factions }: { units: UnitItem[]; factions: F
 			{/* Existing Factions */}
 			{localFactions.length > 0 && (
 				<div style={{ marginBottom: '1rem' }}>
-					<h3 style={{ fontSize: '0.95rem', color: 'var(--primary)', marginBottom: '0.5rem' }}>Factions existantes</h3>
+					<h3
+						style={{
+							fontSize: '0.95rem',
+							color: 'var(--primary)',
+							marginBottom: '0.5rem',
+						}}
+					>
+						Factions existantes
+					</h3>
 					<div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
 						{localFactions.map(faction => (
-							<div key={faction.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.4rem 0.75rem', background: 'var(--bg-secondary)', border: '1px solid var(--border)' }}>
-								<div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-									{faction.logo?.url && <img src={faction.logo.url} alt="" style={{ width: 20, height: 20, objectFit: 'contain' }} />}
-									<span style={{ fontSize: '0.85rem', color: faction.color || 'var(--text)' }}>{faction.name}</span>
-									<span style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>({faction.type || 'neutre'})</span>
+							<div
+								key={faction.id}
+								style={{
+									display: 'flex',
+									alignItems: 'center',
+									justifyContent: 'space-between',
+									padding: '0.4rem 0.75rem',
+									background: 'var(--bg-secondary)',
+									border: '1px solid var(--border)',
+								}}
+							>
+								<div
+									style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+								>
+									{faction.logo?.url && (
+										<img
+											src={faction.logo.url}
+											alt=""
+											style={{ width: 20, height: 20, objectFit: 'contain' }}
+										/>
+									)}
+									<span
+										style={{
+											fontSize: '0.85rem',
+											color: faction.color || 'var(--text)',
+										}}
+									>
+										{faction.name}
+									</span>
+									<span style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>
+										({faction.type || 'neutre'})
+									</span>
 								</div>
 								<button
 									type="button"
 									onClick={async () => {
 										if (!confirm(`Supprimer la faction "${faction.name}" ?`)) return;
 										try {
-											const res = await fetch(`/api/roleplay/factions/${faction.id}`, { method: 'DELETE' });
+											const res = await fetch(
+												`/api/roleplay/factions/${faction.id}`,
+												{ method: 'DELETE' },
+											);
 											if (!res.ok) throw new Error('Erreur suppression');
-											setLocalFactions(prev => prev.filter(f => f.id !== faction.id));
+											setLocalFactions(prev =>
+												prev.filter(f => f.id !== faction.id),
+											);
 											setSuccess(`Faction "${faction.name}" supprimée`);
 										} catch {
 											setError('Erreur lors de la suppression');
 										}
 									}}
-									style={{ background: 'none', border: 'none', color: 'var(--danger)', cursor: 'pointer', fontSize: '0.8rem', padding: '0.2rem 0.5rem' }}
+									style={{
+										background: 'none',
+										border: 'none',
+										color: 'var(--danger)',
+										cursor: 'pointer',
+										fontSize: '0.8rem',
+										padding: '0.2rem 0.5rem',
+									}}
 								>
 									✕
 								</button>

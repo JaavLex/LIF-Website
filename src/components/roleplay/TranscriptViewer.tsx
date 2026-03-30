@@ -75,11 +75,12 @@ export function TranscriptViewer() {
 		}
 		if (search.trim()) {
 			const q = search.toLowerCase();
-			list = list.filter(t =>
-				t.ticketName.toLowerCase().includes(q) ||
-				t.ticketOwner.toLowerCase().includes(q) ||
-				t.panelName.toLowerCase().includes(q) ||
-				t.participants.some(p => p.name.toLowerCase().includes(q)),
+			list = list.filter(
+				t =>
+					t.ticketName.toLowerCase().includes(q) ||
+					t.ticketOwner.toLowerCase().includes(q) ||
+					t.panelName.toLowerCase().includes(q) ||
+					t.participants.some(p => p.name.toLowerCase().includes(q)),
 			);
 		}
 		return list;
@@ -115,15 +116,27 @@ export function TranscriptViewer() {
 	if (loading) {
 		return (
 			<div style={{ padding: '2rem', textAlign: 'center', color: 'var(--muted)' }}>
-				<div style={{ fontSize: '1.2rem', marginBottom: '0.5rem' }}>Chargement des transcripts...</div>
-				<div style={{ fontSize: '0.85rem' }}>Récupération depuis Discord en cours, cela peut prendre un moment.</div>
+				<div style={{ fontSize: '1.2rem', marginBottom: '0.5rem' }}>
+					Chargement des transcripts...
+				</div>
+				<div style={{ fontSize: '0.85rem' }}>
+					Récupération depuis Discord en cours, cela peut prendre un moment.
+				</div>
 			</div>
 		);
 	}
 
 	if (error) {
 		return (
-			<div style={{ padding: '1rem', background: 'rgba(139,38,53,0.15)', border: '1px solid var(--danger)', color: 'var(--danger)', textAlign: 'center' }}>
+			<div
+				style={{
+					padding: '1rem',
+					background: 'rgba(139,38,53,0.15)',
+					border: '1px solid var(--danger)',
+					color: 'var(--danger)',
+					textAlign: 'center',
+				}}
+			>
 				{error}
 			</div>
 		);
@@ -132,7 +145,14 @@ export function TranscriptViewer() {
 	return (
 		<div>
 			{/* Filters */}
-			<div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
+			<div
+				style={{
+					display: 'flex',
+					gap: '0.75rem',
+					marginBottom: '1.5rem',
+					flexWrap: 'wrap',
+				}}
+			>
 				<div style={{ flex: 1, minWidth: '200px' }}>
 					<input
 						type="text"
@@ -152,7 +172,9 @@ export function TranscriptViewer() {
 					>
 						<option value="">Tous les propriétaires ({owners.length})</option>
 						{owners.map(o => (
-							<option key={o} value={o}>{o}</option>
+							<option key={o} value={o}>
+								{o}
+							</option>
 						))}
 					</select>
 				</div>
@@ -165,17 +187,23 @@ export function TranscriptViewer() {
 					>
 						<option value="">Tous les panels ({panels.length})</option>
 						{panels.map(p => (
-							<option key={p} value={p}>{p}</option>
+							<option key={p} value={p}>
+								{p}
+							</option>
 						))}
 					</select>
 				</div>
 			</div>
 
 			{/* Stats */}
-			<div style={{ fontSize: '0.85rem', color: 'var(--muted)', marginBottom: '1rem' }}>
-				{filtered.length} transcript{filtered.length !== 1 ? 's' : ''} trouvé{filtered.length !== 1 ? 's' : ''}
+			<div
+				style={{ fontSize: '0.85rem', color: 'var(--muted)', marginBottom: '1rem' }}
+			>
+				{filtered.length} transcript{filtered.length !== 1 ? 's' : ''} trouvé
+				{filtered.length !== 1 ? 's' : ''}
 				{transcripts.length !== filtered.length && ` sur ${transcripts.length}`}
-				{' · '}{grouped.length} propriétaire{grouped.length !== 1 ? 's' : ''}
+				{' · '}
+				{grouped.length} propriétaire{grouped.length !== 1 ? 's' : ''}
 			</div>
 
 			{/* Transcript list grouped by owner */}
@@ -183,8 +211,7 @@ export function TranscriptViewer() {
 				<div className="empty-state-inline">
 					{transcripts.length === 0
 						? 'Aucun transcript trouvé dans le salon Discord.'
-						: 'Aucun transcript ne correspond aux filtres.'
-					}
+						: 'Aucun transcript ne correspond aux filtres.'}
 				</div>
 			) : (
 				<div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -192,7 +219,13 @@ export function TranscriptViewer() {
 						const collapsed = collapsedOwners.has(owner);
 						const avatar = tickets[0]?.ticketOwnerAvatar;
 						return (
-							<div key={owner} style={{ border: '1px solid var(--border)', background: 'var(--bg-secondary)' }}>
+							<div
+								key={owner}
+								style={{
+									border: '1px solid var(--border)',
+									background: 'var(--bg-secondary)',
+								}}
+							>
 								{/* Owner header */}
 								<button
 									type="button"
@@ -211,7 +244,15 @@ export function TranscriptViewer() {
 										borderBottom: collapsed ? 'none' : '1px solid var(--border)',
 									}}
 								>
-									<span style={{ fontSize: '0.85rem', transition: 'transform 0.2s', transform: collapsed ? 'rotate(-90deg)' : 'rotate(0deg)' }}>▼</span>
+									<span
+										style={{
+											fontSize: '0.85rem',
+											transition: 'transform 0.2s',
+											transform: collapsed ? 'rotate(-90deg)' : 'rotate(0deg)',
+										}}
+									>
+										▼
+									</span>
 									{avatar && (
 										<Image
 											src={avatar}
@@ -222,7 +263,9 @@ export function TranscriptViewer() {
 											unoptimized
 										/>
 									)}
-									<span style={{ fontWeight: 600, fontSize: '0.95rem', flex: 1 }}>{owner}</span>
+									<span style={{ fontWeight: 600, fontSize: '0.95rem', flex: 1 }}>
+										{owner}
+									</span>
 									<span style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>
 										{tickets.length} ticket{tickets.length !== 1 ? 's' : ''}
 									</span>
@@ -250,29 +293,50 @@ export function TranscriptViewer() {
 
 												{/* Panel */}
 												<div style={{ minWidth: '120px' }}>
-													<span style={{
-														fontSize: '0.75rem',
-														padding: '0.15rem 0.5rem',
-														border: '1px solid var(--primary)',
-														color: 'var(--primary)',
-													}}>
+													<span
+														style={{
+															fontSize: '0.75rem',
+															padding: '0.15rem 0.5rem',
+															border: '1px solid var(--primary)',
+															color: 'var(--primary)',
+														}}
+													>
 														{t.panelName || '—'}
 													</span>
 												</div>
 
 												{/* Date & size */}
-												<div style={{ fontSize: '0.8rem', color: 'var(--muted)', textAlign: 'right', minWidth: '100px' }}>
-													<div>{new Date(t.timestamp).toLocaleDateString('fr-FR', { year: 'numeric', month: 'short', day: 'numeric' })}</div>
+												<div
+													style={{
+														fontSize: '0.8rem',
+														color: 'var(--muted)',
+														textAlign: 'right',
+														minWidth: '100px',
+													}}
+												>
+													<div>
+														{new Date(t.timestamp).toLocaleDateString('fr-FR', {
+															year: 'numeric',
+															month: 'short',
+															day: 'numeric',
+														})}
+													</div>
 													{t.size > 0 && <div>{formatSize(t.size)}</div>}
 												</div>
 
 												{/* Actions */}
-												<div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0 }}>
+												<div
+													style={{ display: 'flex', gap: '0.5rem', flexShrink: 0 }}
+												>
 													<button
 														type="button"
 														onClick={() => setDetailTranscript(t)}
 														className="session-btn"
-														style={{ padding: '0.35rem 0.6rem', fontSize: '0.8rem', whiteSpace: 'nowrap' }}
+														style={{
+															padding: '0.35rem 0.6rem',
+															fontSize: '0.8rem',
+															whiteSpace: 'nowrap',
+														}}
 													>
 														ℹ️ Détails
 													</button>
@@ -282,7 +346,12 @@ export function TranscriptViewer() {
 															target="_blank"
 															rel="noopener noreferrer"
 															className="session-btn"
-															style={{ padding: '0.35rem 0.6rem', fontSize: '0.8rem', textDecoration: 'none', whiteSpace: 'nowrap' }}
+															style={{
+																padding: '0.35rem 0.6rem',
+																fontSize: '0.8rem',
+																textDecoration: 'none',
+																whiteSpace: 'nowrap',
+															}}
 														>
 															👁 Voir
 														</a>
@@ -292,7 +361,12 @@ export function TranscriptViewer() {
 															href={t.downloadUrl}
 															download={t.filename}
 															className="session-btn"
-															style={{ padding: '0.35rem 0.6rem', fontSize: '0.8rem', textDecoration: 'none', whiteSpace: 'nowrap' }}
+															style={{
+																padding: '0.35rem 0.6rem',
+																fontSize: '0.8rem',
+																textDecoration: 'none',
+																whiteSpace: 'nowrap',
+															}}
 														>
 															⬇
 														</a>
@@ -338,7 +412,14 @@ export function TranscriptViewer() {
 						}}
 						onClick={e => e.stopPropagation()}
 					>
-						<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+						<div
+							style={{
+								display: 'flex',
+								justifyContent: 'space-between',
+								alignItems: 'flex-start',
+								marginBottom: '1rem',
+							}}
+						>
 							<div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
 								{detailTranscript.ticketOwnerAvatar && (
 									<Image
@@ -351,61 +432,151 @@ export function TranscriptViewer() {
 									/>
 								)}
 								<div>
-									<h3 style={{ margin: 0, fontSize: '1.1rem' }}>{detailTranscript.ticketOwner}</h3>
-									<div style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>Propriétaire du ticket</div>
+									<h3 style={{ margin: 0, fontSize: '1.1rem' }}>
+										{detailTranscript.ticketOwner}
+									</h3>
+									<div style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>
+										Propriétaire du ticket
+									</div>
 								</div>
 							</div>
 							<button
 								onClick={() => setDetailTranscript(null)}
-								style={{ background: 'none', border: 'none', color: 'var(--muted)', fontSize: '1.2rem', cursor: 'pointer' }}
+								style={{
+									background: 'none',
+									border: 'none',
+									color: 'var(--muted)',
+									fontSize: '1.2rem',
+									cursor: 'pointer',
+								}}
 							>
 								✕
 							</button>
 						</div>
 
-						<div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1rem' }}>
+						<div
+							style={{
+								display: 'grid',
+								gridTemplateColumns: '1fr 1fr',
+								gap: '0.75rem',
+								marginBottom: '1rem',
+							}}
+						>
 							<div>
-								<div style={{ fontSize: '0.75rem', color: 'var(--muted)', marginBottom: '0.2rem' }}>Ticket</div>
-								<div style={{ fontSize: '0.9rem' }}>{detailTranscript.ticketName}</div>
-							</div>
-							<div>
-								<div style={{ fontSize: '0.75rem', color: 'var(--muted)', marginBottom: '0.2rem' }}>Panel</div>
-								<div style={{ fontSize: '0.9rem' }}>{detailTranscript.panelName || '—'}</div>
-							</div>
-							<div>
-								<div style={{ fontSize: '0.75rem', color: 'var(--muted)', marginBottom: '0.2rem' }}>Date</div>
+								<div
+									style={{
+										fontSize: '0.75rem',
+										color: 'var(--muted)',
+										marginBottom: '0.2rem',
+									}}
+								>
+									Ticket
+								</div>
 								<div style={{ fontSize: '0.9rem' }}>
-									{new Date(detailTranscript.timestamp).toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' })}
+									{detailTranscript.ticketName}
 								</div>
 							</div>
 							<div>
-								<div style={{ fontSize: '0.75rem', color: 'var(--muted)', marginBottom: '0.2rem' }}>Taille</div>
-								<div style={{ fontSize: '0.9rem' }}>{formatSize(detailTranscript.size)}</div>
+								<div
+									style={{
+										fontSize: '0.75rem',
+										color: 'var(--muted)',
+										marginBottom: '0.2rem',
+									}}
+								>
+									Panel
+								</div>
+								<div style={{ fontSize: '0.9rem' }}>
+									{detailTranscript.panelName || '—'}
+								</div>
+							</div>
+							<div>
+								<div
+									style={{
+										fontSize: '0.75rem',
+										color: 'var(--muted)',
+										marginBottom: '0.2rem',
+									}}
+								>
+									Date
+								</div>
+								<div style={{ fontSize: '0.9rem' }}>
+									{new Date(detailTranscript.timestamp).toLocaleDateString('fr-FR', {
+										year: 'numeric',
+										month: 'long',
+										day: 'numeric',
+									})}
+								</div>
+							</div>
+							<div>
+								<div
+									style={{
+										fontSize: '0.75rem',
+										color: 'var(--muted)',
+										marginBottom: '0.2rem',
+									}}
+								>
+									Taille
+								</div>
+								<div style={{ fontSize: '0.9rem' }}>
+									{formatSize(detailTranscript.size)}
+								</div>
 							</div>
 						</div>
 
 						{detailTranscript.participants.length > 0 && (
 							<div style={{ marginBottom: '1rem' }}>
-								<div style={{ fontSize: '0.75rem', color: 'var(--muted)', marginBottom: '0.5rem' }}>Participants</div>
-								<div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+								<div
+									style={{
+										fontSize: '0.75rem',
+										color: 'var(--muted)',
+										marginBottom: '0.5rem',
+									}}
+								>
+									Participants
+								</div>
+								<div
+									style={{
+										display: 'flex',
+										flexDirection: 'column',
+										gap: '0.25rem',
+									}}
+								>
 									{detailTranscript.participants.map((p, i) => (
-										<div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', padding: '0.2rem 0' }}>
+										<div
+											key={i}
+											style={{
+												display: 'flex',
+												justifyContent: 'space-between',
+												fontSize: '0.85rem',
+												padding: '0.2rem 0',
+											}}
+										>
 											<span>{p.name}</span>
-											<span style={{ color: 'var(--muted)' }}>{p.count} message{p.count !== 1 ? 's' : ''}</span>
+											<span style={{ color: 'var(--muted)' }}>
+												{p.count} message{p.count !== 1 ? 's' : ''}
+											</span>
 										</div>
 									))}
 								</div>
 							</div>
 						)}
 
-						<div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
+						<div
+							style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}
+						>
 							{detailTranscript.transcriptUrl && (
 								<a
 									href={detailTranscript.transcriptUrl}
 									target="_blank"
 									rel="noopener noreferrer"
 									className="discord-login-btn"
-									style={{ background: 'var(--primary)', padding: '0.5rem 1rem', fontSize: '0.85rem', textDecoration: 'none' }}
+									style={{
+										background: 'var(--primary)',
+										padding: '0.5rem 1rem',
+										fontSize: '0.85rem',
+										textDecoration: 'none',
+									}}
 								>
 									👁 Ouvrir le transcript
 								</a>
@@ -415,7 +586,11 @@ export function TranscriptViewer() {
 									href={detailTranscript.downloadUrl}
 									download={detailTranscript.filename}
 									className="session-btn"
-									style={{ padding: '0.5rem 1rem', fontSize: '0.85rem', textDecoration: 'none' }}
+									style={{
+										padding: '0.5rem 1rem',
+										fontSize: '0.85rem',
+										textDecoration: 'none',
+									}}
 								>
 									⬇ Télécharger
 								</a>

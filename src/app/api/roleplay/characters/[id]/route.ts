@@ -100,7 +100,13 @@ export async function DELETE(
 	// Only full-permission admins can delete
 	const adminPerms = await checkAdminPermissions(session);
 	if (!adminPerms.isAdmin || adminPerms.level !== 'full') {
-		return NextResponse.json({ message: 'Non autorisé — seuls les administrateurs peuvent supprimer un dossier' }, { status: 403 });
+		return NextResponse.json(
+			{
+				message:
+					'Non autorisé — seuls les administrateurs peuvent supprimer un dossier',
+			},
+			{ status: 403 },
+		);
 	}
 
 	try {

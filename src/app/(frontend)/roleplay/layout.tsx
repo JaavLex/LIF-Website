@@ -11,12 +11,20 @@ export const metadata: Metadata = {
 
 export const dynamic = 'force-dynamic';
 
-export default async function RoleplayLayout({ children }: { children: React.ReactNode }) {
+export default async function RoleplayLayout({
+	children,
+}: {
+	children: React.ReactNode;
+}) {
 	const payload = await getPayloadClient();
-	const roleplayConfig = await payload.findGlobal({ slug: 'roleplay' }).catch(() => null);
+	const roleplayConfig = await payload
+		.findGlobal({ slug: 'roleplay' })
+		.catch(() => null);
 
 	const loadingEnabled = (roleplayConfig as any)?.loadingEnabled !== false;
-	const loadingMessages = (roleplayConfig as any)?.loadingMessages?.map((m: any) => m.message) || undefined;
+	const loadingMessages =
+		(roleplayConfig as any)?.loadingMessages?.map((m: any) => m.message) ||
+		undefined;
 
 	return (
 		<div className="terminal">

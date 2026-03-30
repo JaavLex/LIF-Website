@@ -13,7 +13,8 @@ import {
 const BOT_TOKEN = process.env.DISCORD_BOT_TOKEN;
 const CLIENT_ID = process.env.DISCORD_CLIENT_ID;
 const GUILD_ID = process.env.DISCORD_GUILD_ID;
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://lif-arma.com';
+const SITE_URL =
+	process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://lif-arma.com';
 const DATABASE_URI = process.env.DATABASE_URI;
 
 if (!BOT_TOKEN || !CLIENT_ID || !GUILD_ID) {
@@ -29,7 +30,9 @@ async function loadNotificationChannel() {
 		const { getPayload } = await import('payload');
 		const { default: config } = await import('../payload.config');
 		const payload = await getPayload({ config });
-		const roleplayConfig = await payload.findGlobal({ slug: 'roleplay' }).catch(() => null);
+		const roleplayConfig = await payload
+			.findGlobal({ slug: 'roleplay' })
+			.catch(() => null);
 		notificationChannelId = (roleplayConfig as any)?.notificationChannelId || null;
 	} catch {
 		// ignore
@@ -54,7 +57,9 @@ async function saveNotificationChannel(channelId: string) {
 export async function sendNotification(embed: EmbedBuilder) {
 	if (!notificationChannelId) return;
 	try {
-		const channel = client.channels.cache.get(notificationChannelId) as TextChannel | undefined;
+		const channel = client.channels.cache.get(notificationChannelId) as
+			| TextChannel
+			| undefined;
 		if (channel && channel.type === ChannelType.GuildText) {
 			await channel.send({ embeds: [embed] });
 		}
@@ -67,7 +72,9 @@ export async function sendNotification(embed: EmbedBuilder) {
 async function registerCommands() {
 	const ouvrirDossiers = new SlashCommandBuilder()
 		.setName('ouvrirdossiers')
-		.setDescription('Afficher les dossiers de personnage liés à un utilisateur Discord')
+		.setDescription(
+			'Afficher les dossiers de personnage liés à un utilisateur Discord',
+		)
 		.addUserOption(option =>
 			option
 				.setName('utilisateur')
@@ -81,7 +88,9 @@ async function registerCommands() {
 
 	const notificationDb = new SlashCommandBuilder()
 		.setName('notificationdb')
-		.setDescription('Définir le salon de notifications pour les nouvelles fiches et renseignements')
+		.setDescription(
+			'Définir le salon de notifications pour les nouvelles fiches et renseignements',
+		)
 		.addChannelOption(option =>
 			option
 				.setName('salon')
@@ -91,7 +100,9 @@ async function registerCommands() {
 
 	const ouvrirRenseignements = new SlashCommandBuilder()
 		.setName('ouvrirrenseignements')
-		.setDescription('Voir les renseignements postés par un utilisateur ou un personnage')
+		.setDescription(
+			'Voir les renseignements postés par un utilisateur ou un personnage',
+		)
 		.addUserOption(option =>
 			option
 				.setName('utilisateur')
@@ -165,7 +176,9 @@ async function handleOuvrirDossiers(interaction: ChatInputCommandInteraction) {
 			const embed = new EmbedBuilder()
 				.setColor(0x8b4513)
 				.setTitle('Aucun dossier trouvé')
-				.setDescription(`Aucun personnage n'est lié au compte de ${targetUser.toString()}.`)
+				.setDescription(
+					`Aucun personnage n'est lié au compte de ${targetUser.toString()}.`,
+				)
 				.setTimestamp();
 
 			await interaction.editReply({ embeds: [embed] });
@@ -175,13 +188,19 @@ async function handleOuvrirDossiers(interaction: ChatInputCommandInteraction) {
 		const embed = new EmbedBuilder()
 			.setColor(0x8b4513)
 			.setTitle(`Dossiers de ${targetUser.displayName}`)
-			.setDescription(`${characters.length} dossier${characters.length > 1 ? 's' : ''} trouvé${characters.length > 1 ? 's' : ''}`)
+			.setDescription(
+				`${characters.length} dossier${characters.length > 1 ? 's' : ''} trouvé${characters.length > 1 ? 's' : ''}`,
+			)
 			.setThumbnail(targetUser.displayAvatarURL())
 			.setTimestamp();
 
 		for (const char of characters) {
-			const rank = typeof char.rank === 'object' && char.rank ? (char.rank as any).abbreviation || (char.rank as any).name : null;
-			const unit = typeof char.unit === 'object' && char.unit ? (char.unit as any).name : null;
+			const rank =
+				typeof char.rank === 'object' && char.rank
+					? (char.rank as any).abbreviation || (char.rank as any).name
+					: null;
+			const unit =
+				typeof char.unit === 'object' && char.unit ? (char.unit as any).name : null;
 			const status = STATUS_LABELS[char.status] || char.status;
 			const url = `${SITE_URL}/roleplay/personnage/${char.id}`;
 
@@ -212,7 +231,9 @@ async function handleNouveauRenseignement(interaction: ChatInputCommandInteracti
 	const embed = new EmbedBuilder()
 		.setColor(0x8b4513)
 		.setTitle('📋 Nouveau rapport de renseignement')
-		.setDescription(`Rendez-vous sur le site pour créer un nouveau rapport de renseignement.\n\n[➡️ Créer un rapport](${SITE_URL}/roleplay)`)
+		.setDescription(
+			`Rendez-vous sur le site pour créer un nouveau rapport de renseignement.\n\n[➡️ Créer un rapport](${SITE_URL}/roleplay)`,
+		)
 		.setTimestamp();
 
 	await interaction.reply({ embeds: [embed] });
@@ -222,7 +243,10 @@ async function handleNotificationDb(interaction: ChatInputCommandInteraction) {
 	const channel = interaction.options.getChannel('salon', true);
 
 	if (channel.type !== ChannelType.GuildText) {
-		await interaction.reply({ content: '❌ Veuillez sélectionner un salon textuel.', ephemeral: true });
+		await interaction.reply({
+			content: '❌ Veuillez sélectionner un salon textuel.',
+			ephemeral: true,
+		});
 		return;
 	}
 
@@ -234,7 +258,9 @@ async function handleNotificationDb(interaction: ChatInputCommandInteraction) {
 		const embed = new EmbedBuilder()
 			.setColor(0x4a7c23)
 			.setTitle('✅ Notifications configurées')
-			.setDescription(`Les notifications de nouvelles fiches de personnage et rapports de renseignement seront envoyées dans <#${channel.id}>.`)
+			.setDescription(
+				`Les notifications de nouvelles fiches de personnage et rapports de renseignement seront envoyées dans <#${channel.id}>.`,
+			)
 			.setTimestamp();
 
 		await interaction.editReply({ embeds: [embed] });
@@ -249,7 +275,10 @@ async function handleOuvrirRenseignements(interaction: ChatInputCommandInteracti
 	const charId = interaction.options.getInteger('charid');
 
 	if (!targetUser && !charId) {
-		await interaction.reply({ content: '❌ Veuillez spécifier un utilisateur ou un ID de personnage.', ephemeral: true });
+		await interaction.reply({
+			content: '❌ Veuillez spécifier un utilisateur ou un ID de personnage.',
+			ephemeral: true,
+		});
 		return;
 	}
 
@@ -298,9 +327,11 @@ async function handleOuvrirRenseignements(interaction: ChatInputCommandInteracti
 			const embed = new EmbedBuilder()
 				.setColor(0x8b4513)
 				.setTitle('Aucun renseignement trouvé')
-				.setDescription(charId
-					? `Aucun rapport de renseignement trouvé pour le personnage #${charId}.`
-					: `Aucun rapport de renseignement trouvé pour ${targetUser!.toString()}.`)
+				.setDescription(
+					charId
+						? `Aucun rapport de renseignement trouvé pour le personnage #${charId}.`
+						: `Aucun rapport de renseignement trouvé pour ${targetUser!.toString()}.`,
+				)
 				.setTimestamp();
 
 			await interaction.editReply({ embeds: [embed] });
@@ -309,19 +340,33 @@ async function handleOuvrirRenseignements(interaction: ChatInputCommandInteracti
 
 		const embed = new EmbedBuilder()
 			.setColor(0x8b4513)
-			.setTitle(charId ? `Renseignements du personnage #${charId}` : `Renseignements de ${targetUser!.displayName}`)
-			.setDescription(`${reports.length} rapport${reports.length > 1 ? 's' : ''} trouvé${reports.length > 1 ? 's' : ''}`)
+			.setTitle(
+				charId
+					? `Renseignements du personnage #${charId}`
+					: `Renseignements de ${targetUser!.displayName}`,
+			)
+			.setDescription(
+				`${reports.length} rapport${reports.length > 1 ? 's' : ''} trouvé${reports.length > 1 ? 's' : ''}`,
+			)
 			.setTimestamp();
 
 		if (targetUser) embed.setThumbnail(targetUser.displayAvatarURL());
 
 		const TYPE_LABELS_FR: Record<string, string> = {
-			observation: 'Observation', interception: 'Interception', reconnaissance: 'Reconnaissance',
-			infiltration: 'Infiltration', sigint: 'SIGINT', humint: 'HUMINT', other: 'Autre',
+			observation: 'Observation',
+			interception: 'Interception',
+			reconnaissance: 'Reconnaissance',
+			infiltration: 'Infiltration',
+			sigint: 'SIGINT',
+			humint: 'HUMINT',
+			other: 'Autre',
 		};
 
 		for (const report of reports.slice(0, 10)) {
-			const postedBy = typeof report.postedBy === 'object' && report.postedBy ? report.postedBy.fullName : '—';
+			const postedBy =
+				typeof report.postedBy === 'object' && report.postedBy
+					? report.postedBy.fullName
+					: '—';
 			const date = new Date(report.date).toLocaleDateString('fr-FR');
 			const type = TYPE_LABELS_FR[report.type] || report.type;
 			const url = `${SITE_URL}/roleplay/renseignement/${report.id}`;
@@ -336,7 +381,9 @@ async function handleOuvrirRenseignements(interaction: ChatInputCommandInteracti
 		await interaction.editReply({ embeds: [embed] });
 	} catch (error) {
 		console.error('Error fetching intelligence:', error);
-		await interaction.editReply({ content: '❌ Erreur lors de la récupération des renseignements.' });
+		await interaction.editReply({
+			content: '❌ Erreur lors de la récupération des renseignements.',
+		});
 	}
 }
 
@@ -350,7 +397,7 @@ client.on('clientReady', async () => {
 	await loadNotificationChannel();
 });
 
-client.on('interactionCreate', async (interaction) => {
+client.on('interactionCreate', async interaction => {
 	if (!interaction.isChatInputCommand()) return;
 
 	switch (interaction.commandName) {

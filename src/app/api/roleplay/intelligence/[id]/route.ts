@@ -53,7 +53,11 @@ export async function PATCH(
 		const { isAdmin } = await checkAdminPermissions(session);
 
 		// Get existing report to check ownership
-		const existing = await payload.findByID({ collection: 'intelligence', id: docId, depth: 0 });
+		const existing = await payload.findByID({
+			collection: 'intelligence',
+			id: docId,
+			depth: 0,
+		});
 
 		// Check if user owns this report (postedByDiscordId matches session)
 		const isOwner = (existing as any).postedByDiscordId === session.discordId;

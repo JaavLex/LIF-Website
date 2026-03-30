@@ -41,7 +41,8 @@ async function sendToChannel(channelId: string, embeds: DiscordEmbed[]) {
 	});
 }
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://lif-arma.com';
+const SITE_URL =
+	process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://lif-arma.com';
 
 export async function notifyNewCharacter(character: {
 	id: number;
@@ -53,19 +54,25 @@ export async function notifyNewCharacter(character: {
 	const channelId = await getNotificationChannelId();
 	if (!channelId) return;
 
-	const rank = character.rank ? (character.rank.abbreviation || character.rank.name) : null;
+	const rank = character.rank
+		? character.rank.abbreviation || character.rank.name
+		: null;
 	const fields: EmbedField[] = [];
 	if (rank) fields.push({ name: 'Grade', value: rank, inline: true });
-	if (character.unit?.name) fields.push({ name: 'Unité', value: character.unit.name, inline: true });
-	if (character.discordUsername) fields.push({ name: 'Discord', value: character.discordUsername, inline: true });
+	if (character.unit?.name)
+		fields.push({ name: 'Unité', value: character.unit.name, inline: true });
+	if (character.discordUsername)
+		fields.push({ name: 'Discord', value: character.discordUsername, inline: true });
 
-	await sendToChannel(channelId, [{
-		title: `📋 Nouvelle fiche de personnage`,
-		description: `**${rank ? `${rank} ` : ''}${character.fullName}**\n\n[Voir le dossier](${SITE_URL}/roleplay/personnage/${character.id})`,
-		color: 0x4a7c23,
-		fields,
-		timestamp: new Date().toISOString(),
-	}]);
+	await sendToChannel(channelId, [
+		{
+			title: `📋 Nouvelle fiche de personnage`,
+			description: `**${rank ? `${rank} ` : ''}${character.fullName}**\n\n[Voir le dossier](${SITE_URL}/roleplay/personnage/${character.id})`,
+			color: 0x4a7c23,
+			fields,
+			timestamp: new Date().toISOString(),
+		},
+	]);
 }
 
 export async function notifyNewIntelligence(report: {
@@ -79,22 +86,29 @@ export async function notifyNewIntelligence(report: {
 	if (!channelId) return;
 
 	const TYPE_LABELS: Record<string, string> = {
-		observation: 'Observation', interception: 'Interception', reconnaissance: 'Reconnaissance',
-		infiltration: 'Infiltration', sigint: 'SIGINT', humint: 'HUMINT', other: 'Autre',
+		observation: 'Observation',
+		interception: 'Interception',
+		reconnaissance: 'Reconnaissance',
+		infiltration: 'Infiltration',
+		sigint: 'SIGINT',
+		humint: 'HUMINT',
+		other: 'Autre',
 	};
 
 	const postedByName = report.postedBy?.fullName || '—';
 	const typeName = TYPE_LABELS[report.type] || report.type;
 
-	await sendToChannel(channelId, [{
-		title: `🔍 Nouveau rapport de renseignement`,
-		description: `**${report.title}**`,
-		color: 0x8b4513,
-		fields: [
-			{ name: 'Type', value: typeName, inline: true },
-			{ name: 'Classification', value: report.classification, inline: true },
-			{ name: 'Rapporté par', value: postedByName, inline: true },
-		],
-		timestamp: new Date().toISOString(),
-	}]);
+	await sendToChannel(channelId, [
+		{
+			title: `🔍 Nouveau rapport de renseignement`,
+			description: `**${report.title}**`,
+			color: 0x8b4513,
+			fields: [
+				{ name: 'Type', value: typeName, inline: true },
+				{ name: 'Classification', value: report.classification, inline: true },
+				{ name: 'Rapporté par', value: postedByName, inline: true },
+			],
+			timestamp: new Date().toISOString(),
+		},
+	]);
 }

@@ -15,7 +15,17 @@ function textToLexical(text: string): any {
 			children: paragraphs.map(p => ({
 				type: 'paragraph',
 				children: p.trim()
-					? [{ type: 'text', text: p, mode: 'normal', detail: 0, format: 0, style: '', version: 1 }]
+					? [
+							{
+								type: 'text',
+								text: p,
+								mode: 'normal',
+								detail: 0,
+								format: 0,
+								style: '',
+								version: 1,
+							},
+						]
 					: [],
 				direction: 'ltr',
 				format: '',
@@ -120,7 +130,8 @@ export function CharacterForm({
 		classification: editData?.classification || 'public',
 		miscellaneous: lexicalToText(editData?.miscellaneous),
 		etatMajorNotes: lexicalToText(editData?.etatMajorNotes),
-		superiorOfficer: editData?.superiorOfficer?.id || editData?.superiorOfficer || '',
+		superiorOfficer:
+			editData?.superiorOfficer?.id || editData?.superiorOfficer || '',
 		isArchived: editData?.isArchived || false,
 		archiveReason: editData?.archiveReason || '',
 		rankOverride: editData?.rankOverride || false,
@@ -248,13 +259,16 @@ export function CharacterForm({
 				if (form.rank) body.rank = parseInt(form.rank);
 				body.faction = form.faction || undefined;
 				body.isTarget = form.isTarget;
-				if (form.isTarget && form.targetFaction) body.targetFaction = form.targetFaction;
+				if (form.isTarget && form.targetFaction)
+					body.targetFaction = form.targetFaction;
 				if (form.isTarget && form.threatLevel) body.threatLevel = form.threatLevel;
 				body.classification = form.classification;
 				body.rankOverride = form.rankOverride;
-				if (form.superiorOfficer) body.superiorOfficer = parseInt(form.superiorOfficer);
+				if (form.superiorOfficer)
+					body.superiorOfficer = parseInt(form.superiorOfficer);
 				body.isArchived = form.isArchived;
-				if (form.isArchived && form.archiveReason) body.archiveReason = form.archiveReason;
+				if (form.isArchived && form.archiveReason)
+					body.archiveReason = form.archiveReason;
 
 				const miscLexical = textToLexical(form.miscellaneous);
 				if (miscLexical) body.miscellaneous = miscLexical;
@@ -262,7 +276,9 @@ export function CharacterForm({
 				if (notesLexical) body.etatMajorNotes = notesLexical;
 			}
 
-			const url = editData ? `/api/roleplay/characters/${editData.id}` : '/api/roleplay/characters';
+			const url = editData
+				? `/api/roleplay/characters/${editData.id}`
+				: '/api/roleplay/characters';
 
 			const res = await fetch(url, {
 				method: editData ? 'PATCH' : 'POST',
@@ -286,7 +302,10 @@ export function CharacterForm({
 
 	if (loading) {
 		return (
-			<div className="terminal-panel" style={{ textAlign: 'center', padding: '3rem' }}>
+			<div
+				className="terminal-panel"
+				style={{ textAlign: 'center', padding: '3rem' }}
+			>
 				<p style={{ color: 'var(--muted)' }}>Chargement...</p>
 			</div>
 		);
@@ -297,15 +316,30 @@ export function CharacterForm({
 			<div className="terminal-panel">
 				<div className="auth-section">
 					<h2>Authentification requise</h2>
-					<p>Vous devez être connecté via Discord pour créer ou modifier un personnage.</p>
-					<a href="/api/auth/discord" className="discord-login-btn">Connexion Discord</a>
+					<p>
+						Vous devez être connecté via Discord pour créer ou modifier un
+						personnage.
+					</p>
+					<a href="/api/auth/discord" className="discord-login-btn">
+						Connexion Discord
+					</a>
 				</div>
 			</div>
 		);
 	}
 
-	const labelStyle = { display: 'block' as const, fontSize: '0.8rem', color: 'var(--muted)', marginBottom: '0.35rem' };
-	const gridTwo = { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' };
+	const labelStyle = {
+		display: 'block' as const,
+		fontSize: '0.8rem',
+		color: 'var(--muted)',
+		marginBottom: '0.35rem',
+	};
+	const gridTwo = {
+		display: 'grid',
+		gridTemplateColumns: '1fr 1fr',
+		gap: '1rem',
+		marginBottom: '1rem',
+	};
 
 	return (
 		<form onSubmit={handleSubmit}>
@@ -313,60 +347,150 @@ export function CharacterForm({
 				<h1>{editData ? 'Modifier le dossier' : 'Nouveau dossier personnel'}</h1>
 
 				{error && (
-					<div style={{ padding: '0.75rem 1rem', background: 'rgba(139, 38, 53, 0.15)', border: '1px solid var(--danger)', color: 'var(--danger)', marginBottom: '1.5rem', fontSize: '0.9rem' }}>
+					<div
+						style={{
+							padding: '0.75rem 1rem',
+							background: 'rgba(139, 38, 53, 0.15)',
+							border: '1px solid var(--danger)',
+							color: 'var(--danger)',
+							marginBottom: '1.5rem',
+							fontSize: '0.9rem',
+						}}
+					>
 						{error}
 					</div>
 				)}
 
 				{/* --- Avatar & Rank Detection --- */}
-				<div style={{ display: 'flex', gap: '2rem', marginBottom: '2rem', alignItems: 'flex-start' }}>
+				<div
+					style={{
+						display: 'flex',
+						gap: '2rem',
+						marginBottom: '2rem',
+						alignItems: 'flex-start',
+					}}
+				>
 					<div>
 						<label style={labelStyle}>Photo du personnage</label>
 						<div
 							style={{
-								width: 120, height: 120, border: '2px dashed var(--border)',
-								display: 'flex', alignItems: 'center', justifyContent: 'center',
-								overflow: 'hidden', cursor: 'pointer', position: 'relative',
+								width: 120,
+								height: 120,
+								border: '2px dashed var(--border)',
+								display: 'flex',
+								alignItems: 'center',
+								justifyContent: 'center',
+								overflow: 'hidden',
+								cursor: 'pointer',
+								position: 'relative',
 							}}
 							onClick={() => document.getElementById('avatar-upload')?.click()}
 						>
 							{avatarPreview ? (
-								<Image src={avatarPreview} alt="Avatar" fill style={{ objectFit: 'cover' }} />
+								<Image
+									src={avatarPreview}
+									alt="Avatar"
+									fill
+									style={{ objectFit: 'cover' }}
+								/>
 							) : (
-								<span style={{ color: 'var(--muted)', fontSize: '0.8rem', textAlign: 'center' }}>Cliquer pour<br/>ajouter</span>
+								<span
+									style={{
+										color: 'var(--muted)',
+										fontSize: '0.8rem',
+										textAlign: 'center',
+									}}
+								>
+									Cliquer pour
+									<br />
+									ajouter
+								</span>
 							)}
 						</div>
-						<input id="avatar-upload" type="file" accept="image/*" onChange={handleAvatarChange} style={{ display: 'none' }} />
+						<input
+							id="avatar-upload"
+							type="file"
+							accept="image/*"
+							onChange={handleAvatarChange}
+							style={{ display: 'none' }}
+						/>
 					</div>
 
 					<div style={{ flex: 1 }}>
 						{!(isAdmin && form.isNpc) && (
 							<>
 								<label style={labelStyle}>Grade détecté (via Discord)</label>
-								<div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem', background: 'var(--bg-tertiary)', border: '1px solid var(--border)' }}>
+								<div
+									style={{
+										display: 'flex',
+										alignItems: 'center',
+										gap: '0.75rem',
+										padding: '0.75rem',
+										background: 'var(--bg-tertiary)',
+										border: '1px solid var(--border)',
+									}}
+								>
 									{detectedRank?.icon?.url && (
-										<Image src={detectedRank.icon.url} alt={detectedRank.name} width={32} height={32} />
+										<Image
+											src={detectedRank.icon.url}
+											alt={detectedRank.name}
+											width={32}
+											height={32}
+										/>
 									)}
 									<div>
-										<div style={{ fontWeight: 600 }}>{detectedRank?.name || 'Aucun grade détecté'}</div>
-										{detectedRank && <div style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>{detectedRank.abbreviation}</div>}
+										<div style={{ fontWeight: 600 }}>
+											{detectedRank?.name || 'Aucun grade détecté'}
+										</div>
+										{detectedRank && (
+											<div style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>
+												{detectedRank.abbreviation}
+											</div>
+										)}
 									</div>
 								</div>
-								<p style={{ fontSize: '0.7rem', color: 'var(--muted)', marginTop: '0.35rem' }}>
+								<p
+									style={{
+										fontSize: '0.7rem',
+										color: 'var(--muted)',
+										marginTop: '0.35rem',
+									}}
+								>
 									Le grade est déterminé automatiquement par vos rôles Discord.
 								</p>
 							</>
 						)}
 
 						{isAdmin && form.isNpc && (
-							<div style={{ padding: '0.75rem', background: 'rgba(139, 69, 19, 0.1)', border: '1px solid var(--primary)', marginBottom: '0.5rem' }}>
-								<span style={{ fontSize: '0.85rem', color: 'var(--primary)' }}>Mode PNJ — Pas de compte Discord lié</span>
+							<div
+								style={{
+									padding: '0.75rem',
+									background: 'rgba(139, 69, 19, 0.1)',
+									border: '1px solid var(--primary)',
+									marginBottom: '0.5rem',
+								}}
+							>
+								<span style={{ fontSize: '0.85rem', color: 'var(--primary)' }}>
+									Mode PNJ — Pas de compte Discord lié
+								</span>
 							</div>
 						)}
 
 						<div style={{ marginTop: '1rem' }}>
-							<label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
-								<input type="checkbox" name="isMainCharacter" checked={form.isMainCharacter} onChange={handleChange} />
+							<label
+								style={{
+									display: 'flex',
+									alignItems: 'center',
+									gap: '0.5rem',
+									cursor: 'pointer',
+								}}
+							>
+								<input
+									type="checkbox"
+									name="isMainCharacter"
+									checked={form.isMainCharacter}
+									onChange={handleChange}
+								/>
 								<span style={{ fontSize: '0.85rem' }}>Personnage principal</span>
 							</label>
 						</div>
@@ -380,140 +504,341 @@ export function CharacterForm({
 					<div style={gridTwo}>
 						<div>
 							<label style={labelStyle}>Prénom *</label>
-							<input type="text" name="firstName" value={form.firstName} onChange={handleChange} required className="filter-input" style={{ width: '100%' }} />
+							<input
+								type="text"
+								name="firstName"
+								value={form.firstName}
+								onChange={handleChange}
+								required
+								className="filter-input"
+								style={{ width: '100%' }}
+							/>
 						</div>
 						<div>
 							<label style={labelStyle}>Nom *</label>
-							<input type="text" name="lastName" value={form.lastName} onChange={handleChange} required className="filter-input" style={{ width: '100%' }} />
+							<input
+								type="text"
+								name="lastName"
+								value={form.lastName}
+								onChange={handleChange}
+								required
+								className="filter-input"
+								style={{ width: '100%' }}
+							/>
 						</div>
 					</div>
 
 					<div style={gridTwo}>
 						<div>
 							<label style={labelStyle}>Date de naissance</label>
-							<input type="date" name="dateOfBirth" value={form.dateOfBirth} onChange={handleChange} className="filter-input" style={{ width: '100%' }} />
+							<input
+								type="date"
+								name="dateOfBirth"
+								value={form.dateOfBirth}
+								onChange={handleChange}
+								className="filter-input"
+								style={{ width: '100%' }}
+							/>
 						</div>
 						<div>
 							<label style={labelStyle}>Lieu d&apos;origine</label>
-							<input type="text" name="placeOfOrigin" value={form.placeOfOrigin} onChange={handleChange} className="filter-input" style={{ width: '100%' }} />
+							<input
+								type="text"
+								name="placeOfOrigin"
+								value={form.placeOfOrigin}
+								onChange={handleChange}
+								className="filter-input"
+								style={{ width: '100%' }}
+							/>
 						</div>
 					</div>
 
 					<div style={gridTwo}>
 						<div>
 							<label style={labelStyle}>Taille (cm)</label>
-							<input type="number" name="height" value={form.height} onChange={handleChange} className="filter-input" style={{ width: '100%' }} />
+							<input
+								type="number"
+								name="height"
+								value={form.height}
+								onChange={handleChange}
+								className="filter-input"
+								style={{ width: '100%' }}
+							/>
 						</div>
 						<div>
 							<label style={labelStyle}>Poids (kg)</label>
-							<input type="number" name="weight" value={form.weight} onChange={handleChange} className="filter-input" style={{ width: '100%' }} />
+							<input
+								type="number"
+								name="weight"
+								value={form.weight}
+								onChange={handleChange}
+								className="filter-input"
+								style={{ width: '100%' }}
+							/>
 						</div>
 					</div>
 
 					<div style={{ marginBottom: '1rem' }}>
 						<label style={labelStyle}>Description physique</label>
-						<textarea name="physicalDescription" value={form.physicalDescription} onChange={handleChange} className="filter-input" style={{ width: '100%', minHeight: '100px', resize: 'vertical' }} />
+						<textarea
+							name="physicalDescription"
+							value={form.physicalDescription}
+							onChange={handleChange}
+							className="filter-input"
+							style={{ width: '100%', minHeight: '100px', resize: 'vertical' }}
+						/>
 					</div>
 
 					<div style={{ marginBottom: '1rem' }}>
 						<label style={labelStyle}>Devise</label>
-						<input type="text" name="motto" value={form.motto} onChange={handleChange} className="filter-input" style={{ width: '100%' }} />
+						<input
+							type="text"
+							name="motto"
+							value={form.motto}
+							onChange={handleChange}
+							className="filter-input"
+							style={{ width: '100%' }}
+						/>
 					</div>
 				</div>
 
 				{/* --- Parcours --- */}
-				<div style={{ border: 'none', padding: 0, background: 'transparent', marginTop: '1.5rem' }}>
+				<div
+					style={{
+						border: 'none',
+						padding: 0,
+						background: 'transparent',
+						marginTop: '1.5rem',
+					}}
+				>
 					<h2 style={{ color: 'var(--primary)' }}>Parcours</h2>
 
 					<div style={{ marginBottom: '1rem' }}>
 						<label style={labelStyle}>Parcours civil</label>
-						<textarea name="civilianBackground" value={form.civilianBackground} onChange={handleChange} className="filter-input" style={{ width: '100%', minHeight: '100px', resize: 'vertical' }} placeholder="Décrivez le parcours civil du personnage..." />
+						<textarea
+							name="civilianBackground"
+							value={form.civilianBackground}
+							onChange={handleChange}
+							className="filter-input"
+							style={{ width: '100%', minHeight: '100px', resize: 'vertical' }}
+							placeholder="Décrivez le parcours civil du personnage..."
+						/>
 					</div>
 
 					<div style={{ marginBottom: '1rem' }}>
 						<label style={labelStyle}>Parcours militaire</label>
-						<textarea name="militaryBackground" value={form.militaryBackground} onChange={handleChange} className="filter-input" style={{ width: '100%', minHeight: '100px', resize: 'vertical' }} placeholder="Décrivez le parcours militaire du personnage..." />
+						<textarea
+							name="militaryBackground"
+							value={form.militaryBackground}
+							onChange={handleChange}
+							className="filter-input"
+							style={{ width: '100%', minHeight: '100px', resize: 'vertical' }}
+							placeholder="Décrivez le parcours militaire du personnage..."
+						/>
 					</div>
 
 					<div style={{ marginBottom: '1rem' }}>
 						<label style={labelStyle}>Parcours judiciaire</label>
-						<textarea name="legalBackground" value={form.legalBackground} onChange={handleChange} className="filter-input" style={{ width: '100%', minHeight: '100px', resize: 'vertical' }} placeholder="Casier judiciaire, infractions, etc." />
+						<textarea
+							name="legalBackground"
+							value={form.legalBackground}
+							onChange={handleChange}
+							className="filter-input"
+							style={{ width: '100%', minHeight: '100px', resize: 'vertical' }}
+							placeholder="Casier judiciaire, infractions, etc."
+						/>
 					</div>
 				</div>
 
 				{/* --- Spécialisations --- */}
-				<div style={{ border: 'none', padding: 0, background: 'transparent', marginTop: '1.5rem' }}>
+				<div
+					style={{
+						border: 'none',
+						padding: 0,
+						background: 'transparent',
+						marginTop: '1.5rem',
+					}}
+				>
 					<h2 style={{ color: 'var(--primary)' }}>Spécialisations</h2>
 					{specialisations.map((spec, i) => (
-						<div key={i} style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
+						<div
+							key={i}
+							style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}
+						>
 							<input
-								type="text" value={spec}
+								type="text"
+								value={spec}
 								onChange={e => updateSpecialisation(i, e.target.value)}
-								className="filter-input" style={{ flex: 1 }}
+								className="filter-input"
+								style={{ flex: 1 }}
 								placeholder="Ex: Tireur d'élite, Médecin de combat..."
 							/>
-							<button type="button" onClick={() => removeSpecialisation(i)} style={{ background: 'none', border: '1px solid var(--danger)', color: 'var(--danger)', padding: '0 0.5rem', cursor: 'pointer' }}>×</button>
+							<button
+								type="button"
+								onClick={() => removeSpecialisation(i)}
+								style={{
+									background: 'none',
+									border: '1px solid var(--danger)',
+									color: 'var(--danger)',
+									padding: '0 0.5rem',
+									cursor: 'pointer',
+								}}
+							>
+								×
+							</button>
 						</div>
 					))}
-					<button type="button" onClick={addSpecialisation} style={{ background: 'none', border: '1px dashed var(--border)', color: 'var(--muted)', padding: '0.4rem 1rem', cursor: 'pointer', fontSize: '0.8rem' }}>
+					<button
+						type="button"
+						onClick={addSpecialisation}
+						style={{
+							background: 'none',
+							border: '1px dashed var(--border)',
+							color: 'var(--muted)',
+							padding: '0.4rem 1rem',
+							cursor: 'pointer',
+							fontSize: '0.8rem',
+						}}
+					>
 						+ Ajouter une spécialisation
 					</button>
 				</div>
 
 				{/* --- Affectation --- */}
-				<div style={{ border: 'none', padding: 0, background: 'transparent', marginTop: '1.5rem' }}>
+				<div
+					style={{
+						border: 'none',
+						padding: 0,
+						background: 'transparent',
+						marginTop: '1.5rem',
+					}}
+				>
 					<h2 style={{ color: 'var(--primary)' }}>Affectation</h2>
 
 					<div style={gridTwo}>
 						<div>
 							<label style={labelStyle}>Unité</label>
-							<select name="unit" value={form.unit} onChange={handleChange} className="filter-select" style={{ width: '100%' }}>
+							<select
+								name="unit"
+								value={form.unit}
+								onChange={handleChange}
+								className="filter-select"
+								style={{ width: '100%' }}
+							>
 								<option value="">— Aucune —</option>
-								{units.map(u => (<option key={u.id} value={u.id}>{u.name}</option>))}
+								{units.map(u => (
+									<option key={u.id} value={u.id}>
+										{u.name}
+									</option>
+								))}
 							</select>
 						</div>
 						<div>
 							<label style={labelStyle}>Unité précédente</label>
-							<input type="text" name="previousUnit" value={form.previousUnit} onChange={handleChange} className="filter-input" style={{ width: '100%' }} />
+							<input
+								type="text"
+								name="previousUnit"
+								value={form.previousUnit}
+								onChange={handleChange}
+								className="filter-input"
+								style={{ width: '100%' }}
+							/>
 						</div>
 					</div>
 				</div>
 
 				{/* --- Admin-only section --- */}
 				{isAdmin && (
-					<div style={{ border: '1px solid var(--primary)', padding: '1.5rem', marginTop: '1.5rem', background: 'rgba(139, 69, 19, 0.05)' }}>
+					<div
+						style={{
+							border: '1px solid var(--primary)',
+							padding: '1.5rem',
+							marginTop: '1.5rem',
+							background: 'rgba(139, 69, 19, 0.05)',
+						}}
+					>
 						<h2 style={{ color: 'var(--primary)', marginTop: 0 }}>Administration</h2>
 
 						{/* NPC toggle - only on create */}
 						{!editData && (
-							<div style={{ marginBottom: '1rem', paddingBottom: '1rem', borderBottom: '1px solid var(--border)' }}>
-								<label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
-									<input type="checkbox" name="isNpc" checked={form.isNpc} onChange={handleChange} />
-									<span style={{ fontSize: '0.85rem', color: 'var(--primary)' }}>Fiche PNJ (non lié à un compte Discord)</span>
+							<div
+								style={{
+									marginBottom: '1rem',
+									paddingBottom: '1rem',
+									borderBottom: '1px solid var(--border)',
+								}}
+							>
+								<label
+									style={{
+										display: 'flex',
+										alignItems: 'center',
+										gap: '0.5rem',
+										cursor: 'pointer',
+									}}
+								>
+									<input
+										type="checkbox"
+										name="isNpc"
+										checked={form.isNpc}
+										onChange={handleChange}
+									/>
+									<span style={{ fontSize: '0.85rem', color: 'var(--primary)' }}>
+										Fiche PNJ (non lié à un compte Discord)
+									</span>
 								</label>
-								<p style={{ fontSize: '0.7rem', color: 'var(--muted)', marginTop: '0.25rem', marginLeft: '1.5rem' }}>
-									Le personnage ne sera pas lié à un compte Discord et le grade ne sera pas requis.
+								<p
+									style={{
+										fontSize: '0.7rem',
+										color: 'var(--muted)',
+										marginTop: '0.25rem',
+										marginLeft: '1.5rem',
+									}}
+								>
+									Le personnage ne sera pas lié à un compte Discord et le grade ne
+									sera pas requis.
 								</p>
 							</div>
 						)}
 
 						<div style={gridTwo}>
 							<div>
-								<label style={labelStyle}>{form.isNpc ? 'Grade' : 'Grade (override admin)'}</label>
-								<select name="rank" value={form.rank} onChange={handleChange} className="filter-select" style={{ width: '100%' }}>
-									<option value="">{form.isNpc ? '— Aucun grade —' : '— Auto (Discord) —'}</option>
-									{ranks.map(r => (<option key={r.id} value={r.id}>{r.name}</option>))}
+								<label style={labelStyle}>
+									{form.isNpc ? 'Grade' : 'Grade (override admin)'}
+								</label>
+								<select
+									name="rank"
+									value={form.rank}
+									onChange={handleChange}
+									className="filter-select"
+									style={{ width: '100%' }}
+								>
+									<option value="">
+										{form.isNpc ? '— Aucun grade —' : '— Auto (Discord) —'}
+									</option>
+									{ranks.map(r => (
+										<option key={r.id} value={r.id}>
+											{r.name}
+										</option>
+									))}
 								</select>
 							</div>
 							<div>
 								<label style={labelStyle}>Statut</label>
-								<select name="status" value={form.status} onChange={handleChange} className="filter-select" style={{ width: '100%' }}>
+								<select
+									name="status"
+									value={form.status}
+									onChange={handleChange}
+									className="filter-select"
+									style={{ width: '100%' }}
+								>
 									<option value="in-service">En service</option>
 									<option value="kia">KIA (Mort au combat)</option>
 									<option value="mia">MIA (Disparu)</option>
 									<option value="retired">Retraité</option>
 									<option value="honourable-discharge">Réformé avec honneur</option>
-									<option value="dishonourable-discharge">Réformé sans honneur</option>
+									<option value="dishonourable-discharge">
+										Réformé sans honneur
+									</option>
 									<option value="executed">Exécuté</option>
 								</select>
 							</div>
@@ -522,7 +847,13 @@ export function CharacterForm({
 						<div style={gridTwo}>
 							<div>
 								<label style={labelStyle}>Classification</label>
-								<select name="classification" value={form.classification} onChange={handleChange} className="filter-select" style={{ width: '100%' }}>
+								<select
+									name="classification"
+									value={form.classification}
+									onChange={handleChange}
+									className="filter-select"
+									style={{ width: '100%' }}
+								>
 									<option value="public">Public</option>
 									<option value="restricted">Restreint</option>
 									<option value="classified">Classifié</option>
@@ -530,9 +861,19 @@ export function CharacterForm({
 							</div>
 							<div>
 								<label style={labelStyle}>Officier supérieur</label>
-								<select name="superiorOfficer" value={form.superiorOfficer} onChange={handleChange} className="filter-select" style={{ width: '100%' }}>
+								<select
+									name="superiorOfficer"
+									value={form.superiorOfficer}
+									onChange={handleChange}
+									className="filter-select"
+									style={{ width: '100%' }}
+								>
 									<option value="">— Aucun —</option>
-									{(allCharacters || []).map(c => (<option key={c.id} value={c.id}>{c.fullName}</option>))}
+									{(allCharacters || []).map(c => (
+										<option key={c.id} value={c.id}>
+											{c.fullName}
+										</option>
+									))}
 								</select>
 							</div>
 						</div>
@@ -540,15 +881,55 @@ export function CharacterForm({
 						<div style={gridTwo}>
 							<div>
 								<label style={labelStyle}>Faction</label>
-								<input type="text" name="faction" value={form.faction} onChange={handleChange} className="filter-input" style={{ width: '100%' }} />
+								<input
+									type="text"
+									name="faction"
+									value={form.faction}
+									onChange={handleChange}
+									className="filter-input"
+									style={{ width: '100%' }}
+								/>
 							</div>
-							<div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', justifyContent: 'flex-end' }}>
-								<label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
-									<input type="checkbox" name="rankOverride" checked={form.rankOverride} onChange={handleChange} />
-									<span style={{ fontSize: '0.85rem' }}>Grade forcé (désactive sync Discord)</span>
+							<div
+								style={{
+									display: 'flex',
+									flexDirection: 'column',
+									gap: '0.5rem',
+									justifyContent: 'flex-end',
+								}}
+							>
+								<label
+									style={{
+										display: 'flex',
+										alignItems: 'center',
+										gap: '0.5rem',
+										cursor: 'pointer',
+									}}
+								>
+									<input
+										type="checkbox"
+										name="rankOverride"
+										checked={form.rankOverride}
+										onChange={handleChange}
+									/>
+									<span style={{ fontSize: '0.85rem' }}>
+										Grade forcé (désactive sync Discord)
+									</span>
 								</label>
-								<label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
-									<input type="checkbox" name="isTarget" checked={form.isTarget} onChange={handleChange} />
+								<label
+									style={{
+										display: 'flex',
+										alignItems: 'center',
+										gap: '0.5rem',
+										cursor: 'pointer',
+									}}
+								>
+									<input
+										type="checkbox"
+										name="isTarget"
+										checked={form.isTarget}
+										onChange={handleChange}
+									/>
 									<span style={{ fontSize: '0.85rem' }}>Cible / Ennemi</span>
 								</label>
 							</div>
@@ -559,11 +940,24 @@ export function CharacterForm({
 								<div style={gridTwo}>
 									<div>
 										<label style={labelStyle}>Faction de la cible</label>
-										<input type="text" name="targetFaction" value={form.targetFaction} onChange={handleChange} className="filter-input" style={{ width: '100%' }} />
+										<input
+											type="text"
+											name="targetFaction"
+											value={form.targetFaction}
+											onChange={handleChange}
+											className="filter-input"
+											style={{ width: '100%' }}
+										/>
 									</div>
 									<div>
 										<label style={labelStyle}>Niveau de menace</label>
-										<select name="threatLevel" value={form.threatLevel} onChange={handleChange} className="filter-select" style={{ width: '100%' }}>
+										<select
+											name="threatLevel"
+											value={form.threatLevel}
+											onChange={handleChange}
+											className="filter-select"
+											style={{ width: '100%' }}
+										>
 											<option value="">— Non défini —</option>
 											<option value="low">Faible</option>
 											<option value="moderate">Modéré</option>
@@ -577,24 +971,67 @@ export function CharacterForm({
 
 						<div style={{ marginTop: '1rem' }}>
 							<label style={labelStyle}>Informations complémentaires (Divers)</label>
-							<textarea name="miscellaneous" value={form.miscellaneous} onChange={handleChange} className="filter-input" style={{ width: '100%', minHeight: '80px', resize: 'vertical' }} placeholder="Informations complémentaires visibles par tous..." />
+							<textarea
+								name="miscellaneous"
+								value={form.miscellaneous}
+								onChange={handleChange}
+								className="filter-input"
+								style={{ width: '100%', minHeight: '80px', resize: 'vertical' }}
+								placeholder="Informations complémentaires visibles par tous..."
+							/>
 						</div>
 
 						<div style={{ marginTop: '1rem' }}>
 							<label style={labelStyle}>Notes État-Major (admin uniquement)</label>
-							<textarea name="etatMajorNotes" value={form.etatMajorNotes} onChange={handleChange} className="filter-input" style={{ width: '100%', minHeight: '80px', resize: 'vertical' }} placeholder="Visibles uniquement par les administrateurs..." />
+							<textarea
+								name="etatMajorNotes"
+								value={form.etatMajorNotes}
+								onChange={handleChange}
+								className="filter-input"
+								style={{ width: '100%', minHeight: '80px', resize: 'vertical' }}
+								placeholder="Visibles uniquement par les administrateurs..."
+							/>
 						</div>
 
 						{/* Archive section */}
-						<div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--border)' }}>
-							<label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', marginBottom: '0.5rem' }}>
-								<input type="checkbox" name="isArchived" checked={form.isArchived} onChange={handleChange} />
-								<span style={{ fontSize: '0.85rem', color: 'var(--danger)' }}>Archiver ce dossier</span>
+						<div
+							style={{
+								marginTop: '1rem',
+								paddingTop: '1rem',
+								borderTop: '1px solid var(--border)',
+							}}
+						>
+							<label
+								style={{
+									display: 'flex',
+									alignItems: 'center',
+									gap: '0.5rem',
+									cursor: 'pointer',
+									marginBottom: '0.5rem',
+								}}
+							>
+								<input
+									type="checkbox"
+									name="isArchived"
+									checked={form.isArchived}
+									onChange={handleChange}
+								/>
+								<span style={{ fontSize: '0.85rem', color: 'var(--danger)' }}>
+									Archiver ce dossier
+								</span>
 							</label>
 							{form.isArchived && (
 								<div style={{ marginLeft: '1.5rem' }}>
 									<label style={labelStyle}>Raison de l&apos;archivage</label>
-									<input type="text" name="archiveReason" value={form.archiveReason} onChange={handleChange} className="filter-input" style={{ width: '100%' }} placeholder="Raison de l'archivage..." />
+									<input
+										type="text"
+										name="archiveReason"
+										value={form.archiveReason}
+										onChange={handleChange}
+										className="filter-input"
+										style={{ width: '100%' }}
+										placeholder="Raison de l'archivage..."
+									/>
 								</div>
 							)}
 						</div>
@@ -602,12 +1039,36 @@ export function CharacterForm({
 				)}
 
 				{/* --- Submit --- */}
-				<div style={{ marginTop: '2rem', display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
-					<Link href="/roleplay" className="session-btn" style={{ padding: '0.75rem 1.5rem' }}>
+				<div
+					style={{
+						marginTop: '2rem',
+						display: 'flex',
+						gap: '1rem',
+						justifyContent: 'flex-end',
+					}}
+				>
+					<Link
+						href="/roleplay"
+						className="session-btn"
+						style={{ padding: '0.75rem 1.5rem' }}
+					>
 						Annuler
 					</Link>
-					<button type="submit" disabled={submitting} className="discord-login-btn" style={{ background: 'var(--primary)', padding: '0.75rem 1.5rem', opacity: submitting ? 0.6 : 1 }}>
-						{submitting ? 'Enregistrement...' : editData ? 'Mettre à jour' : 'Créer le dossier'}
+					<button
+						type="submit"
+						disabled={submitting}
+						className="discord-login-btn"
+						style={{
+							background: 'var(--primary)',
+							padding: '0.75rem 1.5rem',
+							opacity: submitting ? 0.6 : 1,
+						}}
+					>
+						{submitting
+							? 'Enregistrement...'
+							: editData
+								? 'Mettre à jour'
+								: 'Créer le dossier'}
 					</button>
 				</div>
 			</div>

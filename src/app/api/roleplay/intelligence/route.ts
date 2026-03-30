@@ -36,10 +36,13 @@ export async function POST(request: NextRequest) {
 		const payload = await getPayloadClient();
 
 		// Check if user has the intelligence role
-		const roleplayConfig = await payload.findGlobal({ slug: 'roleplay' }).catch(() => null);
+		const roleplayConfig = await payload
+			.findGlobal({ slug: 'roleplay' })
+			.catch(() => null);
 		const intelligenceRoleId = (roleplayConfig as any)?.intelligenceRoleId;
 
-		const hasIntelRole = intelligenceRoleId && session.roles?.includes(intelligenceRoleId);
+		const hasIntelRole =
+			intelligenceRoleId && session.roles?.includes(intelligenceRoleId);
 		const user = await payload.find({
 			collection: 'users',
 			where: { discordId: { equals: session.discordId } },
@@ -49,7 +52,9 @@ export async function POST(request: NextRequest) {
 
 		if (!hasIntelRole && !isAdmin) {
 			return NextResponse.json(
-				{ message: 'Vous n\'avez pas le rôle requis pour publier des renseignements' },
+				{
+					message: "Vous n'avez pas le rôle requis pour publier des renseignements",
+				},
 				{ status: 403 },
 			);
 		}
@@ -71,13 +76,20 @@ export async function POST(request: NextRequest) {
 		});
 
 		// Send Discord notification (non-blocking)
-		const fullDoc = await payload.findByID({ collection: 'intelligence', id: doc.id, depth: 2 });
+		const fullDoc = await payload.findByID({
+			collection: 'intelligence',
+			id: doc.id,
+			depth: 2,
+		});
 		notifyNewIntelligence({
 			id: doc.id as number,
 			title: (fullDoc as any).title,
 			type: (fullDoc as any).type,
 			classification: (fullDoc as any).classification,
-			postedBy: typeof (fullDoc as any).postedBy === 'object' ? (fullDoc as any).postedBy : null,
+			postedBy:
+				typeof (fullDoc as any).postedBy === 'object'
+					? (fullDoc as any).postedBy
+					: null,
 		}).catch(() => {});
 
 		return NextResponse.json({ id: doc.id, doc });

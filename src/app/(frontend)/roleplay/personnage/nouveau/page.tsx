@@ -33,9 +33,12 @@ export default async function NewCharacterPage() {
 		if (!userData?.isGuildMember) redirect('/roleplay');
 
 		// Check operator role
-		const roleplayConfig = await payload.findGlobal({ slug: 'roleplay' }).catch(() => null);
+		const roleplayConfig = await payload
+			.findGlobal({ slug: 'roleplay' })
+			.catch(() => null);
 		const operatorRoleId = (roleplayConfig as any)?.operatorRoleId;
-		if (operatorRoleId && !session.roles?.includes(operatorRoleId)) redirect('/roleplay');
+		if (operatorRoleId && !session.roles?.includes(operatorRoleId))
+			redirect('/roleplay');
 		if (!operatorRoleId) redirect('/roleplay');
 	}
 
@@ -46,7 +49,12 @@ export default async function NewCharacterPage() {
 
 	let allCharacters: any[] = [];
 	if (isAdmin) {
-		const chars = await payload.find({ collection: 'characters', limit: 500, depth: 0, sort: 'fullName' });
+		const chars = await payload.find({
+			collection: 'characters',
+			limit: 500,
+			depth: 0,
+			sort: 'fullName',
+		});
 		allCharacters = chars.docs.map((c: any) => ({ id: c.id, fullName: c.fullName }));
 	}
 

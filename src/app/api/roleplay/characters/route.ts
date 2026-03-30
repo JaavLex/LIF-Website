@@ -74,7 +74,11 @@ export async function POST(request: NextRequest) {
 		});
 
 		// Send Discord notification (non-blocking)
-		const fullDoc = await payload.findByID({ collection: 'characters', id: doc.id, depth: 2 });
+		const fullDoc = await payload.findByID({
+			collection: 'characters',
+			id: doc.id,
+			depth: 2,
+		});
 		notifyNewCharacter({
 			id: doc.id as number,
 			fullName: (fullDoc as any).fullName,

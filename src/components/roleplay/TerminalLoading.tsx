@@ -15,7 +15,10 @@ const DEFAULT_MESSAGES = [
 	'Accès autorisé.',
 ];
 
-export function TerminalLoading({ messages = DEFAULT_MESSAGES, onComplete }: TerminalLoadingProps) {
+export function TerminalLoading({
+	messages = DEFAULT_MESSAGES,
+	onComplete,
+}: TerminalLoadingProps) {
 	const effectiveMessages = messages.length > 0 ? messages : DEFAULT_MESSAGES;
 	const [visibleLines, setVisibleLines] = useState<string[]>([]);
 	const [currentIndex, setCurrentIndex] = useState(0);
@@ -98,9 +101,7 @@ export function TerminalLoading({ messages = DEFAULT_MESSAGES, onComplete }: Ter
 					)}
 				</div>
 				{complete && (
-					<div className="terminal-loading-access">
-						ACCÈS AUTORISÉ — BIENVENUE
-					</div>
+					<div className="terminal-loading-access">ACCÈS AUTORISÉ — BIENVENUE</div>
 				)}
 			</div>
 			<div className="terminal-loading-scanlines" />

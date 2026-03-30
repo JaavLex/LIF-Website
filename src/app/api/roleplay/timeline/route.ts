@@ -65,7 +65,10 @@ export async function POST(request: NextRequest) {
 		const body = await request.json();
 
 		if (!body.character || !body.type || !body.title || !body.date) {
-			return NextResponse.json({ message: 'Champs requis manquants' }, { status: 400 });
+			return NextResponse.json(
+				{ message: 'Champs requis manquants' },
+				{ status: 400 },
+			);
 		}
 
 		const doc = await payload.create({

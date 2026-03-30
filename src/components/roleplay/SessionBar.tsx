@@ -12,7 +12,11 @@ interface SessionUser {
 	roles: string[];
 }
 
-export function SessionBar({ canCreateCharacter = false }: { canCreateCharacter?: boolean }) {
+export function SessionBar({
+	canCreateCharacter = false,
+}: {
+	canCreateCharacter?: boolean;
+}) {
 	const [user, setUser] = useState<SessionUser | null>(null);
 	const [loading, setLoading] = useState(true);
 

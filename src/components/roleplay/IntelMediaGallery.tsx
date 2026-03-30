@@ -13,16 +13,35 @@ export function IntelMediaGallery({ media }: { media: MediaItem[] }) {
 
 	return (
 		<>
-			<div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem' }}>
+			<div
+				style={{
+					display: 'grid',
+					gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+					gap: '1rem',
+				}}
+			>
 				{media.map((m, i) => (
-					<div key={i} style={{ border: '1px solid var(--border)', background: 'var(--bg)', overflow: 'hidden' }}>
+					<div
+						key={i}
+						style={{
+							border: '1px solid var(--border)',
+							background: 'var(--bg)',
+							overflow: 'hidden',
+						}}
+					>
 						{m.file.mimeType?.startsWith('image/') ? (
 							<Image
 								src={m.file.url}
 								alt={m.caption || ''}
 								width={600}
 								height={400}
-								style={{ width: '100%', height: 'auto', objectFit: 'cover', cursor: 'pointer', maxHeight: '400px' }}
+								style={{
+									width: '100%',
+									height: 'auto',
+									objectFit: 'cover',
+									cursor: 'pointer',
+									maxHeight: '400px',
+								}}
 								unoptimized
 								onClick={() => setModalImage(m.file.url)}
 							/>
@@ -45,7 +64,14 @@ export function IntelMediaGallery({ media }: { media: MediaItem[] }) {
 							</div>
 						)}
 						{m.caption && (
-							<div style={{ padding: '0.5rem 0.75rem', fontSize: '0.85rem', color: 'var(--muted)', borderTop: '1px solid var(--border)' }}>
+							<div
+								style={{
+									padding: '0.5rem 0.75rem',
+									fontSize: '0.85rem',
+									color: 'var(--muted)',
+									borderTop: '1px solid var(--border)',
+								}}
+							>
 								{m.caption}
 							</div>
 						)}
@@ -70,7 +96,10 @@ export function IntelMediaGallery({ media }: { media: MediaItem[] }) {
 					}}
 					onClick={() => setModalImage(null)}
 				>
-					<div style={{ position: 'relative', maxWidth: '90vw', maxHeight: '90vh' }} onClick={e => e.stopPropagation()}>
+					<div
+						style={{ position: 'relative', maxWidth: '90vw', maxHeight: '90vh' }}
+						onClick={e => e.stopPropagation()}
+					>
 						<button
 							onClick={() => setModalImage(null)}
 							style={{
@@ -92,7 +121,13 @@ export function IntelMediaGallery({ media }: { media: MediaItem[] }) {
 							alt=""
 							width={1200}
 							height={900}
-							style={{ objectFit: 'contain', maxWidth: '90vw', maxHeight: '90vh', width: 'auto', height: 'auto' }}
+							style={{
+								objectFit: 'contain',
+								maxWidth: '90vw',
+								maxHeight: '90vh',
+								width: 'auto',
+								height: 'auto',
+							}}
 							unoptimized
 						/>
 					</div>
