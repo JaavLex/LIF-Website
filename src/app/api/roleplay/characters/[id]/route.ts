@@ -111,6 +111,59 @@ export async function DELETE(
 
 	try {
 		const payload = await getPayloadClient();
+
+		// Delete timeline events referencing this character
+		const timeline = await payload.find({
+			collection: 'character-timeline',
+			where: { character: { equals: characterId } },
+			limit: 0,
+		});
+		for (const event of timeline.docs) {
+			await payload.delete({ collection: 'character-timeline', id: event.id });
+		}
+
+		// Nullify intelligence references
+		const linkedIntel = await payload.find({
+			collection: 'intelligence',
+			where: {
+				or: [
+					{ linkedTarget: { equals: characterId } },
+					{ postedBy: { equals: characterId } },
+				],
+			},
+			limit: 0,
+		});
+		for (const report of linkedIntel.docs) {
+			const updates: Record<string, null> = {};
+			if (report.linkedTarget && (typeof report.linkedTarget === 'number' ? report.linkedTarget : report.linkedTarget.id) === characterId) {
+				updates.linkedTarget = null;
+			}
+			if (report.postedBy && (typeof report.postedBy === 'number' ? report.postedBy : report.postedBy.id) === characterId) {
+				updates.postedBy = null;
+			}
+			await payload.update({ collection: 'intelligence', id: report.id, data: updates });
+		}
+
+		// Nullify superiorOfficer references in other characters
+		const subordinates = await payload.find({
+			collection: 'characters',
+			where: { superiorOfficer: { equals: characterId } },
+			limit: 0,
+		});
+		for (const sub of subordinates.docs) {
+			await payload.update({ collection: 'characters', id: sub.id, data: { superiorOfficer: null } });
+		}
+
+		// Nullify unit commander references
+		const units = await payload.find({
+			collection: 'units',
+			where: { commander: { equals: characterId } },
+			limit: 0,
+		});
+		for (const unit of units.docs) {
+			await payload.update({ collection: 'units', id: unit.id, data: { commander: null } });
+		}
+
 		await payload.delete({
 			collection: 'characters',
 			id: characterId,
