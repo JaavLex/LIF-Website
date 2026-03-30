@@ -1669,23 +1669,62 @@
 }
 
 /* Tutorial responsive */
-@media (max-width: 600px) {
+@media (max-width: 768px) {
 	.tutorial-tooltip {
-		max-width: calc(100vw - 2rem);
-		width: calc(100vw - 2rem);
-		left: 1rem !important;
-		right: 1rem !important;
+		max-width: calc(100vw - 1.5rem);
+		width: calc(100vw - 1.5rem);
+		left: 0.75rem !important;
+		right: 0.75rem !important;
 		transform: none !important;
+		top: auto !important;
+		bottom: auto !important;
+		position: fixed !important;
+		margin: auto;
+	}
+
+	.tutorial-tooltip.tutorial-tooltip-mobile-center {
+		top: 50% !important;
+		transform: translateY(-50%) !important;
+	}
+
+	.tutorial-tooltip.tutorial-tooltip-mobile-bottom {
+		bottom: 0.75rem !important;
 	}
 
 	.tutorial-tooltip.has-dummy-form {
-		max-width: calc(100vw - 2rem);
-		max-height: 70vh;
+		max-width: calc(100vw - 1.5rem);
+		max-height: 65vh;
+		overflow-y: auto;
+		top: 50% !important;
+		transform: translateY(-50%) !important;
+	}
+
+	.tutorial-tooltip-header {
+		padding: 0.5rem 0.75rem;
+		gap: 0.5rem;
+	}
+
+	.tutorial-step-badge {
+		min-width: 2rem;
+		padding: 0.1rem 0.35rem;
+		font-size: 0.6rem;
+	}
+
+	.tutorial-tooltip-title {
+		font-size: 0.75rem;
+		letter-spacing: 1px;
+	}
+
+	.tutorial-tooltip-content {
+		padding: 0.75rem;
+		font-size: 0.75rem;
+		line-height: 1.5;
 	}
 
 	.tutorial-tooltip-actions {
 		flex-direction: column;
-		gap: 0.5rem;
+		gap: 0.4rem;
+		padding: 0.5rem 0.75rem;
 	}
 
 	.tutorial-btn-group {
@@ -1693,8 +1732,61 @@
 		justify-content: flex-end;
 	}
 
+	.tutorial-btn {
+		padding: 0.35rem 0.6rem;
+		font-size: 0.7rem;
+	}
+
+	.tutorial-dots {
+		gap: 4px;
+		padding: 0.4rem 0.75rem 0.5rem;
+	}
+
+	.tutorial-dot {
+		width: 6px;
+		height: 6px;
+	}
+
 	.tutorial-buttons {
 		bottom: 0.5rem;
 		left: 0.5rem;
+	}
+
+	.tutorial-debug-btn {
+		font-size: 0.6rem;
+		padding: 0.3rem 0.5rem;
+	}
+
+	/* Dummy forms: stack grids on mobile */
+	.tutorial-dummy-form {
+		padding: 0.4rem;
+		font-size: 0.65rem;
+	}
+
+	.tutorial-dummy-form div[style*="grid"] {
+		grid-template-columns: 1fr !important;
+	}
+
+	.tutorial-dummy-grid {
+		grid-template-columns: 1fr !important;
+	}
+
+	.tutorial-dummy-title {
+		font-size: 0.65rem;
+	}
+
+	.tutorial-dummy-btn-submit {
+		font-size: 0.6rem;
+		padding: 0.25rem 0.6rem;
+	}
+
+	.tutorial-dummy-status-btn,
+	.tutorial-dummy-action-btn {
+		font-size: 0.55rem;
+		padding: 0.15rem 0.35rem;
+	}
+
+	.tutorial-spotlight {
+		display: none;
 	}
 }

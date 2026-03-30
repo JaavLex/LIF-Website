@@ -50,15 +50,15 @@ function DummyCharacterForm() {
 
 			<div style={dsec}>
 				<div style={{ fontSize: '0.75rem', color: 'var(--primary)', fontWeight: 700, marginBottom: '0.3rem' }}>Identité</div>
-				<div style={dgrid}>
+				<div className="tutorial-dummy-grid" style={dgrid}>
 					<div><span style={dls}>Prénom *</span><input style={dinp} value="Jean" readOnly /></div>
 					<div><span style={dls}>Nom *</span><input style={dinp} value="Dupont" readOnly /></div>
 				</div>
-				<div style={dgrid}>
+				<div className="tutorial-dummy-grid" style={dgrid}>
 					<div><span style={dls}>Date de naissance</span><input style={dinp} value="1992-03-15" readOnly /></div>
 					<div><span style={dls}>Lieu d'origine</span><input style={dinp} value="Lyon, France" readOnly /></div>
 				</div>
-				<div style={dgrid}>
+				<div className="tutorial-dummy-grid" style={dgrid}>
 					<div><span style={dls}>Taille (cm)</span><input style={dinp} value="182" readOnly /></div>
 					<div><span style={dls}>Poids (kg)</span><input style={dinp} value="78" readOnly /></div>
 				</div>
@@ -85,7 +85,7 @@ function DummyCharacterForm() {
 
 			<div style={dsec}>
 				<div style={{ fontSize: '0.75rem', color: 'var(--primary)', fontWeight: 700, marginBottom: '0.3rem' }}>Affectation</div>
-				<div style={dgrid}>
+				<div className="tutorial-dummy-grid" style={dgrid}>
 					<div><span style={dls}>Unité</span><select style={dsel} disabled><option>1ère Compagnie</option></select></div>
 					<div><span style={dls}>Unité précédente</span><input style={dinp} value="" readOnly /></div>
 				</div>
@@ -102,11 +102,11 @@ function DummyIntelForm() {
 	return (
 		<div className="tutorial-dummy-form">
 			<div className="tutorial-dummy-title">Aperçu — Nouveau rapport de renseignement</div>
-			<div style={dgrid}>
+			<div className="tutorial-dummy-grid" style={dgrid}>
 				<div><span style={dls}>Titre *</span><input style={dinp} value="Mouvement ennemi secteur Nord" readOnly /></div>
 				<div><span style={dls}>Date *</span><input style={dinp} value="2026-03-28" readOnly /></div>
 			</div>
-			<div style={dgrid}>
+			<div className="tutorial-dummy-grid" style={dgrid}>
 				<div>
 					<span style={dls}>Type</span>
 					<select style={dsel} disabled>
@@ -124,7 +124,7 @@ function DummyIntelForm() {
 			<textarea style={{ ...dinp, height: 40, resize: 'none' }} value="Convoi de 3 véhicules repéré en direction du checkpoint Alpha..." readOnly />
 			<span style={dls}>Coordonnées</span>
 			<input style={dinp} value="48.8566, 2.3522" readOnly />
-			<div style={dgrid}>
+			<div className="tutorial-dummy-grid" style={dgrid}>
 				<div>
 					<span style={dls}>Cible liée</span>
 					<select style={dsel} disabled><option>— Sélectionner —</option></select>
@@ -151,7 +151,7 @@ function DummyAdminCharForm() {
 	return (
 		<div className="tutorial-dummy-form tutorial-dummy-admin">
 			<div className="tutorial-dummy-title">Aperçu — Section admin d'une fiche personnage</div>
-			<div style={dgrid}>
+			<div className="tutorial-dummy-grid" style={dgrid}>
 				<div>
 					<span style={dls}>Grade (override admin)</span>
 					<select style={dsel} disabled><option>Sergent</option></select>
@@ -163,7 +163,7 @@ function DummyAdminCharForm() {
 					</select>
 				</div>
 			</div>
-			<div style={dgrid}>
+			<div className="tutorial-dummy-grid" style={dgrid}>
 				<div>
 					<span style={dls}>Classification</span>
 					<select style={dsel} disabled>
@@ -175,7 +175,7 @@ function DummyAdminCharForm() {
 					<select style={dsel} disabled><option>Cpt. Martin</option></select>
 				</div>
 			</div>
-			<div style={dgrid}>
+			<div className="tutorial-dummy-grid" style={dgrid}>
 				<div>
 					<span style={dls}>Faction</span>
 					<input style={dinp} value="LIF" readOnly />
@@ -258,7 +258,7 @@ function DummyAdminTimelineForm() {
 			</div>
 			<div style={dsec}>
 				<div style={{ fontSize: '0.72rem', color: 'var(--primary)', marginBottom: '0.3rem', fontWeight: 700 }}>Nouvel événement</div>
-				<div style={dgrid}>
+				<div className="tutorial-dummy-grid" style={dgrid}>
 					<div>
 						<span style={dls}>Type</span>
 						<select style={dsel} disabled>
@@ -472,15 +472,13 @@ export function RoleplayTutorial({ isAdmin, adminPermissions }: { isAdmin?: bool
 		}
 	}, [isAdmin]);
 
+	const isMobile = useCallback(() => window.innerWidth <= 768, []);
+
 	const positionTooltip = useCallback((step: TutorialStep) => {
-		if (!step.target || step.position === 'center') {
+		// On mobile/small screens: always center, no spotlight
+		if (isMobile() || !step.target || step.position === 'center') {
 			setSpotlightRect(null);
-			setTooltipStyle({
-				position: 'fixed',
-				top: '50%',
-				left: '50%',
-				transform: 'translate(-50%, -50%)',
-			});
+			setTooltipStyle({ position: 'fixed' });
 			animatingRef.current = false;
 			return;
 		}
@@ -488,12 +486,7 @@ export function RoleplayTutorial({ isAdmin, adminPermissions }: { isAdmin?: bool
 		const el = document.querySelector(step.target);
 		if (!el) {
 			setSpotlightRect(null);
-			setTooltipStyle({
-				position: 'fixed',
-				top: '50%',
-				left: '50%',
-				transform: 'translate(-50%, -50%)',
-			});
+			setTooltipStyle({ position: 'fixed' });
 			animatingRef.current = false;
 			return;
 		}
@@ -545,7 +538,7 @@ export function RoleplayTutorial({ isAdmin, adminPermissions }: { isAdmin?: bool
 			setTooltipStyle(style);
 			animatingRef.current = false;
 		}, 400);
-	}, []);
+	}, [isMobile]);
 
 	useEffect(() => {
 		if (!active) return;
@@ -689,7 +682,7 @@ export function RoleplayTutorial({ isAdmin, adminPermissions }: { isAdmin?: bool
 						<div className="tutorial-backdrop" />
 					)}
 
-					<div className={`tutorial-tooltip${step.dummyForm ? ' has-dummy-form' : ''}`} style={tooltipStyle}>
+					<div className={`tutorial-tooltip${step.dummyForm ? ' has-dummy-form' : ''} tutorial-tooltip-mobile-center`} style={tooltipStyle}>
 						<div className="tutorial-tooltip-header">
 							<span className="tutorial-step-badge">
 								{currentStep + 1}/{steps.length}
