@@ -85,12 +85,14 @@ export function CharacterForm({
 	editData,
 	isAdmin,
 	allCharacters,
+	allUsers,
 }: {
 	ranks: Rank[];
 	units: Unit[];
 	editData?: any;
 	isAdmin?: boolean;
 	allCharacters?: { id: number; fullName: string }[];
+	allUsers?: { discordId: string; discordUsername: string }[];
 }) {
 	const router = useRouter();
 	const [user, setUser] = useState<SessionUser | null>(null);
@@ -103,6 +105,9 @@ export function CharacterForm({
 	);
 	const [specialisations, setSpecialisations] = useState<string[]>(
 		editData?.specialisations?.map((s: any) => s.name) || [''],
+	);
+	const [linkedDiscordId, setLinkedDiscordId] = useState<string>(
+		editData?.discordId || '',
 	);
 
 	const [form, setForm] = useState({
@@ -220,8 +225,8 @@ export function CharacterForm({
 				isMainCharacter: form.isMainCharacter,
 			};
 
-			// Only set discord info for non-NPC characters
-			if (!isNpcMode && user) {
+			// Only set discord info for non-NPC characters on CREATE (not edit)
+			if (!editData && !isNpcMode && user) {
 				body.discordId = user.discordId;
 				body.discordUsername = user.discordUsername;
 			} else if (isNpcMode) {
@@ -274,6 +279,13 @@ export function CharacterForm({
 				if (miscLexical) body.miscellaneous = miscLexical;
 				const notesLexical = textToLexical(form.etatMajorNotes);
 				if (notesLexical) body.etatMajorNotes = notesLexical;
+
+				// Admin reassign linked Discord account
+				if (editData && linkedDiscordId && linkedDiscordId !== editData.discordId) {
+					const selectedUser = allUsers?.find(u => u.discordId === linkedDiscordId);
+					body.linkedDiscordId = linkedDiscordId;
+					body.linkedDiscordUsername = selectedUser?.discordUsername || '';
+				}
 			}
 
 			const url = editData
@@ -758,6 +770,37 @@ export function CharacterForm({
 						}}
 					>
 						<h2 style={{ color: 'var(--primary)', marginTop: 0 }}>Administration</h2>
+
+						{/* Linked Discord account — only on edit */}
+						{editData && allUsers && allUsers.length > 0 && (
+							<div
+								style={{
+									marginBottom: '1rem',
+									paddingBottom: '1rem',
+									borderBottom: '1px solid var(--border)',
+								}}
+							>
+								<label style={labelStyle}>Compte Discord lié</label>
+								<select
+									value={linkedDiscordId}
+									onChange={(e) => setLinkedDiscordId(e.target.value)}
+									className="filter-select"
+									style={{ width: '100%' }}
+								>
+									<option value="">— Aucun (PNJ) —</option>
+									{allUsers.map(u => (
+										<option key={u.discordId} value={u.discordId}>
+											{u.discordUsername} ({u.discordId})
+										</option>
+									))}
+								</select>
+								{linkedDiscordId !== (editData.discordId || '') && (
+									<p style={{ fontSize: '0.7rem', color: 'var(--primary)', marginTop: '0.25rem' }}>
+										⚠ Le compte Discord lié sera modifié à la sauvegarde.
+									</p>
+								)}
+							</div>
+						)}
 
 						{/* NPC toggle - only on create */}
 						{!editData && (

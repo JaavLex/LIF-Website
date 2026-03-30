@@ -50,6 +50,21 @@ export async function PATCH(
 
 		const body = await request.json();
 
+		// Never allow discordId/discordUsername to be changed through normal fields
+		delete body.discordId;
+		delete body.discordUsername;
+
+		// Admin reassign: allow full admins to change linked Discord account
+		if (isAdmin && body.linkedDiscordId) {
+			const { isAdmin: isFullAdmin, level } = await checkAdminPermissions(session);
+			if (isFullAdmin && level === 'full') {
+				body.discordId = body.linkedDiscordId;
+				body.discordUsername = body.linkedDiscordUsername || '';
+			}
+		}
+		delete body.linkedDiscordId;
+		delete body.linkedDiscordUsername;
+
 		// Don't allow non-admins to change certain fields
 		if (!isAdmin) {
 			delete body.classification;

@@ -51,14 +51,27 @@ export default async function EditCharacterPage({
 	]);
 
 	let allCharacters: any[] = [];
+	let allUsers: any[] = [];
 	if (isAdmin) {
-		const chars = await payload.find({
-			collection: 'characters',
-			limit: 500,
-			depth: 0,
-			sort: 'fullName',
-		});
+		const [chars, users] = await Promise.all([
+			payload.find({
+				collection: 'characters',
+				limit: 500,
+				depth: 0,
+				sort: 'fullName',
+			}),
+			payload.find({
+				collection: 'users',
+				limit: 500,
+				depth: 0,
+				where: { discordId: { exists: true } },
+			}),
+		]);
 		allCharacters = chars.docs.map((c: any) => ({ id: c.id, fullName: c.fullName }));
+		allUsers = users.docs.map((u: any) => ({
+			discordId: u.discordId,
+			discordUsername: u.discordUsername,
+		}));
 	}
 
 	return (
@@ -95,6 +108,7 @@ export default async function EditCharacterPage({
 				editData={JSON.parse(JSON.stringify(character))}
 				isAdmin={isAdmin}
 				allCharacters={allCharacters}
+				allUsers={allUsers}
 			/>
 		</div>
 	);
