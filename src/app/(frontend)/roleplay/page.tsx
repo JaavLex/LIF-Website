@@ -12,7 +12,8 @@ import { checkAdminPermissions } from '@/lib/admin';
 
 export const dynamic = 'force-dynamic';
 
-export default async function RoleplayPage() {
+export default async function RoleplayPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
+	const { error: authError } = await searchParams;
 	const payload = await getPayloadClient();
 
 	// Get session
@@ -99,8 +100,20 @@ export default async function RoleplayPage() {
 		inviteUrl: (roleplayConfig as any)?.discordInviteUrl,
 	};
 
+	const errorMessages: Record<string, string> = {
+		no_code: 'Échec de l\'authentification Discord. Veuillez réessayer.',
+		auth_failed: 'Une erreur est survenue lors de la connexion. Veuillez réessayer.',
+	};
+
 	return (
 		<div className="terminal-container">
+			{/* Auth error banner */}
+			{authError && errorMessages[authError] && (
+				<div style={{ padding: '0.75rem 1rem', background: 'rgba(139,38,53,0.15)', border: '1px solid var(--danger)', color: 'var(--danger)', marginBottom: '1rem', fontSize: '0.9rem', textAlign: 'center' }}>
+					{errorMessages[authError]}
+				</div>
+			)}
+
 			{/* Discord disclaimer */}
 			{showDisclaimer && (
 				<DiscordDisclaimer

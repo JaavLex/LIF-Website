@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
 	const redirectUri = `${baseUrl}/api/auth/discord/callback`;
 
 	if (!code) {
-		return NextResponse.redirect(`${baseUrl}/?error=no_code`);
+		return NextResponse.redirect(`${baseUrl}/roleplay?error=no_code`);
 	}
 
 	try {
@@ -94,6 +94,6 @@ export async function GET(request: NextRequest) {
 		return response;
 	} catch (error) {
 		console.error('Discord OAuth error:', error);
-		return NextResponse.redirect(`${baseUrl}/?error=auth_failed`);
+		return NextResponse.redirect(`${baseUrl}/roleplay?error=auth_failed`);
 	}
 }
