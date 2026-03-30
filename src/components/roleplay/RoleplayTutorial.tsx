@@ -110,6 +110,7 @@ export function RoleplayTutorial({ isAdmin }: { isAdmin?: boolean }) {
 				left: '50%',
 				transform: 'translate(-50%, -50%)',
 			});
+			animatingRef.current = false;
 			return;
 		}
 
@@ -122,6 +123,7 @@ export function RoleplayTutorial({ isAdmin }: { isAdmin?: boolean }) {
 				left: '50%',
 				transform: 'translate(-50%, -50%)',
 			});
+			animatingRef.current = false;
 			return;
 		}
 
