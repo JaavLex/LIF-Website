@@ -13,7 +13,6 @@ export async function GET(request: NextRequest) {
 	const code = request.nextUrl.searchParams.get('code');
 	const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
 	const redirectUri = `${baseUrl}/api/auth/discord/callback`;
-	const requiredRoleId = process.env.DISCORD_REQUIRED_ROLE_ID;
 
 	if (!code) {
 		return NextResponse.redirect(`${baseUrl}/?error=no_code`);
@@ -24,17 +23,10 @@ export async function GET(request: NextRequest) {
 		const tokens = await getDiscordTokens(code, redirectUri);
 		const discordUser = await getDiscordUser(tokens.access_token);
 
-		// Check guild membership and roles via bot
+		// Check guild membership via bot (non-members can still log in)
 		const guildMember = await getGuildMember(discordUser.id);
-
-		if (!guildMember) {
-			return NextResponse.redirect(`${baseUrl}/?error=not_member`);
-		}
-
-		// Check required role
-		if (requiredRoleId && !guildMember.roles.includes(requiredRoleId)) {
-			return NextResponse.redirect(`${baseUrl}/?error=missing_role`);
-		}
+		const isMember = !!guildMember;
+		const roles = guildMember?.roles || [];
 
 		const payload = await getPayloadClient();
 
@@ -58,8 +50,8 @@ export async function GET(request: NextRequest) {
 				data: {
 					discordUsername: discordUser.username,
 					discordAvatar: avatarUrl,
-					discordRoles: guildMember.roles,
-					isGuildMember: true,
+					discordRoles: roles,
+					isGuildMember: isMember,
 					name: displayName,
 				},
 			});
@@ -75,8 +67,8 @@ export async function GET(request: NextRequest) {
 					discordId: discordUser.id,
 					discordUsername: discordUser.username,
 					discordAvatar: avatarUrl,
-					discordRoles: guildMember.roles,
-					isGuildMember: true,
+					discordRoles: roles,
+					isGuildMember: isMember,
 				},
 			});
 		}
@@ -86,7 +78,7 @@ export async function GET(request: NextRequest) {
 			discordId: discordUser.id,
 			discordUsername: discordUser.username,
 			discordAvatar: avatarUrl,
-			roles: guildMember.roles,
+			roles: roles,
 		});
 
 		const response = NextResponse.redirect(`${baseUrl}/roleplay`);
