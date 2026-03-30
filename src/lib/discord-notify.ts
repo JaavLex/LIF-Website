@@ -112,3 +112,88 @@ export async function notifyNewIntelligence(report: {
 		},
 	]);
 }
+
+const STATUS_LABELS: Record<string, string> = {
+	'in-service': 'En service',
+	kia: 'Tué au combat (KIA)',
+	mia: 'Porté disparu (MIA)',
+	retired: 'Retraité',
+	'honourable-discharge': 'Décharge honorable',
+	'dishonourable-discharge': 'Décharge déshonorante',
+	executed: 'Exécuté',
+};
+
+export async function notifyStatusChange(character: {
+	id: number;
+	fullName: string;
+	oldStatus: string;
+	newStatus: string;
+}) {
+	const channelId = await getNotificationChannelId();
+	if (!channelId) return;
+
+	const oldLabel = STATUS_LABELS[character.oldStatus] || character.oldStatus;
+	const newLabel = STATUS_LABELS[character.newStatus] || character.newStatus;
+
+	const STATUS_COLORS: Record<string, number> = {
+		'in-service': 0x4a7c23,
+		kia: 0x8b0000,
+		mia: 0xb8860b,
+		retired: 0x4682b4,
+		executed: 0x2f0000,
+	};
+
+	await sendToChannel(channelId, [
+		{
+			title: `⚡ Changement de statut`,
+			description: `**${character.fullName}**\n\n${oldLabel} → **${newLabel}**\n\n[Voir le dossier](${SITE_URL}/roleplay/personnage/${character.id})`,
+			color: STATUS_COLORS[character.newStatus] || 0x808080,
+			timestamp: new Date().toISOString(),
+		},
+	]);
+}
+
+const TIMELINE_TYPE_LABELS: Record<string, string> = {
+	promotion: 'Promotion',
+	mutation: 'Mutation',
+	blessure: 'Blessure',
+	medaille: 'Médaille',
+	sanction: 'Sanction',
+	autre: 'Autre',
+};
+
+const TIMELINE_EMOJIS: Record<string, string> = {
+	promotion: '⬆️',
+	mutation: '🔄',
+	blessure: '🩹',
+	medaille: '🎖️',
+	sanction: '⚠️',
+	autre: '📝',
+};
+
+export async function notifyTimelineEvent(event: {
+	characterId: number;
+	characterName: string;
+	type: string;
+	title: string;
+	date: string;
+}) {
+	const channelId = await getNotificationChannelId();
+	if (!channelId) return;
+
+	const typeLabel = TIMELINE_TYPE_LABELS[event.type] || event.type;
+	const emoji = TIMELINE_EMOJIS[event.type] || '📝';
+
+	await sendToChannel(channelId, [
+		{
+			title: `${emoji} Événement : ${typeLabel}`,
+			description: `**${event.characterName}**\n\n${event.title}\n\n[Voir le dossier](${SITE_URL}/roleplay/personnage/${event.characterId})`,
+			color: 0x5865f2,
+			fields: [
+				{ name: 'Date', value: event.date, inline: true },
+				{ name: 'Type', value: typeLabel, inline: true },
+			],
+			timestamp: new Date().toISOString(),
+		},
+	]);
+}

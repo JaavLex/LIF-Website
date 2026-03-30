@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getPayloadClient } from '@/lib/payload';
 import { verifySession } from '@/lib/session';
 import { checkAdminPermissions } from '@/lib/admin';
+import { notifyStatusChange } from '@/lib/discord-notify';
 
 export async function PATCH(
 	request: NextRequest,
@@ -61,11 +62,22 @@ export async function PATCH(
 			delete body.etatMajorNotes;
 		}
 
+		const oldStatus = existing.status;
+
 		const doc = await payload.update({
 			collection: 'characters',
 			id: characterId,
 			data: body,
 		});
+
+		if (body.status && body.status !== oldStatus) {
+			notifyStatusChange({
+				id: characterId,
+				fullName: doc.fullName || `${doc.firstName} ${doc.lastName}`,
+				oldStatus: oldStatus || 'in-service',
+				newStatus: body.status,
+			}).catch(() => {});
+		}
 
 		return NextResponse.json({ id: doc.id, doc });
 	} catch (error: any) {

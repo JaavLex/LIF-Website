@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getPayloadClient } from '@/lib/payload';
 import { verifySession } from '@/lib/session';
 import { checkAdminPermissions } from '@/lib/admin';
+import { notifyTimelineEvent } from '@/lib/discord-notify';
 
 export async function DELETE(request: NextRequest) {
 	const token = request.cookies.get('roleplay-session')?.value;
@@ -75,6 +76,19 @@ export async function POST(request: NextRequest) {
 			collection: 'character-timeline',
 			data: body,
 		});
+
+		const character = await payload.findByID({
+			collection: 'characters',
+			id: typeof body.character === 'number' ? body.character : parseInt(body.character, 10),
+		});
+
+		notifyTimelineEvent({
+			characterId: character.id,
+			characterName: character.fullName || `${character.firstName} ${character.lastName}`,
+			type: body.type,
+			title: body.title,
+			date: body.date,
+		}).catch(() => {});
 
 		return NextResponse.json({ id: doc.id, doc });
 	} catch (error: any) {
