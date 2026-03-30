@@ -472,13 +472,17 @@ export function RoleplayTutorial({ isAdmin, adminPermissions }: { isAdmin?: bool
 		}
 	}, [isAdmin]);
 
-	const isMobile = useCallback(() => window.innerWidth <= 768, []);
-
 	const positionTooltip = useCallback((step: TutorialStep) => {
-		// On mobile/small screens: always center, no spotlight
-		if (isMobile() || !step.target || step.position === 'center') {
+		const centerStyle: React.CSSProperties = {
+			position: 'fixed',
+			top: '50%',
+			left: '50%',
+			transform: 'translate(-50%, -50%)',
+		};
+
+		if (!step.target || step.position === 'center') {
 			setSpotlightRect(null);
-			setTooltipStyle({ position: 'fixed' });
+			setTooltipStyle(centerStyle);
 			animatingRef.current = false;
 			return;
 		}
@@ -486,7 +490,7 @@ export function RoleplayTutorial({ isAdmin, adminPermissions }: { isAdmin?: bool
 		const el = document.querySelector(step.target);
 		if (!el) {
 			setSpotlightRect(null);
-			setTooltipStyle({ position: 'fixed' });
+			setTooltipStyle(centerStyle);
 			animatingRef.current = false;
 			return;
 		}
@@ -499,33 +503,41 @@ export function RoleplayTutorial({ isAdmin, adminPermissions }: { isAdmin?: bool
 			setSpotlightRect(rect);
 
 			const pad = 16;
-			const tooltipMaxWidth = 380;
+			const vw = window.innerWidth;
+			const vh = window.innerHeight;
+			const tooltipMaxWidth = Math.min(380, vw - pad * 2);
 			const style: React.CSSProperties = { position: 'fixed' };
 
-			switch (step.position) {
+			// On narrow screens, left/right positions don't fit — fall back to bottom/top
+			let pos = step.position;
+			if (vw < 768 && (pos === 'left' || pos === 'right')) {
+				pos = rect.top > vh / 2 ? 'top' : 'bottom';
+			}
+
+			switch (pos) {
 				case 'bottom':
-					style.top = rect.bottom + pad;
+					style.top = Math.min(rect.bottom + pad, vh - 200);
 					style.left = Math.max(
 						pad,
 						Math.min(
 							rect.left + rect.width / 2 - tooltipMaxWidth / 2,
-							window.innerWidth - tooltipMaxWidth - pad,
+							vw - tooltipMaxWidth - pad,
 						),
 					);
 					break;
 				case 'top':
-					style.bottom = window.innerHeight - rect.top + pad;
+					style.bottom = Math.min(vh - rect.top + pad, vh - 100);
 					style.left = Math.max(
 						pad,
 						Math.min(
 							rect.left + rect.width / 2 - tooltipMaxWidth / 2,
-							window.innerWidth - tooltipMaxWidth - pad,
+							vw - tooltipMaxWidth - pad,
 						),
 					);
 					break;
 				case 'left':
 					style.top = rect.top + rect.height / 2;
-					style.right = window.innerWidth - rect.left + pad;
+					style.right = vw - rect.left + pad;
 					style.transform = 'translateY(-50%)';
 					break;
 				case 'right':
@@ -538,7 +550,7 @@ export function RoleplayTutorial({ isAdmin, adminPermissions }: { isAdmin?: bool
 			setTooltipStyle(style);
 			animatingRef.current = false;
 		}, 400);
-	}, [isMobile]);
+	}, []);
 
 	useEffect(() => {
 		if (!active) return;
@@ -682,7 +694,7 @@ export function RoleplayTutorial({ isAdmin, adminPermissions }: { isAdmin?: bool
 						<div className="tutorial-backdrop" />
 					)}
 
-					<div className={`tutorial-tooltip${step.dummyForm ? ' has-dummy-form' : ''} tutorial-tooltip-mobile-center`} style={tooltipStyle}>
+					<div className={`tutorial-tooltip${step.dummyForm ? ' has-dummy-form' : ''}`} style={tooltipStyle}>
 						<div className="tutorial-tooltip-header">
 							<span className="tutorial-step-badge">
 								{currentStep + 1}/{steps.length}

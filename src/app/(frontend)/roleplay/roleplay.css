@@ -1675,28 +1675,12 @@
 		width: calc(100vw - 1.5rem);
 		left: 0.75rem !important;
 		right: 0.75rem !important;
-		transform: none !important;
-		top: auto !important;
-		bottom: auto !important;
-		position: fixed !important;
-		margin: auto;
-	}
-
-	.tutorial-tooltip.tutorial-tooltip-mobile-center {
-		top: 50% !important;
-		transform: translateY(-50%) !important;
-	}
-
-	.tutorial-tooltip.tutorial-tooltip-mobile-bottom {
-		bottom: 0.75rem !important;
 	}
 
 	.tutorial-tooltip.has-dummy-form {
 		max-width: calc(100vw - 1.5rem);
 		max-height: 65vh;
 		overflow-y: auto;
-		top: 50% !important;
-		transform: translateY(-50%) !important;
 	}
 
 	.tutorial-tooltip-header {
@@ -1787,6 +1771,6 @@
 	}
 
 	.tutorial-spotlight {
-		display: none;
+		transition: none;
 	}
 }
