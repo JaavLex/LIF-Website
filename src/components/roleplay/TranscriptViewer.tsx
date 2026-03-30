@@ -96,16 +96,10 @@ export function TranscriptViewer() {
 		return Array.from(map.entries()).sort((a, b) => a[0].localeCompare(b[0]));
 	}, [filtered]);
 
-	const [collapsedOwners, setCollapsedOwners] = useState<Set<string>>(() => {
-		const allOwners = new Set<string>();
-		for (const t of transcripts) {
-			allOwners.add(t.ticketOwner || 'Inconnu');
-		}
-		return allOwners;
-	});
+	const [expandedOwners, setExpandedOwners] = useState<Set<string>>(new Set());
 
 	const toggleOwner = (owner: string) => {
-		setCollapsedOwners(prev => {
+		setExpandedOwners(prev => {
 			const next = new Set(prev);
 			if (next.has(owner)) next.delete(owner);
 			else next.add(owner);
@@ -222,7 +216,7 @@ export function TranscriptViewer() {
 			) : (
 				<div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
 					{grouped.map(([owner, tickets]) => {
-						const collapsed = collapsedOwners.has(owner);
+						const collapsed = !expandedOwners.has(owner);
 						const avatar = tickets[0]?.ticketOwnerAvatar;
 						return (
 							<div
