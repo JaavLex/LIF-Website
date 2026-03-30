@@ -2,34 +2,49 @@
 
 interface DiscordDisclaimerProps {
 	title?: string;
-	message?: string;
+	reason: 'not_member' | 'no_operator_role';
 	inviteUrl?: string;
 }
 
 export function DiscordDisclaimer({
 	title = 'ACCÈS RESTREINT',
-	message = 'Vous devez être membre du serveur Discord et avoir complété votre entrée en service pour accéder à toutes les fonctionnalités.',
+	reason,
 	inviteUrl,
 }: DiscordDisclaimerProps) {
 	return (
 		<div className="disclaimer-panel">
 			<div className="disclaimer-icon">⚠</div>
 			<h2 className="disclaimer-title">{title}</h2>
-			<p className="disclaimer-message">{message}</p>
-			<ul className="disclaimer-restrictions">
-				<li>Création de personnages désactivée</li>
-				<li>Accès au renseignement désactivé</li>
-				<li>Modification de dossiers désactivée</li>
-			</ul>
-			{inviteUrl && (
-				<a
-					href={inviteUrl}
-					target="_blank"
-					rel="noopener noreferrer"
-					className="disclaimer-discord-btn"
-				>
-					Rejoindre le serveur Discord
-				</a>
+			{reason === 'not_member' ? (
+				<>
+					<p className="disclaimer-message">
+						Vous n&apos;êtes pas membre du serveur Discord. Rejoignez le serveur pour accéder à toutes les fonctionnalités.
+					</p>
+					<ul className="disclaimer-restrictions">
+						<li>Création de personnages désactivée</li>
+						<li>Modification de dossiers désactivée</li>
+					</ul>
+					{inviteUrl && (
+						<a
+							href={inviteUrl}
+							target="_blank"
+							rel="noopener noreferrer"
+							className="disclaimer-discord-btn"
+						>
+							Rejoindre le serveur Discord
+						</a>
+					)}
+				</>
+			) : (
+				<>
+					<p className="disclaimer-message">
+						Vous n&apos;avez pas le rôle Opérateur requis. Complétez votre entrée en service pour accéder à toutes les fonctionnalités.
+					</p>
+					<ul className="disclaimer-restrictions">
+						<li>Création de personnages désactivée</li>
+						<li>Modification de dossiers désactivée</li>
+					</ul>
+				</>
 			)}
 		</div>
 	);

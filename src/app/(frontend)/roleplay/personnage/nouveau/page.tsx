@@ -1,6 +1,7 @@
 import { getPayloadClient } from '@/lib/payload';
 import { cookies } from 'next/headers';
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 import { CharacterForm } from '@/components/roleplay/CharacterForm';
 import { verifySession } from '@/lib/session';
 import { checkAdminPermissions } from '@/lib/admin';
@@ -10,26 +11,42 @@ export const dynamic = 'force-dynamic';
 export default async function NewCharacterPage() {
 	const payload = await getPayloadClient();
 
+	// Check auth
+	const cookieStore = await cookies();
+	const token = cookieStore.get('roleplay-session')?.value;
+	if (!token) redirect('/roleplay');
+	const session = verifySession(token);
+	if (!session) redirect('/roleplay');
+
+	// Check admin or operator role
+	const adminPermissions = await checkAdminPermissions(session);
+	const isAdmin = adminPermissions.isAdmin;
+
+	if (!isAdmin) {
+		// Check guild membership
+		const user = await payload.find({
+			collection: 'users',
+			where: { discordId: { equals: session.discordId } },
+			limit: 1,
+		});
+		const userData = user.docs[0];
+		if (!userData?.isGuildMember) redirect('/roleplay');
+
+		// Check operator role
+		const roleplayConfig = await payload.findGlobal({ slug: 'roleplay' }).catch(() => null);
+		const operatorRoleId = (roleplayConfig as any)?.operatorRoleId;
+		if (operatorRoleId && !session.roles?.includes(operatorRoleId)) redirect('/roleplay');
+	}
+
 	const [ranks, units] = await Promise.all([
 		payload.find({ collection: 'ranks', sort: 'order', limit: 100, depth: 2 }),
 		payload.find({ collection: 'units', limit: 100 }),
 	]);
 
-	// Fetch all characters for admin superior officer selector
 	let allCharacters: any[] = [];
-
-	// Check if current user is admin
-	const cookieStore = await cookies();
-	const token = cookieStore.get('roleplay-session')?.value;
-	const session = token ? verifySession(token) : null;
-	let isAdmin = false;
-	if (session) {
-		const adminPermissions = await checkAdminPermissions(session);
-		isAdmin = adminPermissions.isAdmin;
-		if (isAdmin) {
-			const chars = await payload.find({ collection: 'characters', limit: 500, depth: 0, sort: 'fullName' });
-			allCharacters = chars.docs.map((c: any) => ({ id: c.id, fullName: c.fullName }));
-		}
+	if (isAdmin) {
+		const chars = await payload.find({ collection: 'characters', limit: 500, depth: 0, sort: 'fullName' });
+		allCharacters = chars.docs.map((c: any) => ({ id: c.id, fullName: c.fullName }));
 	}
 
 	return (

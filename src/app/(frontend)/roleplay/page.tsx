@@ -29,9 +29,10 @@ export default async function RoleplayPage({ searchParams }: { searchParams: Pro
 		isAdmin = adminPermissions.isAdmin;
 	}
 
-	// Check guild membership for disclaimer
-	let showDisclaimer = false;
+	// Check guild membership and operator role for disclaimer
+	let disclaimerReason: 'not_member' | 'no_operator_role' | null = null;
 	let disclaimerConfig: any = null;
+	let canCreateCharacter = isAdmin;
 	if (session) {
 		const user = await payload.find({
 			collection: 'users',
@@ -40,7 +41,7 @@ export default async function RoleplayPage({ searchParams }: { searchParams: Pro
 		});
 		const userData = user.docs[0];
 		if (userData && !userData.isGuildMember) {
-			showDisclaimer = true;
+			disclaimerReason = 'not_member';
 		}
 	}
 
@@ -94,9 +95,18 @@ export default async function RoleplayPage({ searchParams }: { searchParams: Pro
 	const showLore = (roleplayConfig as any)?.isLoreVisible !== false;
 	const showTimeline = (roleplayConfig as any)?.isTimelineVisible !== false;
 
+	// Check operator role (after roleplayConfig is loaded)
+	const operatorRoleId = (roleplayConfig as any)?.operatorRoleId;
+	if (session && !isAdmin && !disclaimerReason) {
+		if (operatorRoleId && !session.roles?.includes(operatorRoleId)) {
+			disclaimerReason = 'no_operator_role';
+		} else if (!disclaimerReason) {
+			canCreateCharacter = true;
+		}
+	}
+
 	disclaimerConfig = {
 		title: (roleplayConfig as any)?.disclaimerTitle || 'ACCÈS RESTREINT',
-		message: (roleplayConfig as any)?.disclaimerMessage,
 		inviteUrl: (roleplayConfig as any)?.discordInviteUrl,
 	};
 
@@ -115,10 +125,10 @@ export default async function RoleplayPage({ searchParams }: { searchParams: Pro
 			)}
 
 			{/* Discord disclaimer */}
-			{showDisclaimer && (
+			{disclaimerReason && (
 				<DiscordDisclaimer
 					title={disclaimerConfig.title}
-					message={disclaimerConfig.message}
+					reason={disclaimerReason}
 					inviteUrl={disclaimerConfig.inviteUrl}
 				/>
 			)}
@@ -196,7 +206,7 @@ export default async function RoleplayPage({ searchParams }: { searchParams: Pro
 				)}
 			</div>
 
-			<SessionBar />
+			<SessionBar canCreateCharacter={canCreateCharacter} />
 
 			{isAdmin && <AdminPanel units={JSON.parse(JSON.stringify(units.docs))} factions={JSON.parse(JSON.stringify(factions.docs))} />}
 
