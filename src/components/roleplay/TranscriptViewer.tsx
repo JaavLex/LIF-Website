@@ -96,7 +96,13 @@ export function TranscriptViewer() {
 		return Array.from(map.entries()).sort((a, b) => a[0].localeCompare(b[0]));
 	}, [filtered]);
 
-	const [collapsedOwners, setCollapsedOwners] = useState<Set<string>>(new Set());
+	const [collapsedOwners, setCollapsedOwners] = useState<Set<string>>(() => {
+		const allOwners = new Set<string>();
+		for (const t of transcripts) {
+			allOwners.add(t.ticketOwner || 'Inconnu');
+		}
+		return allOwners;
+	});
 
 	const toggleOwner = (owner: string) => {
 		setCollapsedOwners(prev => {
