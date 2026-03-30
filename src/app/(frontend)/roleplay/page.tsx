@@ -207,6 +207,15 @@ export default async function RoleplayPage({ searchParams }: { searchParams: Pro
 						Lore & Chronologie
 					</Link>
 				)}
+				{isAdmin && (
+					<Link
+						href="/roleplay/transcripts"
+						className="session-btn"
+						style={{ padding: '0.6rem 1.2rem', fontSize: '0.85rem' }}
+					>
+						📋 Transcripts Tickets
+					</Link>
+				)}
 			</div>
 
 			<SessionBar canCreateCharacter={canCreateCharacter} />

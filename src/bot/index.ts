@@ -342,7 +342,7 @@ async function handleOuvrirRenseignements(interaction: ChatInputCommandInteracti
 
 // Start bot
 const client = new Client({
-	intents: [GatewayIntentBits.Guilds],
+	intents: [GatewayIntentBits.Guilds, GatewayIntentBits.MessageContent],
 });
 
 client.on('clientReady', async () => {
