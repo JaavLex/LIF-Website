@@ -45,9 +45,10 @@ export default async function EditCharacterPage({
 
 	if (!isAdmin && !isOwner) redirect('/roleplay');
 
-	const [ranks, units] = await Promise.all([
+	const [ranks, units, factions] = await Promise.all([
 		payload.find({ collection: 'ranks', sort: 'order', limit: 100, depth: 2 }),
 		payload.find({ collection: 'units', limit: 100 }),
+		payload.find({ collection: 'factions', sort: 'name', limit: 100 }),
 	]);
 
 	let allCharacters: any[] = [];
@@ -105,6 +106,7 @@ export default async function EditCharacterPage({
 			<CharacterForm
 				ranks={JSON.parse(JSON.stringify(ranks.docs))}
 				units={JSON.parse(JSON.stringify(units.docs))}
+				factions={JSON.parse(JSON.stringify(factions.docs))}
 				editData={JSON.parse(JSON.stringify(character))}
 				isAdmin={isAdmin}
 				allCharacters={allCharacters}

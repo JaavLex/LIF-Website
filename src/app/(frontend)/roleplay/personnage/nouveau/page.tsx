@@ -42,9 +42,10 @@ export default async function NewCharacterPage() {
 		if (!operatorRoleId) redirect('/roleplay');
 	}
 
-	const [ranks, units] = await Promise.all([
+	const [ranks, units, factions] = await Promise.all([
 		payload.find({ collection: 'ranks', sort: 'order', limit: 100, depth: 2 }),
 		payload.find({ collection: 'units', limit: 100 }),
+		payload.find({ collection: 'factions', sort: 'name', limit: 100 }),
 	]);
 
 	let allCharacters: any[] = [];
@@ -87,6 +88,7 @@ export default async function NewCharacterPage() {
 			<CharacterForm
 				ranks={JSON.parse(JSON.stringify(ranks.docs))}
 				units={JSON.parse(JSON.stringify(units.docs))}
+				factions={JSON.parse(JSON.stringify(factions.docs))}
 				isAdmin={isAdmin}
 				allCharacters={allCharacters}
 			/>

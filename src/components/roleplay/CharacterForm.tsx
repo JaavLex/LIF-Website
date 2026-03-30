@@ -79,9 +79,16 @@ interface Unit {
 	name: string;
 }
 
+interface Faction {
+	id: number;
+	name: string;
+	type?: string;
+}
+
 export function CharacterForm({
 	ranks,
 	units,
+	factions,
 	editData,
 	isAdmin,
 	allCharacters,
@@ -89,6 +96,7 @@ export function CharacterForm({
 }: {
 	ranks: Rank[];
 	units: Unit[];
+	factions?: Faction[];
 	editData?: any;
 	isAdmin?: boolean;
 	allCharacters?: { id: number; fullName: string }[];
@@ -924,14 +932,20 @@ export function CharacterForm({
 						<div style={gridTwo}>
 							<div>
 								<label style={labelStyle}>Faction</label>
-								<input
-									type="text"
+								<select
 									name="faction"
 									value={form.faction}
 									onChange={handleChange}
-									className="filter-input"
+									className="filter-select"
 									style={{ width: '100%' }}
-								/>
+								>
+									<option value="">— Aucune —</option>
+									{(factions || []).map(f => (
+										<option key={f.id} value={f.name}>
+											{f.name}{f.type ? ` (${f.type})` : ''}
+										</option>
+									))}
+								</select>
 							</div>
 							<div
 								style={{
@@ -983,14 +997,20 @@ export function CharacterForm({
 								<div style={gridTwo}>
 									<div>
 										<label style={labelStyle}>Faction de la cible</label>
-										<input
-											type="text"
+										<select
 											name="targetFaction"
 											value={form.targetFaction}
 											onChange={handleChange}
-											className="filter-input"
+											className="filter-select"
 											style={{ width: '100%' }}
-										/>
+										>
+											<option value="">— Aucune —</option>
+											{(factions || []).map(f => (
+												<option key={f.id} value={f.name}>
+													{f.name}{f.type ? ` (${f.type})` : ''}
+												</option>
+											))}
+										</select>
 									</div>
 									<div>
 										<label style={labelStyle}>Niveau de menace</label>

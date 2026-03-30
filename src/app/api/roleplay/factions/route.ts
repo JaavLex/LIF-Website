@@ -3,6 +3,23 @@ import { getPayloadClient } from '@/lib/payload';
 import { verifySession } from '@/lib/session';
 import { checkAdminPermissions } from '@/lib/admin';
 
+export async function GET() {
+	try {
+		const payload = await getPayloadClient();
+		const factions = await payload.find({
+			collection: 'factions',
+			limit: 100,
+			sort: 'name',
+		});
+		return NextResponse.json(factions.docs);
+	} catch (error: any) {
+		return NextResponse.json(
+			{ message: error.message || 'Erreur' },
+			{ status: 500 },
+		);
+	}
+}
+
 export async function POST(request: NextRequest) {
 	const token = request.cookies.get('roleplay-session')?.value;
 	if (!token) {
