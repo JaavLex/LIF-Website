@@ -195,14 +195,20 @@ export function PersonnelFilters({
 
 	// Group by status, then by rank within each status
 	const groupedByStatusAndRank = useMemo(() => {
-		const statusGroups: { status: string; rankGroups: { rank: Rank | null; characters: Character[] }[] }[] = [];
+		const statusGroups: {
+			status: string;
+			rankGroups: { rank: Rank | null; characters: Character[] }[];
+		}[] = [];
 		let currentStatus = '';
 		let currentRankGroups: { rank: Rank | null; characters: Character[] }[] = [];
 
 		for (const c of filtered) {
 			if (c.status !== currentStatus) {
 				if (currentRankGroups.length > 0) {
-					statusGroups.push({ status: currentStatus, rankGroups: currentRankGroups });
+					statusGroups.push({
+						status: currentStatus,
+						rankGroups: currentRankGroups,
+					});
 				}
 				currentStatus = c.status;
 				currentRankGroups = [];
@@ -319,18 +325,23 @@ export function PersonnelFilters({
 						</span>
 						<span className="separator-line" />
 						<span className="separator-count">
-							{statusGroup.rankGroups.reduce((sum, rg) => sum + rg.characters.length, 0)}
+							{statusGroup.rankGroups.reduce(
+								(sum, rg) => sum + rg.characters.length,
+								0,
+							)}
 						</span>
 					</div>
 					{statusGroup.rankGroups.map((rankGroup, rgIdx) => (
 						<div key={rgIdx}>
-							<div style={{
-								display: 'flex',
-								alignItems: 'center',
-								gap: '0.5rem',
-								margin: '0.75rem 0 0.4rem',
-								paddingLeft: '0.25rem',
-							}}>
+							<div
+								style={{
+									display: 'flex',
+									alignItems: 'center',
+									gap: '0.5rem',
+									margin: '0.75rem 0 0.4rem',
+									paddingLeft: '0.25rem',
+								}}
+							>
 								{rankGroup.rank?.icon?.url && (
 									<Image
 										src={rankGroup.rank.icon.url}
@@ -340,13 +351,15 @@ export function PersonnelFilters({
 										unoptimized
 									/>
 								)}
-								<span style={{
-									fontSize: '0.8rem',
-									color: 'var(--muted)',
-									fontWeight: 600,
-									textTransform: 'uppercase',
-									letterSpacing: '0.05em',
-								}}>
+								<span
+									style={{
+										fontSize: '0.8rem',
+										color: 'var(--muted)',
+										fontWeight: 600,
+										textTransform: 'uppercase',
+										letterSpacing: '0.05em',
+									}}
+								>
 									{rankGroup.rank ? rankGroup.rank.name : 'Aucun grade'}
 								</span>
 								<span style={{ fontSize: '0.7rem', color: 'var(--muted)' }}>
@@ -435,43 +448,63 @@ export function PersonnelFilters({
 													</div>
 												)}
 												{/* Faction display */}
-												{!character.isTarget && character.faction && (() => {
-													const factionObj = factions?.find(f => f.name === character.faction);
-													return (
-														<div className="personnel-unit-info" style={{ color: factionObj?.color || 'var(--muted)' }}>
-															{factionObj?.logo?.url && (
-																<Image
-																	src={factionObj.logo.url}
-																	alt={character.faction}
-																	width={16}
-																	height={16}
-																	style={{ objectFit: 'contain' }}
-																	unoptimized
-																/>
-															)}
-															<span>{character.faction}</span>
-														</div>
-													);
-												})()}
+												{!character.isTarget &&
+													character.faction &&
+													(() => {
+														const factionObj = factions?.find(
+															f => f.name === character.faction,
+														);
+														return (
+															<div
+																className="personnel-unit-info"
+																style={{
+																	color: factionObj?.color || 'var(--muted)',
+																}}
+															>
+																{factionObj?.logo?.url && (
+																	<Image
+																		src={factionObj.logo.url}
+																		alt={character.faction}
+																		width={16}
+																		height={16}
+																		style={{ objectFit: 'contain' }}
+																		unoptimized
+																	/>
+																)}
+																<span>{character.faction}</span>
+															</div>
+														);
+													})()}
 												{/* Target-specific: faction and threat */}
-												{character.isTarget && character.targetFaction && (() => {
-													const factionObj = factions?.find(f => f.name === character.targetFaction);
-													return (
-														<div className="target-faction-info" style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-															{factionObj?.logo?.url && (
-																<Image
-																	src={factionObj.logo.url}
-																	alt={character.targetFaction}
-																	width={16}
-																	height={16}
-																	style={{ objectFit: 'contain' }}
-																	unoptimized
-																/>
-															)}
-															<span>{character.targetFaction}</span>
-														</div>
-													);
-												})()}
+												{character.isTarget &&
+													character.targetFaction &&
+													(() => {
+														const factionObj = factions?.find(
+															f => f.name === character.targetFaction,
+														);
+														return (
+															<div
+																className="target-faction-info"
+																style={{
+																	display: 'flex',
+																	alignItems: 'center',
+																	gap: '0.35rem',
+																}}
+															>
+																{factionObj?.logo?.url && (
+																	<Image
+																		src={factionObj.logo.url}
+																		alt={character.targetFaction}
+																		width={16}
+																		height={16}
+																		style={{ objectFit: 'contain' }}
+																		unoptimized
+																	/>
+																)}
+																<span>{character.targetFaction}</span>
+															</div>
+														);
+													})()}
 												{character.isTarget && character.threatLevel && (
 													<span className={`threat-badge ${character.threatLevel}`}>
 														{THREAT_LABELS[character.threatLevel] ||
@@ -492,9 +525,15 @@ export function PersonnelFilters({
 											</div>
 										</div>
 										<div className="personnel-card-meta">
-											<span className="personnel-id">{character.militaryId || '—'}</span>
+											<span className="personnel-id">
+												{character.militaryId || '—'}
+											</span>
 											<div
-												style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}
+												style={{
+													display: 'flex',
+													gap: '0.5rem',
+													alignItems: 'center',
+												}}
 											>
 												<span className={`status-badge ${character.status}`}>
 													{STATUS_LABELS[character.status] || character.status}

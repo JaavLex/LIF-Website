@@ -288,8 +288,8 @@ export function CharacterForm({
 				if (form.isArchived && form.archiveReason)
 					body.archiveReason = form.archiveReason;
 
-					body.miscellaneous = textToLexical(form.miscellaneous) || null;
-					body.etatMajorNotes = textToLexical(form.etatMajorNotes) || null;
+				body.miscellaneous = textToLexical(form.miscellaneous) || null;
+				body.etatMajorNotes = textToLexical(form.etatMajorNotes) || null;
 
 				// Admin reassign linked Discord account
 				if (editData && linkedDiscordId !== (editData.discordId || '')) {
@@ -771,7 +771,9 @@ export function CharacterForm({
 
 					<div style={gridTwo}>
 						<div>
-							<label style={labelStyle}>Faction{!isAdmin && ' (défini par l\'administration)'}</label>
+							<label style={labelStyle}>
+								Faction{!isAdmin && " (défini par l'administration)"}
+							</label>
 							{isAdmin ? (
 								<select
 									name="faction"
@@ -783,7 +785,8 @@ export function CharacterForm({
 									<option value="">— Aucune —</option>
 									{(factions || []).map(f => (
 										<option key={f.id} value={f.name}>
-											{f.name}{f.type ? ` (${f.type})` : ''}
+											{f.name}
+											{f.type ? ` (${f.type})` : ''}
 										</option>
 									))}
 								</select>
@@ -825,7 +828,7 @@ export function CharacterForm({
 								<label style={labelStyle}>Compte Discord lié</label>
 								<select
 									value={linkedDiscordId}
-									onChange={(e) => setLinkedDiscordId(e.target.value)}
+									onChange={e => setLinkedDiscordId(e.target.value)}
 									className="filter-select"
 									style={{ width: '100%' }}
 								>
@@ -837,7 +840,13 @@ export function CharacterForm({
 									))}
 								</select>
 								{linkedDiscordId !== (editData.discordId || '') && (
-									<p style={{ fontSize: '0.7rem', color: 'var(--primary)', marginTop: '0.25rem' }}>
+									<p
+										style={{
+											fontSize: '0.7rem',
+											color: 'var(--primary)',
+											marginTop: '0.25rem',
+										}}
+									>
 										⚠ Le compte Discord lié sera modifié à la sauvegarde.
 									</p>
 								)}
@@ -1024,7 +1033,8 @@ export function CharacterForm({
 											<option value="">— Aucune —</option>
 											{(factions || []).map(f => (
 												<option key={f.id} value={f.name}>
-													{f.name}{f.type ? ` (${f.type})` : ''}
+													{f.name}
+													{f.type ? ` (${f.type})` : ''}
 												</option>
 											))}
 										</select>

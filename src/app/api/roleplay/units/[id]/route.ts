@@ -37,7 +37,8 @@ export async function PATCH(
 		if (body.slug) updateData.slug = body.slug;
 		if (body.color) updateData.color = body.color;
 		if (body.insignia !== undefined) updateData.insignia = body.insignia || null;
-		if (body.parentFaction !== undefined) updateData.parentFaction = body.parentFaction || null;
+		if (body.parentFaction !== undefined)
+			updateData.parentFaction = body.parentFaction || null;
 		if (body.description !== undefined) updateData.description = body.description;
 
 		const doc = await payload.update({

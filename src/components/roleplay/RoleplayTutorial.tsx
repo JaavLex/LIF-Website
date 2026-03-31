@@ -12,25 +12,41 @@ interface TutorialStep {
 	content: string;
 	position: 'top' | 'bottom' | 'left' | 'right' | 'center';
 	adminOnly?: boolean;
-	dummyForm?: 'character' | 'intel' | 'admin-character' | 'admin-intel' | 'admin-timeline';
+	dummyForm?:
+		| 'character'
+		| 'intel'
+		| 'admin-character'
+		| 'admin-intel'
+		| 'admin-timeline';
 }
 
 /* ─── Dummy form label style ─── */
 const dls: React.CSSProperties = {
-	display: 'block', fontSize: '0.7rem', color: 'var(--muted)',
-	marginBottom: '0.2rem', marginTop: '0.5rem',
+	display: 'block',
+	fontSize: '0.7rem',
+	color: 'var(--muted)',
+	marginBottom: '0.2rem',
+	marginTop: '0.5rem',
 };
 const dinp: React.CSSProperties = {
-	width: '100%', padding: '0.3rem 0.5rem', fontSize: '0.75rem',
-	background: 'var(--bg-tertiary)', border: '1px solid var(--border)',
-	color: 'var(--text)', fontFamily: 'inherit',
+	width: '100%',
+	padding: '0.3rem 0.5rem',
+	fontSize: '0.75rem',
+	background: 'var(--bg-tertiary)',
+	border: '1px solid var(--border)',
+	color: 'var(--text)',
+	fontFamily: 'inherit',
 };
 const dsel: React.CSSProperties = { ...dinp };
 const dgrid: React.CSSProperties = {
-	display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem',
+	display: 'grid',
+	gridTemplateColumns: '1fr 1fr',
+	gap: '0.5rem',
 };
 const dsec: React.CSSProperties = {
-	borderTop: '1px solid rgba(74,124,35,0.2)', paddingTop: '0.5rem', marginTop: '0.5rem',
+	borderTop: '1px solid rgba(74,124,35,0.2)',
+	paddingTop: '0.5rem',
+	marginTop: '0.5rem',
 };
 
 function DummyCharacterForm() {
@@ -38,56 +54,172 @@ function DummyCharacterForm() {
 		<div className="tutorial-dummy-form">
 			<div className="tutorial-dummy-title">Aperçu — Création de personnage</div>
 			<div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
-				<div style={{ width: 60, height: 60, border: '1px dashed var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.6rem', color: 'var(--muted)', textAlign: 'center', flexShrink: 0 }}>
+				<div
+					style={{
+						width: 60,
+						height: 60,
+						border: '1px dashed var(--border)',
+						display: 'flex',
+						alignItems: 'center',
+						justifyContent: 'center',
+						fontSize: '0.6rem',
+						color: 'var(--muted)',
+						textAlign: 'center',
+						flexShrink: 0,
+					}}
+				>
 					Avatar
 				</div>
 				<div style={{ flex: 1 }}>
-					<div style={{ fontSize: '0.7rem', padding: '0.3rem', background: 'var(--bg-tertiary)', border: '1px solid var(--border)', color: 'var(--muted)' }}>
+					<div
+						style={{
+							fontSize: '0.7rem',
+							padding: '0.3rem',
+							background: 'var(--bg-tertiary)',
+							border: '1px solid var(--border)',
+							color: 'var(--muted)',
+						}}
+					>
 						Grade détecté via Discord
 					</div>
 				</div>
 			</div>
 
 			<div style={dsec}>
-				<div style={{ fontSize: '0.75rem', color: 'var(--primary)', fontWeight: 700, marginBottom: '0.3rem' }}>Identité</div>
-				<div className="tutorial-dummy-grid" style={dgrid}>
-					<div><span style={dls}>Prénom *</span><input style={dinp} value="Jean" readOnly /></div>
-					<div><span style={dls}>Nom *</span><input style={dinp} value="Dupont" readOnly /></div>
+				<div
+					style={{
+						fontSize: '0.75rem',
+						color: 'var(--primary)',
+						fontWeight: 700,
+						marginBottom: '0.3rem',
+					}}
+				>
+					Identité
 				</div>
 				<div className="tutorial-dummy-grid" style={dgrid}>
-					<div><span style={dls}>Date de naissance</span><input style={dinp} value="1992-03-15" readOnly /></div>
-					<div><span style={dls}>Lieu d'origine</span><input style={dinp} value="Lyon, France" readOnly /></div>
+					<div>
+						<span style={dls}>Prénom *</span>
+						<input style={dinp} value="Jean" readOnly />
+					</div>
+					<div>
+						<span style={dls}>Nom *</span>
+						<input style={dinp} value="Dupont" readOnly />
+					</div>
 				</div>
 				<div className="tutorial-dummy-grid" style={dgrid}>
-					<div><span style={dls}>Taille (cm)</span><input style={dinp} value="182" readOnly /></div>
-					<div><span style={dls}>Poids (kg)</span><input style={dinp} value="78" readOnly /></div>
+					<div>
+						<span style={dls}>Date de naissance</span>
+						<input style={dinp} value="1992-03-15" readOnly />
+					</div>
+					<div>
+						<span style={dls}>Lieu d'origine</span>
+						<input style={dinp} value="Lyon, France" readOnly />
+					</div>
+				</div>
+				<div className="tutorial-dummy-grid" style={dgrid}>
+					<div>
+						<span style={dls}>Taille (cm)</span>
+						<input style={dinp} value="182" readOnly />
+					</div>
+					<div>
+						<span style={dls}>Poids (kg)</span>
+						<input style={dinp} value="78" readOnly />
+					</div>
 				</div>
 			</div>
 
 			<div style={dsec}>
-				<div style={{ fontSize: '0.75rem', color: 'var(--primary)', fontWeight: 700, marginBottom: '0.3rem' }}>Parcours</div>
+				<div
+					style={{
+						fontSize: '0.75rem',
+						color: 'var(--primary)',
+						fontWeight: 700,
+						marginBottom: '0.3rem',
+					}}
+				>
+					Parcours
+				</div>
 				<span style={dls}>Parcours civil</span>
-				<textarea style={{ ...dinp, height: 32, resize: 'none' }} value="Ancien mécanicien..." readOnly />
+				<textarea
+					style={{ ...dinp, height: 32, resize: 'none' }}
+					value="Ancien mécanicien..."
+					readOnly
+				/>
 				<span style={dls}>Parcours militaire</span>
-				<textarea style={{ ...dinp, height: 32, resize: 'none' }} value="3 ans dans l'infanterie..." readOnly />
+				<textarea
+					style={{ ...dinp, height: 32, resize: 'none' }}
+					value="3 ans dans l'infanterie..."
+					readOnly
+				/>
 				<span style={dls}>Parcours judiciaire</span>
-				<textarea style={{ ...dinp, height: 32, resize: 'none' }} value="Casier vierge" readOnly />
+				<textarea
+					style={{ ...dinp, height: 32, resize: 'none' }}
+					value="Casier vierge"
+					readOnly
+				/>
 			</div>
 
 			<div style={dsec}>
-				<div style={{ fontSize: '0.75rem', color: 'var(--primary)', fontWeight: 700, marginBottom: '0.3rem' }}>Spécialisations</div>
+				<div
+					style={{
+						fontSize: '0.75rem',
+						color: 'var(--primary)',
+						fontWeight: 700,
+						marginBottom: '0.3rem',
+					}}
+				>
+					Spécialisations
+				</div>
 				<div style={{ display: 'flex', gap: '0.3rem', marginBottom: '0.25rem' }}>
 					<input style={{ ...dinp, flex: 1 }} value="Tireur d'élite" readOnly />
-					<span style={{ color: 'var(--danger)', padding: '0 0.3rem', border: '1px solid var(--danger)', fontSize: '0.7rem', display: 'flex', alignItems: 'center' }}>×</span>
+					<span
+						style={{
+							color: 'var(--danger)',
+							padding: '0 0.3rem',
+							border: '1px solid var(--danger)',
+							fontSize: '0.7rem',
+							display: 'flex',
+							alignItems: 'center',
+						}}
+					>
+						×
+					</span>
 				</div>
-				<div style={{ fontSize: '0.65rem', color: 'var(--muted)', border: '1px dashed var(--border)', padding: '0.2rem 0.5rem', textAlign: 'center' }}>+ Ajouter une spécialisation</div>
+				<div
+					style={{
+						fontSize: '0.65rem',
+						color: 'var(--muted)',
+						border: '1px dashed var(--border)',
+						padding: '0.2rem 0.5rem',
+						textAlign: 'center',
+					}}
+				>
+					+ Ajouter une spécialisation
+				</div>
 			</div>
 
 			<div style={dsec}>
-				<div style={{ fontSize: '0.75rem', color: 'var(--primary)', fontWeight: 700, marginBottom: '0.3rem' }}>Affectation</div>
+				<div
+					style={{
+						fontSize: '0.75rem',
+						color: 'var(--primary)',
+						fontWeight: 700,
+						marginBottom: '0.3rem',
+					}}
+				>
+					Affectation
+				</div>
 				<div className="tutorial-dummy-grid" style={dgrid}>
-					<div><span style={dls}>Unité</span><select style={dsel} disabled><option>1ère Compagnie</option></select></div>
-					<div><span style={dls}>Unité précédente</span><input style={dinp} value="" readOnly /></div>
+					<div>
+						<span style={dls}>Unité</span>
+						<select style={dsel} disabled>
+							<option>1ère Compagnie</option>
+						</select>
+					</div>
+					<div>
+						<span style={dls}>Unité précédente</span>
+						<input style={dinp} value="" readOnly />
+					</div>
 				</div>
 			</div>
 
@@ -101,10 +233,18 @@ function DummyCharacterForm() {
 function DummyIntelForm() {
 	return (
 		<div className="tutorial-dummy-form">
-			<div className="tutorial-dummy-title">Aperçu — Nouveau rapport de renseignement</div>
+			<div className="tutorial-dummy-title">
+				Aperçu — Nouveau rapport de renseignement
+			</div>
 			<div className="tutorial-dummy-grid" style={dgrid}>
-				<div><span style={dls}>Titre *</span><input style={dinp} value="Mouvement ennemi secteur Nord" readOnly /></div>
-				<div><span style={dls}>Date *</span><input style={dinp} value="2026-03-28" readOnly /></div>
+				<div>
+					<span style={dls}>Titre *</span>
+					<input style={dinp} value="Mouvement ennemi secteur Nord" readOnly />
+				</div>
+				<div>
+					<span style={dls}>Date *</span>
+					<input style={dinp} value="2026-03-28" readOnly />
+				</div>
 			</div>
 			<div className="tutorial-dummy-grid" style={dgrid}>
 				<div>
@@ -121,22 +261,38 @@ function DummyIntelForm() {
 				</div>
 			</div>
 			<span style={dls}>Description *</span>
-			<textarea style={{ ...dinp, height: 40, resize: 'none' }} value="Convoi de 3 véhicules repéré en direction du checkpoint Alpha..." readOnly />
+			<textarea
+				style={{ ...dinp, height: 40, resize: 'none' }}
+				value="Convoi de 3 véhicules repéré en direction du checkpoint Alpha..."
+				readOnly
+			/>
 			<span style={dls}>Coordonnées</span>
 			<input style={dinp} value="48.8566, 2.3522" readOnly />
 			<div className="tutorial-dummy-grid" style={dgrid}>
 				<div>
 					<span style={dls}>Cible liée</span>
-					<select style={dsel} disabled><option>— Sélectionner —</option></select>
+					<select style={dsel} disabled>
+						<option>— Sélectionner —</option>
+					</select>
 				</div>
 				<div>
 					<span style={dls}>Faction liée</span>
-					<select style={dsel} disabled><option>— Sélectionner —</option></select>
+					<select style={dsel} disabled>
+						<option>— Sélectionner —</option>
+					</select>
 				</div>
 			</div>
 			<div style={dsec}>
 				<span style={dls}>Médias</span>
-				<div style={{ fontSize: '0.65rem', color: 'var(--muted)', border: '1px dashed var(--border)', padding: '0.3rem 0.5rem', textAlign: 'center' }}>
+				<div
+					style={{
+						fontSize: '0.65rem',
+						color: 'var(--muted)',
+						border: '1px dashed var(--border)',
+						padding: '0.3rem 0.5rem',
+						textAlign: 'center',
+					}}
+				>
 					📎 Glisser ou cliquer pour ajouter des photos/vidéos
 				</div>
 			</div>
@@ -150,11 +306,15 @@ function DummyIntelForm() {
 function DummyAdminCharForm() {
 	return (
 		<div className="tutorial-dummy-form tutorial-dummy-admin">
-			<div className="tutorial-dummy-title">Aperçu — Section admin d'une fiche personnage</div>
+			<div className="tutorial-dummy-title">
+				Aperçu — Section admin d'une fiche personnage
+			</div>
 			<div className="tutorial-dummy-grid" style={dgrid}>
 				<div>
 					<span style={dls}>Grade (override admin)</span>
-					<select style={dsel} disabled><option>Sergent</option></select>
+					<select style={dsel} disabled>
+						<option>Sergent</option>
+					</select>
 				</div>
 				<div>
 					<span style={dls}>Statut</span>
@@ -172,7 +332,9 @@ function DummyAdminCharForm() {
 				</div>
 				<div>
 					<span style={dls}>Officier supérieur</span>
-					<select style={dsel} disabled><option>Cpt. Martin</option></select>
+					<select style={dsel} disabled>
+						<option>Cpt. Martin</option>
+					</select>
 				</div>
 			</div>
 			<div className="tutorial-dummy-grid" style={dgrid}>
@@ -180,24 +342,67 @@ function DummyAdminCharForm() {
 					<span style={dls}>Faction</span>
 					<input style={dinp} value="LIF" readOnly />
 				</div>
-				<div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', justifyContent: 'flex-end' }}>
-					<label style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.7rem', color: 'var(--text)' }}>
+				<div
+					style={{
+						display: 'flex',
+						flexDirection: 'column',
+						gap: '0.3rem',
+						justifyContent: 'flex-end',
+					}}
+				>
+					<label
+						style={{
+							display: 'flex',
+							alignItems: 'center',
+							gap: '0.3rem',
+							fontSize: '0.7rem',
+							color: 'var(--text)',
+						}}
+					>
 						<input type="checkbox" checked readOnly /> Grade forcé
 					</label>
-					<label style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.7rem', color: 'var(--text)' }}>
+					<label
+						style={{
+							display: 'flex',
+							alignItems: 'center',
+							gap: '0.3rem',
+							fontSize: '0.7rem',
+							color: 'var(--text)',
+						}}
+					>
 						<input type="checkbox" readOnly /> Cible / Ennemi
 					</label>
 				</div>
 			</div>
 			<div style={dsec}>
-				<label style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.7rem', color: 'var(--text)' }}>
+				<label
+					style={{
+						display: 'flex',
+						alignItems: 'center',
+						gap: '0.3rem',
+						fontSize: '0.7rem',
+						color: 'var(--text)',
+					}}
+				>
 					<input type="checkbox" readOnly /> Fiche PNJ (non lié à Discord)
 				</label>
 			</div>
 			<span style={dls}>Notes État-Major</span>
-			<textarea style={{ ...dinp, height: 28, resize: 'none' }} value="Agent fiable, à surveiller..." readOnly />
+			<textarea
+				style={{ ...dinp, height: 28, resize: 'none' }}
+				value="Agent fiable, à surveiller..."
+				readOnly
+			/>
 			<div style={dsec}>
-				<label style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.7rem', color: 'var(--danger)' }}>
+				<label
+					style={{
+						display: 'flex',
+						alignItems: 'center',
+						gap: '0.3rem',
+						fontSize: '0.7rem',
+						color: 'var(--danger)',
+					}}
+				>
 					<input type="checkbox" readOnly /> Archiver ce dossier
 				</label>
 			</div>
@@ -208,11 +413,22 @@ function DummyAdminCharForm() {
 function DummyAdminIntelForm() {
 	return (
 		<div className="tutorial-dummy-form tutorial-dummy-admin">
-			<div className="tutorial-dummy-title">Aperçu — Actions admin sur un rapport</div>
-			<div style={{ fontSize: '0.72rem', color: 'var(--text)', marginBottom: '0.5rem' }}>
+			<div className="tutorial-dummy-title">
+				Aperçu — Actions admin sur un rapport
+			</div>
+			<div
+				style={{ fontSize: '0.72rem', color: 'var(--text)', marginBottom: '0.5rem' }}
+			>
 				En tant qu'admin, sur chaque rapport vous pouvez :
 			</div>
-			<div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', marginBottom: '0.5rem' }}>
+			<div
+				style={{
+					display: 'flex',
+					gap: '0.4rem',
+					flexWrap: 'wrap',
+					marginBottom: '0.5rem',
+				}}
+			>
 				<span className="tutorial-dummy-status-btn active">À vérifier</span>
 				<span className="tutorial-dummy-status-btn">Vérifié ✓</span>
 				<span className="tutorial-dummy-status-btn">Fausse info ✗</span>
@@ -236,28 +452,99 @@ function DummyAdminTimelineForm() {
 	return (
 		<div className="tutorial-dummy-form tutorial-dummy-admin">
 			<div className="tutorial-dummy-title">Aperçu — Gestion de la chronologie</div>
-			<div style={{ border: '1px solid var(--border)', padding: '0.4rem', marginBottom: '0.4rem' }}>
-				<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+			<div
+				style={{
+					border: '1px solid var(--border)',
+					padding: '0.4rem',
+					marginBottom: '0.4rem',
+				}}
+			>
+				<div
+					style={{
+						display: 'flex',
+						justifyContent: 'space-between',
+						alignItems: 'center',
+					}}
+				>
 					<div>
-						<span style={{ fontSize: '0.65rem', padding: '0.1rem 0.3rem', background: 'rgba(74,124,35,0.2)', color: 'var(--primary)', marginRight: '0.3rem' }}>PROMOTION</span>
+						<span
+							style={{
+								fontSize: '0.65rem',
+								padding: '0.1rem 0.3rem',
+								background: 'rgba(74,124,35,0.2)',
+								color: 'var(--primary)',
+								marginRight: '0.3rem',
+							}}
+						>
+							PROMOTION
+						</span>
 						<span style={{ fontSize: '0.7rem' }}>Passage au grade de Sergent</span>
 					</div>
-					<span style={{ color: 'var(--danger)', border: '1px solid var(--danger)', padding: '0.1rem 0.3rem', fontSize: '0.6rem' }}>✕</span>
+					<span
+						style={{
+							color: 'var(--danger)',
+							border: '1px solid var(--danger)',
+							padding: '0.1rem 0.3rem',
+							fontSize: '0.6rem',
+						}}
+					>
+						✕
+					</span>
 				</div>
 				<div style={{ fontSize: '0.6rem', color: 'var(--muted)' }}>15/03/2026</div>
 			</div>
-			<div style={{ border: '1px solid var(--border)', padding: '0.4rem', marginBottom: '0.5rem' }}>
-				<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+			<div
+				style={{
+					border: '1px solid var(--border)',
+					padding: '0.4rem',
+					marginBottom: '0.5rem',
+				}}
+			>
+				<div
+					style={{
+						display: 'flex',
+						justifyContent: 'space-between',
+						alignItems: 'center',
+					}}
+				>
 					<div>
-						<span style={{ fontSize: '0.65rem', padding: '0.1rem 0.3rem', background: 'rgba(139,69,19,0.2)', color: '#c9a040', marginRight: '0.3rem' }}>MÉDAILLE</span>
+						<span
+							style={{
+								fontSize: '0.65rem',
+								padding: '0.1rem 0.3rem',
+								background: 'rgba(139,69,19,0.2)',
+								color: '#c9a040',
+								marginRight: '0.3rem',
+							}}
+						>
+							MÉDAILLE
+						</span>
 						<span style={{ fontSize: '0.7rem' }}>Croix du mérite</span>
 					</div>
-					<span style={{ color: 'var(--danger)', border: '1px solid var(--danger)', padding: '0.1rem 0.3rem', fontSize: '0.6rem' }}>✕</span>
+					<span
+						style={{
+							color: 'var(--danger)',
+							border: '1px solid var(--danger)',
+							padding: '0.1rem 0.3rem',
+							fontSize: '0.6rem',
+						}}
+					>
+						✕
+					</span>
 				</div>
 				<div style={{ fontSize: '0.6rem', color: 'var(--muted)' }}>10/02/2026</div>
 			</div>
 			<div style={dsec}>
-				<div style={{ fontSize: '0.72rem', color: 'var(--primary)', marginBottom: '0.3rem', fontWeight: 700 }}>Nouvel événement</div>
+				<div
+					style={{
+						fontSize: '0.72rem',
+						color: 'var(--primary)',
+						marginBottom: '0.3rem',
+						fontWeight: 700,
+					}}
+				>
+					Nouvel événement
+				</div>
 				<div className="tutorial-dummy-grid" style={dgrid}>
 					<div>
 						<span style={dls}>Type</span>
@@ -273,7 +560,9 @@ function DummyAdminTimelineForm() {
 				<span style={dls}>Titre *</span>
 				<input style={dinp} value="Promotion Caporal-Chef" readOnly />
 				<span style={dls}>Classification</span>
-				<select style={dsel} disabled><option>Public</option></select>
+				<select style={dsel} disabled>
+					<option>Public</option>
+				</select>
 				<div style={{ marginTop: '0.4rem', textAlign: 'center' }}>
 					<span className="tutorial-dummy-btn-submit">Ajouter</span>
 				</div>
@@ -283,8 +572,8 @@ function DummyAdminTimelineForm() {
 }
 
 const DUMMY_FORMS: Record<string, () => React.ReactNode> = {
-	'character': DummyCharacterForm,
-	'intel': DummyIntelForm,
+	character: DummyCharacterForm,
+	intel: DummyIntelForm,
 	'admin-character': DummyAdminCharForm,
 	'admin-intel': DummyAdminIntelForm,
 	'admin-timeline': DummyAdminTimelineForm,
@@ -296,7 +585,7 @@ const USER_STEPS: TutorialStep[] = [
 		target: null,
 		title: 'BIENVENUE, OPÉRATEUR',
 		content:
-			"Première connexion détectée. Ce briefing va vous guider à travers les systèmes de la Base de Données. Naviguez avec les boutons ou les flèches du clavier.",
+			'Première connexion détectée. Ce briefing va vous guider à travers les systèmes de la Base de Données. Naviguez avec les boutons ou les flèches du clavier.',
 		position: 'center',
 	},
 	{
@@ -336,7 +625,7 @@ const USER_STEPS: TutorialStep[] = [
 		target: null,
 		title: 'CRÉER UN PERSONNAGE',
 		content:
-			"Cliquez sur « Nouveau Personnage » dans la barre de session. Voici les champs à remplir :",
+			'Cliquez sur « Nouveau Personnage » dans la barre de session. Voici les champs à remplir :',
 		position: 'center',
 		dummyForm: 'character',
 	},
@@ -353,7 +642,7 @@ const USER_STEPS: TutorialStep[] = [
 		target: null,
 		title: 'SOUMETTRE UN RAPPORT',
 		content:
-			"Cliquez sur « Nouveau rapport » pour créer un renseignement. Voici le formulaire :",
+			'Cliquez sur « Nouveau rapport » pour créer un renseignement. Voici le formulaire :',
 		position: 'center',
 		dummyForm: 'intel',
 	},
@@ -370,7 +659,7 @@ const USER_STEPS: TutorialStep[] = [
 		target: null,
 		title: 'BRIEFING TERMINÉ',
 		content:
-			"Vous êtes prêt. Explorez les dossiers, créez votre personnage et contribuez aux renseignements. Relancez ce tutoriel via le bouton en bas à gauche.",
+			'Vous êtes prêt. Explorez les dossiers, créez votre personnage et contribuez aux renseignements. Relancez ce tutoriel via le bouton en bas à gauche.',
 		position: 'center',
 	},
 ];
@@ -380,17 +669,16 @@ const ADMIN_STEPS: TutorialStep[] = [
 		id: 'admin-welcome',
 		target: null,
 		title: 'BRIEFING ADMINISTRATEUR',
-		content:
-			"Ce briefing couvre les fonctionnalités réservées aux administrateurs.",
+		content: 'Ce briefing couvre les fonctionnalités réservées aux administrateurs.',
 		position: 'center',
 		adminOnly: true,
 	},
 	{
 		id: 'admin-panel',
 		target: '[data-tutorial="admin-panel"]',
-		title: 'PANNEAU D\'ADMINISTRATION',
+		title: "PANNEAU D'ADMINISTRATION",
 		content:
-			"Créez et gérez les Unités (nom, slug, couleur, insigne) et Factions (type, couleur, logo).",
+			'Créez et gérez les Unités (nom, slug, couleur, insigne) et Factions (type, couleur, logo).',
 		position: 'bottom',
 		adminOnly: true,
 	},
@@ -408,7 +696,7 @@ const ADMIN_STEPS: TutorialStep[] = [
 		target: null,
 		title: 'GESTION DES PERSONNAGES',
 		content:
-			"Sur chaque fiche, vous avez accès à une section admin avec ces contrôles :",
+			'Sur chaque fiche, vous avez accès à une section admin avec ces contrôles :',
 		position: 'center',
 		adminOnly: true,
 		dummyForm: 'admin-character',
@@ -427,8 +715,7 @@ const ADMIN_STEPS: TutorialStep[] = [
 		id: 'admin-intel',
 		target: null,
 		title: 'GESTION DES RENSEIGNEMENTS',
-		content:
-			"Actions disponibles sur les rapports de renseignement en mode admin :",
+		content: 'Actions disponibles sur les rapports de renseignement en mode admin :',
 		position: 'center',
 		adminOnly: true,
 		dummyForm: 'admin-intel',
@@ -446,7 +733,13 @@ const ADMIN_STEPS: TutorialStep[] = [
 
 type TutorialMode = 'user' | 'admin';
 
-export function RoleplayTutorial({ isAdmin, adminPermissions }: { isAdmin?: boolean; adminPermissions?: { roleName: string; level: string } | null }) {
+export function RoleplayTutorial({
+	isAdmin,
+	adminPermissions,
+}: {
+	isAdmin?: boolean;
+	adminPermissions?: { roleName: string; level: string } | null;
+}) {
 	const [active, setActive] = useState(false);
 	const [mode, setMode] = useState<TutorialMode>('user');
 	const [currentStep, setCurrentStep] = useState(0);
@@ -549,7 +842,10 @@ export function RoleplayTutorial({ isAdmin, adminPermissions }: { isAdmin?: bool
 
 			const leftVal = mobile
 				? pad
-				: Math.max(pad, Math.min(rect.left + rect.width / 2 - tooltipW / 2, vw - tooltipW - pad));
+				: Math.max(
+						pad,
+						Math.min(rect.left + rect.width / 2 - tooltipW / 2, vw - tooltipW - pad),
+					);
 
 			switch (pos) {
 				case 'bottom': {
@@ -591,12 +887,18 @@ export function RoleplayTutorial({ isAdmin, adminPermissions }: { isAdmin?: bool
 					break;
 				}
 				case 'left':
-					style.top = Math.max(pad, Math.min(visTop + (visBottom - visTop) / 2, vh - 200));
+					style.top = Math.max(
+						pad,
+						Math.min(visTop + (visBottom - visTop) / 2, vh - 200),
+					);
 					style.right = vw - rect.left + pad;
 					style.transform = 'translateY(-50%)';
 					break;
 				case 'right':
-					style.top = Math.max(pad, Math.min(visTop + (visBottom - visTop) / 2, vh - 200));
+					style.top = Math.max(
+						pad,
+						Math.min(visTop + (visBottom - visTop) / 2, vh - 200),
+					);
 					style.left = rect.right + pad;
 					style.transform = 'translateY(-50%)';
 					break;
@@ -648,7 +950,12 @@ export function RoleplayTutorial({ isAdmin, adminPermissions }: { isAdmin?: bool
 				let next = currentStep + 1;
 				while (next < steps.length) {
 					const s = steps[next];
-					if (!s.target || s.position === 'center' || document.querySelector(s.target)) break;
+					if (
+						!s.target ||
+						s.position === 'center' ||
+						document.querySelector(s.target)
+					)
+						break;
 					next++;
 				}
 				if (next < steps.length) setCurrentStep(next);
@@ -658,7 +965,12 @@ export function RoleplayTutorial({ isAdmin, adminPermissions }: { isAdmin?: bool
 				let prev = currentStep - 1;
 				while (prev >= 0) {
 					const s = steps[prev];
-					if (!s.target || s.position === 'center' || document.querySelector(s.target)) break;
+					if (
+						!s.target ||
+						s.position === 'center' ||
+						document.querySelector(s.target)
+					)
+						break;
 					prev--;
 				}
 				if (prev >= 0) setCurrentStep(prev);
@@ -757,7 +1069,10 @@ export function RoleplayTutorial({ isAdmin, adminPermissions }: { isAdmin?: bool
 						<div className="tutorial-backdrop" />
 					)}
 
-					<div className={`tutorial-tooltip${step.dummyForm ? ' has-dummy-form' : ''}`} style={tooltipStyle}>
+					<div
+						className={`tutorial-tooltip${step.dummyForm ? ' has-dummy-form' : ''}`}
+						style={tooltipStyle}
+					>
 						<div className="tutorial-tooltip-header">
 							<span className="tutorial-step-badge">
 								{currentStep + 1}/{steps.length}
@@ -804,9 +1119,7 @@ export function RoleplayTutorial({ isAdmin, adminPermissions }: { isAdmin?: bool
 									className="tutorial-btn tutorial-btn-next"
 									onClick={() => goToStep('next')}
 								>
-									{currentStep < steps.length - 1
-										? 'Suivant →'
-										: 'Terminer ✓'}
+									{currentStep < steps.length - 1 ? 'Suivant →' : 'Terminer ✓'}
 								</button>
 							</div>
 						</div>

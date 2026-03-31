@@ -47,7 +47,17 @@ function textToRichText(text: string): any {
 			children: paragraphs.map(p => ({
 				type: 'paragraph',
 				children: p.trim()
-					? [{ type: 'text', text: p, format: 0, mode: 'normal', detail: 0, style: '', version: 1 }]
+					? [
+							{
+								type: 'text',
+								text: p,
+								format: 0,
+								mode: 'normal',
+								detail: 0,
+								style: '',
+								version: 1,
+							},
+						]
 					: [],
 				direction: 'ltr',
 				format: '',
@@ -84,7 +94,13 @@ export function AdminPanel({
 	const [localFactions, setLocalFactions] = useState(factions);
 
 	// Create form state
-	const [unitForm, setUnitForm] = useState({ name: '', slug: '', color: '#4a7c23', parentFaction: '', description: '' });
+	const [unitForm, setUnitForm] = useState({
+		name: '',
+		slug: '',
+		color: '#4a7c23',
+		parentFaction: '',
+		description: '',
+	});
 	const [unitInsignia, setUnitInsignia] = useState<File | null>(null);
 	const [factionForm, setFactionForm] = useState({
 		name: '',
@@ -98,9 +114,21 @@ export function AdminPanel({
 	// Edit state
 	const [editingUnit, setEditingUnit] = useState<UnitItem | null>(null);
 	const [editingFaction, setEditingFaction] = useState<FactionItem | null>(null);
-	const [editUnitForm, setEditUnitForm] = useState({ name: '', slug: '', color: '#4a7c23', parentFaction: '', description: '' });
+	const [editUnitForm, setEditUnitForm] = useState({
+		name: '',
+		slug: '',
+		color: '#4a7c23',
+		parentFaction: '',
+		description: '',
+	});
 	const [editUnitInsignia, setEditUnitInsignia] = useState<File | null>(null);
-	const [editFactionForm, setEditFactionForm] = useState({ name: '', slug: '', type: 'neutral', color: '#8b4513', description: '' });
+	const [editFactionForm, setEditFactionForm] = useState({
+		name: '',
+		slug: '',
+		type: 'neutral',
+		color: '#8b4513',
+		description: '',
+	});
 	const [editFactionLogo, setEditFactionLogo] = useState<File | null>(null);
 
 	const uploadFile = async (file: File): Promise<number> => {
@@ -127,10 +155,16 @@ export function AdminPanel({
 				insigniaId = await uploadFile(unitInsignia);
 			}
 
-			const body: any = { name: unitForm.name, slug: unitForm.slug, color: unitForm.color };
+			const body: any = {
+				name: unitForm.name,
+				slug: unitForm.slug,
+				color: unitForm.color,
+			};
 			if (insigniaId) body.insignia = insigniaId;
-			if (unitForm.parentFaction) body.parentFaction = parseInt(unitForm.parentFaction);
-			if (unitForm.description.trim()) body.description = textToRichText(unitForm.description);
+			if (unitForm.parentFaction)
+				body.parentFaction = parseInt(unitForm.parentFaction);
+			if (unitForm.description.trim())
+				body.description = textToRichText(unitForm.description);
 
 			const res = await fetch('/api/roleplay/units', {
 				method: 'POST',
@@ -142,7 +176,13 @@ export function AdminPanel({
 				throw new Error(data.message || 'Erreur');
 			}
 			setSuccess(`Unité "${unitForm.name}" créée`);
-			setUnitForm({ name: '', slug: '', color: '#4a7c23', parentFaction: '', description: '' });
+			setUnitForm({
+				name: '',
+				slug: '',
+				color: '#4a7c23',
+				parentFaction: '',
+				description: '',
+			});
 			setUnitInsignia(null);
 			setShowUnitForm(false);
 			setTimeout(() => window.location.reload(), 1000);
@@ -164,9 +204,15 @@ export function AdminPanel({
 				logoId = await uploadFile(factionLogo);
 			}
 
-			const body: any = { name: factionForm.name, slug: factionForm.slug, type: factionForm.type, color: factionForm.color };
+			const body: any = {
+				name: factionForm.name,
+				slug: factionForm.slug,
+				type: factionForm.type,
+				color: factionForm.color,
+			};
 			if (logoId) body.logo = logoId;
-			if (factionForm.description.trim()) body.description = textToRichText(factionForm.description);
+			if (factionForm.description.trim())
+				body.description = textToRichText(factionForm.description);
 
 			const res = await fetch('/api/roleplay/factions', {
 				method: 'POST',
@@ -178,7 +224,13 @@ export function AdminPanel({
 				throw new Error(data.message || 'Erreur');
 			}
 			setSuccess(`Faction "${factionForm.name}" créée`);
-			setFactionForm({ name: '', slug: '', type: 'neutral', color: '#8b4513', description: '' });
+			setFactionForm({
+				name: '',
+				slug: '',
+				type: 'neutral',
+				color: '#8b4513',
+				description: '',
+			});
 			setFactionLogo(null);
 			setShowFactionForm(false);
 			setTimeout(() => window.location.reload(), 1000);
@@ -194,9 +246,12 @@ export function AdminPanel({
 		setEditingFaction(null);
 		setShowUnitForm(false);
 		setShowFactionForm(false);
-		const parentId = typeof unit.parentFaction === 'object' && unit.parentFaction
-			? String(unit.parentFaction.id)
-			: unit.parentFaction ? String(unit.parentFaction) : '';
+		const parentId =
+			typeof unit.parentFaction === 'object' && unit.parentFaction
+				? String(unit.parentFaction.id)
+				: unit.parentFaction
+					? String(unit.parentFaction)
+					: '';
 		setEditUnitForm({
 			name: unit.name,
 			slug: unit.slug,
@@ -234,11 +289,18 @@ export function AdminPanel({
 				insigniaId = await uploadFile(editUnitInsignia);
 			}
 
-			const body: any = { name: editUnitForm.name, slug: editUnitForm.slug, color: editUnitForm.color };
+			const body: any = {
+				name: editUnitForm.name,
+				slug: editUnitForm.slug,
+				color: editUnitForm.color,
+			};
 			if (insigniaId) body.insignia = insigniaId;
-			if (editUnitForm.parentFaction) body.parentFaction = parseInt(editUnitForm.parentFaction);
+			if (editUnitForm.parentFaction)
+				body.parentFaction = parseInt(editUnitForm.parentFaction);
 			else body.parentFaction = null;
-			body.description = editUnitForm.description.trim() ? textToRichText(editUnitForm.description) : null;
+			body.description = editUnitForm.description.trim()
+				? textToRichText(editUnitForm.description)
+				: null;
 
 			const res = await fetch(`/api/roleplay/units/${editingUnit.id}`, {
 				method: 'PATCH',
@@ -271,9 +333,16 @@ export function AdminPanel({
 				logoId = await uploadFile(editFactionLogo);
 			}
 
-			const body: any = { name: editFactionForm.name, slug: editFactionForm.slug, type: editFactionForm.type, color: editFactionForm.color };
+			const body: any = {
+				name: editFactionForm.name,
+				slug: editFactionForm.slug,
+				type: editFactionForm.type,
+				color: editFactionForm.color,
+			};
 			if (logoId) body.logo = logoId;
-			body.description = editFactionForm.description.trim() ? textToRichText(editFactionForm.description) : null;
+			body.description = editFactionForm.description.trim()
+				? textToRichText(editFactionForm.description)
+				: null;
 
 			const res = await fetch(`/api/roleplay/factions/${editingFaction.id}`, {
 				method: 'PATCH',
@@ -484,7 +553,9 @@ export function AdminPanel({
 						<label style={labelStyle}>Faction parente</label>
 						<select
 							value={unitForm.parentFaction}
-							onChange={e => setUnitForm(f => ({ ...f, parentFaction: e.target.value }))}
+							onChange={e =>
+								setUnitForm(f => ({ ...f, parentFaction: e.target.value }))
+							}
 							className="filter-select"
 							style={{ width: '100%' }}
 						>
@@ -500,7 +571,9 @@ export function AdminPanel({
 						<label style={labelStyle}>Description</label>
 						<textarea
 							value={unitForm.description}
-							onChange={e => setUnitForm(f => ({ ...f, description: e.target.value }))}
+							onChange={e =>
+								setUnitForm(f => ({ ...f, description: e.target.value }))
+							}
 							className="filter-input"
 							style={{ width: '100%', minHeight: '80px', resize: 'vertical' }}
 							placeholder="Description de l'unité..."
@@ -641,7 +714,9 @@ export function AdminPanel({
 						<label style={labelStyle}>Description</label>
 						<textarea
 							value={factionForm.description}
-							onChange={e => setFactionForm(f => ({ ...f, description: e.target.value }))}
+							onChange={e =>
+								setFactionForm(f => ({ ...f, description: e.target.value }))
+							}
 							className="filter-input"
 							style={{ width: '100%', minHeight: '80px', resize: 'vertical' }}
 							placeholder="Description de la faction..."
@@ -689,7 +764,9 @@ export function AdminPanel({
 							<input
 								type="text"
 								value={editUnitForm.name}
-								onChange={e => setEditUnitForm(f => ({ ...f, name: e.target.value }))}
+								onChange={e =>
+									setEditUnitForm(f => ({ ...f, name: e.target.value }))
+								}
 								required
 								className="filter-input"
 								style={{ width: '100%' }}
@@ -700,7 +777,9 @@ export function AdminPanel({
 							<input
 								type="text"
 								value={editUnitForm.slug}
-								onChange={e => setEditUnitForm(f => ({ ...f, slug: e.target.value }))}
+								onChange={e =>
+									setEditUnitForm(f => ({ ...f, slug: e.target.value }))
+								}
 								required
 								className="filter-input"
 								style={{ width: '100%' }}
@@ -711,7 +790,9 @@ export function AdminPanel({
 							<input
 								type="color"
 								value={editUnitForm.color}
-								onChange={e => setEditUnitForm(f => ({ ...f, color: e.target.value }))}
+								onChange={e =>
+									setEditUnitForm(f => ({ ...f, color: e.target.value }))
+								}
 								style={{
 									width: '100%',
 									height: '32px',
@@ -726,7 +807,11 @@ export function AdminPanel({
 						<label style={labelStyle}>Insigne</label>
 						<div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
 							{editingUnit.insignia?.url && !editUnitInsignia && (
-								<img src={editingUnit.insignia.url} alt="" style={{ width: 24, height: 24, objectFit: 'contain' }} />
+								<img
+									src={editingUnit.insignia.url}
+									alt=""
+									style={{ width: 24, height: 24, objectFit: 'contain' }}
+								/>
 							)}
 							<button
 								type="button"
@@ -748,10 +833,16 @@ export function AdminPanel({
 									fontSize: '0.8rem',
 								}}
 							>
-								{editUnitInsignia ? '🔄 Changer' : editingUnit.insignia?.url ? '🔄 Remplacer' : '+ Ajouter un insigne'}
+								{editUnitInsignia
+									? '🔄 Changer'
+									: editingUnit.insignia?.url
+										? '🔄 Remplacer'
+										: '+ Ajouter un insigne'}
 							</button>
 							{editUnitInsignia && (
-								<span style={{ fontSize: '0.8rem', color: 'var(--text)' }}>{editUnitInsignia.name}</span>
+								<span style={{ fontSize: '0.8rem', color: 'var(--text)' }}>
+									{editUnitInsignia.name}
+								</span>
 							)}
 						</div>
 					</div>
@@ -759,13 +850,17 @@ export function AdminPanel({
 						<label style={labelStyle}>Faction parente</label>
 						<select
 							value={editUnitForm.parentFaction}
-							onChange={e => setEditUnitForm(f => ({ ...f, parentFaction: e.target.value }))}
+							onChange={e =>
+								setEditUnitForm(f => ({ ...f, parentFaction: e.target.value }))
+							}
 							className="filter-select"
 							style={{ width: '100%' }}
 						>
 							<option value="">— Aucune —</option>
 							{localFactions.map(f => (
-								<option key={f.id} value={f.id}>{f.name}</option>
+								<option key={f.id} value={f.id}>
+									{f.name}
+								</option>
 							))}
 						</select>
 					</div>
@@ -773,7 +868,9 @@ export function AdminPanel({
 						<label style={labelStyle}>Description</label>
 						<textarea
 							value={editUnitForm.description}
-							onChange={e => setEditUnitForm(f => ({ ...f, description: e.target.value }))}
+							onChange={e =>
+								setEditUnitForm(f => ({ ...f, description: e.target.value }))
+							}
 							className="filter-input"
 							style={{ width: '100%', minHeight: '80px', resize: 'vertical' }}
 							placeholder="Description de l'unité..."
@@ -831,7 +928,9 @@ export function AdminPanel({
 							<input
 								type="text"
 								value={editFactionForm.name}
-								onChange={e => setEditFactionForm(f => ({ ...f, name: e.target.value }))}
+								onChange={e =>
+									setEditFactionForm(f => ({ ...f, name: e.target.value }))
+								}
 								required
 								className="filter-input"
 								style={{ width: '100%' }}
@@ -842,7 +941,9 @@ export function AdminPanel({
 							<input
 								type="text"
 								value={editFactionForm.slug}
-								onChange={e => setEditFactionForm(f => ({ ...f, slug: e.target.value }))}
+								onChange={e =>
+									setEditFactionForm(f => ({ ...f, slug: e.target.value }))
+								}
 								required
 								className="filter-input"
 								style={{ width: '100%' }}
@@ -852,7 +953,9 @@ export function AdminPanel({
 							<label style={labelStyle}>Type</label>
 							<select
 								value={editFactionForm.type}
-								onChange={e => setEditFactionForm(f => ({ ...f, type: e.target.value }))}
+								onChange={e =>
+									setEditFactionForm(f => ({ ...f, type: e.target.value }))
+								}
 								className="filter-select"
 								style={{ width: '100%' }}
 							>
@@ -866,7 +969,9 @@ export function AdminPanel({
 							<input
 								type="color"
 								value={editFactionForm.color}
-								onChange={e => setEditFactionForm(f => ({ ...f, color: e.target.value }))}
+								onChange={e =>
+									setEditFactionForm(f => ({ ...f, color: e.target.value }))
+								}
 								style={{
 									width: '100%',
 									height: '32px',
@@ -881,7 +986,11 @@ export function AdminPanel({
 						<label style={labelStyle}>Logo</label>
 						<div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
 							{editingFaction.logo?.url && !editFactionLogo && (
-								<img src={editingFaction.logo.url} alt="" style={{ width: 24, height: 24, objectFit: 'contain' }} />
+								<img
+									src={editingFaction.logo.url}
+									alt=""
+									style={{ width: 24, height: 24, objectFit: 'contain' }}
+								/>
 							)}
 							<button
 								type="button"
@@ -903,10 +1012,16 @@ export function AdminPanel({
 									fontSize: '0.8rem',
 								}}
 							>
-								{editFactionLogo ? '🔄 Changer' : editingFaction.logo?.url ? '🔄 Remplacer' : '+ Ajouter un logo'}
+								{editFactionLogo
+									? '🔄 Changer'
+									: editingFaction.logo?.url
+										? '🔄 Remplacer'
+										: '+ Ajouter un logo'}
 							</button>
 							{editFactionLogo && (
-								<span style={{ fontSize: '0.8rem', color: 'var(--text)' }}>{editFactionLogo.name}</span>
+								<span style={{ fontSize: '0.8rem', color: 'var(--text)' }}>
+									{editFactionLogo.name}
+								</span>
 							)}
 						</div>
 					</div>
@@ -914,7 +1029,9 @@ export function AdminPanel({
 						<label style={labelStyle}>Description</label>
 						<textarea
 							value={editFactionForm.description}
-							onChange={e => setEditFactionForm(f => ({ ...f, description: e.target.value }))}
+							onChange={e =>
+								setEditFactionForm(f => ({ ...f, description: e.target.value }))
+							}
 							className="filter-input"
 							style={{ width: '100%', minHeight: '80px', resize: 'vertical' }}
 							placeholder="Description de la faction..."
@@ -961,91 +1078,111 @@ export function AdminPanel({
 						}}
 						onClick={() => setShowExistingUnits(v => !v)}
 					>
-						<span style={{ fontSize: '0.7rem', transition: 'transform 0.2s', display: 'inline-block', transform: showExistingUnits ? 'rotate(90deg)' : 'rotate(0deg)' }}>▶</span>
+						<span
+							style={{
+								fontSize: '0.7rem',
+								transition: 'transform 0.2s',
+								display: 'inline-block',
+								transform: showExistingUnits ? 'rotate(90deg)' : 'rotate(0deg)',
+							}}
+						>
+							▶
+						</span>
 						Unités existantes ({localUnits.length})
 					</h3>
 					{showExistingUnits && (
-					<div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-						{localUnits.map(unit => (
-							<div
-								key={unit.id}
-								style={{
-									display: 'flex',
-									alignItems: 'center',
-									justifyContent: 'space-between',
-									padding: '0.4rem 0.75rem',
-									background: 'var(--bg-secondary)',
-									border: '1px solid var(--border)',
-								}}
-							>
+						<div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+							{localUnits.map(unit => (
 								<div
-									style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+									key={unit.id}
+									style={{
+										display: 'flex',
+										alignItems: 'center',
+										justifyContent: 'space-between',
+										padding: '0.4rem 0.75rem',
+										background: 'var(--bg-secondary)',
+										border: '1px solid var(--border)',
+									}}
 								>
-									{unit.insignia?.url && (
-										<img
-											src={unit.insignia.url}
-											alt=""
-											style={{ width: 20, height: 20, objectFit: 'contain' }}
-										/>
-									)}
-									<Link
-										href={`/roleplay/unite/${unit.slug}`}
-										style={{
-											fontSize: '0.85rem',
-											color: unit.color || 'var(--text)',
-											textDecoration: 'none',
-										}}
+									<div
+										style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
 									>
-										{unit.name}
-									</Link>
-								</div>
-								{isFullAccess && (
-									<div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-										<button
-											type="button"
-											onClick={() => startEditUnit(unit)}
+										{unit.insignia?.url && (
+											<img
+												src={unit.insignia.url}
+												alt=""
+												style={{ width: 20, height: 20, objectFit: 'contain' }}
+											/>
+										)}
+										<Link
+											href={`/roleplay/unite/${unit.slug}`}
 											style={{
-												background: 'none',
-												border: 'none',
-												color: 'var(--accent)',
-												cursor: 'pointer',
-												fontSize: '0.8rem',
-												padding: '0.2rem 0.5rem',
+												fontSize: '0.85rem',
+												color: unit.color || 'var(--text)',
+												textDecoration: 'none',
 											}}
 										>
-											✎
-										</button>
-										<button
-											type="button"
-											onClick={async () => {
-												if (!confirm(`Supprimer l'unité "${unit.name}" ?`)) return;
-												try {
-													const res = await fetch(`/api/roleplay/units/${unit.id}`, {
-														method: 'DELETE',
-													});
-													if (!res.ok) throw new Error('Erreur suppression');
-													setLocalUnits(prev => prev.filter(u => u.id !== unit.id));
-													setSuccess(`Unité "${unit.name}" supprimée`);
-												} catch {
-													setError('Erreur lors de la suppression');
-												}
-											}}
-											style={{
-												background: 'none',
-												border: 'none',
-												color: 'var(--danger)',
-												cursor: 'pointer',
-												fontSize: '0.8rem',
-												padding: '0.2rem 0.5rem',
-											}}
-										>
-											✕
-										</button>
+											{unit.name}
+										</Link>
 									</div>
-								)}
-							</div>
-						))}
-					</div>
+									{isFullAccess && (
+										<div
+											style={{
+												display: 'flex',
+												gap: '0.5rem',
+												alignItems: 'center',
+											}}
+										>
+											<button
+												type="button"
+												onClick={() => startEditUnit(unit)}
+												style={{
+													background: 'none',
+													border: 'none',
+													color: 'var(--accent)',
+													cursor: 'pointer',
+													fontSize: '0.8rem',
+													padding: '0.2rem 0.5rem',
+												}}
+											>
+												✎
+											</button>
+											<button
+												type="button"
+												onClick={async () => {
+													if (!confirm(`Supprimer l'unité "${unit.name}" ?`)) return;
+													try {
+														const res = await fetch(
+															`/api/roleplay/units/${unit.id}`,
+															{
+																method: 'DELETE',
+															},
+														);
+														if (!res.ok) throw new Error('Erreur suppression');
+														setLocalUnits(prev =>
+															prev.filter(u => u.id !== unit.id),
+														);
+														setSuccess(`Unité "${unit.name}" supprimée`);
+													} catch {
+														setError('Erreur lors de la suppression');
+													}
+												}}
+												style={{
+													background: 'none',
+													border: 'none',
+													color: 'var(--danger)',
+													cursor: 'pointer',
+													fontSize: '0.8rem',
+													padding: '0.2rem 0.5rem',
+												}}
+											>
+												✕
+											</button>
+										</div>
+									)}
+								</div>
+							))}
+						</div>
 					)}
 				</div>
 			)}
@@ -1066,97 +1203,113 @@ export function AdminPanel({
 						}}
 						onClick={() => setShowExistingFactions(v => !v)}
 					>
-						<span style={{ fontSize: '0.7rem', transition: 'transform 0.2s', display: 'inline-block', transform: showExistingFactions ? 'rotate(90deg)' : 'rotate(0deg)' }}>▶</span>
+						<span
+							style={{
+								fontSize: '0.7rem',
+								transition: 'transform 0.2s',
+								display: 'inline-block',
+								transform: showExistingFactions ? 'rotate(90deg)' : 'rotate(0deg)',
+							}}
+						>
+							▶
+						</span>
 						Factions existantes ({localFactions.length})
 					</h3>
 					{showExistingFactions && (
-					<div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-						{localFactions.map(faction => (
-							<div
-								key={faction.id}
-								style={{
-									display: 'flex',
-									alignItems: 'center',
-									justifyContent: 'space-between',
-									padding: '0.4rem 0.75rem',
-									background: 'var(--bg-secondary)',
-									border: '1px solid var(--border)',
-								}}
-							>
+						<div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+							{localFactions.map(faction => (
 								<div
-									style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+									key={faction.id}
+									style={{
+										display: 'flex',
+										alignItems: 'center',
+										justifyContent: 'space-between',
+										padding: '0.4rem 0.75rem',
+										background: 'var(--bg-secondary)',
+										border: '1px solid var(--border)',
+									}}
 								>
-									{faction.logo?.url && (
-										<img
-											src={faction.logo.url}
-											alt=""
-											style={{ width: 20, height: 20, objectFit: 'contain' }}
-										/>
-									)}
-									<Link
-										href={`/roleplay/faction/${faction.slug}`}
-										style={{
-											fontSize: '0.85rem',
-											color: faction.color || 'var(--text)',
-											textDecoration: 'none',
-										}}
+									<div
+										style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
 									>
-										{faction.name}
-									</Link>
-									<span style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>
-										({faction.type || 'neutre'})
-									</span>
-								</div>
-								{isFullAccess && (
-									<div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-										<button
-											type="button"
-											onClick={() => startEditFaction(faction)}
+										{faction.logo?.url && (
+											<img
+												src={faction.logo.url}
+												alt=""
+												style={{ width: 20, height: 20, objectFit: 'contain' }}
+											/>
+										)}
+										<Link
+											href={`/roleplay/faction/${faction.slug}`}
 											style={{
-												background: 'none',
-												border: 'none',
-												color: 'var(--accent)',
-												cursor: 'pointer',
-												fontSize: '0.8rem',
-												padding: '0.2rem 0.5rem',
+												fontSize: '0.85rem',
+												color: faction.color || 'var(--text)',
+												textDecoration: 'none',
 											}}
 										>
-											✎
-										</button>
-										<button
-											type="button"
-											onClick={async () => {
-												if (!confirm(`Supprimer la faction "${faction.name}" ?`)) return;
-												try {
-													const res = await fetch(
-														`/api/roleplay/factions/${faction.id}`,
-														{ method: 'DELETE' },
-													);
-													if (!res.ok) throw new Error('Erreur suppression');
-													setLocalFactions(prev =>
-														prev.filter(f => f.id !== faction.id),
-													);
-													setSuccess(`Faction "${faction.name}" supprimée`);
-												} catch {
-													setError('Erreur lors de la suppression');
-												}
-											}}
-											style={{
-												background: 'none',
-												border: 'none',
-												color: 'var(--danger)',
-												cursor: 'pointer',
-												fontSize: '0.8rem',
-												padding: '0.2rem 0.5rem',
-											}}
-										>
-											✕
-										</button>
+											{faction.name}
+										</Link>
+										<span style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>
+											({faction.type || 'neutre'})
+										</span>
 									</div>
-								)}
-							</div>
-						))}
-					</div>
+									{isFullAccess && (
+										<div
+											style={{
+												display: 'flex',
+												gap: '0.5rem',
+												alignItems: 'center',
+											}}
+										>
+											<button
+												type="button"
+												onClick={() => startEditFaction(faction)}
+												style={{
+													background: 'none',
+													border: 'none',
+													color: 'var(--accent)',
+													cursor: 'pointer',
+													fontSize: '0.8rem',
+													padding: '0.2rem 0.5rem',
+												}}
+											>
+												✎
+											</button>
+											<button
+												type="button"
+												onClick={async () => {
+													if (!confirm(`Supprimer la faction "${faction.name}" ?`))
+														return;
+													try {
+														const res = await fetch(
+															`/api/roleplay/factions/${faction.id}`,
+															{ method: 'DELETE' },
+														);
+														if (!res.ok) throw new Error('Erreur suppression');
+														setLocalFactions(prev =>
+															prev.filter(f => f.id !== faction.id),
+														);
+														setSuccess(`Faction "${faction.name}" supprimée`);
+													} catch {
+														setError('Erreur lors de la suppression');
+													}
+												}}
+												style={{
+													background: 'none',
+													border: 'none',
+													color: 'var(--danger)',
+													cursor: 'pointer',
+													fontSize: '0.8rem',
+													padding: '0.2rem 0.5rem',
+												}}
+											>
+												✕
+											</button>
+										</div>
+									)}
+								</div>
+							))}
+						</div>
 					)}
 				</div>
 			)}

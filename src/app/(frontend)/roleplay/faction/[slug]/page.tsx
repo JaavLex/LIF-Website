@@ -126,9 +126,7 @@ export default async function FactionPage({
 				{/* Units */}
 				{units.docs.length > 0 && (
 					<div style={{ marginBottom: '2rem' }}>
-						<h3 style={{ color: 'var(--primary)' }}>
-							Unités ({units.docs.length})
-						</h3>
+						<h3 style={{ color: 'var(--primary)' }}>Unités ({units.docs.length})</h3>
 						<div
 							style={{
 								display: 'flex',
@@ -171,17 +169,16 @@ export default async function FactionPage({
 										>
 											{unit.name}
 										</div>
-										{unit.commander &&
-											typeof unit.commander === 'object' && (
-												<div
-													style={{
-														fontSize: '0.75rem',
-														color: 'var(--muted)',
-													}}
-												>
-													Commandant: {unit.commander.fullName}
-												</div>
-											)}
+										{unit.commander && typeof unit.commander === 'object' && (
+											<div
+												style={{
+													fontSize: '0.75rem',
+													color: 'var(--muted)',
+												}}
+											>
+												Commandant: {unit.commander.fullName}
+											</div>
+										)}
 									</div>
 								</Link>
 							))}
@@ -198,9 +195,7 @@ export default async function FactionPage({
 						<div className="personnel-grid">
 							{characters.docs.map((character: any) => {
 								const rank =
-									typeof character.rank === 'object'
-										? character.rank
-										: null;
+									typeof character.rank === 'object' ? character.rank : null;
 								return (
 									<Link
 										key={character.id}
@@ -224,9 +219,7 @@ export default async function FactionPage({
 												</div>
 											)}
 											<div className="personnel-info">
-												<div className="personnel-name">
-													{character.fullName}
-												</div>
+												<div className="personnel-name">{character.fullName}</div>
 												{rank && (
 													<div
 														className="personnel-rank"
@@ -245,9 +238,7 @@ export default async function FactionPage({
 																unoptimized
 															/>
 														)}
-														<span>
-															{rank.abbreviation || rank.name}
-														</span>
+														<span>{rank.abbreviation || rank.name}</span>
 													</div>
 												)}
 											</div>

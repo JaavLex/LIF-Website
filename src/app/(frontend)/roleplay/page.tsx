@@ -317,13 +317,16 @@ export default async function RoleplayPage({
 							<span className="terminal-title">ORGANISATIONS & UNITÉS</span>
 						</div>
 						<div className="terminal-header-right">
-							{factions.docs.length} faction{factions.docs.length !== 1 ? 's' : ''} | {units.docs.length} unité{units.docs.length !== 1 ? 's' : ''}
+							{factions.docs.length} faction{factions.docs.length !== 1 ? 's' : ''} |{' '}
+							{units.docs.length} unité{units.docs.length !== 1 ? 's' : ''}
 						</div>
 					</div>
 					<div className="terminal-panel" style={{ marginBottom: '1.5rem' }}>
 						{factions.docs.length > 0 && (
 							<div style={{ marginBottom: '1.5rem' }}>
-								<h2 style={{ fontSize: '1.1rem', marginBottom: '0.75rem' }}>FACTIONS</h2>
+								<h2 style={{ fontSize: '1.1rem', marginBottom: '0.75rem' }}>
+									FACTIONS
+								</h2>
 								<div className="orgs-grid">
 									{(factions.docs as any[]).map((faction: any) => (
 										<Link
@@ -343,11 +346,18 @@ export default async function RoleplayPage({
 												/>
 											)}
 											<div>
-												<div className="org-card-name" style={{ color: faction.color || 'var(--text)' }}>
+												<div
+													className="org-card-name"
+													style={{ color: faction.color || 'var(--text)' }}
+												>
 													{faction.name}
 												</div>
 												<div className="org-card-type">
-													{faction.type === 'allied' ? 'Alliée' : faction.type === 'hostile' ? 'Hostile' : 'Neutre'}
+													{faction.type === 'allied'
+														? 'Alliée'
+														: faction.type === 'hostile'
+															? 'Hostile'
+															: 'Neutre'}
 												</div>
 											</div>
 										</Link>
@@ -357,7 +367,9 @@ export default async function RoleplayPage({
 						)}
 						{units.docs.length > 0 && (
 							<div>
-								<h2 style={{ fontSize: '1.1rem', marginBottom: '0.75rem' }}>UNITÉS</h2>
+								<h2 style={{ fontSize: '1.1rem', marginBottom: '0.75rem' }}>
+									UNITÉS
+								</h2>
 								<div className="orgs-grid">
 									{(units.docs as any[]).map((unit: any) => (
 										<Link
@@ -377,14 +389,18 @@ export default async function RoleplayPage({
 												/>
 											)}
 											<div>
-												<div className="org-card-name" style={{ color: unit.color || 'var(--text)' }}>
+												<div
+													className="org-card-name"
+													style={{ color: unit.color || 'var(--text)' }}
+												>
 													{unit.name}
 												</div>
-												{unit.parentFaction && typeof unit.parentFaction === 'object' && (
-													<div className="org-card-type">
-														{unit.parentFaction.name}
-													</div>
-												)}
+												{unit.parentFaction &&
+													typeof unit.parentFaction === 'object' && (
+														<div className="org-card-type">
+															{unit.parentFaction.name}
+														</div>
+													)}
 											</div>
 										</Link>
 									))}
@@ -396,7 +412,11 @@ export default async function RoleplayPage({
 			)}
 
 			{/* Intelligence section */}
-			<div data-tutorial="intelligence" className="terminal-header" style={{ marginTop: '2rem' }}>
+			<div
+				data-tutorial="intelligence"
+				className="terminal-header"
+				style={{ marginTop: '2rem' }}
+			>
 				<div className="terminal-header-left">
 					<div className="terminal-header-dots">
 						<span className="terminal-dot green" />

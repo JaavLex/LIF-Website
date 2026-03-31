@@ -26,8 +26,7 @@ export default async function UnitPage({
 
 	const parentFaction =
 		typeof unit.parentFaction === 'object' ? unit.parentFaction : null;
-	const commander =
-		typeof unit.commander === 'object' ? unit.commander : null;
+	const commander = typeof unit.commander === 'object' ? unit.commander : null;
 
 	// Fetch characters in this unit
 	const characters = await payload.find({
@@ -216,9 +215,7 @@ export default async function UnitPage({
 						<div className="personnel-grid">
 							{characters.docs.map((character: any) => {
 								const rank =
-									typeof character.rank === 'object'
-										? character.rank
-										: null;
+									typeof character.rank === 'object' ? character.rank : null;
 								return (
 									<Link
 										key={character.id}
@@ -242,9 +239,7 @@ export default async function UnitPage({
 												</div>
 											)}
 											<div className="personnel-info">
-												<div className="personnel-name">
-													{character.fullName}
-												</div>
+												<div className="personnel-name">{character.fullName}</div>
 												{rank && (
 													<div
 														className="personnel-rank"
@@ -263,9 +258,7 @@ export default async function UnitPage({
 																unoptimized
 															/>
 														)}
-														<span>
-															{rank.abbreviation || rank.name}
-														</span>
+														<span>{rank.abbreviation || rank.name}</span>
 													</div>
 												)}
 											</div>

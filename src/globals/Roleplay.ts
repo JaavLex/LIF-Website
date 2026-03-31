@@ -301,7 +301,8 @@ export const Roleplay: GlobalConfig = {
 							type: 'text',
 							defaultValue: 'HONNEUR',
 							admin: {
-								description: 'Ce mot de passe est caché dans le règlement RP. Les joueurs doivent le trouver pour confirmer leur lecture. Il remplace le marqueur >|PASSWORDHERE|< dans le contenu.',
+								description:
+									'Ce mot de passe est caché dans le règlement RP. Les joueurs doivent le trouver pour confirmer leur lecture. Il remplace le marqueur >|PASSWORDHERE|< dans le contenu.',
 							},
 						},
 						{
@@ -309,7 +310,8 @@ export const Roleplay: GlobalConfig = {
 							label: 'Contenu du règlement RP (Markdown)',
 							type: 'textarea',
 							admin: {
-								description: 'Le règlement RP en format Markdown. Utilisez >|PASSWORDHERE|< à l\'endroit où le mot de passe doit apparaître. Il sera remplacé par le mot de passe configuré ci-dessus, affiché entre >| et |<.',
+								description:
+									"Le règlement RP en format Markdown. Utilisez >|PASSWORDHERE|< à l'endroit où le mot de passe doit apparaître. Il sera remplacé par le mot de passe configuré ci-dessus, affiché entre >| et |<.",
 							},
 						},
 					],

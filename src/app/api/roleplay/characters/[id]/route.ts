@@ -163,13 +163,27 @@ export async function DELETE(
 		});
 		for (const report of linkedIntel.docs) {
 			const updates: Record<string, null> = {};
-			if (report.linkedTarget && (typeof report.linkedTarget === 'number' ? report.linkedTarget : report.linkedTarget.id) === characterId) {
+			if (
+				report.linkedTarget &&
+				(typeof report.linkedTarget === 'number'
+					? report.linkedTarget
+					: report.linkedTarget.id) === characterId
+			) {
 				updates.linkedTarget = null;
 			}
-			if (report.postedBy && (typeof report.postedBy === 'number' ? report.postedBy : report.postedBy.id) === characterId) {
+			if (
+				report.postedBy &&
+				(typeof report.postedBy === 'number'
+					? report.postedBy
+					: report.postedBy.id) === characterId
+			) {
 				updates.postedBy = null;
 			}
-			await payload.update({ collection: 'intelligence', id: report.id, data: updates });
+			await payload.update({
+				collection: 'intelligence',
+				id: report.id,
+				data: updates,
+			});
 		}
 
 		// Nullify superiorOfficer references in other characters
@@ -179,7 +193,11 @@ export async function DELETE(
 			limit: 0,
 		});
 		for (const sub of subordinates.docs) {
-			await payload.update({ collection: 'characters', id: sub.id, data: { superiorOfficer: null } });
+			await payload.update({
+				collection: 'characters',
+				id: sub.id,
+				data: { superiorOfficer: null },
+			});
 		}
 
 		// Nullify unit commander references
@@ -189,7 +207,11 @@ export async function DELETE(
 			limit: 0,
 		});
 		for (const unit of units.docs) {
-			await payload.update({ collection: 'units', id: unit.id, data: { commander: null } });
+			await payload.update({
+				collection: 'units',
+				id: unit.id,
+				data: { commander: null },
+			});
 		}
 
 		await payload.delete({

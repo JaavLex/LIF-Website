@@ -79,12 +79,16 @@ export async function POST(request: NextRequest) {
 
 		const character = await payload.findByID({
 			collection: 'characters',
-			id: typeof body.character === 'number' ? body.character : parseInt(body.character, 10),
+			id:
+				typeof body.character === 'number'
+					? body.character
+					: parseInt(body.character, 10),
 		});
 
 		notifyTimelineEvent({
 			characterId: character.id,
-			characterName: character.fullName || `${character.firstName} ${character.lastName}`,
+			characterName:
+				character.fullName || `${character.firstName} ${character.lastName}`,
 			type: body.type,
 			title: body.title,
 			date: body.date,

@@ -307,7 +307,9 @@ export default async function CharacterPage({
 										{(factionObj as any)?.slug ? (
 											<Link
 												href={`/roleplay/faction/${(factionObj as any).slug}`}
-												style={{ color: (factionObj as any)?.color || 'var(--primary)' }}
+												style={{
+													color: (factionObj as any)?.color || 'var(--primary)',
+												}}
 											>
 												{character.faction}
 											</Link>
