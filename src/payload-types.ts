@@ -549,7 +549,39 @@ export interface Unit {
   } | null;
   insignia?: (number | null) | Media;
   commander?: (number | null) | Character;
-  parentUnit?: (number | null) | Unit;
+  parentFaction?: (number | null) | Faction;
+  /**
+   * Couleur hex pour l'affichage
+   */
+  color?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "factions".
+ */
+export interface Faction {
+  id: number;
+  name: string;
+  slug: string;
+  type?: ('allied' | 'neutral' | 'hostile') | null;
+  description?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  logo?: (number | null) | Media;
   /**
    * Couleur hex pour l'affichage
    */
@@ -584,38 +616,6 @@ export interface CharacterTimeline {
   date: string;
   image?: (number | null) | Media;
   classification?: ('public' | 'confidential' | 'secret') | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "factions".
- */
-export interface Faction {
-  id: number;
-  name: string;
-  slug: string;
-  type?: ('allied' | 'neutral' | 'hostile') | null;
-  description?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  logo?: (number | null) | Media;
-  /**
-   * Couleur hex pour l'affichage
-   */
-  color?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1046,7 +1046,7 @@ export interface UnitsSelect<T extends boolean = true> {
   description?: T;
   insignia?: T;
   commander?: T;
-  parentUnit?: T;
+  parentFaction?: T;
   color?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -1374,6 +1374,10 @@ export interface Roleplay {
   matriculeYear?: number | null;
   discordSyncInterval?: number | null;
   defaultFaction?: string | null;
+  /**
+   * Configuré via la commande /notificationdb du bot
+   */
+  notificationChannelId?: string | null;
   loadingEnabled?: boolean | null;
   loadingMessages?:
     | {
@@ -1386,6 +1390,10 @@ export interface Roleplay {
   disclaimerMessage?: string | null;
   discordInviteUrl?: string | null;
   /**
+   * Ce mot de passe est caché dans le règlement RP. Les joueurs doivent le trouver pour confirmer leur lecture.
+   */
+  rpRulesPassword?: string | null;
+  /**
    * Rôles Discord qui ont accès à l'administration
    */
   adminRoles?:
@@ -1396,6 +1404,10 @@ export interface Roleplay {
         id?: string | null;
       }[]
     | null;
+  /**
+   * Rôle Discord requis pour créer/modifier des personnages
+   */
+  operatorRoleId?: string | null;
   /**
    * Rôle Discord autorisant la publication de renseignements
    */
@@ -1567,6 +1579,7 @@ export interface RoleplaySelect<T extends boolean = true> {
   matriculeYear?: T;
   discordSyncInterval?: T;
   defaultFaction?: T;
+  notificationChannelId?: T;
   loadingEnabled?: T;
   loadingMessages?:
     | T
@@ -1578,6 +1591,7 @@ export interface RoleplaySelect<T extends boolean = true> {
   disclaimerTitle?: T;
   disclaimerMessage?: T;
   discordInviteUrl?: T;
+  rpRulesPassword?: T;
   adminRoles?:
     | T
     | {
@@ -1586,6 +1600,7 @@ export interface RoleplaySelect<T extends boolean = true> {
         permissionLevel?: T;
         id?: T;
       };
+  operatorRoleId?: T;
   intelligenceRoleId?: T;
   updatedAt?: T;
   createdAt?: T;
