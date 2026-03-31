@@ -511,12 +511,28 @@ export function RoleplayTutorial({ isAdmin, adminPermissions }: { isAdmin?: bool
 			return;
 		}
 
-		el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+		el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
 		// Wait for scroll to settle then position
 		setTimeout(() => {
 			const rect = el.getBoundingClientRect();
 			setSpotlightRect(rect);
+
+			// If the element is taller than the viewport, position tooltip in center
+			if (rect.height > vh * 0.7) {
+				setTooltipStyle({
+					position: 'fixed',
+					top: '50%',
+					left: mobile ? pad : '50%',
+					width: mobile ? tooltipW : undefined,
+					transform: mobile ? 'translateY(-50%)' : 'translate(-50%, -50%)',
+					maxHeight: '85vh',
+					overflowY: 'auto',
+					zIndex: 10002,
+				});
+				animatingRef.current = false;
+				return;
+			}
 
 			const style: React.CSSProperties = { position: 'fixed' };
 			if (mobile) style.width = tooltipW;
@@ -527,18 +543,22 @@ export function RoleplayTutorial({ isAdmin, adminPermissions }: { isAdmin?: bool
 				pos = rect.top > vh / 2 ? 'top' : 'bottom';
 			}
 
+			// Clamp rect edges to viewport for positioning calculations
+			const visTop = Math.max(0, rect.top);
+			const visBottom = Math.min(vh, rect.bottom);
+
 			const leftVal = mobile
 				? pad
 				: Math.max(pad, Math.min(rect.left + rect.width / 2 - tooltipW / 2, vw - tooltipW - pad));
 
 			switch (pos) {
 				case 'bottom': {
-					let topVal = rect.bottom + pad;
+					let topVal = visBottom + pad;
 					const spaceBelow = vh - topVal - pad;
-					const spaceAbove = rect.top - pad * 2;
+					const spaceAbove = visTop - pad * 2;
 					// If not enough room below, try above
 					if (spaceBelow < 200 && spaceAbove > spaceBelow) {
-						const bottomVal = Math.max(pad, vh - rect.top + pad);
+						const bottomVal = Math.max(pad, vh - visTop + pad);
 						style.bottom = bottomVal;
 						style.maxHeight = vh - bottomVal - pad;
 					} else {
@@ -552,12 +572,12 @@ export function RoleplayTutorial({ isAdmin, adminPermissions }: { isAdmin?: bool
 					break;
 				}
 				case 'top': {
-					let bottomVal = vh - rect.top + pad;
-					const spaceAbove = rect.top - pad * 2;
-					const spaceBelow = vh - rect.bottom - pad * 2;
+					let bottomVal = vh - visTop + pad;
+					const spaceAbove = visTop - pad * 2;
+					const spaceBelow = vh - visBottom - pad * 2;
 					// If not enough room above, try below
 					if (spaceAbove < 200 && spaceBelow > spaceAbove) {
-						const topVal = Math.max(pad, rect.bottom + pad);
+						const topVal = Math.max(pad, visBottom + pad);
 						style.top = topVal;
 						style.maxHeight = vh - topVal - pad;
 					} else {
@@ -571,12 +591,12 @@ export function RoleplayTutorial({ isAdmin, adminPermissions }: { isAdmin?: bool
 					break;
 				}
 				case 'left':
-					style.top = Math.max(pad, Math.min(rect.top + rect.height / 2, vh - 200));
+					style.top = Math.max(pad, Math.min(visTop + (visBottom - visTop) / 2, vh - 200));
 					style.right = vw - rect.left + pad;
 					style.transform = 'translateY(-50%)';
 					break;
 				case 'right':
-					style.top = Math.max(pad, Math.min(rect.top + rect.height / 2, vh - 200));
+					style.top = Math.max(pad, Math.min(visTop + (visBottom - visTop) / 2, vh - 200));
 					style.left = rect.right + pad;
 					style.transform = 'translateY(-50%)';
 					break;
