@@ -274,7 +274,7 @@ export function CharacterForm({
 			// Admin-only fields
 			if (isAdmin) {
 				body.status = form.status;
-				if (form.rank) body.rank = parseInt(form.rank);
+				body.rank = form.rank ? parseInt(form.rank) : null;
 				body.faction = form.faction || undefined;
 				body.isTarget = form.isTarget;
 				if (form.isTarget && form.targetFaction)
