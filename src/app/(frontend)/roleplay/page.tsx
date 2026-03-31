@@ -10,6 +10,7 @@ import { AdminPanel } from '@/components/roleplay/AdminPanel';
 import { verifySession } from '@/lib/session';
 import { checkAdminPermissions } from '@/lib/admin';
 import { RoleplayTutorial } from '@/components/roleplay/RoleplayTutorial';
+import { RulesModal } from '@/components/roleplay/RulesModal';
 
 export const dynamic = 'force-dynamic';
 
@@ -437,6 +438,7 @@ export default async function RoleplayPage({
 				/>
 			)}
 			<RoleplayTutorial isAdmin={isAdmin} adminPermissions={adminPermissions} />
+			<RulesModal />
 		</div>
 	);
 }

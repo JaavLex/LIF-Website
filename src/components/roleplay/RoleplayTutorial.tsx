@@ -684,6 +684,14 @@ export function RoleplayTutorial({ isAdmin, adminPermissions }: { isAdmin?: bool
 				<div className="tutorial-buttons">
 					<button
 						type="button"
+						className="tutorial-debug-btn rules-reopen-btn"
+						onClick={() => window.dispatchEvent(new Event('open-rules-modal'))}
+						title="Relire le règlement RP"
+					>
+						📋 RÈGLEMENT
+					</button>
+					<button
+						type="button"
 						className="tutorial-debug-btn"
 						onClick={startUserTutorial}
 						title="Relancer le tutoriel"

@@ -293,6 +293,20 @@ export const Roleplay: GlobalConfig = {
 					],
 				},
 				{
+					label: 'Règlement RP',
+					fields: [
+						{
+							name: 'rpRulesPassword',
+							label: 'Mot de passe caché dans le règlement',
+							type: 'text',
+							defaultValue: 'HONNEUR',
+							admin: {
+								description: 'Ce mot de passe est caché dans le règlement RP. Les joueurs doivent le trouver pour confirmer leur lecture.',
+							},
+						},
+					],
+				},
+				{
 					label: 'Rôles Admin',
 					fields: [
 						{
