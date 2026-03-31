@@ -2014,6 +2014,57 @@
 	border-color: var(--primary) !important;
 }
 
+/* Markdown rendered rules content */
+.rules-markdown-content h2.rules-main-title {
+	color: var(--primary);
+	font-size: 1.1rem;
+	margin: 0 0 1rem 0;
+	padding-bottom: 0.5rem;
+	border-bottom: 1px solid var(--primary);
+	text-transform: uppercase;
+	letter-spacing: 0.1em;
+}
+
+.rules-markdown-content h3.rules-section-title {
+	color: var(--primary);
+	font-size: 0.95rem;
+	margin: 1.5rem 0 0.5rem 0;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+}
+
+.rules-markdown-content h4.rules-section-subtitle {
+	color: var(--danger, #8b2635);
+	font-size: 0.85rem;
+	margin: 0.75rem 0 0.25rem 0;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+}
+
+.rules-markdown-content p {
+	margin: 0.2rem 0;
+}
+
+.rules-markdown-content em {
+	color: var(--muted, #6b6b60);
+	font-size: 0.8rem;
+}
+
+.rules-markdown-content hr.rules-hr {
+	border: none;
+	border-top: 1px solid rgba(74, 103, 65, 0.2);
+	margin: 1rem 0;
+}
+
+.rules-markdown-content ul.rules-list {
+	margin: 0.25rem 0 0.25rem 1.25rem;
+	padding: 0;
+}
+
+.rules-markdown-content ul.rules-list li {
+	margin: 0.15rem 0;
+}
+
 @media (max-width: 600px) {
 	.rules-modal {
 		max-height: 95vh;
