@@ -23,7 +23,7 @@ export async function GET() {
 		}
 
 		// Replace password placeholder
-		const processed = content.replace(/>?\|PASSWORDHERE\|<?/g, `>|${password}|<`);
+		const processed = content.replace(/>?\|PASSWORDHERE\|<?/g, password);
 
 		return NextResponse.json({ content: processed });
 	} catch {

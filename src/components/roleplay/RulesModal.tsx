@@ -10,8 +10,7 @@ function renderMarkdown(md: string): string {
 		.replace(/&/g, '&amp;')
 		.replace(/</g, '&lt;')
 		.replace(/>/g, '&gt;')
-		// Restore >| |< markers for password display
-		.replace(/&gt;\|([^|]+)\|&lt;/g, '<span class="rules-hidden-password">&gt;|$1|&lt;</span>');
+		// No special password markers to restore since password is injected as plain text;
 
 	// Process line by line
 	const lines = html.split('\n');
