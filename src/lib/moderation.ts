@@ -100,7 +100,7 @@ export async function discordKickUser(userId: string, reason: string): Promise<{
 			method: 'DELETE',
 			headers: {
 				Authorization: `Bot ${botToken}`,
-				'X-Audit-Log-Reason': reason,
+				'X-Audit-Log-Reason': encodeURIComponent(reason),
 			},
 		});
 
@@ -130,7 +130,7 @@ export async function discordBanUser(userId: string, reason: string, durationSec
 			headers: {
 				'Content-Type': 'application/json',
 				Authorization: `Bot ${botToken}`,
-				'X-Audit-Log-Reason': reason,
+				'X-Audit-Log-Reason': encodeURIComponent(reason),
 			},
 			body: JSON.stringify(body),
 		});
@@ -143,6 +143,30 @@ export async function discordBanUser(userId: string, reason: string, durationSec
 		// For temp bans, we'd need a scheduler. For now, log that it needs manual unban.
 		// A proper implementation would use a cron job or Discord's built-in timeout for short durations.
 
+		return { success: true };
+	} catch (err: any) {
+		return { success: false, error: err.message };
+	}
+}
+
+export async function discordUnbanUser(userId: string, reason: string): Promise<{ success: boolean; error?: string }> {
+	const botToken = process.env.DISCORD_BOT_TOKEN;
+	const guildId = process.env.DISCORD_GUILD_ID;
+	if (!botToken || !guildId) return { success: false, error: 'Bot non configuré' };
+
+	try {
+		const res = await fetch(`${DISCORD_API}/guilds/${guildId}/bans/${userId}`, {
+			method: 'DELETE',
+			headers: {
+				Authorization: `Bot ${botToken}`,
+				'X-Audit-Log-Reason': encodeURIComponent(reason),
+			},
+		});
+
+		if (!res.ok && res.status !== 404) {
+			const text = await res.text();
+			return { success: false, error: `Discord API ${res.status}: ${text}` };
+		}
 		return { success: true };
 	} catch (err: any) {
 		return { success: false, error: err.message };

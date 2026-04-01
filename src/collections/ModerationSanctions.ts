@@ -11,8 +11,8 @@ export const ModerationSanctions: CollectionConfig = {
 	access: {
 		read: () => true,
 		create: () => true,
-		update: () => false, // Sanctions are immutable
-		delete: () => false,
+		update: () => true,
+		delete: () => true,
 	},
 	fields: [
 		{

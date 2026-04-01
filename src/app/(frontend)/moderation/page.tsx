@@ -68,6 +68,9 @@ export default function ModerationPage() {
 	const [createDetail, setCreateDetail] = useState('');
 	const [creating, setCreating] = useState(false);
 
+	// User profile modal
+	const [profileUser, setProfileUser] = useState<ModerationUser | null>(null);
+
 	// Tab state
 	const [tab, setTab] = useState<'users' | 'cases' | 'transcripts'>('users');
 
@@ -434,21 +437,23 @@ export default function ModerationPage() {
 										);
 										return (
 											<li key={user.discordId} className="mod-user-item">
-												<img
-													className="mod-user-avatar"
-													src={user.avatar}
-													alt=""
-													loading="lazy"
-												/>
-												<div className="mod-user-info">
-													<div className="mod-user-name">
-														{user.serverNick || user.globalName}
-													</div>
-													<div className="mod-user-discord">
-														@{user.discordUsername}
-														{user.serverNick &&
-															user.serverNick !== user.globalName &&
-															` · ${user.globalName}`}
+												<div className="mod-user-identity" onClick={() => setProfileUser(user)} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.75rem', flex: 1 }}>
+													<img
+														className="mod-user-avatar"
+														src={user.avatar}
+														alt=""
+														loading="lazy"
+													/>
+													<div className="mod-user-info">
+														<div className="mod-user-name">
+															{user.serverNick || user.globalName}
+														</div>
+														<div className="mod-user-discord">
+															@{user.discordUsername}
+															{user.serverNick &&
+																user.serverNick !== user.globalName &&
+																` · ${user.globalName}`}
+														</div>
 													</div>
 												</div>
 
@@ -704,6 +709,163 @@ export default function ModerationPage() {
 								src={previewUrl}
 								title={previewTitle}
 							/>
+						</div>
+					</div>
+				</div>
+			)}
+
+			{/* User profile modal */}
+			{profileUser && (
+				<div
+					className="mod-modal-overlay"
+					onClick={(e) => {
+						if (e.target === e.currentTarget) setProfileUser(null);
+					}}
+				>
+					<div className="mod-modal mod-modal-profile">
+						<div className="mod-modal-header">
+							<span>Profil utilisateur</span>
+							<button
+								className="mod-modal-close"
+								onClick={() => setProfileUser(null)}
+							>
+								✕
+							</button>
+						</div>
+						<div className="mod-modal-body">
+							<div className="mod-profile-header">
+								<img
+									className="mod-profile-avatar"
+									src={profileUser.avatar}
+									alt=""
+								/>
+								<div className="mod-profile-identity">
+									<div className="mod-profile-name">
+										{profileUser.serverNick || profileUser.globalName}
+									</div>
+									<div className="mod-profile-discord">
+										@{profileUser.discordUsername}
+										{profileUser.serverNick &&
+											profileUser.serverNick !== profileUser.globalName &&
+											` · ${profileUser.globalName}`}
+									</div>
+									<div className="mod-profile-id">
+										ID: {profileUser.discordId}
+									</div>
+									{profileUser.joinedAt && (
+										<div className="mod-profile-joined">
+											Rejoint le {new Date(profileUser.joinedAt).toLocaleDateString('fr-FR')}
+										</div>
+									)}
+								</div>
+							</div>
+
+							{/* Warns */}
+							<div className="mod-profile-section">
+								<div className="mod-profile-section-title">
+									⚠️ Avertissements
+									{profileUser.warnCount > 0 && (
+										<span className="mod-badge warn">{profileUser.warnCount}</span>
+									)}
+								</div>
+								{profileUser.warnCount === 0 ? (
+									<div className="mod-profile-empty">Aucun avertissement</div>
+								) : (
+									<div className="mod-profile-warn-count">
+										{profileUser.warnCount} avertissement{profileUser.warnCount > 1 ? 's' : ''} actif{profileUser.warnCount > 1 ? 's' : ''}
+									</div>
+								)}
+							</div>
+
+							{/* Cases */}
+							<div className="mod-profile-section">
+								<div className="mod-profile-section-title">
+									📁 Dossiers
+									{profileUser.cases.length > 0 && (
+										<span className="mod-badge characters">{profileUser.cases.length}</span>
+									)}
+								</div>
+								{profileUser.cases.length === 0 ? (
+									<div className="mod-profile-empty">Aucun dossier</div>
+								) : (
+									<ul className="mod-profile-list">
+										{profileUser.cases.map((c) => (
+											<li
+												key={c.id}
+												className="mod-profile-list-item mod-profile-case"
+												onClick={() => {
+													setProfileUser(null);
+													router.push(`/moderation/dossier/${c.id}`);
+												}}
+											>
+												<span className="mod-case-list-number">#{c.caseNumber}</span>
+												<span className={`mod-case-status ${c.status}`}>
+													{c.status === 'open'
+														? 'Ouvert'
+														: c.status === 'pending'
+															? 'En attente'
+															: c.status === 'resolved'
+																? 'Résolu'
+																: 'Archivé'}
+												</span>
+											</li>
+										))}
+									</ul>
+								)}
+							</div>
+
+							{/* Characters */}
+							<div className="mod-profile-section">
+								<div className="mod-profile-section-title">
+									🎭 Personnages
+									{profileUser.characters.length > 0 && (
+										<span className="mod-badge characters">{profileUser.characters.length}</span>
+									)}
+								</div>
+								{profileUser.characters.length === 0 ? (
+									<div className="mod-profile-empty">Aucun personnage</div>
+								) : (
+									<ul className="mod-profile-list">
+										{profileUser.characters.map((ch) => (
+											<li
+												key={ch.id}
+												className="mod-profile-list-item"
+												onClick={() => {
+													setProfileUser(null);
+													router.push(`/roleplay/personnage/${ch.id}`);
+												}}
+											>
+												<span className="mod-profile-char-name">{ch.fullName}</span>
+												<div className="mod-profile-char-meta">
+													{ch.isMainCharacter && (
+														<span className="mod-badge case-open">Principal</span>
+													)}
+													<span className={`mod-badge ${ch.status === 'alive' ? 'characters' : ch.status === 'dead' ? 'warn' : 'case-open'}`}>
+														{ch.status === 'alive' ? 'Vivant' : ch.status === 'dead' ? 'Mort' : ch.status}
+													</span>
+												</div>
+											</li>
+										))}
+									</ul>
+								)}
+							</div>
+						</div>
+						<div className="mod-modal-footer">
+							<button
+								className="mod-btn"
+								onClick={() => setProfileUser(null)}
+							>
+								Fermer
+							</button>
+							<button
+								className="mod-btn primary"
+								onClick={() => {
+									handleCreateCase(profileUser);
+									setProfileUser(null);
+								}}
+							>
+								Créer un dossier
+							</button>
 						</div>
 					</div>
 				</div>

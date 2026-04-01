@@ -9,6 +9,7 @@ import {
 	discordWarnUser,
 	discordKickUser,
 	discordBanUser,
+	discordUnbanUser,
 	sendModerationLog,
 	formatDuration,
 	WARN_ESCALATION,
@@ -262,6 +263,16 @@ export async function POST(
 				return NextResponse.json({ error: 'Accès insuffisant pour les actions de modération' }, { status: 403 });
 			}
 
+			// Check if target is an admin — cannot sanction admins
+			const targetUser = await payload.find({
+				collection: 'users',
+				where: { discordId: { equals: caseDoc.targetDiscordId } },
+				limit: 1,
+			});
+			if (targetUser.docs[0]?.role === 'admin') {
+				return NextResponse.json({ error: 'Impossible de sanctionner un administrateur' }, { status: 403 });
+			}
+
 			const { reason: actionReason } = body;
 			if (!actionReason) return NextResponse.json({ error: 'Raison requise' }, { status: 400 });
 
@@ -469,6 +480,223 @@ export async function POST(
 			});
 
 			return NextResponse.json({ sanction, discordResult: result });
+		}
+
+		// Action: change case reason
+		if (action === 'change-reason') {
+			const { reason, reasonDetail } = body;
+			if (!reason) return NextResponse.json({ error: 'Motif requis' }, { status: 400 });
+
+			const oldReason = caseDoc.reason;
+			await payload.update({
+				collection: 'moderation-cases',
+				id: caseId,
+				data: { reason, reasonDetail: reasonDetail || caseDoc.reasonDetail },
+			});
+
+			const REASON_LABELS: Record<string, string> = {
+				'joueur-problematique': 'Joueur problématique',
+				surveillance: 'Surveillance',
+				'comportement-a-verifier': 'Comportement à vérifier',
+				'potentiel-staff': 'Potentiel helper/modérateur',
+				autre: 'Autre',
+			};
+
+			await payload.create({
+				collection: 'moderation-events',
+				data: {
+					case: caseId,
+					type: 'system',
+					content: `Motif modifié : ${REASON_LABELS[oldReason] || oldReason} → ${REASON_LABELS[reason] || reason}`,
+					authorDiscordId: session.discordId,
+					authorDiscordUsername: session.discordUsername,
+					authorDiscordAvatar: session.discordAvatar,
+				},
+			});
+
+			return NextResponse.json({ success: true });
+		}
+
+		// Action: remove a specific warn
+		if (action === 'remove-warn') {
+			if (perms.level !== 'full') {
+				return NextResponse.json({ error: 'Accès insuffisant' }, { status: 403 });
+			}
+
+			const { sanctionId } = body;
+			if (!sanctionId) return NextResponse.json({ error: 'ID de sanction requis' }, { status: 400 });
+
+			const sanction = await payload.findByID({
+				collection: 'moderation-sanctions',
+				id: sanctionId,
+			}) as any;
+
+			if (!sanction || sanction.type !== 'warn') {
+				return NextResponse.json({ error: 'Sanction introuvable ou pas un warn' }, { status: 404 });
+			}
+
+			await payload.delete({
+				collection: 'moderation-sanctions',
+				id: sanctionId,
+			});
+
+			// Recalculate warn count
+			const newWarnCount = await getWarnCount(caseDoc.targetDiscordId);
+			await payload.update({
+				collection: 'moderation-cases',
+				id: caseId,
+				data: { warnCount: newWarnCount },
+			});
+
+			await payload.create({
+				collection: 'moderation-events',
+				data: {
+					case: caseId,
+					type: 'system',
+					content: `Avertissement ${sanction.warnNumber || '?'}/7 retiré par ${session.discordUsername}`,
+					authorDiscordId: session.discordId,
+					authorDiscordUsername: session.discordUsername,
+					authorDiscordAvatar: session.discordAvatar,
+				},
+			});
+
+			await sendModerationLog({
+				title: '🔄 Avertissement retiré',
+				description: `Warn retiré pour **${caseDoc.targetDiscordUsername}**`,
+				color: 0x17a2b8,
+				fields: [
+					{ name: 'Modérateur', value: session.discordUsername, inline: true },
+					{ name: 'Dossier', value: `#${caseDoc.caseNumber}`, inline: true },
+					{ name: 'Nouveau total', value: `${newWarnCount}/7`, inline: true },
+				],
+				timestamp: new Date().toISOString(),
+			});
+
+			return NextResponse.json({ success: true, warnCount: newWarnCount });
+		}
+
+		// Action: pardon — remove the latest ban/kick sanction and unban from Discord
+		if (action === 'pardon') {
+			if (perms.level !== 'full') {
+				return NextResponse.json({ error: 'Accès insuffisant' }, { status: 403 });
+			}
+
+			const { sanctionId } = body;
+			const targetDiscordId = caseDoc.targetDiscordId;
+
+			if (sanctionId) {
+				// Remove a specific sanction
+				const sanction = await payload.findByID({
+					collection: 'moderation-sanctions',
+					id: sanctionId,
+				}) as any;
+
+				if (!sanction) return NextResponse.json({ error: 'Sanction introuvable' }, { status: 404 });
+
+				// Unban from Discord if it was a ban
+				let discordResult: { success: boolean; error?: string } = { success: true };
+				if (sanction.type === 'perm-ban' || sanction.type === 'temp-ban') {
+					discordResult = await discordUnbanUser(targetDiscordId, `Pardon par ${session.discordUsername}`);
+				}
+
+				await payload.delete({ collection: 'moderation-sanctions', id: sanctionId });
+
+				// Recalculate warn count if it was a warn
+				if (sanction.type === 'warn') {
+					const newWarnCount = await getWarnCount(targetDiscordId);
+					await payload.update({ collection: 'moderation-cases', id: caseId, data: { warnCount: newWarnCount } });
+				}
+
+				const SANCTION_LABELS: Record<string, string> = { warn: 'Avertissement', kick: 'Expulsion', 'temp-ban': 'Ban temporaire', 'perm-ban': 'Ban définitif' };
+
+				await payload.create({
+					collection: 'moderation-events',
+					data: {
+						case: caseId,
+						type: 'system',
+						content: `Pardon : ${SANCTION_LABELS[sanction.type] || sanction.type} retiré par ${session.discordUsername}`,
+						authorDiscordId: session.discordId,
+						authorDiscordUsername: session.discordUsername,
+						authorDiscordAvatar: session.discordAvatar,
+						discordSyncStatus: discordResult.success ? 'success' : 'failed',
+						discordSyncError: discordResult.error || '',
+					},
+				});
+
+				await sendModerationLog({
+					title: '🕊️ Pardon',
+					description: `${SANCTION_LABELS[sanction.type]} retiré pour **${caseDoc.targetDiscordUsername}**`,
+					color: 0x28a745,
+					fields: [
+						{ name: 'Modérateur', value: session.discordUsername, inline: true },
+						{ name: 'Dossier', value: `#${caseDoc.caseNumber}`, inline: true },
+					],
+					timestamp: new Date().toISOString(),
+				});
+
+				return NextResponse.json({ success: true, discordResult });
+			}
+
+			return NextResponse.json({ error: 'ID de sanction requis' }, { status: 400 });
+		}
+
+		// Action: pardon-all — remove all sanctions for this user
+		if (action === 'pardon-all') {
+			if (perms.level !== 'full') {
+				return NextResponse.json({ error: 'Accès insuffisant' }, { status: 403 });
+			}
+
+			const targetDiscordId = caseDoc.targetDiscordId;
+
+			// Get all sanctions for this user
+			const allSanctions = await payload.find({
+				collection: 'moderation-sanctions',
+				where: { targetDiscordId: { equals: targetDiscordId } },
+				limit: 10000,
+				depth: 0,
+			});
+
+			// Check if any are bans — if so, unban from Discord
+			const hasBan = allSanctions.docs.some((s: any) => s.type === 'perm-ban' || s.type === 'temp-ban');
+			let discordResult: { success: boolean; error?: string } = { success: true };
+			if (hasBan) {
+				discordResult = await discordUnbanUser(targetDiscordId, `Pardon complet par ${session.discordUsername}`);
+			}
+
+			// Delete all sanctions
+			for (const s of allSanctions.docs) {
+				await payload.delete({ collection: 'moderation-sanctions', id: s.id });
+			}
+
+			// Reset warn count
+			await payload.update({ collection: 'moderation-cases', id: caseId, data: { warnCount: 0 } });
+
+			await payload.create({
+				collection: 'moderation-events',
+				data: {
+					case: caseId,
+					type: 'system',
+					content: `Pardon complet : ${allSanctions.docs.length} sanction(s) retirée(s) par ${session.discordUsername}`,
+					authorDiscordId: session.discordId,
+					authorDiscordUsername: session.discordUsername,
+					authorDiscordAvatar: session.discordAvatar,
+					discordSyncStatus: discordResult.success ? 'success' : 'failed',
+					discordSyncError: discordResult.error || '',
+				},
+			});
+
+			await sendModerationLog({
+				title: '🕊️ Pardon complet',
+				description: `Toutes les sanctions retirées pour **${caseDoc.targetDiscordUsername}** (${allSanctions.docs.length} sanctions)`,
+				color: 0x28a745,
+				fields: [
+					{ name: 'Modérateur', value: session.discordUsername, inline: true },
+					{ name: 'Dossier', value: `#${caseDoc.caseNumber}`, inline: true },
+				],
+				timestamp: new Date().toISOString(),
+			});
+
+			return NextResponse.json({ success: true, removed: allSanctions.docs.length, discordResult });
 		}
 
 		return NextResponse.json({ error: 'Action inconnue' }, { status: 400 });

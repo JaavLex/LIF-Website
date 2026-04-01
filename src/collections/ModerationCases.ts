@@ -12,7 +12,7 @@ export const ModerationCases: CollectionConfig = {
 		read: () => true,
 		create: () => true,
 		update: () => true,
-		delete: () => false, // Cases are never deleted
+		delete: () => true,
 	},
 	fields: [
 		{

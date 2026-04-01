@@ -83,6 +83,19 @@ export default function CaseDetailPage() {
 	const [transcriptUrl, setTranscriptUrl] = useState('');
 	const [transcriptName, setTranscriptName] = useState('');
 
+	// Pardon
+	const [pardonSubmitting, setPardonSubmitting] = useState<number | null>(null);
+	const [pardonAllSubmitting, setPardonAllSubmitting] = useState(false);
+
+	// Change reason
+	const [reasonModal, setReasonModal] = useState(false);
+	const [newReason, setNewReason] = useState('');
+	const [newReasonDetail, setNewReasonDetail] = useState('');
+
+	// Media upload
+	const [uploading, setUploading] = useState(false);
+	const fileInputRef = useRef<HTMLInputElement>(null);
+
 	useEffect(() => {
 		checkAuthAndLoad();
 	}, []);
@@ -236,6 +249,140 @@ export default function CaseDetailPage() {
 		setSubmitting(false);
 	}
 
+	async function handleRemoveWarn(sanctionId: number) {
+		if (!confirm('Retirer cet avertissement ?')) return;
+		setPardonSubmitting(sanctionId);
+		setError('');
+		try {
+			const res = await fetch(`/api/moderation/cases/${id}`, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ action: 'remove-warn', sanctionId }),
+			});
+			if (!res.ok) {
+				const d = await res.json();
+				throw new Error(d.error);
+			}
+			await loadCase();
+		} catch (err: any) {
+			setError(err.message);
+		}
+		setPardonSubmitting(null);
+	}
+
+	async function handlePardon(sanctionId: number) {
+		if (!confirm('Pardonner cette sanction ? Si c\'est un ban, le joueur sera débanni.')) return;
+		setPardonSubmitting(sanctionId);
+		setError('');
+		try {
+			const res = await fetch(`/api/moderation/cases/${id}`, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ action: 'pardon', sanctionId }),
+			});
+			if (!res.ok) {
+				const d = await res.json();
+				throw new Error(d.error);
+			}
+			await loadCase();
+		} catch (err: any) {
+			setError(err.message);
+		}
+		setPardonSubmitting(null);
+	}
+
+	async function handlePardonAll() {
+		if (!confirm('Pardonner TOUTES les sanctions de ce joueur ? Cette action retirera tous les warns, kicks et bans.')) return;
+		setPardonAllSubmitting(true);
+		setError('');
+		try {
+			const res = await fetch(`/api/moderation/cases/${id}`, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ action: 'pardon-all' }),
+			});
+			if (!res.ok) {
+				const d = await res.json();
+				throw new Error(d.error);
+			}
+			await loadCase();
+		} catch (err: any) {
+			setError(err.message);
+		}
+		setPardonAllSubmitting(false);
+	}
+
+	async function handleChangeReason() {
+		if (!newReason) return;
+		setSubmitting(true);
+		setError('');
+		try {
+			const res = await fetch(`/api/moderation/cases/${id}`, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ action: 'change-reason', reason: newReason, reasonDetail: newReasonDetail }),
+			});
+			if (!res.ok) {
+				const d = await res.json();
+				throw new Error(d.error);
+			}
+			setReasonModal(false);
+			await loadCase();
+		} catch (err: any) {
+			setError(err.message);
+		}
+		setSubmitting(false);
+	}
+
+	async function handleFileUpload(files: FileList | null) {
+		if (!files || files.length === 0) return;
+		setUploading(true);
+		setError('');
+
+		try {
+			const uploadedIds: { file: number; description: string }[] = [];
+
+			for (const file of Array.from(files)) {
+				const formData = new FormData();
+				formData.append('file', file);
+
+				const res = await fetch('/api/upload', {
+					method: 'POST',
+					body: formData,
+				});
+				if (!res.ok) {
+					const d = await res.json().catch(() => ({}));
+					throw new Error(d.error || 'Erreur upload');
+				}
+				const data = await res.json();
+				uploadedIds.push({ file: data.doc?.id || data.id, description: file.name });
+			}
+
+			// Post as a comment with attachments
+			const res = await fetch(`/api/moderation/cases/${id}`, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					action: 'comment',
+					content: comment.trim() || `${uploadedIds.length} fichier(s) joint(s)`,
+					eventType: eventType,
+					attachments: uploadedIds,
+				}),
+			});
+			if (!res.ok) {
+				const d = await res.json();
+				throw new Error(d.error);
+			}
+			setComment('');
+			if (fileInputRef.current) fileInputRef.current.value = '';
+			await loadCase();
+			setTimeout(() => timelineEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+		} catch (err: any) {
+			setError(err.message);
+		}
+		setUploading(false);
+	}
+
 	if (loading) {
 		return (
 			<div className="mod-page">
@@ -300,7 +447,23 @@ export default function CaseDetailPage() {
 							<div className="mod-case-meta">
 								<span>@{caseData.targetDiscordUsername}</span>
 								<span>ID: {caseData.targetDiscordId}</span>
-								<span>Motif: {REASON_LABELS[caseData.reason] || caseData.reason}</span>
+								<span>
+									Motif: {REASON_LABELS[caseData.reason] || caseData.reason}
+									{isFull && (
+										<button
+											className="mod-btn-small"
+											onClick={() => {
+												setNewReason(caseData.reason);
+												setNewReasonDetail(caseData.reasonDetail || '');
+												setReasonModal(true);
+											}}
+											style={{ marginLeft: '0.4rem' }}
+											title="Modifier le motif"
+										>
+											✏️
+										</button>
+									)}
+								</span>
 								<span>Créé le {new Date(caseData.createdAt).toLocaleDateString('fr-FR')}</span>
 							</div>
 						</div>
@@ -476,17 +639,34 @@ export default function CaseDetailPage() {
 													)}
 													{event.attachments?.length > 0 && (
 														<div className="mod-event-attachments">
-															{event.attachments.map((att: any, i: number) => (
-																<a
-																	key={i}
-																	className="mod-event-attachment"
-																	href={typeof att.file === 'object' ? att.file.url : '#'}
-																	target="_blank"
-																	rel="noopener noreferrer"
-																>
-																	📎 {att.description || `Pièce jointe ${i + 1}`}
-																</a>
-															))}
+															{event.attachments.map((att: any, i: number) => {
+																const fileUrl = typeof att.file === 'object' ? att.file.url : '#';
+																const mimeType = typeof att.file === 'object' ? att.file.mimeType || '' : '';
+																const fileName = att.description || `Pièce jointe ${i + 1}`;
+
+																if (mimeType.startsWith('image/')) {
+																	return (
+																		<a key={i} href={fileUrl} target="_blank" rel="noopener noreferrer" className="mod-attachment-media">
+																			<img src={fileUrl} alt={fileName} className="mod-attachment-img" loading="lazy" />
+																		</a>
+																	);
+																}
+																if (mimeType.startsWith('video/')) {
+																	return (
+																		<video key={i} src={fileUrl} controls className="mod-attachment-video" preload="metadata" />
+																	);
+																}
+																if (mimeType.startsWith('audio/')) {
+																	return (
+																		<audio key={i} src={fileUrl} controls className="mod-attachment-audio" preload="metadata" />
+																	);
+																}
+																return (
+																	<a key={i} className="mod-event-attachment" href={fileUrl} target="_blank" rel="noopener noreferrer">
+																		📎 {fileName}
+																	</a>
+																);
+															})}
 														</div>
 													)}
 												</div>
@@ -517,6 +697,22 @@ export default function CaseDetailPage() {
 											<option value="positive-event">Événement positif</option>
 											<option value="negative-event">Événement négatif</option>
 										</select>
+										<input
+											ref={fileInputRef}
+											type="file"
+											multiple
+											accept="image/*,video/*,audio/*"
+											style={{ display: 'none' }}
+											onChange={(e) => handleFileUpload(e.target.files)}
+										/>
+										<button
+											type="button"
+											className="mod-btn"
+											onClick={() => fileInputRef.current?.click()}
+											disabled={uploading}
+										>
+											{uploading ? 'Upload...' : '📎 Fichiers'}
+										</button>
 										<button
 											type="button"
 											className="mod-btn"
@@ -621,6 +817,16 @@ export default function CaseDetailPage() {
 								<div className="mod-profile-section">
 									<div className="mod-profile-section-title">
 										Historique des sanctions ({sanctions.length})
+										{isFull && sanctions.length > 0 && (
+											<button
+												className="mod-btn-small pardon"
+												onClick={handlePardonAll}
+												disabled={pardonAllSubmitting}
+												style={{ marginLeft: '0.5rem' }}
+											>
+												{pardonAllSubmitting ? '...' : '🕊️ Pardon complet'}
+											</button>
+										)}
 									</div>
 									<table className="mod-sanctions-table">
 										<thead>
@@ -628,6 +834,7 @@ export default function CaseDetailPage() {
 												<th>Type</th>
 												<th>Raison</th>
 												<th>Date</th>
+												{isFull && <th></th>}
 											</tr>
 										</thead>
 										<tbody>
@@ -646,6 +853,29 @@ export default function CaseDetailPage() {
 													<td>
 														{new Date(s.createdAt).toLocaleDateString('fr-FR')}
 													</td>
+													{isFull && (
+														<td>
+															{s.type === 'warn' ? (
+																<button
+																	className="mod-btn-small danger"
+																	onClick={() => handleRemoveWarn(s.id)}
+																	disabled={pardonSubmitting === s.id}
+																	title="Retirer ce warn"
+																>
+																	{pardonSubmitting === s.id ? '...' : '✕'}
+																</button>
+															) : (
+																<button
+																	className="mod-btn-small pardon"
+																	onClick={() => handlePardon(s.id)}
+																	disabled={pardonSubmitting === s.id}
+																	title="Pardonner cette sanction"
+																>
+																	{pardonSubmitting === s.id ? '...' : '🕊️'}
+																</button>
+															)}
+														</td>
+													)}
 												</tr>
 											))}
 										</tbody>
@@ -782,6 +1012,58 @@ export default function CaseDetailPage() {
 								disabled={submitting || !transcriptUrl.trim()}
 							>
 								{submitting ? 'Envoi...' : 'Lier'}
+							</button>
+						</div>
+					</div>
+				</div>
+			)}
+
+			{/* Reason change modal */}
+			{reasonModal && (
+				<div
+					className="mod-modal-overlay"
+					onClick={(e) => { if (e.target === e.currentTarget) setReasonModal(false); }}
+				>
+					<div className="mod-modal">
+						<div className="mod-modal-header">
+							<span>Modifier le motif</span>
+							<button className="mod-modal-close" onClick={() => setReasonModal(false)}>
+								✕
+							</button>
+						</div>
+						<div className="mod-modal-body">
+							<div className="mod-modal-field">
+								<label className="mod-modal-label">Motif</label>
+								<select
+									className="mod-reason-select"
+									value={newReason}
+									onChange={(e) => setNewReason(e.target.value)}
+								>
+									{Object.entries(REASON_LABELS).map(([v, l]) => (
+										<option key={v} value={v}>{l}</option>
+									))}
+								</select>
+							</div>
+							<div className="mod-modal-field">
+								<label className="mod-modal-label">Détail (optionnel)</label>
+								<textarea
+									className="mod-modal-textarea"
+									value={newReasonDetail}
+									onChange={(e) => setNewReasonDetail(e.target.value)}
+									placeholder="Détail supplémentaire..."
+								/>
+							</div>
+						</div>
+						<div className="mod-modal-footer">
+							<button className="mod-btn" onClick={() => setReasonModal(false)}>
+								Annuler
+							</button>
+							<button
+								className="mod-btn primary"
+								onClick={handleChangeReason}
+								disabled={submitting}
+							>
+								{submitting ? 'Modification...' : 'Modifier'}
 							</button>
 						</div>
 					</div>

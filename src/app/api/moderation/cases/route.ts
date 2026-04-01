@@ -73,6 +73,44 @@ export async function POST(request: NextRequest) {
 
 		const payload = await getPayloadClient();
 
+		// Check if target is an admin — cannot create cases on admins
+		const targetUser = await payload.find({
+			collection: 'users',
+			where: { discordId: { equals: targetDiscordId } },
+			limit: 1,
+		});
+		if (targetUser.docs[0]?.role === 'admin') {
+			return NextResponse.json({ error: 'Impossible de créer un dossier sur un administrateur' }, { status: 403 });
+		}
+
+		// Also check Discord admin roles
+		try {
+			const roleplayConfig = await payload.findGlobal({ slug: 'roleplay' });
+			const adminRoles = (roleplayConfig as any)?.adminRoles;
+			if (adminRoles?.length) {
+				// We need to check the target's Discord roles too
+				const botToken = process.env.DISCORD_BOT_TOKEN;
+				const guildId = process.env.DISCORD_GUILD_ID;
+				if (botToken && guildId) {
+					const memberRes = await fetch(
+						`https://discord.com/api/v10/guilds/${guildId}/members/${targetDiscordId}`,
+						{ headers: { Authorization: `Bot ${botToken}` } },
+					);
+					if (memberRes.ok) {
+						const member = await memberRes.json();
+						const targetRoles: string[] = member.roles || [];
+						for (const role of adminRoles) {
+							if (targetRoles.includes(role.roleId)) {
+								return NextResponse.json({ error: 'Impossible de créer un dossier sur un membre du staff' }, { status: 403 });
+							}
+						}
+					}
+				}
+			}
+		} catch {
+			// Config check failed, continue
+		}
+
 		// Check for existing case for this user
 		const existing = await payload.find({
 			collection: 'moderation-cases',
