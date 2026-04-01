@@ -1,8 +1,16 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import './moderation.css';
+
+interface SessionUser {
+	userId: number;
+	discordId: string;
+	discordUsername: string;
+	discordAvatar: string;
+	roles: string[];
+}
 
 interface ModerationUser {
 	discordId: string;
@@ -15,6 +23,20 @@ interface ModerationUser {
 	warnCount: number;
 	cases: { id: number; status: string; caseNumber: number }[];
 	characters: { id: number; fullName: string; status: string; isMainCharacter: boolean }[];
+}
+
+interface Transcript {
+	messageId: string;
+	ticketOwner: string;
+	ticketOwnerAvatar: string;
+	ticketName: string;
+	panelName: string;
+	participants: { count: number; name: string }[];
+	transcriptUrl: string;
+	downloadUrl: string;
+	filename: string;
+	size: number;
+	timestamp: string;
 }
 
 const REASON_LABELS: Record<string, string> = {
@@ -30,7 +52,9 @@ export default function ModerationPage() {
 	const [loading, setLoading] = useState(true);
 	const [authorized, setAuthorized] = useState(false);
 	const [adminLevel, setAdminLevel] = useState<string>('none');
+	const [sessionUser, setSessionUser] = useState<SessionUser | null>(null);
 	const [users, setUsers] = useState<ModerationUser[]>([]);
+	const [usersLoading, setUsersLoading] = useState(true);
 	const [search, setSearch] = useState('');
 	const [filterWarn, setFilterWarn] = useState(false);
 	const [filterCase, setFilterCase] = useState(false);
@@ -43,12 +67,23 @@ export default function ModerationPage() {
 	const [creating, setCreating] = useState(false);
 
 	// Tab state
-	const [tab, setTab] = useState<'users' | 'cases'>('users');
+	const [tab, setTab] = useState<'users' | 'cases' | 'transcripts'>('users');
 
 	// Cases tab data
 	const [cases, setCases] = useState<any[]>([]);
 	const [casesLoading, setCasesLoading] = useState(false);
 	const [caseStatusFilter, setCaseStatusFilter] = useState('');
+
+	// Transcripts tab data
+	const [transcripts, setTranscripts] = useState<Transcript[]>([]);
+	const [transcriptsLoading, setTranscriptsLoading] = useState(false);
+	const [transcriptsLoaded, setTranscriptsLoaded] = useState(false);
+	const [transcriptSearch, setTranscriptSearch] = useState('');
+	const [transcriptOwner, setTranscriptOwner] = useState('');
+	const [transcriptPanel, setTranscriptPanel] = useState('');
+	const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+	const [previewTitle, setPreviewTitle] = useState('');
+	const [expandedOwners, setExpandedOwners] = useState<Set<string>>(new Set());
 
 	useEffect(() => {
 		checkAuth();
@@ -56,30 +91,47 @@ export default function ModerationPage() {
 
 	async function checkAuth() {
 		try {
-			const res = await fetch('/api/auth/admin-check');
-			const data = await res.json();
-			if (data.isAdmin) {
+			// Fetch session and admin check in parallel
+			const [authRes, meRes] = await Promise.all([
+				fetch('/api/auth/admin-check'),
+				fetch('/api/auth/me'),
+			]);
+			const authData = await authRes.json();
+			const meData = meRes.ok ? await meRes.json() : null;
+
+			if (meData?.authenticated) {
+				setSessionUser(meData.user);
+			}
+
+			if (authData.isAdmin) {
 				setAuthorized(true);
-				setAdminLevel(data.level);
-				loadUsers();
+				setAdminLevel(authData.level);
+				setLoading(false);
+				await loadUsers();
 			} else {
 				setAuthorized(false);
+				setLoading(false);
 			}
 		} catch {
 			setAuthorized(false);
+			setLoading(false);
 		}
-		setLoading(false);
 	}
 
 	async function loadUsers() {
+		setUsersLoading(true);
 		try {
 			const res = await fetch('/api/moderation/users');
-			if (!res.ok) throw new Error('Erreur chargement');
+			if (!res.ok) {
+				const d = await res.json().catch(() => ({}));
+				throw new Error(d.error || `Erreur ${res.status}`);
+			}
 			const data = await res.json();
-			setUsers(data.users);
+			setUsers(data.users || []);
 		} catch (err: any) {
 			setError(err.message);
 		}
+		setUsersLoading(false);
 	}
 
 	async function loadCases() {
@@ -99,6 +151,7 @@ export default function ModerationPage() {
 
 	useEffect(() => {
 		if (tab === 'cases' && authorized) loadCases();
+		if (tab === 'transcripts' && authorized && !transcriptsLoaded) loadTranscripts();
 	}, [tab, caseStatusFilter, authorized]);
 
 	async function handleCreateCase(user: ModerationUser) {
@@ -146,6 +199,67 @@ export default function ModerationPage() {
 		setCreating(false);
 	}
 
+	async function loadTranscripts() {
+		setTranscriptsLoading(true);
+		try {
+			const res = await fetch('/api/roleplay/transcripts');
+			if (!res.ok) throw new Error('Erreur chargement transcripts');
+			const data = await res.json();
+			setTranscripts(data.transcripts || []);
+			setTranscriptsLoaded(true);
+		} catch (err: any) {
+			setError(err.message);
+		}
+		setTranscriptsLoading(false);
+	}
+
+	const transcriptOwners = useMemo(() => {
+		const set = new Set<string>();
+		for (const t of transcripts) if (t.ticketOwner) set.add(t.ticketOwner);
+		return Array.from(set).sort((a, b) => a.localeCompare(b));
+	}, [transcripts]);
+
+	const transcriptPanels = useMemo(() => {
+		const set = new Set<string>();
+		for (const t of transcripts) if (t.panelName) set.add(t.panelName);
+		return Array.from(set).sort((a, b) => a.localeCompare(b));
+	}, [transcripts]);
+
+	const filteredTranscripts = useMemo(() => {
+		let list = transcripts;
+		if (transcriptOwner) list = list.filter(t => t.ticketOwner === transcriptOwner);
+		if (transcriptPanel) list = list.filter(t => t.panelName === transcriptPanel);
+		if (transcriptSearch.trim()) {
+			const q = transcriptSearch.toLowerCase();
+			list = list.filter(t =>
+				t.ticketName.toLowerCase().includes(q) ||
+				t.ticketOwner.toLowerCase().includes(q) ||
+				t.panelName.toLowerCase().includes(q) ||
+				t.participants.some(p => p.name.toLowerCase().includes(q)),
+			);
+		}
+		return list;
+	}, [transcripts, transcriptSearch, transcriptOwner, transcriptPanel]);
+
+	const groupedTranscripts = useMemo(() => {
+		const map = new Map<string, Transcript[]>();
+		for (const t of filteredTranscripts) {
+			const key = t.ticketOwner || 'Inconnu';
+			if (!map.has(key)) map.set(key, []);
+			map.get(key)!.push(t);
+		}
+		return Array.from(map.entries()).sort((a, b) => a[0].localeCompare(b[0]));
+	}, [filteredTranscripts]);
+
+	const toggleTranscriptOwner = (owner: string) => {
+		setExpandedOwners(prev => {
+			const next = new Set(prev);
+			if (next.has(owner)) next.delete(owner);
+			else next.add(owner);
+			return next;
+		});
+	};
+
 	const filtered = users.filter((u) => {
 		const q = search.toLowerCase();
 		const nameMatch =
@@ -179,9 +293,15 @@ export default function ModerationPage() {
 					<div className="mod-denied">
 						<h1>Accès refusé</h1>
 						<p>Vous n&apos;êtes pas autorisé à accéder à cette page.</p>
-						<a href="/roleplay" className="mod-btn primary">
-							Retour au Roleplay
-						</a>
+						{!sessionUser ? (
+							<a href="/api/auth/discord" className="mod-btn primary">
+								Connexion Discord
+							</a>
+						) : (
+							<a href="/roleplay" className="mod-btn primary">
+								Retour au Roleplay
+							</a>
+						)}
 					</div>
 				</div>
 			</div>
@@ -203,6 +323,19 @@ export default function ModerationPage() {
 						<span className="mod-header-title">⚖️ Panneau de Modération</span>
 					</div>
 					<div className="mod-header-right">
+						{sessionUser && (
+							<div className="mod-session">
+								<img
+									className="mod-session-avatar"
+									src={sessionUser.discordAvatar}
+									alt=""
+								/>
+								<span className="mod-session-name">{sessionUser.discordUsername}</span>
+								<a href="/api/auth/logout" className="mod-header-btn mod-header-btn-danger">
+									Déconnexion
+								</a>
+							</div>
+						)}
 						<a href="/roleplay" className="mod-header-btn">
 							← Roleplay
 						</a>
@@ -217,13 +350,19 @@ export default function ModerationPage() {
 							className={`mod-tab${tab === 'users' ? ' active' : ''}`}
 							onClick={() => setTab('users')}
 						>
-							Liste des utilisateurs
+							Utilisateurs
 						</button>
 						<button
 							className={`mod-tab${tab === 'cases' ? ' active' : ''}`}
 							onClick={() => setTab('cases')}
 						>
 							Dossiers ({activeCases} actifs)
+						</button>
+						<button
+							className={`mod-tab${tab === 'transcripts' ? ' active' : ''}`}
+							onClick={() => setTab('transcripts')}
+						>
+							Transcripts
 						</button>
 					</div>
 
@@ -273,10 +412,12 @@ export default function ModerationPage() {
 							</div>
 
 							{/* User list */}
-							{users.length === 0 ? (
+							{usersLoading ? (
 								<div className="mod-loading">
 									Chargement des utilisateurs
 								</div>
+							) : users.length === 0 && !error ? (
+								<div className="mod-empty">Aucun utilisateur trouvé</div>
 							) : filtered.length === 0 ? (
 								<div className="mod-empty">Aucun utilisateur trouvé</div>
 							) : (
@@ -413,8 +554,154 @@ export default function ModerationPage() {
 							)}
 						</>
 					)}
+
+					{/* Transcripts tab */}
+					{tab === 'transcripts' && (
+						<>
+							{transcriptsLoading ? (
+								<div className="mod-loading">Chargement des transcripts</div>
+							) : (
+								<>
+									<div className="mod-filters">
+										<input
+											className="mod-search"
+											type="text"
+											placeholder="Rechercher par nom, ticket, participant..."
+											value={transcriptSearch}
+											onChange={(e) => setTranscriptSearch(e.target.value)}
+										/>
+										<select
+											className="mod-filter-select"
+											value={transcriptOwner}
+											onChange={(e) => setTranscriptOwner(e.target.value)}
+										>
+											<option value="">Tous les propriétaires</option>
+											{transcriptOwners.map((o) => (
+												<option key={o} value={o}>{o}</option>
+											))}
+										</select>
+										<select
+											className="mod-filter-select"
+											value={transcriptPanel}
+											onChange={(e) => setTranscriptPanel(e.target.value)}
+										>
+											<option value="">Tous les panels</option>
+											{transcriptPanels.map((p) => (
+												<option key={p} value={p}>{p}</option>
+											))}
+										</select>
+									</div>
+
+									<div className="mod-stats">
+										<span>
+											<span className="mod-stat-value">{filteredTranscripts.length}</span> transcript{filteredTranscripts.length > 1 ? 's' : ''}
+										</span>
+										<span>
+											<span className="mod-stat-value">{groupedTranscripts.length}</span> propriétaire{groupedTranscripts.length > 1 ? 's' : ''}
+										</span>
+									</div>
+
+									{groupedTranscripts.length === 0 ? (
+										<div className="mod-empty">Aucun transcript trouvé</div>
+									) : (
+										<ul className="mod-transcript-list">
+											{groupedTranscripts.map(([owner, items]) => (
+												<li key={owner} className="mod-transcript-group">
+													<button
+														className="mod-transcript-owner"
+														onClick={() => toggleTranscriptOwner(owner)}
+													>
+														<span className="mod-transcript-arrow">
+															{expandedOwners.has(owner) ? '▼' : '▶'}
+														</span>
+														{items[0]?.ticketOwnerAvatar && (
+															<img
+																className="mod-user-avatar"
+																src={items[0].ticketOwnerAvatar}
+																alt=""
+															/>
+														)}
+														<span className="mod-transcript-owner-name">{owner}</span>
+														<span className="mod-badge characters">{items.length}</span>
+													</button>
+													{expandedOwners.has(owner) && (
+														<ul className="mod-transcript-tickets">
+															{items.map((t) => (
+																<li key={t.messageId} className="mod-transcript-ticket">
+																	<div className="mod-transcript-ticket-info">
+																		<div className="mod-transcript-ticket-name">{t.ticketName}</div>
+																		<div className="mod-transcript-ticket-meta">
+																			{t.panelName} · {new Date(t.timestamp).toLocaleDateString('fr-FR')} · {t.participants.length} participant{t.participants.length > 1 ? 's' : ''}
+																		</div>
+																	</div>
+																	<div className="mod-user-actions">
+																		<button
+																			className="mod-btn primary"
+																			onClick={() => {
+																				setPreviewUrl(t.transcriptUrl);
+																				setPreviewTitle(t.ticketName);
+																			}}
+																		>
+																			Voir
+																		</button>
+																		<a
+																			className="mod-btn"
+																			href={t.downloadUrl}
+																			target="_blank"
+																			rel="noopener noreferrer"
+																		>
+																			Télécharger
+																		</a>
+																	</div>
+																</li>
+															))}
+														</ul>
+													)}
+												</li>
+											))}
+										</ul>
+									)}
+								</>
+							)}
+						</>
+					)}
 				</div>
 			</div>
+
+			{/* Transcript preview modal */}
+			{previewUrl && (
+				<div
+					className="mod-modal-overlay"
+					onClick={(e) => {
+						if (e.target === e.currentTarget) {
+							setPreviewUrl(null);
+							setPreviewTitle('');
+						}
+					}}
+				>
+					<div className="mod-modal mod-modal-transcript">
+						<div className="mod-modal-header">
+							<span>{previewTitle}</span>
+							<button
+								className="mod-modal-close"
+								onClick={() => {
+									setPreviewUrl(null);
+									setPreviewTitle('');
+								}}
+							>
+								✕
+							</button>
+						</div>
+						<div className="mod-modal-body mod-transcript-preview-body">
+							<iframe
+								className="mod-transcript-iframe"
+								src={previewUrl}
+								title={previewTitle}
+							/>
+						</div>
+					</div>
+				</div>
+			)}
 
 			{/* Create case modal */}
 			{createModal && (
