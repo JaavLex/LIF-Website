@@ -55,7 +55,9 @@ export default function ModerationPage() {
 	const [sessionUser, setSessionUser] = useState<SessionUser | null>(null);
 	const [users, setUsers] = useState<ModerationUser[]>([]);
 	const [usersLoading, setUsersLoading] = useState(true);
+	const [usersSource, setUsersSource] = useState<'known' | 'search'>('known');
 	const [search, setSearch] = useState('');
+	const [searchTimer, setSearchTimer] = useState<NodeJS.Timeout | null>(null);
 	const [filterWarn, setFilterWarn] = useState(false);
 	const [filterCase, setFilterCase] = useState(false);
 	const [error, setError] = useState('');
@@ -118,20 +120,34 @@ export default function ModerationPage() {
 		}
 	}
 
-	async function loadUsers() {
+	async function loadUsers(searchQuery = '') {
 		setUsersLoading(true);
 		try {
-			const res = await fetch('/api/moderation/users');
+			const params = new URLSearchParams();
+			if (searchQuery) params.set('search', searchQuery);
+			const res = await fetch(`/api/moderation/users?${params}`);
 			if (!res.ok) {
 				const d = await res.json().catch(() => ({}));
 				throw new Error(d.error || `Erreur ${res.status}`);
 			}
 			const data = await res.json();
 			setUsers(data.users || []);
+			setUsersSource(data.source || 'known');
 		} catch (err: any) {
 			setError(err.message);
 		}
 		setUsersLoading(false);
+	}
+
+	function handleSearchChange(value: string) {
+		setSearch(value);
+		if (searchTimer) clearTimeout(searchTimer);
+		if (value.length >= 2) {
+			const timer = setTimeout(() => loadUsers(value), 400);
+			setSearchTimer(timer);
+		} else if (value.length === 0) {
+			loadUsers();
+		}
 	}
 
 	async function loadCases() {
@@ -261,16 +277,6 @@ export default function ModerationPage() {
 	};
 
 	const filtered = users.filter((u) => {
-		const q = search.toLowerCase();
-		const nameMatch =
-			!q ||
-			u.discordUsername.toLowerCase().includes(q) ||
-			u.globalName.toLowerCase().includes(q) ||
-			(u.serverNick && u.serverNick.toLowerCase().includes(q)) ||
-			u.discordId.includes(q) ||
-			u.characters.some((c) => c.fullName.toLowerCase().includes(q));
-
-		if (!nameMatch) return false;
 		if (filterWarn && u.warnCount === 0) return false;
 		if (filterCase && u.cases.length === 0) return false;
 		return true;
@@ -374,7 +380,7 @@ export default function ModerationPage() {
 							{/* Stats */}
 							<div className="mod-stats">
 								<span>
-									<span className="mod-stat-value">{users.length}</span> membres
+									<span className="mod-stat-value">{users.length}</span> {usersSource === 'search' ? 'résultats' : 'membres connus'}
 								</span>
 								<span>
 									<span className="mod-stat-value">{activeCases}</span> dossiers actifs
@@ -389,9 +395,9 @@ export default function ModerationPage() {
 								<input
 									className="mod-search"
 									type="text"
-									placeholder="Rechercher par nom, Discord ID, personnage..."
+									placeholder="Rechercher un membre Discord (min. 2 caractères)..."
 									value={search}
-									onChange={(e) => setSearch(e.target.value)}
+									onChange={(e) => handleSearchChange(e.target.value)}
 								/>
 								<label className="mod-comment-checkbox">
 									<input

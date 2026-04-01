@@ -1238,14 +1238,17 @@
 /* Transcript preview modal */
 .mod-modal-transcript {
 	width: 90vw;
-	max-width: 1100px;
+	max-width: 1100px !important;
 	height: 85vh;
+	display: flex;
+	flex-direction: column;
 }
 
 .mod-transcript-preview-body {
 	flex: 1;
 	padding: 0 !important;
 	overflow: hidden;
+	min-height: 0;
 }
 
 .mod-transcript-iframe {
