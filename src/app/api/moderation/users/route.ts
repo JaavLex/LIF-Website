@@ -7,19 +7,27 @@ import { getGuildRoles } from '@/lib/discord';
 
 const DISCORD_API = 'https://discord.com/api/v10';
 
-async function fetchMember(discordId: string): Promise<any | null> {
+async function fetchAllMembers(): Promise<any[]> {
 	const botToken = process.env.DISCORD_BOT_TOKEN;
 	const guildId = process.env.DISCORD_GUILD_ID;
-	if (!botToken || !guildId) return null;
+	if (!botToken || !guildId) return [];
+	const all: any[] = [];
+	let after = '0';
 	try {
-		const res = await fetch(`${DISCORD_API}/guilds/${guildId}/members/${discordId}`, {
-			headers: { Authorization: `Bot ${botToken}` },
-		});
-		if (!res.ok) return null;
-		return await res.json();
-	} catch {
-		return null;
-	}
+		while (true) {
+			const res = await fetch(
+				`${DISCORD_API}/guilds/${guildId}/members?limit=1000&after=${after}`,
+				{ headers: { Authorization: `Bot ${botToken}` } },
+			);
+			if (!res.ok) break;
+			const batch = await res.json();
+			if (!Array.isArray(batch) || batch.length === 0) break;
+			all.push(...batch);
+			if (batch.length < 1000) break;
+			after = batch[batch.length - 1].user.id;
+		}
+	} catch {}
+	return all;
 }
 
 async function searchMembers(query: string): Promise<any[]> {
@@ -92,49 +100,45 @@ export async function GET(request: Request) {
 			return NextResponse.json({ users, source: 'search', guildRoles: guildRoleMap, adminRoleIds: Array.from(adminRoleIds) });
 		}
 
-		// Default: get known users from DB (characters + cases + sanctions)
-		const [cases, sanctions, characters] = await Promise.all([
+		// Default: fetch ALL guild members
+		const [cases, sanctions, characters, allMembers] = await Promise.all([
 			payload.find({ collection: 'moderation-cases', limit: 10000, depth: 0 }),
 			payload.find({ collection: 'moderation-sanctions', where: { type: { equals: 'warn' } }, limit: 10000, depth: 0 }),
 			payload.find({ collection: 'characters', limit: 10000, depth: 1 }),
+			fetchAllMembers(),
 		]);
 
 		const { warnMap, caseMap, charMap } = buildMaps(cases.docs, sanctions.docs, characters.docs);
 
-		// Collect all unique Discord IDs from DB
+		// Build set of member IDs we got from Discord
+		const memberIds = new Set(allMembers.map((m: any) => m.user.id));
+
+		// Also find DB-only users who left the server
 		const knownIds = new Set<string>();
 		for (const c of cases.docs) { const id = (c as any).targetDiscordId; if (id) knownIds.add(id); }
 		for (const s of sanctions.docs) { const id = (s as any).targetDiscordId; if (id) knownIds.add(id); }
 		for (const ch of characters.docs) { const id = (ch as any).discordId; if (id) knownIds.add(id); }
 
-		// Fetch member info for each known ID (in parallel batches)
-		const ids = Array.from(knownIds);
-		const memberResults = await Promise.all(ids.map((id) => fetchMember(id)));
+		const users: any[] = allMembers.map((m: any) => memberToUser(m, warnMap, caseMap, charMap));
 
-		const users: any[] = [];
-		for (let i = 0; i < ids.length; i++) {
-			const member = memberResults[i];
-			if (!member) {
-				// Member left the server — still show with basic info from DB
-				const discordId = ids[i];
-				const caseData = caseMap[discordId] || [];
-				const caseName = caseData.length > 0 ? (cases.docs.find((c: any) => c.targetDiscordId === discordId) as any)?.targetDiscordUsername : null;
-				users.push({
-					discordId,
-					discordUsername: caseName || discordId,
-					globalName: caseName || discordId,
-					serverNick: null,
-					avatar: `https://cdn.discordapp.com/embed/avatars/${Number(BigInt(discordId) >> BigInt(22)) % 6}.png`,
-					joinedAt: null,
-					roles: [],
-					warnCount: warnMap[discordId] || 0,
-					cases: caseMap[discordId] || [],
-					characters: charMap[discordId] || [],
-					leftServer: true,
-				});
-			} else {
-				users.push(memberToUser(member, warnMap, caseMap, charMap));
-			}
+		// Add users who left the server but have DB records
+		for (const discordId of knownIds) {
+			if (memberIds.has(discordId)) continue;
+			const caseData = caseMap[discordId] || [];
+			const caseName = caseData.length > 0 ? (cases.docs.find((c: any) => c.targetDiscordId === discordId) as any)?.targetDiscordUsername : null;
+			users.push({
+				discordId,
+				discordUsername: caseName || discordId,
+				globalName: caseName || discordId,
+				serverNick: null,
+				avatar: `https://cdn.discordapp.com/embed/avatars/${Number(BigInt(discordId) >> BigInt(22)) % 6}.png`,
+				joinedAt: null,
+				roles: [],
+				warnCount: warnMap[discordId] || 0,
+				cases: caseMap[discordId] || [],
+				characters: charMap[discordId] || [],
+				leftServer: true,
+			});
 		}
 
 		users.sort((a: any, b: any) => (a.serverNick || a.globalName).localeCompare(b.serverNick || b.globalName));
