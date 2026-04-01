@@ -838,7 +838,11 @@ export default function CaseDetailPage() {
 											</tr>
 										</thead>
 										<tbody>
-											{sanctions.map((s: any) => (
+											{(() => {
+												const lastWarnId = sanctions
+													.filter((s: any) => s.type === 'warn')
+													.sort((a: any, b: any) => (b.warnNumber || 0) - (a.warnNumber || 0))[0]?.id;
+												return sanctions.map((s: any) => (
 												<tr key={s.id}>
 													<td>
 														<span className={`mod-sanction-type ${s.type}`}>
@@ -855,7 +859,7 @@ export default function CaseDetailPage() {
 													</td>
 													{isFull && (
 														<td>
-															{s.type === 'warn' ? (
+															{s.type === 'warn' && s.id === lastWarnId ? (
 																<button
 																	className="mod-btn-small danger"
 																	onClick={() => handleRemoveWarn(s.id)}
@@ -864,7 +868,7 @@ export default function CaseDetailPage() {
 																>
 																	{pardonSubmitting === s.id ? '...' : '✕'}
 																</button>
-															) : (
+															) : s.type !== 'warn' ? (
 																<button
 																	className="mod-btn-small pardon"
 																	onClick={() => handlePardon(s.id)}
@@ -873,11 +877,12 @@ export default function CaseDetailPage() {
 																>
 																	{pardonSubmitting === s.id ? '...' : '🕊️'}
 																</button>
-															)}
+															) : null}
 														</td>
 													)}
 												</tr>
-											))}
+												));
+											})()}
 										</tbody>
 									</table>
 								</div>

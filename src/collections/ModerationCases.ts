@@ -14,6 +14,33 @@ export const ModerationCases: CollectionConfig = {
 		update: () => true,
 		delete: () => true,
 	},
+	hooks: {
+		beforeDelete: [
+			async ({ id, req }) => {
+				const payload = req.payload;
+				// Delete related events
+				const events = await payload.find({
+					collection: 'moderation-events',
+					where: { case: { equals: id } },
+					limit: 10000,
+					depth: 0,
+				});
+				for (const event of events.docs) {
+					await payload.delete({ collection: 'moderation-events', id: event.id });
+				}
+				// Delete related sanctions
+				const sanctions = await payload.find({
+					collection: 'moderation-sanctions',
+					where: { case: { equals: id } },
+					limit: 10000,
+					depth: 0,
+				});
+				for (const sanction of sanctions.docs) {
+					await payload.delete({ collection: 'moderation-sanctions', id: sanction.id });
+				}
+			},
+		],
+	},
 	fields: [
 		{
 			name: 'caseNumber',

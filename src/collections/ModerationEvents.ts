@@ -12,7 +12,7 @@ export const ModerationEvents: CollectionConfig = {
 		read: () => true,
 		create: () => true,
 		update: () => false, // Events are immutable
-		delete: () => false,
+		delete: () => true,
 	},
 	fields: [
 		{

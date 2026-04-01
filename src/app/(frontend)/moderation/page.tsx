@@ -56,6 +56,8 @@ export default function ModerationPage() {
 	const [users, setUsers] = useState<ModerationUser[]>([]);
 	const [usersLoading, setUsersLoading] = useState(true);
 	const [usersSource, setUsersSource] = useState<'known' | 'search'>('known');
+	const [guildRoles, setGuildRoles] = useState<{ id: string; name: string; color: string }[]>([]);
+	const [adminRoleIds, setAdminRoleIds] = useState<string[]>([]);
 	const [search, setSearch] = useState('');
 	const [searchTimer, setSearchTimer] = useState<NodeJS.Timeout | null>(null);
 	const [filterWarn, setFilterWarn] = useState(false);
@@ -70,6 +72,11 @@ export default function ModerationPage() {
 
 	// User profile modal
 	const [profileUser, setProfileUser] = useState<ModerationUser | null>(null);
+
+	// Reopen case modal
+	const [reopenCase, setReopenCase] = useState<{ userId: string; caseId: number; caseName: string } | null>(null);
+	const [reopenReason, setReopenReason] = useState('');
+	const [reopening, setReopening] = useState(false);
 
 	// Tab state
 	const [tab, setTab] = useState<'users' | 'cases' | 'transcripts'>('users');
@@ -136,6 +143,8 @@ export default function ModerationPage() {
 			const data = await res.json();
 			setUsers(data.users || []);
 			setUsersSource(data.source || 'known');
+			if (data.guildRoles) setGuildRoles(data.guildRoles);
+			if (data.adminRoleIds) setAdminRoleIds(data.adminRoleIds);
 		} catch (err: any) {
 			setError(err.message);
 		}
@@ -218,6 +227,42 @@ export default function ModerationPage() {
 		setCreating(false);
 	}
 
+	async function submitReopenCase() {
+		if (!reopenCase) return;
+		setReopening(true);
+		setError('');
+		try {
+			// Reopen the case
+			const res = await fetch(`/api/moderation/cases/${reopenCase.caseId}`, {
+				method: 'PATCH',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ status: 'open' }),
+			});
+			if (!res.ok) {
+				const d = await res.json();
+				throw new Error(d.error);
+			}
+			// Add a reopen comment with the reason
+			if (reopenReason.trim()) {
+				await fetch(`/api/moderation/cases/${reopenCase.caseId}`, {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({
+						action: 'comment',
+						content: `Réouverture du dossier : ${reopenReason}`,
+						eventType: 'case-reopened',
+					}),
+				});
+			}
+			setReopenCase(null);
+			setReopenReason('');
+			router.push(`/moderation/dossier/${reopenCase.caseId}`);
+		} catch (err: any) {
+			setError(err.message);
+		}
+		setReopening(false);
+	}
+
 	async function loadTranscripts() {
 		setTranscriptsLoading(true);
 		try {
@@ -279,6 +324,12 @@ export default function ModerationPage() {
 		});
 	};
 
+	const isUserAdmin = (user: ModerationUser) =>
+		adminRoleIds.length > 0 && user.roles.some((r) => adminRoleIds.includes(r));
+
+	const getUserRoles = (user: ModerationUser) =>
+		guildRoles.filter((r) => user.roles.includes(r.id));
+
 	const filtered = users.filter((u) => {
 		if (filterWarn && u.warnCount === 0) return false;
 		if (filterCase && u.cases.length === 0) return false;
@@ -303,7 +354,7 @@ export default function ModerationPage() {
 						<h1>Accès refusé</h1>
 						<p>Vous n&apos;êtes pas autorisé à accéder à cette page.</p>
 						{!sessionUser ? (
-							<a href="/api/auth/discord" className="mod-btn primary">
+						<a href="/api/auth/discord?redirect=/moderation" className="mod-btn primary">
 								Connexion Discord
 							</a>
 						) : (
@@ -340,7 +391,7 @@ export default function ModerationPage() {
 									alt=""
 								/>
 								<span className="mod-session-name">{sessionUser.discordUsername}</span>
-								<a href="/api/auth/logout" className="mod-header-btn mod-header-btn-danger">
+							<a href="/api/auth/logout?redirect=/moderation" className="mod-header-btn mod-header-btn-danger">
 									Déconnexion
 								</a>
 							</div>
@@ -435,6 +486,9 @@ export default function ModerationPage() {
 										const activeCase = user.cases.find(
 											(c) => c.status === 'open' || c.status === 'pending',
 										);
+										const archivedCase = !activeCase ? user.cases.find(
+											(c) => c.status === 'archived',
+										) : null;
 										return (
 											<li key={user.discordId} className="mod-user-item">
 												<div className="mod-user-identity" onClick={() => setProfileUser(user)} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.75rem', flex: 1 }}>
@@ -458,6 +512,9 @@ export default function ModerationPage() {
 												</div>
 
 												<div className="mod-user-badges">
+													{isUserAdmin(user) && (
+														<span className="mod-badge admin">Admin</span>
+													)}
 													{user.warnCount > 0 && (
 														<span className="mod-badge warn">
 															{user.warnCount} warn{user.warnCount > 1 ? 's' : ''}
@@ -487,6 +544,17 @@ export default function ModerationPage() {
 															}
 														>
 															Ouvrir le dossier
+														</button>
+													) : archivedCase ? (
+														<button
+															className="mod-btn warn-btn"
+															onClick={() => setReopenCase({
+																userId: user.discordId,
+																caseId: archivedCase.id,
+																caseName: user.serverNick || user.globalName,
+															})}
+														>
+															Réouvrir le dossier
 														</button>
 													) : (
 														<button
@@ -760,6 +828,30 @@ export default function ModerationPage() {
 								</div>
 							</div>
 
+							{/* Roles */}
+							{getUserRoles(profileUser).length > 0 && (
+								<div className="mod-profile-section">
+									<div className="mod-profile-section-title">
+										🏷️ Rôles Discord
+									</div>
+									<div className="mod-profile-roles">
+										{getUserRoles(profileUser).map((role) => (
+											<span
+												key={role.id}
+												className="mod-role-badge"
+												style={{
+													borderColor: role.color,
+													color: role.color,
+													background: `${role.color}1a`,
+												}}
+											>
+												{role.name}
+											</span>
+										))}
+									</div>
+								</div>
+							)}
+
 							{/* Warns */}
 							<div className="mod-profile-section">
 								<div className="mod-profile-section-title">
@@ -865,6 +957,57 @@ export default function ModerationPage() {
 								}}
 							>
 								Créer un dossier
+							</button>
+						</div>
+					</div>
+				</div>
+			)}
+
+			{/* Reopen case modal */}
+			{reopenCase && (
+				<div
+					className="mod-modal-overlay"
+					onClick={(e) => {
+						if (e.target === e.currentTarget) setReopenCase(null);
+					}}
+				>
+					<div className="mod-modal">
+						<div className="mod-modal-header">
+							<span>Réouvrir un dossier</span>
+							<button
+								className="mod-modal-close"
+								onClick={() => setReopenCase(null)}
+							>
+								✕
+							</button>
+						</div>
+						<div className="mod-modal-body">
+							<div className="mod-modal-info">
+								Cible : <strong>{reopenCase.caseName}</strong>
+							</div>
+							<div className="mod-modal-field">
+								<label className="mod-modal-label">Raison de la réouverture</label>
+								<textarea
+									className="mod-modal-textarea"
+									value={reopenReason}
+									onChange={(e) => setReopenReason(e.target.value)}
+									placeholder="Raison de la réouverture du dossier..."
+								/>
+							</div>
+						</div>
+						<div className="mod-modal-footer">
+							<button
+								className="mod-btn"
+								onClick={() => setReopenCase(null)}
+							>
+								Annuler
+							</button>
+							<button
+								className="mod-btn warn-btn"
+								onClick={submitReopenCase}
+								disabled={reopening || !reopenReason.trim()}
+							>
+								{reopening ? 'Réouverture...' : 'Réouvrir le dossier'}
 							</button>
 						</div>
 					</div>

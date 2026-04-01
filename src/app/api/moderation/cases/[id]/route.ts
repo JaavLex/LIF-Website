@@ -517,7 +517,7 @@ export async function POST(
 			return NextResponse.json({ success: true });
 		}
 
-		// Action: remove a specific warn
+		// Action: remove the last warn only
 		if (action === 'remove-warn') {
 			if (perms.level !== 'full') {
 				return NextResponse.json({ error: 'Accès insuffisant' }, { status: 403 });
@@ -533,6 +533,19 @@ export async function POST(
 
 			if (!sanction || sanction.type !== 'warn') {
 				return NextResponse.json({ error: 'Sanction introuvable ou pas un warn' }, { status: 404 });
+			}
+
+			// Verify this is the most recent warn (highest warnNumber)
+			const allWarns = await payload.find({
+				collection: 'moderation-sanctions',
+				where: { targetDiscordId: { equals: caseDoc.targetDiscordId }, type: { equals: 'warn' } },
+				sort: '-warnNumber',
+				limit: 1,
+				depth: 0,
+			});
+
+			if (allWarns.docs.length > 0 && allWarns.docs[0].id !== sanctionId) {
+				return NextResponse.json({ error: 'Seul le dernier avertissement peut être retiré' }, { status: 400 });
 			}
 
 			await payload.delete({

@@ -255,6 +255,26 @@
 	background: rgba(88, 101, 242, 0.1);
 }
 
+.mod-badge.admin {
+	border-color: #e2b714;
+	color: #e2b714;
+	background: rgba(226, 183, 20, 0.1);
+}
+
+.mod-profile-roles {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.35rem;
+}
+
+.mod-role-badge {
+	padding: 0.2rem 0.5rem;
+	font-size: 0.7rem;
+	border: 1px solid;
+	border-radius: 3px;
+	font-family: inherit;
+}
+
 .mod-user-actions {
 	display: flex;
 	gap: 0.35rem;

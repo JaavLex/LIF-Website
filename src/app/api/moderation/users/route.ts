@@ -3,6 +3,7 @@ import { cookies } from 'next/headers';
 import { verifySession } from '@/lib/session';
 import { checkAdminPermissions } from '@/lib/admin';
 import { getPayloadClient } from '@/lib/payload';
+import { getGuildRoles } from '@/lib/discord';
 
 const DISCORD_API = 'https://discord.com/api/v10';
 
@@ -54,6 +55,22 @@ export async function GET(request: Request) {
 	try {
 		const payload = await getPayloadClient();
 
+		// Fetch guild roles and admin config in parallel
+		const [guildRoles, roleplayConfig] = await Promise.all([
+			getGuildRoles(),
+			payload.findGlobal({ slug: 'roleplay' }).catch(() => null),
+		]);
+
+		const adminRoleIds = new Set<string>(
+			((roleplayConfig as any)?.adminRoles || []).map((r: any) => r.roleId),
+		);
+
+		// Build a compact role map: id -> { name, color, position }
+		const guildRoleMap = guildRoles
+			.filter((r) => r.name !== '@everyone')
+			.sort((a, b) => b.position - a.position)
+			.map((r) => ({ id: r.id, name: r.name, color: r.color ? `#${r.color.toString(16).padStart(6, '0')}` : '#99aab5' }));
+
 		// If search query provided, search Discord directly
 		if (searchQuery.length >= 2) {
 			const members = await searchMembers(searchQuery);
@@ -72,7 +89,7 @@ export async function GET(request: Request) {
 			const users = members.map((m: any) => memberToUser(m, warnMap, caseMap, charMap));
 			users.sort((a: any, b: any) => (a.serverNick || a.globalName).localeCompare(b.serverNick || b.globalName));
 
-			return NextResponse.json({ users, source: 'search' });
+			return NextResponse.json({ users, source: 'search', guildRoles: guildRoleMap, adminRoleIds: Array.from(adminRoleIds) });
 		}
 
 		// Default: get known users from DB (characters + cases + sanctions)
@@ -121,7 +138,7 @@ export async function GET(request: Request) {
 		}
 
 		users.sort((a: any, b: any) => (a.serverNick || a.globalName).localeCompare(b.serverNick || b.globalName));
-		return NextResponse.json({ users, source: 'known' });
+		return NextResponse.json({ users, source: 'known', guildRoles: guildRoleMap, adminRoleIds: Array.from(adminRoleIds) });
 	} catch (err: any) {
 		console.error('Error fetching moderation users:', err);
 		return NextResponse.json({ error: err.message }, { status: 500 });

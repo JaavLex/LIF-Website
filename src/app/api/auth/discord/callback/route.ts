@@ -14,8 +14,13 @@ export async function GET(request: NextRequest) {
 	const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
 	const redirectUri = `${baseUrl}/api/auth/discord/callback`;
 
+	// Get redirect destination from state param
+	const state = request.nextUrl.searchParams.get('state') || '';
+	const ALLOWED_PATHS = ['/moderation', '/roleplay'];
+	const returnTo = ALLOWED_PATHS.includes(state) ? state : '/roleplay';
+
 	if (!code) {
-		return NextResponse.redirect(`${baseUrl}/roleplay?error=no_code`);
+		return NextResponse.redirect(`${baseUrl}${returnTo}?error=no_code`);
 	}
 
 	try {
@@ -81,7 +86,7 @@ export async function GET(request: NextRequest) {
 			roles: roles,
 		});
 
-		const response = NextResponse.redirect(`${baseUrl}/roleplay`);
+		const response = NextResponse.redirect(`${baseUrl}${returnTo}`);
 
 		response.cookies.set('roleplay-session', sessionToken, {
 			httpOnly: true,
@@ -94,6 +99,6 @@ export async function GET(request: NextRequest) {
 		return response;
 	} catch (error) {
 		console.error('Discord OAuth error:', error);
-		return NextResponse.redirect(`${baseUrl}/roleplay?error=auth_failed`);
+		return NextResponse.redirect(`${baseUrl}${returnTo}?error=auth_failed`);
 	}
 }

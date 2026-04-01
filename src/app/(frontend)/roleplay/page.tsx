@@ -229,11 +229,11 @@ export default async function RoleplayPage({
 				)}
 				{isAdmin && (
 					<Link
-						href="/roleplay/transcripts"
+						href="/moderation"
 						className="session-btn"
 						style={{ padding: '0.6rem 1.2rem', fontSize: '0.85rem' }}
 					>
-						📋 Transcripts Tickets
+						⚖️ Modération
 					</Link>
 				)}
 			</div>
