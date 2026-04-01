@@ -15,6 +15,9 @@ import { Ranks } from './collections/Ranks';
 import { Units } from './collections/Units';
 import { Factions } from './collections/Factions';
 import { Intelligence } from './collections/Intelligence';
+import { ModerationCases } from './collections/ModerationCases';
+import { ModerationEvents } from './collections/ModerationEvents';
+import { ModerationSanctions } from './collections/ModerationSanctions';
 import { AdminDashboard } from './globals/AdminDashboard';
 import { Homepage } from './globals/Homepage';
 import { Navigation } from './globals/Navigation';
@@ -44,6 +47,9 @@ export default buildConfig({
 		Units,
 		Factions,
 		Intelligence,
+		ModerationCases,
+		ModerationEvents,
+		ModerationSanctions,
 	],
 	globals: [Homepage, Navigation, AdminDashboard, Roleplay],
 	editor: lexicalEditor(),

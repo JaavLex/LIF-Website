@@ -370,6 +370,48 @@ export const Roleplay: GlobalConfig = {
 						},
 					],
 				},
+				{
+					label: 'Modération',
+					fields: [
+						{
+							name: 'moderationEnabled',
+							label: 'Activer le système de modération',
+							type: 'checkbox',
+							defaultValue: true,
+						},
+						{
+							name: 'moderationLogChannelId',
+							label: 'ID du salon de logs modération',
+							type: 'text',
+							admin: {
+								description:
+									'Salon Discord où les résultats des actions de modération sont envoyés. Configuré via /moderation-channel du bot.',
+							},
+						},
+						{
+							name: 'moderationReasons',
+							label: 'Motifs de dossier personnalisés',
+							type: 'array',
+							admin: {
+								description: 'Motifs supplémentaires pour ouvrir un dossier (les motifs par défaut sont toujours disponibles)',
+							},
+							fields: [
+								{
+									name: 'label',
+									label: 'Libellé',
+									type: 'text',
+									required: true,
+								},
+								{
+									name: 'value',
+									label: 'Valeur (slug)',
+									type: 'text',
+									required: true,
+								},
+							],
+						},
+					],
+				},
 			],
 		},
 	],

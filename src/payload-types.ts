@@ -77,6 +77,9 @@ export interface Config {
     units: Unit;
     factions: Faction;
     intelligence: Intelligence;
+    'moderation-cases': ModerationCase;
+    'moderation-events': ModerationEvent;
+    'moderation-sanctions': ModerationSanction;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -94,6 +97,9 @@ export interface Config {
     units: UnitsSelect<false> | UnitsSelect<true>;
     factions: FactionsSelect<false> | FactionsSelect<true>;
     intelligence: IntelligenceSelect<false> | IntelligenceSelect<true>;
+    'moderation-cases': ModerationCasesSelect<false> | ModerationCasesSelect<true>;
+    'moderation-events': ModerationEventsSelect<false> | ModerationEventsSelect<true>;
+    'moderation-sanctions': ModerationSanctionsSelect<false> | ModerationSanctionsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -672,6 +678,94 @@ export interface Intelligence {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "moderation-cases".
+ */
+export interface ModerationCase {
+  id: number;
+  caseNumber?: number | null;
+  targetDiscordId: string;
+  targetDiscordUsername: string;
+  targetServerUsername?: string | null;
+  targetDiscordAvatar?: string | null;
+  createdByDiscordId: string;
+  createdByDiscordUsername: string;
+  reason: 'joueur-problematique' | 'surveillance' | 'comportement-a-verifier' | 'potentiel-staff' | 'autre';
+  reasonDetail?: string | null;
+  status: 'open' | 'pending' | 'resolved' | 'archived';
+  warnCount?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "moderation-events".
+ */
+export interface ModerationEvent {
+  id: number;
+  case: number | ModerationCase;
+  type:
+    | 'message'
+    | 'evidence'
+    | 'moderation-action'
+    | 'auto-escalation'
+    | 'case-reopened'
+    | 'case-archived'
+    | 'status-change'
+    | 'transcript-linked'
+    | 'positive-event'
+    | 'negative-event'
+    | 'system';
+  content?: string | null;
+  authorDiscordId: string;
+  authorDiscordUsername: string;
+  authorDiscordAvatar?: string | null;
+  actionType?: ('warn' | 'kick' | 'temp-ban' | 'perm-ban') | null;
+  actionReason?: string | null;
+  actionDuration?: number | null;
+  warnCountAfter?: number | null;
+  discordSyncStatus?: ('success' | 'failed' | 'na') | null;
+  discordSyncError?: string | null;
+  transcriptUrl?: string | null;
+  transcriptName?: string | null;
+  attachments?:
+    | {
+        file: number | Media;
+        description?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "moderation-sanctions".
+ */
+export interface ModerationSanction {
+  id: number;
+  targetDiscordId: string;
+  targetDiscordUsername: string;
+  type: 'warn' | 'kick' | 'temp-ban' | 'perm-ban';
+  reason: string;
+  /**
+   * Durée en secondes pour les bannissements temporaires
+   */
+  duration?: number | null;
+  case: number | ModerationCase;
+  event?: (number | null) | ModerationEvent;
+  moderatorDiscordId: string;
+  moderatorDiscordUsername: string;
+  /**
+   * Numéro séquentiel du warn pour cet utilisateur
+   */
+  warnNumber?: number | null;
+  discordSyncStatus?: ('success' | 'failed' | 'pending') | null;
+  discordSyncError?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -733,6 +827,18 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'intelligence';
         value: number | Intelligence;
+      } | null)
+    | ({
+        relationTo: 'moderation-cases';
+        value: number | ModerationCase;
+      } | null)
+    | ({
+        relationTo: 'moderation-events';
+        value: number | ModerationEvent;
+      } | null)
+    | ({
+        relationTo: 'moderation-sanctions';
+        value: number | ModerationSanction;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -1094,6 +1200,74 @@ export interface IntelligenceSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "moderation-cases_select".
+ */
+export interface ModerationCasesSelect<T extends boolean = true> {
+  caseNumber?: T;
+  targetDiscordId?: T;
+  targetDiscordUsername?: T;
+  targetServerUsername?: T;
+  targetDiscordAvatar?: T;
+  createdByDiscordId?: T;
+  createdByDiscordUsername?: T;
+  reason?: T;
+  reasonDetail?: T;
+  status?: T;
+  warnCount?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "moderation-events_select".
+ */
+export interface ModerationEventsSelect<T extends boolean = true> {
+  case?: T;
+  type?: T;
+  content?: T;
+  authorDiscordId?: T;
+  authorDiscordUsername?: T;
+  authorDiscordAvatar?: T;
+  actionType?: T;
+  actionReason?: T;
+  actionDuration?: T;
+  warnCountAfter?: T;
+  discordSyncStatus?: T;
+  discordSyncError?: T;
+  transcriptUrl?: T;
+  transcriptName?: T;
+  attachments?:
+    | T
+    | {
+        file?: T;
+        description?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "moderation-sanctions_select".
+ */
+export interface ModerationSanctionsSelect<T extends boolean = true> {
+  targetDiscordId?: T;
+  targetDiscordUsername?: T;
+  type?: T;
+  reason?: T;
+  duration?: T;
+  case?: T;
+  event?: T;
+  moderatorDiscordId?: T;
+  moderatorDiscordUsername?: T;
+  warnNumber?: T;
+  discordSyncStatus?: T;
+  discordSyncError?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv_select".
  */
 export interface PayloadKvSelect<T extends boolean = true> {
@@ -1390,9 +1564,13 @@ export interface Roleplay {
   disclaimerMessage?: string | null;
   discordInviteUrl?: string | null;
   /**
-   * Ce mot de passe est caché dans le règlement RP. Les joueurs doivent le trouver pour confirmer leur lecture.
+   * Ce mot de passe est caché dans le règlement RP. Les joueurs doivent le trouver pour confirmer leur lecture. Il remplace le marqueur >|PASSWORDHERE|< dans le contenu.
    */
   rpRulesPassword?: string | null;
+  /**
+   * Le règlement RP en format Markdown. Utilisez >|PASSWORDHERE|< à l'endroit où le mot de passe doit apparaître. Il sera remplacé par le mot de passe configuré ci-dessus, affiché entre >| et |<.
+   */
+  rpRulesContent?: string | null;
   /**
    * Rôles Discord qui ont accès à l'administration
    */
@@ -1412,6 +1590,21 @@ export interface Roleplay {
    * Rôle Discord autorisant la publication de renseignements
    */
   intelligenceRoleId?: string | null;
+  moderationEnabled?: boolean | null;
+  /**
+   * Salon Discord où les résultats des actions de modération sont envoyés. Configuré via /moderation-channel du bot.
+   */
+  moderationLogChannelId?: string | null;
+  /**
+   * Motifs supplémentaires pour ouvrir un dossier (les motifs par défaut sont toujours disponibles)
+   */
+  moderationReasons?:
+    | {
+        label: string;
+        value: string;
+        id?: string | null;
+      }[]
+    | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -1592,6 +1785,7 @@ export interface RoleplaySelect<T extends boolean = true> {
   disclaimerMessage?: T;
   discordInviteUrl?: T;
   rpRulesPassword?: T;
+  rpRulesContent?: T;
   adminRoles?:
     | T
     | {
@@ -1602,6 +1796,15 @@ export interface RoleplaySelect<T extends boolean = true> {
       };
   operatorRoleId?: T;
   intelligenceRoleId?: T;
+  moderationEnabled?: T;
+  moderationLogChannelId?: T;
+  moderationReasons?:
+    | T
+    | {
+        label?: T;
+        value?: T;
+        id?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
