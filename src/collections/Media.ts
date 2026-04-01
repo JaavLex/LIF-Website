@@ -29,6 +29,9 @@ export const Media: CollectionConfig = {
 		],
 		adminThumbnail: 'thumbnail',
 		mimeTypes: ['image/*', 'video/*', 'application/pdf'],
+		constructorOptions: {
+			pages: 1,
+		},
 	},
 	fields: [
 		{
