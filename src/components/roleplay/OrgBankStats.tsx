@@ -1,0 +1,216 @@
+'use client';
+
+import { useEffect, useState, useRef, useCallback } from 'react';
+
+interface OrgStats {
+	totalMoney: number;
+	memberCount: number;
+	history: { date: string; total: number }[];
+}
+
+export default function OrgBankStats() {
+	const [stats, setStats] = useState<OrgStats | null>(null);
+	const canvasRef = useRef<HTMLCanvasElement>(null);
+	const containerRef = useRef<HTMLDivElement>(null);
+
+	useEffect(() => {
+		fetch('/api/roleplay/org-stats')
+			.then(r => r.json())
+			.then(setStats)
+			.catch(() => {});
+	}, []);
+
+	const drawGraph = useCallback(() => {
+		const canvas = canvasRef.current;
+		const container = containerRef.current;
+		if (!canvas || !container || !stats || stats.history.length < 2) return;
+
+		const dpr = window.devicePixelRatio || 1;
+		const rect = container.getBoundingClientRect();
+		const w = rect.width;
+		const h = 280;
+
+		canvas.width = w * dpr;
+		canvas.height = h * dpr;
+		canvas.style.width = w + 'px';
+		canvas.style.height = h + 'px';
+
+		const ctx = canvas.getContext('2d');
+		if (!ctx) return;
+		ctx.scale(dpr, dpr);
+
+		const history = stats.history;
+		const padLeft = 80;
+		const padRight = 20;
+		const padTop = 20;
+		const padBottom = 40;
+		const graphW = w - padLeft - padRight;
+		const graphH = h - padTop - padBottom;
+
+		const values = history.map(h => h.total);
+		const minVal = Math.min(...values) * 0.95;
+		const maxVal = Math.max(...values) * 1.05;
+		const range = maxVal - minVal || 1;
+
+		// Clear
+		ctx.clearRect(0, 0, w, h);
+
+		// Grid lines
+		const gridLines = 5;
+		ctx.strokeStyle = 'rgba(0, 255, 65, 0.08)';
+		ctx.lineWidth = 0.5;
+		ctx.font = '10px "Courier New", monospace';
+		ctx.fillStyle = 'rgba(0, 255, 65, 0.4)';
+		ctx.textAlign = 'right';
+
+		for (let i = 0; i <= gridLines; i++) {
+			const y = padTop + (graphH * i) / gridLines;
+			const val = maxVal - (range * i) / gridLines;
+			ctx.beginPath();
+			ctx.moveTo(padLeft, y);
+			ctx.lineTo(w - padRight, y);
+			ctx.stroke();
+
+			const label = val >= 1000000
+				? (val / 1000000).toFixed(1) + 'M'
+				: val >= 1000
+					? (val / 1000).toFixed(0) + 'K'
+					: val.toFixed(0);
+			ctx.fillText('$' + label, padLeft - 8, y + 4);
+		}
+
+		// Axis
+		ctx.strokeStyle = 'rgba(0, 255, 65, 0.3)';
+		ctx.lineWidth = 1;
+		ctx.beginPath();
+		ctx.moveTo(padLeft, padTop);
+		ctx.lineTo(padLeft, h - padBottom);
+		ctx.lineTo(w - padRight, h - padBottom);
+		ctx.stroke();
+
+		// Fill gradient under line
+		const gradient = ctx.createLinearGradient(0, padTop, 0, h - padBottom);
+		gradient.addColorStop(0, 'rgba(74, 124, 35, 0.25)');
+		gradient.addColorStop(1, 'rgba(74, 124, 35, 0.02)');
+
+		ctx.beginPath();
+		ctx.moveTo(padLeft, h - padBottom);
+		for (let i = 0; i < history.length; i++) {
+			const x = padLeft + (i / (history.length - 1)) * graphW;
+			const y = padTop + ((maxVal - history[i].total) / range) * graphH;
+			if (i === 0) ctx.lineTo(x, y);
+			else ctx.lineTo(x, y);
+		}
+		ctx.lineTo(padLeft + graphW, h - padBottom);
+		ctx.closePath();
+		ctx.fillStyle = gradient;
+		ctx.fill();
+
+		// Line
+		ctx.strokeStyle = 'rgba(74, 124, 35, 0.9)';
+		ctx.lineWidth = 2;
+		ctx.lineJoin = 'round';
+		ctx.beginPath();
+		for (let i = 0; i < history.length; i++) {
+			const x = padLeft + (i / (history.length - 1)) * graphW;
+			const y = padTop + ((maxVal - history[i].total) / range) * graphH;
+			if (i === 0) ctx.moveTo(x, y);
+			else ctx.lineTo(x, y);
+		}
+		ctx.stroke();
+
+		// Glow line
+		ctx.strokeStyle = 'rgba(74, 124, 35, 0.3)';
+		ctx.lineWidth = 6;
+		ctx.beginPath();
+		for (let i = 0; i < history.length; i++) {
+			const x = padLeft + (i / (history.length - 1)) * graphW;
+			const y = padTop + ((maxVal - history[i].total) / range) * graphH;
+			if (i === 0) ctx.moveTo(x, y);
+			else ctx.lineTo(x, y);
+		}
+		ctx.stroke();
+
+		// Data points
+		ctx.fillStyle = 'rgba(74, 124, 35, 1)';
+		for (let i = 0; i < history.length; i++) {
+			const x = padLeft + (i / (history.length - 1)) * graphW;
+			const y = padTop + ((maxVal - history[i].total) / range) * graphH;
+			ctx.beginPath();
+			ctx.arc(x, y, 3, 0, Math.PI * 2);
+			ctx.fill();
+		}
+
+		// Date labels on X axis
+		ctx.fillStyle = 'rgba(0, 255, 65, 0.4)';
+		ctx.font = '9px "Courier New", monospace';
+		ctx.textAlign = 'center';
+
+		// Show at most 7 date labels
+		const maxLabels = Math.min(7, history.length);
+		const step = Math.max(1, Math.floor(history.length / maxLabels));
+		for (let i = 0; i < history.length; i += step) {
+			const x = padLeft + (i / (history.length - 1)) * graphW;
+			const parts = history[i].date.split('-');
+			ctx.fillText(`${parts[2]}/${parts[1]}`, x, h - padBottom + 16);
+		}
+		// Always show last date
+		if ((history.length - 1) % step !== 0) {
+			const x = padLeft + graphW;
+			const parts = history[history.length - 1].date.split('-');
+			ctx.fillText(`${parts[2]}/${parts[1]}`, x, h - padBottom + 16);
+		}
+	}, [stats]);
+
+	useEffect(() => {
+		drawGraph();
+		window.addEventListener('resize', drawGraph);
+		return () => window.removeEventListener('resize', drawGraph);
+	}, [drawGraph]);
+
+	if (!stats) return null;
+
+	const formatted = stats.totalMoney.toLocaleString('fr-FR');
+
+	// Compute change from history
+	let changePercent: number | null = null;
+	if (stats.history.length >= 2) {
+		const first = stats.history[0].total;
+		const last = stats.history[stats.history.length - 1].total;
+		if (first > 0) {
+			changePercent = ((last - first) / first) * 100;
+		}
+	}
+
+	return (
+		<div className="org-stats-section">
+			<div className="org-stats-header">
+				<div className="org-stats-big-number">
+					<span className="org-stats-currency">$</span>
+					<span className="org-stats-amount">{formatted}</span>
+				</div>
+				<div className="org-stats-label">
+					FONDS TOTAUX — LIF MERCENARY ORGANISATION
+				</div>
+				<div className="org-stats-sub">
+					<span>{stats.memberCount} opérateur{stats.memberCount !== 1 ? 's' : ''} actif{stats.memberCount !== 1 ? 's' : ''}</span>
+					{changePercent !== null && (
+						<span className={`org-stats-change ${changePercent >= 0 ? 'positive' : 'negative'}`}>
+							{changePercent >= 0 ? '▲' : '▼'} {Math.abs(changePercent).toFixed(1)}%
+						</span>
+					)}
+				</div>
+			</div>
+			{stats.history.length >= 2 && (
+				<div className="org-stats-graph" ref={containerRef}>
+					<canvas ref={canvasRef} />
+				</div>
+			)}
+			{stats.history.length < 2 && (
+				<div className="org-stats-no-data">
+					Données historiques insuffisantes pour afficher le graphique
+				</div>
+			)}
+		</div>
+	);
+}

@@ -11,6 +11,7 @@ import { verifySession } from '@/lib/session';
 import { checkAdminPermissions } from '@/lib/admin';
 import { RoleplayTutorial } from '@/components/roleplay/RoleplayTutorial';
 import { RulesModal } from '@/components/roleplay/RulesModal';
+import OrgBankStats from '@/components/roleplay/OrgBankStats';
 
 export const dynamic = 'force-dynamic';
 
@@ -441,6 +442,25 @@ export default async function RoleplayPage({
 					factions={JSON.parse(JSON.stringify(factions.docs))}
 					sessionDiscordId={session?.discordId || null}
 				/>
+			</div>
+
+			{/* Organisation Bank Stats */}
+			<div className="terminal-header" style={{ marginTop: '2rem' }}>
+				<div className="terminal-header-left">
+					<div className="terminal-header-dots">
+						<span className="terminal-dot green" />
+						<span className="terminal-dot yellow" />
+						<span className="terminal-dot red" />
+					</div>
+					<span className="terminal-title">FONDS DE L&apos;ORGANISATION</span>
+				</div>
+				<div className="terminal-header-right">
+					LIF-FINANCE v1.0 | COMPTABILITÉ
+				</div>
+			</div>
+
+			<div className="terminal-panel">
+				<OrgBankStats />
 			</div>
 
 			<div style={{ textAlign: 'center', padding: '1rem' }}>

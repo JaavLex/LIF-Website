@@ -2417,3 +2417,112 @@
 	font-style: italic;
 	margin-left: auto;
 }
+
+/* ============================
+   ORG BANK STATS
+   ============================ */
+
+.org-stats-section {
+	display: flex;
+	flex-direction: column;
+	gap: 1.5rem;
+}
+
+.org-stats-header {
+	text-align: center;
+	padding: 1rem 0;
+}
+
+.org-stats-big-number {
+	display: flex;
+	align-items: baseline;
+	justify-content: center;
+	gap: 0.25rem;
+	line-height: 1;
+	margin-bottom: 0.75rem;
+}
+
+.org-stats-currency {
+	font-size: 2.5rem;
+	font-weight: 700;
+	color: var(--primary);
+	font-family: 'Courier New', monospace;
+	opacity: 0.7;
+}
+
+.org-stats-amount {
+	font-size: 3.5rem;
+	font-weight: 700;
+	color: var(--primary);
+	font-family: 'Courier New', monospace;
+	letter-spacing: 2px;
+	text-shadow: 0 0 20px rgba(74, 124, 35, 0.4),
+		0 0 40px rgba(74, 124, 35, 0.2);
+}
+
+.org-stats-label {
+	font-size: 0.95rem;
+	color: var(--muted);
+	text-transform: uppercase;
+	letter-spacing: 3px;
+	font-family: 'Courier New', monospace;
+	margin-bottom: 0.5rem;
+}
+
+.org-stats-sub {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 1.5rem;
+	font-size: 0.8rem;
+	color: var(--muted);
+	font-family: 'Courier New', monospace;
+}
+
+.org-stats-change {
+	font-weight: 700;
+	letter-spacing: 1px;
+}
+
+.org-stats-change.positive {
+	color: var(--primary);
+}
+
+.org-stats-change.negative {
+	color: var(--danger);
+}
+
+.org-stats-graph {
+	border: 1px solid var(--border);
+	background: rgba(12, 15, 10, 0.6);
+	padding: 1rem;
+}
+
+.org-stats-graph canvas {
+	display: block;
+	width: 100%;
+}
+
+.org-stats-no-data {
+	text-align: center;
+	color: var(--muted);
+	font-size: 0.8rem;
+	font-family: 'Courier New', monospace;
+	padding: 2rem;
+	border: 1px dashed var(--border);
+}
+
+@media (max-width: 600px) {
+	.org-stats-amount {
+		font-size: 2.2rem;
+	}
+
+	.org-stats-currency {
+		font-size: 1.6rem;
+	}
+
+	.org-stats-label {
+		font-size: 0.75rem;
+		letter-spacing: 1px;
+	}
+}
