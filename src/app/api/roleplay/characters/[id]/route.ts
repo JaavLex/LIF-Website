@@ -57,6 +57,11 @@ export async function PATCH(
 		delete body.savedMoney;
 		delete body.lastMoneySyncAt;
 
+		// Convert empty biId to null (unique constraint rejects empty strings)
+		if (body.biId !== undefined && !body.biId) {
+			body.biId = null;
+		}
+
 		// Admin reassign: allow full admins to change linked Discord account
 		if (isAdmin && body.linkedDiscordId !== undefined) {
 			const { isAdmin: isFullAdmin, level } = await checkAdminPermissions(session);
