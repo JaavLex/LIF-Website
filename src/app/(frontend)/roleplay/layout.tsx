@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import './roleplay.css';
 import { RoleplayShell } from '@/components/roleplay/RoleplayShell';
 import { getPayloadClient } from '@/lib/payload';
+import MatrixBackground from '@/components/roleplay/MatrixBackground';
 
 export const metadata: Metadata = {
 	title: 'Base de Données du Personnel | LIF Roleplay',
@@ -28,6 +29,7 @@ export default async function RoleplayLayout({
 
 	return (
 		<div className="terminal">
+			<MatrixBackground />
 			<RoleplayShell
 				loadingEnabled={loadingEnabled}
 				loadingMessages={loadingMessages}

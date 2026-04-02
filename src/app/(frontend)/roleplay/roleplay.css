@@ -8,6 +8,8 @@
   font-family: 'Courier New', 'Lucida Console', Monaco, monospace;
   min-height: 100vh;
   padding-top: 80px;
+  position: relative;
+  background: transparent;
 }
 
 .terminal-container {
