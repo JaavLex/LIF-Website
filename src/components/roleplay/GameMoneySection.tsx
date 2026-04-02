@@ -227,22 +227,26 @@ export function GameMoneySection({
 
 				{/* Actions */}
 				<div className="game-money-actions">
-					<button
-						type="button"
-						onClick={fetchGameMoney}
-						disabled={loading}
-						className="game-btn game-btn-primary"
-					>
-						{loading ? '...' : 'Actualiser'}
-					</button>
-					<button
-						type="button"
-						onClick={() => performAction('sync-name')}
-						disabled={!!actionLoading}
-						className="game-btn game-btn-name"
-					>
-						{actionLoading === 'sync-name' ? '...' : 'Sync nom'}
-					</button>
+					{(isOwner || isAdmin) && (
+						<button
+							type="button"
+							onClick={fetchGameMoney}
+							disabled={loading}
+							className="game-btn game-btn-primary"
+						>
+							{loading ? '...' : 'Actualiser'}
+						</button>
+					)}
+					{(isOwner || isAdmin) && (
+						<button
+							type="button"
+							onClick={() => performAction('sync-name')}
+							disabled={!!actionLoading}
+							className="game-btn game-btn-name"
+						>
+							{actionLoading === 'sync-name' ? '...' : 'Sync nom'}
+						</button>
+					)}
 
 					{/* Admin-only actions */}
 					{isAdmin && (
