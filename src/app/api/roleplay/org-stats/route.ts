@@ -22,14 +22,19 @@ export async function GET() {
 		});
 
 		// Sum current money from all LIF characters (including anonymous ones)
+		// Deduplicate by biId so characters sharing the same game account aren't counted twice
 		let totalMoney = 0;
 		const characterIds: number[] = [];
+		const seenBiIds = new Set<string>();
 		for (const c of characters.docs) {
+			characterIds.push(c.id as number);
+			const biId = (c as any).biId as string | undefined;
+			if (biId && seenBiIds.has(biId)) continue;
+			if (biId) seenBiIds.add(biId);
 			const money = (c as any).savedMoney;
 			if (typeof money === 'number' && money > 0) {
 				totalMoney += money;
 			}
-			characterIds.push(c.id as number);
 		}
 
 		// Get bank history for all LIF characters to build evolution over time
@@ -50,6 +55,12 @@ export async function GET() {
 			if (bankHistory.docs.length > 0) {
 				// Build a timeline: for each record, update the character's known amount
 				// then at each timestamp we can compute the org total
+				// Deduplicate by biId: map characterId -> biId, only count one char per biId
+				const charBiId: Record<number, string | null> = {};
+				for (const c of characters.docs) {
+					charBiId[c.id as number] = (c as any).biId || null;
+				}
+
 				const charAmounts: Record<number, number> = {};
 				const dataPoints: { date: Date; total: number }[] = [];
 
@@ -60,9 +71,13 @@ export async function GET() {
 					const amount = (entry as any).amount as number;
 					if (charId && typeof amount === 'number') {
 						charAmounts[charId] = amount;
-						// Compute org total at this point
+						// Compute org total, deduplicating by biId
 						let sum = 0;
+						const countedBiIds = new Set<string>();
 						for (const id of characterIds) {
+							const bi = charBiId[id];
+							if (bi && countedBiIds.has(bi)) continue;
+							if (bi) countedBiIds.add(bi);
 							sum += charAmounts[id] || 0;
 						}
 						dataPoints.push({
