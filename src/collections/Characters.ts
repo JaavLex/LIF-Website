@@ -55,6 +55,14 @@ const generateFullName: CollectionBeforeChangeHook = ({ data }) => {
 	return data;
 };
 
+const clearMoneyOnUnlink: CollectionBeforeChangeHook = async ({ data, operation, originalDoc }) => {
+	if (operation === 'update' && originalDoc?.biId && !data?.biId) {
+		data.savedMoney = null;
+		data.lastMoneySyncAt = null;
+	}
+	return data;
+};
+
 export const Characters: CollectionConfig = {
 	slug: 'characters',
 	admin: {
@@ -80,7 +88,7 @@ export const Characters: CollectionConfig = {
 		},
 	},
 	hooks: {
-		beforeChange: [generateFullName, generateMatricule],
+		beforeChange: [generateFullName, generateMatricule, clearMoneyOnUnlink],
 	},
 	fields: [
 		{
