@@ -16,6 +16,8 @@
   max-width: 1400px;
   margin: 0 auto;
   padding: 2rem;
+  position: relative;
+  z-index: 1;
 }
 
 .roleplay-audio-controls {

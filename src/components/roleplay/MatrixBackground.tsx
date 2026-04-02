@@ -411,13 +411,15 @@ export default function MatrixBackground() {
 				dh = 90;
 			}
 
-			const margin = 60;
+			const marginX = 60;
+			const marginTop = 140; // avoid navbar + session bar
+			const marginBottom = 80;
 			const d: Dossier = {
-				x: margin + Math.random() * (w - dw - margin * 2),
-				y: margin + Math.random() * (h - dh - margin * 2),
+				x: marginX + Math.random() * (w - dw - marginX * 2),
+				y: marginTop + Math.random() * (h - dh - marginTop - marginBottom),
 				birth: t,
 				lifespan: 500 + Math.random() * 600,
-				maxAlpha: 0.5 + Math.random() * 0.3,
+				maxAlpha: 0.35 + Math.random() * 0.2,
 				type,
 				data,
 				image,
