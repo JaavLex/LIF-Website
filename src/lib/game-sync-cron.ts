@@ -15,7 +15,7 @@ async function getSyncInterval(): Promise<number> {
 
 async function runSync() {
 	try {
-		const { isGameServerConfigured, readGamePersistence } = await import('@/lib/game-server');
+		const { isGameServerConfigured, readGamePersistence, setCustomName } = await import('@/lib/game-server');
 
 		if (!(await isGameServerConfigured())) {
 			console.log('[Game Sync Cron] Server not configured, skipping');
@@ -35,7 +35,7 @@ async function runSync() {
 			collection: 'characters',
 			where: { biId: { exists: true } },
 			limit: 1000,
-			depth: 0,
+			depth: 1,
 		});
 
 		let synced = 0;
@@ -76,12 +76,33 @@ async function runSync() {
 			synced++;
 		}
 
+		// Sync character names to game server
+		let namesSynced = 0;
+		for (const character of characters) {
+			const biId = (character as any).biId;
+			if (!biId) continue;
+
+			const fullName = (character as any).fullName || `${(character as any).firstName} ${(character as any).lastName}`;
+			let rankPrefix = 'LIF';
+			const rank = (character as any).rank;
+			if (rank && typeof rank === 'object' && rank.abbreviation) {
+				rankPrefix = rank.abbreviation;
+			}
+
+			try {
+				await setCustomName(biId, fullName, rankPrefix);
+				namesSynced++;
+			} catch (err) {
+				console.error(`[Game Sync Cron] Failed to sync name for ${fullName}:`, err);
+			}
+		}
+
 		await payload.updateGlobal({
 			slug: 'roleplay',
 			data: { lastGlobalMoneySync: now } as any,
 		});
 
-		console.log(`[Game Sync Cron] OK: ${synced}/${characters.length} characters synced`);
+		console.log(`[Game Sync Cron] OK: ${synced}/${characters.length} money synced, ${namesSynced} names synced`);
 	} catch (err) {
 		console.error('[Game Sync Cron] Error:', err);
 	}
