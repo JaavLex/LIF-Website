@@ -66,7 +66,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: rgba(12, 15, 10, 0.95);
+  background: var(--background);
 }
 
 .terminal-header-left {
@@ -622,7 +622,7 @@
   border: 1px solid var(--border);
   margin-bottom: 1.5rem;
   font-size: 0.85rem;
-  background: var(--card-bg);
+  background: var(--background);
 }
 
 .session-avatar {
@@ -646,7 +646,7 @@
   padding: 0.35rem 0.75rem;
   font-size: 0.8rem;
   font-family: 'Courier New', monospace;
-  background: var(--bg);
+  background: var(--background);
   border: 1px solid var(--border);
   color: var(--muted);
   cursor: pointer;
@@ -1261,7 +1261,7 @@
 
 .admin-section {
   border: 1px solid var(--danger);
-  background: rgba(12, 15, 10, 0.95);
+  background: var(--background);
 }
 
 .admin-section h2 {
