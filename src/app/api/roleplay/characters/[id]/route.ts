@@ -53,6 +53,9 @@ export async function PATCH(
 		// Never allow discordId/discordUsername to be changed through normal fields
 		delete body.discordId;
 		delete body.discordUsername;
+		// Never allow game money fields to be changed directly
+		delete body.savedMoney;
+		delete body.lastMoneySyncAt;
 
 		// Admin reassign: allow full admins to change linked Discord account
 		if (isAdmin && body.linkedDiscordId !== undefined) {

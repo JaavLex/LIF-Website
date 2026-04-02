@@ -8,6 +8,7 @@ import { CharacterTimeline } from '@/components/roleplay/CharacterTimeline';
 import { SyncRankButton } from '@/components/roleplay/SyncRankButton';
 import { AddTimelineEvent } from '@/components/roleplay/AddTimelineEvent';
 import { DeleteCharacterButton } from '@/components/roleplay/DeleteCharacterButton';
+import { GameMoneySection } from '@/components/roleplay/GameMoneySection';
 import { verifySession } from '@/lib/session';
 import { checkAdminPermissions } from '@/lib/admin';
 
@@ -437,6 +438,18 @@ export default async function CharacterPage({
 									&laquo; {character.motto} &raquo;
 								</p>
 							</div>
+						)}
+
+						{/* Game money section — only if BI ID is linked and user is owner or admin */}
+						{character.biId && canEdit && (
+							<GameMoneySection
+								characterId={character.id}
+								biId={character.biId}
+								initialSavedMoney={character.savedMoney ?? null}
+								initialLastSyncAt={character.lastMoneySyncAt ?? null}
+								isAdmin={isAdmin}
+								isOwner={isOwner}
+							/>
 						)}
 					</div>
 

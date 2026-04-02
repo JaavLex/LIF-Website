@@ -379,6 +379,36 @@ export const Characters: CollectionConfig = {
 				readOnly: true,
 			},
 		},
+		// Game server linkage
+		{
+			name: 'biId',
+			label: 'BI ID (UUID Joueur)',
+			type: 'text',
+			unique: true,
+			admin: {
+				position: 'sidebar',
+				description: 'UUID Bohemia Interactive du joueur (visible dans le profil joueur en jeu)',
+			},
+		},
+		{
+			name: 'savedMoney',
+			label: 'Argent sauvegardé',
+			type: 'number',
+			admin: {
+				position: 'sidebar',
+				readOnly: true,
+				description: 'Backup de l\'argent en jeu',
+			},
+		},
+		{
+			name: 'lastMoneySyncAt',
+			label: 'Dernière synchro argent',
+			type: 'date',
+			admin: {
+				position: 'sidebar',
+				readOnly: true,
+			},
+		},
 		{
 			name: 'threatLevel',
 			label: 'Niveau de menace',
