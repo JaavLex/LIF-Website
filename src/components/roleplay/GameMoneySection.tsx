@@ -92,10 +92,12 @@ export function GameMoneySection({
 		}
 	}, [characterId]);
 
-	// Auto-fetch on mount
+	// Auto-fetch on mount — only for owner/admin (others see saved data)
 	useEffect(() => {
-		fetchGameMoney();
-	}, [fetchGameMoney]);
+		if (isOwner || isAdmin) {
+			fetchGameMoney();
+		}
+	}, [fetchGameMoney, isOwner, isAdmin]);
 
 	const performAction = async (action: string, extra?: Record<string, any>) => {
 		setActionLoading(action);
@@ -182,24 +184,40 @@ export function GameMoneySection({
 				<div className="game-money-row">
 					<span className="game-money-label">Argent en jeu</span>
 					<span className="game-money-value">
-						{loading ? (
-							<span className="game-loading">Chargement...</span>
-						) : gameMoney !== null ? (
-							formatMoney(gameMoney)
+						{(isOwner || isAdmin) ? (
+							loading ? (
+								<span className="game-loading">Chargement...</span>
+							) : gameMoney !== null ? (
+								formatMoney(gameMoney)
+							) : (
+								<span className="game-muted">—</span>
+							)
 						) : (
-							<span className="game-muted">—</span>
+							savedMoney !== null ? formatMoney(savedMoney) : <span className="game-muted">—</span>
 						)}
 					</span>
 				</div>
-				<div className="game-money-row">
-					<span className="game-money-label">Dernier backup</span>
-					<span className="game-money-value">
-						{savedMoney !== null ? formatMoney(savedMoney) : <span className="game-muted">Aucun</span>}
-					</span>
-				</div>
-				{lastSyncAt && (
+				{(isOwner || isAdmin) && (
+					<>
+						<div className="game-money-row">
+							<span className="game-money-label">Dernier backup</span>
+							<span className="game-money-value">
+								{savedMoney !== null ? formatMoney(savedMoney) : <span className="game-muted">Aucun</span>}
+							</span>
+						</div>
+						{lastSyncAt && (
+							<div className="game-money-row">
+								<span className="game-money-label">Date du backup</span>
+								<span className="game-money-value game-muted" style={{ fontSize: '0.8rem' }}>
+									{new Date(lastSyncAt).toLocaleString('fr-FR')}
+								</span>
+							</div>
+						)}
+					</>
+				)}
+				{!(isOwner || isAdmin) && lastSyncAt && (
 					<div className="game-money-row">
-						<span className="game-money-label">Date du backup</span>
+						<span className="game-money-label">Mis à jour</span>
 						<span className="game-money-value game-muted" style={{ fontSize: '0.8rem' }}>
 							{new Date(lastSyncAt).toLocaleString('fr-FR')}
 						</span>
