@@ -66,7 +66,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: rgba(74, 124, 35, 0.1);
+  background: rgba(12, 15, 10, 0.95);
 }
 
 .terminal-header-left {
@@ -106,7 +106,7 @@
 /* Terminal panel (main content area) */
 .terminal-panel {
   border: 1px solid var(--primary);
-  background: rgba(12, 15, 10, 0.95);
+  background: rgba(12, 15, 10, 1);
   padding: 2rem;
   margin-bottom: 2rem;
 }
@@ -646,7 +646,7 @@
   padding: 0.35rem 0.75rem;
   font-size: 0.8rem;
   font-family: 'Courier New', monospace;
-  background: transparent;
+  background: var(--bg);
   border: 1px solid var(--border);
   color: var(--muted);
   cursor: pointer;
@@ -1261,7 +1261,7 @@
 
 .admin-section {
   border: 1px solid var(--danger);
-  background: rgba(139, 38, 53, 0.05);
+  background: rgba(12, 15, 10, 0.95);
 }
 
 .admin-section h2 {
