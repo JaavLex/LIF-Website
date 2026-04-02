@@ -50,10 +50,15 @@ export async function GET(
 			}, { status: 404 });
 		}
 
+		// Get global sync info for countdown
+		const roleplay = await payload.findGlobal({ slug: 'roleplay' }) as any;
+
 		return NextResponse.json({
 			gameMoney: Math.round(result.money * 100) / 100,
 			savedMoney: (character as any).savedMoney ?? null,
 			lastSyncAt: (character as any).lastMoneySyncAt ?? null,
+			lastGlobalSync: roleplay.lastGlobalMoneySync ?? null,
+			syncIntervalMinutes: roleplay.gameSyncInterval ?? 15,
 		});
 	} catch (err: any) {
 		console.error('Game sync error:', err);
@@ -95,10 +100,10 @@ export async function POST(
 
 	try {
 		switch (action) {
-			// Save current game money to website (backup)
+			// Save current game money to website (backup) — admin only
 			case 'save-money': {
-				if (!perms.isAdmin && !isOwner) {
-					return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
+				if (!perms.isAdmin) {
+					return NextResponse.json({ error: 'Réservé aux administrateurs' }, { status: 403 });
 				}
 				const result = await getPlayerMoney(biId);
 				if (!result) {
@@ -117,9 +122,10 @@ export async function POST(
 			}
 
 			// Restore saved money back to game
+			// Restore saved money back to game — admin only
 			case 'restore-money': {
-				if (!perms.isAdmin && !isOwner) {
-					return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
+				if (!perms.isAdmin) {
+					return NextResponse.json({ error: 'Réservé aux administrateurs' }, { status: 403 });
 				}
 				const savedMoney = (character as any).savedMoney;
 				if (savedMoney == null) {

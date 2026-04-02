@@ -396,6 +396,24 @@ export const Roleplay: GlobalConfig = {
 								description: 'Chemin vers le dossier de sauvegarde du monde sur le serveur.',
 							},
 						},
+						{
+							name: 'gameSyncInterval',
+							label: 'Intervalle de synchronisation automatique (minutes)',
+							type: 'number',
+							defaultValue: 15,
+							admin: {
+								description: 'L\'argent de tous les joueurs liés est automatiquement lu et sauvegardé à cet intervalle.',
+							},
+						},
+						{
+							name: 'lastGlobalMoneySync',
+							label: 'Dernière synchronisation globale',
+							type: 'date',
+							admin: {
+								readOnly: true,
+								description: 'Mis à jour automatiquement lors de chaque synchronisation.',
+							},
+						},
 					],
 				},
 				{

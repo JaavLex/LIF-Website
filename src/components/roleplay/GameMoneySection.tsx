@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 
 interface GameMoneySectionProps {
 	characterId: number;
@@ -9,6 +9,7 @@ interface GameMoneySectionProps {
 	initialLastSyncAt: string | null;
 	isAdmin: boolean;
 	isOwner: boolean;
+	bankAnonymous: boolean;
 }
 
 export function GameMoneySection({
@@ -18,6 +19,7 @@ export function GameMoneySection({
 	initialLastSyncAt,
 	isAdmin,
 	isOwner,
+	bankAnonymous,
 }: GameMoneySectionProps) {
 	const [gameMoney, setGameMoney] = useState<number | null>(null);
 	const [savedMoney, setSavedMoney] = useState<number | null>(initialSavedMoney);
@@ -28,10 +30,48 @@ export function GameMoneySection({
 	const [success, setSuccess] = useState('');
 	const [adminAmount, setAdminAmount] = useState('');
 
+	// Countdown state
+	const [lastGlobalSync, setLastGlobalSync] = useState<string | null>(null);
+	const [syncIntervalMinutes, setSyncIntervalMinutes] = useState(15);
+	const [countdown, setCountdown] = useState<{ minutes: number; seconds: number; progress: number } | null>(null);
+	const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+	// Anonymous toggle state
+	const [isAnonymous, setIsAnonymous] = useState(bankAnonymous);
+	const [anonymousLoading, setAnonymousLoading] = useState(false);
+
 	const clearMessages = () => {
 		setError('');
 		setSuccess('');
 	};
+
+	// Update countdown every second
+	useEffect(() => {
+		if (!lastGlobalSync || !syncIntervalMinutes) return;
+
+		const updateCountdown = () => {
+			const lastSync = new Date(lastGlobalSync).getTime();
+			const intervalMs = syncIntervalMinutes * 60 * 1000;
+			const nextSync = lastSync + intervalMs;
+			const now = Date.now();
+			const remaining = Math.max(0, nextSync - now);
+			const elapsed = now - lastSync;
+			const progress = Math.min(1, elapsed / intervalMs);
+
+			const totalSeconds = Math.ceil(remaining / 1000);
+			const minutes = Math.floor(totalSeconds / 60);
+			const seconds = totalSeconds % 60;
+
+			setCountdown({ minutes, seconds, progress });
+		};
+
+		updateCountdown();
+		countdownRef.current = setInterval(updateCountdown, 1000);
+
+		return () => {
+			if (countdownRef.current) clearInterval(countdownRef.current);
+		};
+	}, [lastGlobalSync, syncIntervalMinutes]);
 
 	const fetchGameMoney = useCallback(async () => {
 		setLoading(true);
@@ -43,12 +83,19 @@ export function GameMoneySection({
 			setGameMoney(data.gameMoney);
 			setSavedMoney(data.savedMoney);
 			setLastSyncAt(data.lastSyncAt);
+			setLastGlobalSync(data.lastGlobalSync);
+			setSyncIntervalMinutes(data.syncIntervalMinutes || 15);
 		} catch (err: any) {
 			setError(err.message);
 		} finally {
 			setLoading(false);
 		}
 	}, [characterId]);
+
+	// Auto-fetch on mount
+	useEffect(() => {
+		fetchGameMoney();
+	}, [fetchGameMoney]);
 
 	const performAction = async (action: string, extra?: Record<string, any>) => {
 		setActionLoading(action);
@@ -76,13 +123,30 @@ export function GameMoneySection({
 					setAdminAmount('');
 					break;
 				case 'sync-name':
-					setSuccess(`Nom synchronisé sur le serveur : ${data.name}`);
+					setSuccess(`Nom synchronisé : ${data.name} [${data.prefix}]`);
 					break;
 			}
 		} catch (err: any) {
 			setError(err.message);
 		} finally {
 			setActionLoading(null);
+		}
+	};
+
+	const toggleAnonymous = async () => {
+		setAnonymousLoading(true);
+		try {
+			const res = await fetch(`/api/roleplay/characters/${characterId}`, {
+				method: 'PATCH',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ bankAnonymous: !isAnonymous }),
+			});
+			if (!res.ok) throw new Error('Erreur lors de la modification');
+			setIsAnonymous(!isAnonymous);
+		} catch (err: any) {
+			setError(err.message);
+		} finally {
+			setAnonymousLoading(false);
 		}
 	};
 
@@ -94,7 +158,27 @@ export function GameMoneySection({
 			</h3>
 
 			<div className="game-money-content">
-				{/* Fetch game money */}
+				{/* Auto-sync countdown with progress bar */}
+				{countdown && (
+					<div className="game-sync-countdown">
+						<div className="game-sync-countdown-header">
+							<span className="game-sync-label">Prochaine mise à jour auto</span>
+							<span className="game-sync-time">
+								{countdown.minutes > 0 || countdown.seconds > 0
+									? `${countdown.minutes}:${String(countdown.seconds).padStart(2, '0')}`
+									: 'En cours...'}
+							</span>
+						</div>
+						<div className="game-sync-progress-bar">
+							<div
+								className="game-sync-progress-fill"
+								style={{ width: `${countdown.progress * 100}%` }}
+							/>
+						</div>
+					</div>
+				)}
+
+				{/* Money display */}
 				<div className="game-money-row">
 					<span className="game-money-label">Argent en jeu</span>
 					<span className="game-money-value">
@@ -108,17 +192,33 @@ export function GameMoneySection({
 					</span>
 				</div>
 				<div className="game-money-row">
-					<span className="game-money-label">Backup sauvegardé</span>
+					<span className="game-money-label">Dernier backup</span>
 					<span className="game-money-value">
 						{savedMoney !== null ? formatMoney(savedMoney) : <span className="game-muted">Aucun</span>}
 					</span>
 				</div>
 				{lastSyncAt && (
 					<div className="game-money-row">
-						<span className="game-money-label">Dernier backup</span>
+						<span className="game-money-label">Date du backup</span>
 						<span className="game-money-value game-muted" style={{ fontSize: '0.8rem' }}>
 							{new Date(lastSyncAt).toLocaleString('fr-FR')}
 						</span>
+					</div>
+				)}
+
+				{/* Anonymous toggle — owner can toggle */}
+				{isOwner && (
+					<div className="game-money-row game-anonymous-toggle">
+						<span className="game-money-label">Compte anonyme</span>
+						<button
+							type="button"
+							onClick={toggleAnonymous}
+							disabled={anonymousLoading}
+							className={`game-btn-toggle ${isAnonymous ? 'active' : ''}`}
+							title={isAnonymous ? 'Votre argent est masqué aux autres joueurs' : 'Votre argent est visible par tous'}
+						>
+							{anonymousLoading ? '...' : isAnonymous ? '🔒 Oui' : '🔓 Non'}
+						</button>
 					</div>
 				)}
 
@@ -133,30 +233,8 @@ export function GameMoneySection({
 						disabled={loading}
 						className="game-btn game-btn-primary"
 					>
-						{loading ? '...' : 'Lire le serveur'}
+						{loading ? '...' : 'Actualiser'}
 					</button>
-					<button
-						type="button"
-						onClick={() => performAction('save-money')}
-						disabled={!!actionLoading}
-						className="game-btn game-btn-save"
-					>
-						{actionLoading === 'save-money' ? '...' : 'Sauvegarder'}
-					</button>
-					{savedMoney !== null && (
-						<button
-							type="button"
-							onClick={() => {
-								if (confirm(`Restaurer ${formatMoney(savedMoney)} sur le serveur ?`)) {
-									performAction('restore-money');
-								}
-							}}
-							disabled={!!actionLoading}
-							className="game-btn game-btn-restore"
-						>
-							{actionLoading === 'restore-money' ? '...' : 'Restaurer'}
-						</button>
-					)}
 					<button
 						type="button"
 						onClick={() => performAction('sync-name')}
@@ -165,6 +243,34 @@ export function GameMoneySection({
 					>
 						{actionLoading === 'sync-name' ? '...' : 'Sync nom'}
 					</button>
+
+					{/* Admin-only actions */}
+					{isAdmin && (
+						<>
+							<button
+								type="button"
+								onClick={() => performAction('save-money')}
+								disabled={!!actionLoading}
+								className="game-btn game-btn-save"
+							>
+								{actionLoading === 'save-money' ? '...' : 'Sauvegarder'}
+							</button>
+							{savedMoney !== null && (
+								<button
+									type="button"
+									onClick={() => {
+										if (confirm(`Restaurer ${formatMoney(savedMoney)} sur le serveur ?`)) {
+											performAction('restore-money');
+										}
+									}}
+									disabled={!!actionLoading}
+									className="game-btn game-btn-restore"
+								>
+									{actionLoading === 'restore-money' ? '...' : 'Restaurer'}
+								</button>
+							)}
+						</>
+					)}
 				</div>
 
 				{/* Admin: set arbitrary money */}

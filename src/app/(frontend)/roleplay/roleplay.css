@@ -2266,3 +2266,74 @@
 	font-family: 'Courier New', monospace;
 	font-size: 0.85rem;
 }
+
+/* Countdown progress bar */
+.game-sync-countdown {
+	padding: 0.5rem 0;
+	margin-bottom: 0.25rem;
+}
+
+.game-sync-countdown-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 0.35rem;
+}
+
+.game-sync-label {
+	font-size: 0.7rem;
+	color: var(--muted);
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+}
+
+.game-sync-time {
+	font-size: 0.8rem;
+	font-family: 'Courier New', monospace;
+	color: var(--accent);
+	font-weight: 600;
+}
+
+.game-sync-progress-bar {
+	width: 100%;
+	height: 4px;
+	background: var(--border);
+	overflow: hidden;
+}
+
+.game-sync-progress-fill {
+	height: 100%;
+	background: var(--accent);
+	transition: width 1s linear;
+}
+
+/* Anonymous toggle */
+.game-anonymous-toggle {
+	border-bottom: none !important;
+}
+
+.game-btn-toggle {
+	padding: 0.25rem 0.6rem;
+	font-size: 0.75rem;
+	border: 1px solid var(--border);
+	background: var(--background-secondary);
+	color: var(--muted);
+	cursor: pointer;
+	transition: all 0.15s ease;
+	font-family: inherit;
+}
+
+.game-btn-toggle:hover:not(:disabled) {
+	border-color: var(--accent);
+}
+
+.game-btn-toggle.active {
+	border-color: var(--accent);
+	color: var(--accent);
+	background: rgba(0, 255, 65, 0.05);
+}
+
+.game-btn-toggle:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}

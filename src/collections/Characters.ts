@@ -410,6 +410,16 @@ export const Characters: CollectionConfig = {
 			},
 		},
 		{
+			name: 'bankAnonymous',
+			label: 'Compte bancaire anonyme',
+			type: 'checkbox',
+			defaultValue: false,
+			admin: {
+				position: 'sidebar',
+				description: 'Si activé, seul le joueur et les admins peuvent voir l\'argent',
+			},
+		},
+		{
 			name: 'threatLevel',
 			label: 'Niveau de menace',
 			type: 'select',

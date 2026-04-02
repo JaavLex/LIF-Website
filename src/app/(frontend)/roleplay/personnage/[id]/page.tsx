@@ -440,8 +440,8 @@ export default async function CharacterPage({
 							</div>
 						)}
 
-						{/* Game money section — only if BI ID is linked and user is owner or admin */}
-						{character.biId && canEdit && (
+						{/* Game money section — visible if BI ID is linked and not anonymous (or owner/admin) */}
+						{character.biId && (!character.bankAnonymous || isOwner || isAdmin) && (
 							<GameMoneySection
 								characterId={character.id}
 								biId={character.biId}
@@ -449,6 +449,7 @@ export default async function CharacterPage({
 								initialLastSyncAt={character.lastMoneySyncAt ?? null}
 								isAdmin={isAdmin}
 								isOwner={isOwner}
+								bankAnonymous={character.bankAnonymous ?? false}
 							/>
 						)}
 					</div>
