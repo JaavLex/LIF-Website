@@ -80,6 +80,7 @@ export interface Config {
     'moderation-cases': ModerationCase;
     'moderation-events': ModerationEvent;
     'moderation-sanctions': ModerationSanction;
+    'bank-history': BankHistory;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -100,6 +101,7 @@ export interface Config {
     'moderation-cases': ModerationCasesSelect<false> | ModerationCasesSelect<true>;
     'moderation-events': ModerationEventsSelect<false> | ModerationEventsSelect<true>;
     'moderation-sanctions': ModerationSanctionsSelect<false> | ModerationSanctionsSelect<true>;
+    'bank-history': BankHistorySelect<false> | BankHistorySelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -493,6 +495,19 @@ export interface Character {
   discordId?: string | null;
   discordUsername?: string | null;
   /**
+   * UUID Bohemia Interactive du joueur (visible dans le profil joueur en jeu)
+   */
+  biId?: string | null;
+  /**
+   * Backup de l'argent en jeu
+   */
+  savedMoney?: number | null;
+  lastMoneySyncAt?: string | null;
+  /**
+   * Si activé, seul le joueur et les admins peuvent voir l'argent
+   */
+  bankAnonymous?: boolean | null;
+  /**
    * Niveau de menace de la cible
    */
   threatLevel?: ('low' | 'moderate' | 'high' | 'critical') | null;
@@ -766,6 +781,19 @@ export interface ModerationSanction {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "bank-history".
+ */
+export interface BankHistory {
+  id: number;
+  character: number | Character;
+  amount: number;
+  previousAmount?: number | null;
+  source: 'auto-sync' | 'manual-save' | 'restore' | 'admin-set';
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -839,6 +867,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'moderation-sanctions';
         value: number | ModerationSanction;
+      } | null)
+    | ({
+        relationTo: 'bank-history';
+        value: number | BankHistory;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -1105,6 +1137,10 @@ export interface CharactersSelect<T extends boolean = true> {
   superiorOfficer?: T;
   discordId?: T;
   discordUsername?: T;
+  biId?: T;
+  savedMoney?: T;
+  lastMoneySyncAt?: T;
+  bankAnonymous?: T;
   threatLevel?: T;
   isArchived?: T;
   archivedAt?: T;
@@ -1263,6 +1299,18 @@ export interface ModerationSanctionsSelect<T extends boolean = true> {
   warnNumber?: T;
   discordSyncStatus?: T;
   discordSyncError?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "bank-history_select".
+ */
+export interface BankHistorySelect<T extends boolean = true> {
+  character?: T;
+  amount?: T;
+  previousAmount?: T;
+  source?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1590,6 +1638,23 @@ export interface Roleplay {
    * Rôle Discord autorisant la publication de renseignements
    */
   intelligenceRoleId?: string | null;
+  gameServerEnabled?: boolean | null;
+  /**
+   * UUID complet du serveur (ex: 6af86c71-c6a1-4c72-adec-5e142d32fdc3). Les 8 premiers caractères sont utilisés pour l'API.
+   */
+  gameServerUuid?: string | null;
+  /**
+   * Chemin vers le dossier de sauvegarde du monde sur le serveur.
+   */
+  gameServerSavePath?: string | null;
+  /**
+   * L'argent de tous les joueurs liés est automatiquement lu et sauvegardé à cet intervalle.
+   */
+  gameSyncInterval?: number | null;
+  /**
+   * Mis à jour automatiquement lors de chaque synchronisation.
+   */
+  lastGlobalMoneySync?: string | null;
   moderationEnabled?: boolean | null;
   /**
    * Salon Discord où les résultats des actions de modération sont envoyés. Configuré via /moderation-channel du bot.
@@ -1796,6 +1861,11 @@ export interface RoleplaySelect<T extends boolean = true> {
       };
   operatorRoleId?: T;
   intelligenceRoleId?: T;
+  gameServerEnabled?: T;
+  gameServerUuid?: T;
+  gameServerSavePath?: T;
+  gameSyncInterval?: T;
+  lastGlobalMoneySync?: T;
   moderationEnabled?: T;
   moderationLogChannelId?: T;
   moderationReasons?:
