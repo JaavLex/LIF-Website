@@ -49,6 +49,8 @@ async function runSync() {
 			if (!playerData) continue;
 
 			const money = Math.round(playerData.money * 100) / 100;
+			const previousAmount = (character as any).savedMoney ?? null;
+
 			await payload.update({
 				collection: 'characters',
 				id: character.id,
@@ -57,6 +59,20 @@ async function runSync() {
 					lastMoneySyncAt: now,
 				} as any,
 			});
+
+			// Log to bank history (only if amount changed)
+			if (previousAmount === null || previousAmount !== money) {
+				await payload.create({
+					collection: 'bank-history',
+					data: {
+						character: character.id,
+						amount: money,
+						previousAmount: previousAmount,
+						source: 'auto-sync',
+					} as any,
+				});
+			}
+
 			synced++;
 		}
 

@@ -40,6 +40,10 @@ export function GameMoneySection({
 	const [isAnonymous, setIsAnonymous] = useState(bankAnonymous);
 	const [anonymousLoading, setAnonymousLoading] = useState(false);
 
+	// Bank history (admin only)
+	const [bankHistory, setBankHistory] = useState<{ amount: number; previousAmount: number | null; source: string; date: string }[]>([]);
+	const [showHistory, setShowHistory] = useState(false);
+
 	const clearMessages = () => {
 		setError('');
 		setSuccess('');
@@ -85,6 +89,7 @@ export function GameMoneySection({
 			setLastSyncAt(data.lastSyncAt);
 			setLastGlobalSync(data.lastGlobalSync);
 			setSyncIntervalMinutes(data.syncIntervalMinutes || 15);
+			if (data.bankHistory) setBankHistory(data.bankHistory);
 		} catch (err: any) {
 			setError(err.message);
 		} finally {
@@ -327,6 +332,52 @@ export function GameMoneySection({
 								{actionLoading === 'set-money' ? '...' : 'Appliquer'}
 							</button>
 						</div>
+					</div>
+				)}
+
+				{/* Admin: bank history */}
+				{isAdmin && bankHistory.length > 0 && (
+					<div className="game-history-section">
+						<button
+							type="button"
+							className="game-history-toggle"
+							onClick={() => setShowHistory(!showHistory)}
+						>
+							{showHistory ? '▼' : '▶'} Historique ({bankHistory.length})
+						</button>
+						{showHistory && (
+							<div className="game-history-list">
+								{bankHistory.map((entry, i) => {
+									const delta = entry.previousAmount !== null && entry.previousAmount !== undefined
+										? entry.amount - entry.previousAmount
+										: null;
+									const sourceLabels: Record<string, string> = {
+										'auto-sync': 'Sync auto',
+										'manual-save': 'Sauvegarde',
+										'restore': 'Restauration',
+										'admin-set': 'Modif. admin',
+									};
+									return (
+										<div key={i} className="game-history-entry">
+											<span className="game-history-date">
+												{new Date(entry.date).toLocaleString('fr-FR')}
+											</span>
+											<span className="game-history-amount">
+												{formatMoney(entry.amount)}
+											</span>
+											{delta !== null && (
+												<span className={`game-history-delta ${delta >= 0 ? 'positive' : 'negative'}`}>
+													{delta >= 0 ? '+' : ''}{formatMoney(delta)}
+												</span>
+											)}
+											<span className="game-history-source">
+												{sourceLabels[entry.source] || entry.source}
+											</span>
+										</div>
+									);
+								})}
+							</div>
+						)}
 					</div>
 				)}
 			</div>

@@ -118,6 +118,7 @@ export function CharacterForm({
 		editData?.discordId || '',
 	);
 	const [biId, setBiId] = useState<string>(editData?.biId || '');
+	const [bankAnonymous, setBankAnonymous] = useState<boolean>(editData?.bankAnonymous || false);
 
 	const [form, setForm] = useState({
 		firstName: editData?.firstName || '',
@@ -303,6 +304,9 @@ export function CharacterForm({
 			// BI ID (game server link)
 			if (biId.trim()) body.biId = biId.trim();
 			else if (editData) body.biId = '';
+
+			// Bank anonymous
+			body.bankAnonymous = bankAnonymous;
 
 			const url = editData
 				? `/api/roleplay/characters/${editData.id}`
@@ -810,33 +814,44 @@ export function CharacterForm({
 				</div>
 
 				{/* --- Liaison serveur de jeu --- */}
-				{editData && (
-					<div
-						style={{
-							border: '1px solid var(--accent)',
-							padding: '1.5rem',
-							marginTop: '1.5rem',
-							background: 'rgba(0, 255, 65, 0.03)',
-						}}
-					>
-						<h2 style={{ color: 'var(--accent)', marginTop: 0 }}>Liaison Serveur de Jeu</h2>
-						<div>
-							<label style={labelStyle}>Identifiant Bohemia Interactive (UUID)</label>
-							<input
-								type="text"
-								value={biId}
-								onChange={e => setBiId(e.target.value)}
-								className="filter-input"
-								style={{ width: '100%', fontFamily: 'monospace' }}
-								placeholder="ex: df7e8a35-6fcd-4308-b98d-34775430a0c6"
-							/>
-							<p style={{ fontSize: '0.7rem', color: 'var(--muted)', marginTop: '0.25rem' }}>
-								Votre UUID Bohemia Interactive permet de lier votre personnage au serveur de jeu
-								pour synchroniser l&apos;argent et le nom en jeu.
-							</p>
-						</div>
+				<div
+					style={{
+						border: '1px solid var(--accent)',
+						padding: '1.5rem',
+						marginTop: '1.5rem',
+						background: 'rgba(0, 255, 65, 0.03)',
+					}}
+				>
+					<h2 style={{ color: 'var(--accent)', marginTop: 0 }}>Liaison Serveur de Jeu</h2>
+					<div>
+						<label style={labelStyle}>Identifiant Bohemia Interactive (UUID)</label>
+						<input
+							type="text"
+							value={biId}
+							onChange={e => setBiId(e.target.value)}
+							className="filter-input"
+							style={{ width: '100%', fontFamily: 'monospace' }}
+							placeholder="ex: df7e8a35-6fcd-4308-b98d-34775430a0c6"
+						/>
+						<p style={{ fontSize: '0.7rem', color: 'var(--muted)', marginTop: '0.25rem' }}>
+							Votre UUID Bohemia Interactive permet de lier votre personnage au serveur de jeu
+							pour synchroniser l&apos;argent et le nom en jeu.
+						</p>
 					</div>
-				)}
+					<div style={{ marginTop: '1rem' }}>
+						<label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+							<input
+								type="checkbox"
+								checked={bankAnonymous}
+								onChange={e => setBankAnonymous(e.target.checked)}
+							/>
+							<span>Compte bancaire anonyme</span>
+						</label>
+						<p style={{ fontSize: '0.7rem', color: 'var(--muted)', marginTop: '0.25rem' }}>
+							Si activé, votre argent en jeu ne sera pas visible par les autres joueurs sur votre fiche.
+						</p>
+					</div>
+				</div>
 
 				{/* --- Admin-only section --- */}
 				{isAdmin && (

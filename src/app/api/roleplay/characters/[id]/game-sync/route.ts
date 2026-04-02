@@ -53,12 +53,31 @@ export async function GET(
 		// Get global sync info for countdown
 		const roleplay = await payload.findGlobal({ slug: 'roleplay' }) as any;
 
+		// Fetch bank history for admins
+		let bankHistory: any[] = [];
+		if (perms.isAdmin) {
+			const historyResult = await payload.find({
+				collection: 'bank-history',
+				where: { character: { equals: Number(id) } },
+				sort: '-createdAt',
+				limit: 50,
+				depth: 0,
+			});
+			bankHistory = historyResult.docs.map((h: any) => ({
+				amount: h.amount,
+				previousAmount: h.previousAmount,
+				source: h.source,
+				date: h.createdAt,
+			}));
+		}
+
 		return NextResponse.json({
 			gameMoney: Math.round(result.money * 100) / 100,
 			savedMoney: (character as any).savedMoney ?? null,
 			lastSyncAt: (character as any).lastMoneySyncAt ?? null,
 			lastGlobalSync: roleplay.lastGlobalMoneySync ?? null,
 			syncIntervalMinutes: roleplay.gameSyncInterval ?? 15,
+			bankHistory,
 		});
 	} catch (err: any) {
 		console.error('Game sync error:', err);
@@ -110,6 +129,7 @@ export async function POST(
 					return NextResponse.json({ error: 'Joueur non trouvé dans la persistence' }, { status: 404 });
 				}
 				const money = Math.round(result.money * 100) / 100;
+				const prevMoney = (character as any).savedMoney ?? null;
 				await payload.update({
 					collection: 'characters',
 					id: Number(id),
@@ -118,10 +138,13 @@ export async function POST(
 						lastMoneySyncAt: new Date().toISOString(),
 					} as any,
 				});
+				await payload.create({
+					collection: 'bank-history',
+					data: { character: Number(id), amount: money, previousAmount: prevMoney, source: 'manual-save' } as any,
+				});
 				return NextResponse.json({ success: true, savedMoney: money });
 			}
 
-			// Restore saved money back to game
 			// Restore saved money back to game — admin only
 			case 'restore-money': {
 				if (!perms.isAdmin) {
@@ -132,6 +155,10 @@ export async function POST(
 					return NextResponse.json({ error: 'Aucun argent sauvegardé' }, { status: 400 });
 				}
 				await setPlayerMoney(biId, savedMoney);
+				await payload.create({
+					collection: 'bank-history',
+					data: { character: Number(id), amount: savedMoney, previousAmount: savedMoney, source: 'restore' } as any,
+				});
 				return NextResponse.json({ success: true, restoredMoney: savedMoney });
 			}
 
@@ -144,7 +171,12 @@ export async function POST(
 				if (isNaN(newMoney) || newMoney < 0) {
 					return NextResponse.json({ error: 'Montant invalide' }, { status: 400 });
 				}
+				const prevAmount = (character as any).savedMoney ?? null;
 				await setPlayerMoney(biId, newMoney);
+				await payload.create({
+					collection: 'bank-history',
+					data: { character: Number(id), amount: newMoney, previousAmount: prevAmount, source: 'admin-set' } as any,
+				});
 				return NextResponse.json({ success: true, newMoney });
 			}
 

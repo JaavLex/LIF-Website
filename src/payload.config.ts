@@ -18,6 +18,7 @@ import { Intelligence } from './collections/Intelligence';
 import { ModerationCases } from './collections/ModerationCases';
 import { ModerationEvents } from './collections/ModerationEvents';
 import { ModerationSanctions } from './collections/ModerationSanctions';
+import { BankHistory } from './collections/BankHistory';
 import { AdminDashboard } from './globals/AdminDashboard';
 import { Homepage } from './globals/Homepage';
 import { Navigation } from './globals/Navigation';
@@ -50,6 +51,7 @@ export default buildConfig({
 		ModerationCases,
 		ModerationEvents,
 		ModerationSanctions,
+		BankHistory,
 	],
 	globals: [Homepage, Navigation, AdminDashboard, Roleplay],
 	editor: lexicalEditor(),
