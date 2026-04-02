@@ -190,7 +190,7 @@ export default function OrgBankStats() {
 					<span className="org-stats-amount">{formatted}</span>
 				</div>
 				<div className="org-stats-label">
-					FONDS TOTAUX — LIF MERCENARY ORGANISATION
+					REVENUS CONTRACTUELS AMASSÉS — LÉGION INTERNATIONALE FRANCOPHONE
 				</div>
 				<div className="org-stats-sub">
 					<span>{stats.memberCount} opérateur{stats.memberCount !== 1 ? 's' : ''} actif{stats.memberCount !== 1 ? 's' : ''}</span>
