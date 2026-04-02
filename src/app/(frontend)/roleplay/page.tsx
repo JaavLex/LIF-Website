@@ -464,7 +464,7 @@ export default async function RoleplayPage({
 			</div>
 
 			<div style={{ textAlign: 'center', padding: '1rem' }}>
-				<Link href="/" style={{ color: 'var(--muted)', fontSize: '0.85rem' }}>
+				<Link href="/" className="retour-link">
 					← Retour au site principal
 				</Link>
 			</div>

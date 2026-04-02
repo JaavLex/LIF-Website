@@ -57,15 +57,7 @@ export default async function IntelReportPage({
 
 	return (
 		<div className="terminal-container">
-			<Link
-				href="/roleplay"
-				style={{
-					color: 'var(--muted)',
-					fontSize: '0.85rem',
-					display: 'inline-block',
-					marginBottom: '1rem',
-				}}
-			>
+			<Link href="/roleplay" className="retour-link">
 				← Retour à la base de données
 			</Link>
 
@@ -231,10 +223,7 @@ export default async function IntelReportPage({
 			</div>
 
 			<div style={{ textAlign: 'center', padding: '1rem' }}>
-				<Link
-					href="/roleplay"
-					style={{ color: 'var(--muted)', fontSize: '0.85rem' }}
-				>
+				<Link href="/roleplay" className="retour-link">
 					← Retour à la base de données
 				</Link>
 			</div>

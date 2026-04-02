@@ -52,15 +52,7 @@ export default async function FactionPage({
 
 	return (
 		<div className="terminal-container">
-			<Link
-				href="/roleplay"
-				style={{
-					color: 'var(--muted)',
-					fontSize: '0.85rem',
-					display: 'inline-block',
-					marginBottom: '1rem',
-				}}
-			>
+			<Link href="/roleplay" className="retour-link">
 				← Retour à la base de données
 			</Link>
 

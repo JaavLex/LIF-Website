@@ -13,10 +13,39 @@ const SESSION_KEY = 'lif-roleplay-loaded';
 const MUSIC_DISABLED_KEY = 'lif-roleplay-music-disabled';
 const MUSIC_VOLUME_KEY = 'lif-roleplay-music-volume';
 
+const PLAYLIST = [
+	{ src: '/song/Aube%20Op%C3%A9rationelle%20-%20LIF.mp3', title: 'Aube Opérationnelle' },
+	{ src: '/song/Contrat%20-%20LIF.mp3', title: 'Contrat' },
+	{ src: '/song/Discipline%20-%20LIF.mp3', title: 'Discipline' },
+	{ src: '/song/Guerre%20Electronique%20-%20LIF.mp3', title: 'Guerre Électronique' },
+];
+
+function shufflePlaylist(): number[] {
+	const indices = PLAYLIST.map((_, i) => i);
+	for (let i = indices.length - 1; i > 0; i--) {
+		const j = Math.floor(Math.random() * (i + 1));
+		[indices[i], indices[j]] = [indices[j], indices[i]];
+	}
+	return indices;
+}
+
+function formatTime(seconds: number): string {
+	const m = Math.floor(seconds / 60);
+	const s = Math.floor(seconds % 60);
+	return `${m}:${s.toString().padStart(2, '0')}`;
+}
+
 function RoleplayAudio({ enabled }: { enabled: boolean }) {
 	const audioRef = useRef<HTMLAudioElement | null>(null);
 	const [disabled, setDisabled] = useState(false);
 	const [volume, setVolume] = useState(0.2);
+	const [order, setOrder] = useState<number[]>(() => shufflePlaylist());
+	const [currentIndex, setCurrentIndex] = useState(0);
+	const [currentTime, setCurrentTime] = useState(0);
+	const [duration, setDuration] = useState(0);
+	const [hovering, setHovering] = useState(false);
+
+	const currentTrack = PLAYLIST[order[currentIndex]];
 
 	useEffect(() => {
 		const storedDisabled = localStorage.getItem(MUSIC_DISABLED_KEY);
@@ -44,6 +73,83 @@ function RoleplayAudio({ enabled }: { enabled: boolean }) {
 		localStorage.setItem(MUSIC_DISABLED_KEY, disabled ? '1' : '0');
 	}, [disabled]);
 
+	const playTrack = useCallback((index: number) => {
+		const audio = audioRef.current;
+		if (!audio) return;
+		audio.src = PLAYLIST[order[index]].src;
+		audio.load();
+		if (!disabled) {
+			void audio.play().catch(() => {});
+		}
+	}, [order, disabled]);
+
+	const nextTrack = useCallback(() => {
+		setCurrentIndex(prev => {
+			const next = (prev + 1) % order.length;
+			return next;
+		});
+	}, [order.length]);
+
+	const prevTrack = useCallback(() => {
+		const audio = audioRef.current;
+		// If more than 3 seconds in, restart current track
+		if (audio && audio.currentTime > 3) {
+			audio.currentTime = 0;
+			return;
+		}
+		setCurrentIndex(prev => {
+			const next = (prev - 1 + order.length) % order.length;
+			return next;
+		});
+	}, [order.length]);
+
+	// Load track when index changes
+	useEffect(() => {
+		playTrack(currentIndex);
+	}, [currentIndex, playTrack]);
+
+	// Auto-advance when track ends
+	useEffect(() => {
+		const audio = audioRef.current;
+		if (!audio) return;
+
+		const handleEnded = () => {
+			setCurrentIndex(prev => {
+				const next = prev + 1;
+				if (next >= order.length) {
+					// Reshuffle and restart
+					const newOrder = shufflePlaylist();
+					setOrder(newOrder);
+					return 0;
+				}
+				return next;
+			});
+		};
+
+		audio.addEventListener('ended', handleEnded);
+		return () => audio.removeEventListener('ended', handleEnded);
+	}, [order.length]);
+
+	// Time tracking
+	useEffect(() => {
+		const audio = audioRef.current;
+		if (!audio) return;
+
+		const handleTimeUpdate = () => setCurrentTime(audio.currentTime);
+		const handleDurationChange = () => setDuration(audio.duration || 0);
+
+		audio.addEventListener('timeupdate', handleTimeUpdate);
+		audio.addEventListener('durationchange', handleDurationChange);
+		audio.addEventListener('loadedmetadata', handleDurationChange);
+
+		return () => {
+			audio.removeEventListener('timeupdate', handleTimeUpdate);
+			audio.removeEventListener('durationchange', handleDurationChange);
+			audio.removeEventListener('loadedmetadata', handleDurationChange);
+		};
+	}, []);
+
+	// Autoplay on first user gesture
 	useEffect(() => {
 		if (!enabled || disabled || !audioRef.current) return;
 
@@ -55,7 +161,7 @@ function RoleplayAudio({ enabled }: { enabled: boolean }) {
 				await audio.play();
 				cleanup();
 			} catch {
-				// Browser blocked autoplay until a user gesture happens.
+				// Browser blocked autoplay
 			}
 		};
 
@@ -78,6 +184,7 @@ function RoleplayAudio({ enabled }: { enabled: boolean }) {
 		return cleanup;
 	}, [enabled, disabled, volume]);
 
+	// Play/pause on disable toggle
 	useEffect(() => {
 		if (!audioRef.current) return;
 
@@ -93,26 +200,57 @@ function RoleplayAudio({ enabled }: { enabled: boolean }) {
 
 	return (
 		<>
-			<audio ref={audioRef} src="/song/LIFDB.mp3" loop preload="auto" />
-			<div className="roleplay-audio-controls" data-tutorial="audio-controls">
-				<button
-					type="button"
-					className="session-btn"
-					onClick={() => setDisabled(prev => !prev)}
-					style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem' }}
-				>
-					{disabled ? 'Activer musique' : 'Couper musique'}
-				</button>
-				<input
-					type="range"
-					min="0"
-					max="1"
-					step="0.01"
-					value={volume}
-					onChange={e => setVolume(Number(e.target.value))}
-					disabled={disabled}
-					aria-label="Volume musique"
-				/>
+			<audio ref={audioRef} src={currentTrack.src} preload="auto" />
+			<div
+				className="roleplay-audio-controls"
+				data-tutorial="audio-controls"
+				onMouseEnter={() => setHovering(true)}
+				onMouseLeave={() => setHovering(false)}
+			>
+				<div className="audio-track-info">
+					<span className="audio-track-title">{currentTrack.title}</span>
+					{hovering && duration > 0 && (
+						<span className="audio-track-time">
+							{formatTime(currentTime)} / {formatTime(duration)}
+						</span>
+					)}
+				</div>
+				<div className="audio-controls-row">
+					<button
+						type="button"
+						className="audio-btn"
+						onClick={prevTrack}
+						title="Précédent"
+					>
+						⏮
+					</button>
+					<button
+						type="button"
+						className="audio-btn"
+						onClick={() => setDisabled(prev => !prev)}
+						title={disabled ? 'Lecture' : 'Pause'}
+					>
+						{disabled ? '▶' : '⏸'}
+					</button>
+					<button
+						type="button"
+						className="audio-btn"
+						onClick={nextTrack}
+						title="Suivant"
+					>
+						⏭
+					</button>
+					<input
+						type="range"
+						min="0"
+						max="1"
+						step="0.01"
+						value={volume}
+						onChange={e => setVolume(Number(e.target.value))}
+						disabled={disabled}
+						aria-label="Volume musique"
+					/>
+				</div>
 			</div>
 		</>
 	);

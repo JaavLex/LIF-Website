@@ -30,14 +30,7 @@ export default async function LorePage() {
 					<p style={{ color: 'var(--muted)', marginTop: '1rem' }}>
 						Le lore sera disponible prochainement.
 					</p>
-					<Link
-						href="/roleplay"
-						style={{
-							color: 'var(--primary)',
-							marginTop: '1rem',
-							display: 'inline-block',
-						}}
-					>
+					<Link href="/roleplay" className="retour-link">
 						← Retour à la base de données
 					</Link>
 				</div>
@@ -47,15 +40,7 @@ export default async function LorePage() {
 
 	return (
 		<div className="terminal-container">
-			<Link
-				href="/roleplay"
-				style={{
-					color: 'var(--muted)',
-					fontSize: '0.85rem',
-					display: 'inline-block',
-					marginBottom: '1rem',
-				}}
-			>
+			<Link href="/roleplay" className="retour-link">
 				← Retour à la base de données
 			</Link>
 

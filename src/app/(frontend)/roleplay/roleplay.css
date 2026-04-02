@@ -26,17 +26,87 @@
   bottom: 1rem;
   z-index: 1001;
   display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.5rem 0.75rem;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0.6rem 0.85rem;
   border: 1px solid var(--border);
-  background: rgba(12, 15, 10, 0.92);
+  background: var(--background);
   backdrop-filter: blur(8px);
+  min-width: 180px;
+}
+
+.audio-track-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.audio-track-title {
+  font-family: 'Courier New', monospace;
+  font-size: 0.7rem;
+  color: var(--primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 160px;
+}
+
+.audio-track-time {
+  font-family: 'Courier New', monospace;
+  font-size: 0.65rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.audio-controls-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.audio-btn {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 0.75rem;
+  padding: 0.2rem 0.45rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  line-height: 1;
+  font-family: inherit;
+}
+
+.audio-btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
 }
 
 .roleplay-audio-controls input[type='range'] {
-  width: 120px;
+  width: 70px;
   accent-color: var(--primary);
+  margin-left: auto;
+}
+
+/* Return / navigation links */
+.retour-link {
+  display: inline-block;
+  margin-bottom: 1rem;
+  padding: 0.5rem 1.2rem;
+  font-family: 'Courier New', monospace;
+  font-size: 0.85rem;
+  color: var(--primary);
+  border: 1px solid var(--border);
+  background: var(--background);
+  text-decoration: none;
+  transition: all 0.2s;
+  letter-spacing: 1px;
+}
+
+.retour-link:hover {
+  border-color: var(--primary);
+  background: rgba(74, 124, 35, 0.1);
+  color: var(--primary-hover);
 }
 
 /* CRT Scanline overlay */
