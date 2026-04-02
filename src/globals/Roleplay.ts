@@ -371,6 +371,34 @@ export const Roleplay: GlobalConfig = {
 					],
 				},
 				{
+					label: 'Serveur de Jeu',
+					fields: [
+						{
+							name: 'gameServerEnabled',
+							label: 'Activer l\'intégration serveur de jeu',
+							type: 'checkbox',
+							defaultValue: true,
+						},
+						{
+							name: 'gameServerUuid',
+							label: 'UUID du serveur FeatherPanel',
+							type: 'text',
+							admin: {
+								description: 'UUID complet du serveur (ex: 6af86c71-c6a1-4c72-adec-5e142d32fdc3). Les 8 premiers caractères sont utilisés pour l\'API.',
+							},
+						},
+						{
+							name: 'gameServerSavePath',
+							label: 'Chemin de sauvegarde',
+							type: 'text',
+							defaultValue: '/profile/profile/.save/game/16402406C7FFB16E-MERAK-ISLAND-LIF',
+							admin: {
+								description: 'Chemin vers le dossier de sauvegarde du monde sur le serveur.',
+							},
+						},
+					],
+				},
+				{
 					label: 'Modération',
 					fields: [
 						{

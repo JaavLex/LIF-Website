@@ -22,7 +22,7 @@ export async function GET(
 	const session = verifySession(token);
 	if (!session) return NextResponse.json({ error: 'Session invalide' }, { status: 401 });
 
-	if (!isGameServerConfigured()) {
+	if (!(await isGameServerConfigured())) {
 		return NextResponse.json({ error: 'Serveur de jeu non configuré' }, { status: 503 });
 	}
 
@@ -73,13 +73,13 @@ export async function POST(
 	const session = verifySession(token);
 	if (!session) return NextResponse.json({ error: 'Session invalide' }, { status: 401 });
 
-	if (!isGameServerConfigured()) {
+	if (!(await isGameServerConfigured())) {
 		return NextResponse.json({ error: 'Serveur de jeu non configuré' }, { status: 503 });
 	}
 
 	const { id } = await params;
 	const payload = await getPayloadClient();
-	const character = await payload.findByID({ collection: 'characters', id: Number(id), depth: 0 });
+	const character = await payload.findByID({ collection: 'characters', id: Number(id), depth: 1 });
 	if (!character) return NextResponse.json({ error: 'Personnage introuvable' }, { status: 404 });
 
 	const perms = await checkAdminPermissions(session);
@@ -148,8 +148,14 @@ export async function POST(
 					return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
 				}
 				const fullName = (character as any).fullName || `${(character as any).firstName} ${(character as any).lastName}`;
-				await setCustomName(biId, fullName);
-				return NextResponse.json({ success: true, name: fullName });
+				// Get rank abbreviation for prefix
+				let rankPrefix = 'LIF';
+				const rank = (character as any).rank;
+				if (rank && typeof rank === 'object' && rank.abbreviation) {
+					rankPrefix = rank.abbreviation;
+				}
+				await setCustomName(biId, fullName, rankPrefix);
+				return NextResponse.json({ success: true, name: fullName, prefix: rankPrefix });
 			}
 
 			default:

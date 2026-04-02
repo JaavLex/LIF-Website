@@ -1,782 +1,850 @@
-# Moderation page feature
-
-You are a **Senior Fullstack Developer / Solution Architect** working on a website for an **Arma Reforger roleplay community**.
-
-Your task is to design a **Moderation Page / Moderation System** that integrates with our existing website, existing Discord login, and our existing Discord bot that is already linked to the website on the roleplay page.
-
-The goal is to produce a solution that is **serious, scalable, maintainable, secure, permission-safe, and fully configurable through Payload CMS**.
-
-## Core Context
-
-- The website already supports **Discord authentication**
-- The website already has a **roleplay page**
-- We already have a **Discord bot connected to the website**
-- Some moderation-related features already exist on the roleplay side, including **ticket transcript handling**
-- This new moderation page must **centralize moderation workflows**
-- This page is for **staff use only**
-
----
-
-## Global Rules
-
-### MUST
-
-- Your full explanation must be in **English**
-- **All UI text, labels, buttons, statuses, notifications, placeholders, modals, and page content must be in French**
-- The system must be **fully configurable through Payload CMS** where relevant
-- Permissions must be enforced **server-side**
-- The system must be **scalable and maintainable**
-- The system must support **multiple characters per user**
-- The system must support **personnel** and **targets** as **separate entities**
-- The solution must work with the **existing Discord bot**, not replace it
-- The solution must support **audit logs**
-- The solution must support **file attachments** on cases and messages
-- The solution must support **Discord-side moderation synchronization**
-- The solution must keep a clear separation between:
-  - Discord account
-  - Website account
-  - In-game/server identity
-  - Character identity
-  - Moderation target
-
-### MUST NOT
-
-- Do not use English in UI content
-- Do not hardcode sections or layouts in the frontend
-- Do not rely only on frontend permission checks
-- Do not assume one user = one character
-- Do not merge moderator identity and target identity into the same concept
-- Do not make moderation actions depend only on Discord role visibility in frontend
-- Do not design this as a simple admin page with no structure
-
----
-
-## Main Objective
-
-Design a **complete Moderation Page system** for staff members.
-
-This system must allow authorized administrators to:
-
-- view relevant users from the Discord server
-- create and manage moderation cases
-- comment and append evidence to existing cases
-- classify case events as positive or negative
-- perform moderation actions that synchronize with Discord
-- receive logging and moderation-result outputs in a dedicated Discord channel
-- move and centralize ticket transcripts from the roleplay page into this moderation system
-
----
-
-## 1. Access Control
-
-### Authentication
-
-- Login is done through **Discord**
-- Only authorized users may access this moderation page
-
-### Authorization
-
-- Authorized users are the same users defined as **administrators in the global roleplay permissions/system**
-- Unauthorized users must not be able to:
-  - see the page
-  - query its data
-  - access case details
-  - edit anything
-  - trigger moderation actions
-
-### Required security behavior
-
-- Access checks must be enforced **server-side**
-- API routes / server actions / backend services must verify permissions
-- Frontend hiding alone is not enough
-- The system should support multiple permission levels, for example:
-  - no access
-  - read/comment access
-  - full moderation access
-  - super admin / configuration access
-
----
-
-## 2. Moderation Page Content and Features
-
-### 2.1 User Listing
-
-The moderation page must include a list of all relevant Discord users from the server.
-
-For each user, display at least:
-
-- Discord username
-- Server username / community username / in-server name if different
-- Avatar / profile picture
-- Link to moderation history
-- Ability to open or create a moderation case
-
-The architecture must clearly support cases where:
-
-- one Discord account may have multiple characters
-- one user may have both account-level and character-level records
-- server identity and Discord identity are not always exactly the same string
-
----
-
-### 2.2 Moderation Cases
-
-Staff must be able to open a moderation case on a user.
-
-Each case must contain:
-
-- Case number
-- Target user
-- Target’s server username
-- Target’s Discord identity
-- Administrator identity who created the case
-- Admin profile picture
-- Admin server name and/or Discord name
-- Reason for opening the case
-  Examples:
-  - potentiel helper/modérateur
-  - joueur problématique
-  - surveillance
-  - comportement à vérifier
-  - autre
-
-- Date of case opening
-- Main content / description field
-- Attachments inside the case:
-  - audio
-  - video
-  - images
-  - other useful evidence files if relevant
-
-The case system must support:
-
-- open / pending / escalated / resolved / archived statuses
-- timeline/history view
-- evidence attachments
-- internal staff discussion
-- event history
-- auditability
-
----
-
-### 2.3 Case Messages / Comments
-
-Inside a case, every authorized administrator must be able to post a new message.
-
-Each message/comment must support:
-
-- message content
-- date/time
-- author
-- audio/video/image attachments
-- optional checkbox: **“Nouvel événement”**
-- if checked, the event must be classifiable as:
-  - **positif**
-  - **négatif**
-
-This should feed into the case timeline and should visually distinguish:
-
-- normal staff comment
-- moderation event
-- automated system event
-- Discord synchronization event
-
----
-
-### 2.4 Moderation Actions
-
-Inside a case, administrators with **full access** must be able to trigger moderation actions that also apply on Discord.
-
-Supported actions:
-
-- Warn
-- Kick
-- Temporary ban
-- Permanent ban
-
-These actions must integrate with the existing Discord bot / backend system.
-
-When a moderation action is triggered:
-
-- it must be stored on the website
-- it must be synchronized to Discord
-- the targeted user must receive a Discord message or equivalent notification
-- the action result must be logged in a dedicated admin results channel
-- the case timeline must record the action
-
----
-
-## 3. Warn Escalation Logic
-
-Warns must follow this exact escalation logic:
-
-- 1 warn → avertissement
-- 2 warns → kick automatique
-- 3 warns → ban 24h
-- 4 warns → ban 3 jours
-- 5 warns → ban 7 jours
-- 6 warns → ban 14 jours
-- 7 warns → ban définitif
-
-### Required behavior
-
-- The system must track the current warn count of the user
-- Warn count must be persistent and queryable
-- A new warn should automatically determine the resulting sanction
-- Staff should be able to see:
-  - current warn count
-  - sanction that will happen on next warn
-  - warn history
-  - linked case references
-
-- Website state and Discord state must remain synchronized as much as possible
-- Failed Discord actions must not silently pass; they must be logged with error status
-
-### Notification behavior
-
-When a user is warned, kicked, or banned:
-
-- the user should receive a Discord notification with:
-  - reason
-  - current warn count
-  - sanction duration if applicable
-
-- the admin log channel should receive a result message such as:
-  - user warned
-  - user reached X warns
-  - automatic kick triggered
-  - automatic ban triggered for Y duration
-
----
-
-## 4. Discord Admin Result Channel
-
-The moderation system must support configuration of a dedicated Discord channel where moderation command results are posted.
-
-Examples of events to log there:
-
-- case created
-- warn issued
-- warn count increased
-- kick executed
-- temporary ban executed
-- permanent ban executed
-- Discord sync failed
-- transcript imported
-- case status changed
-
-This channel configuration must be manageable in CMS or in a secure server-side config layer, depending on what is appropriate.
-
----
-
-## 5. Transcript Migration
-
-Ticket transcripts currently associated with the roleplay page must be moved into this new moderation page/system.
-
-Design how transcripts should be:
-
-- imported or linked
-- attached to a moderation case
-- searchable
-- readable in staff context
-- preserved historically
-- permission-protected
-
-Clarify whether transcripts should be:
-
-- fully migrated into moderation storage
-- referenced from existing storage
-- copied on case creation
-- attached manually or automatically
-
----
-
-## 6. Payload CMS Requirements
-
-Everything that makes sense to configure must be manageable via Payload CMS.
-
-This includes, where appropriate:
-
-- moderation page sections
-- case reason categories
-- case statuses
-- event categories
-- attachment rules
-- Discord channel IDs used by the system
-- permission mappings or moderation configuration references
-- moderation UI blocks if dynamic frontend composition is used
-- text labels or explanatory blocks if editable content exists
-
-Do not hardcode frontend layout sections when CMS-driven rendering is more appropriate.
-
-However, do not force critical security logic into CMS if it belongs in backend code.
-
-You must clearly separate:
-
-- CMS-managed configuration/content
-- backend-enforced business rules
-- Discord bot integration layer
-- frontend display layer
-
----
-
-## 7. Expected Output
-
-Provide a **serious technical product/engineering answer**, not just a vague concept.
-
-Your answer must include:
-
-1. **Feature breakdown**
-2. **Recommended architecture**
-3. **Data model / collections / entities**
-4. **Permission model**
-5. **Backend flow**
-6. **Discord bot integration flow**
-7. **Payload CMS structure**
-8. **Frontend page structure**
-9. **Case lifecycle**
-10. **Warn escalation implementation**
-11. **Transcript migration approach**
-12. **Audit log strategy**
-13. **Scalability / maintainability recommendations**
-14. **Potential risks / edge cases**
-15. **Suggested UI sections and French UI wording examples**
-16. **What should be configurable vs hardcoded vs server-protected**
-
-When useful, provide:
-
-- collection names
-- field structures
-- relation examples
-- API route suggestions
-- server action logic
-- moderation workflow examples
-- practical implementation notes
-
-The answer must be structured, concrete, and implementation-oriented.
-
----
-
-## Important Existing Context
-
-We already have a Discord bot with commands linked to the website on the roleplay page.
-
-So your design must:
-
-- reuse that existing bot/integration where possible
-- avoid duplicating logic unnecessarily
-- centralize moderation into this new page
-- explain how current roleplay-linked moderation/ticket systems should be refactored or reused cleanly
-
----
-
-# Suggestions
-
-Your original prompt is decent on intent, but it has a few weak spots. Here’s what I’d add or tighten.
-
-## 1. Force Claude to separate identities properly
-
-Right now, “Discord user”, “server username”, “website user”, and “character” can get mixed together fast.
-
-You should explicitly require these entities:
-
-- `UserAccount`
-- `DiscordAccount`
-- `Character`
-- `ModerationCase`
-- `ModerationAction`
-- `CaseMessage`
-- `Transcript`
-- `AdminProfile` or role mapping
-
-Otherwise you’ll get a blurry design.
-
-## 2. Add appeal / closure logic
-
-A moderation system without closure logic is half-baked.
-
-Add:
-
-- case status change reason
-- who closed a case
-- reopen case
-- appeal flag
-- internal resolution summary
-
-## 3. Add immutable audit logs
-
-This matters a lot because staff tools get abused or disputed.
-
-You want Claude to include:
-
-- who did what
-- old value → new value
-- timestamp
-- Discord action result
-- failure logs
-- cannot silently edit sanction history
-
-## 4. Define source of truth
-
-You already have website + Discord bot. One of them must be authoritative for moderation state.
-
-Best question to force Claude to answer:
-
-- Is the source of truth the website database, with Discord as execution layer?
-- Or is Discord the source and website mirrors it?
-
-In practice, website DB should be source of truth, Discord should be action target.
-
-## 5. Ask for failure handling
-
-This is missing and it matters.
-
-Examples:
-
-- Discord API fails after website action saved
-- user left the Discord server
-- user DMs closed
-- target has no linked website account
-- moderator loses permission mid-session
-- duplicate warn request due to double click / retry
-
-You want idempotency and reconciliation.
-
-## 6. Ask for transcript handling rules
-
-“Move transcript” is too vague.
-
-You should ask:
-
-- are transcripts automatically linked to cases?
-- can one transcript belong to multiple cases?
-- are transcripts immutable after import?
-- who can read them?
-- are attachments mirrored or hotlinked?
-
-## 7. Add search and filtering
-
-A moderation page without search becomes trash quickly.
-
-Require:
-
-- search by Discord name
-- search by server name
-- search by character
-- filter by case status
-- filter by moderator
-- filter by sanction type
-- filter by positive/negative events
-- sort by latest activity
-
-## 8. Add rate limits / protections
-
-Staff tools need guardrails.
-
-Require:
-
-- confirmation modal for kick/ban/perma ban
-- reason mandatory for moderation actions
-- optional second confirmation for permanent ban
-- rate limiting / duplicate action prevention
-- permission gating per action type
-
-## 9. Clarify CMS boundaries
-
-Not everything should be in Payload CMS.
-
-Good CMS-managed things:
-
-- labels
-- categories
-- reasons
-- channel IDs
-- UI sections
-- explanatory text
-
-Bad CMS-managed things:
-
-- warn escalation core logic
-- permission enforcement
-- sanction execution logic
-- audit log integrity
-
-## 10. Ask for concrete French UI examples
-
-Since your frontend must be French, force Claude to give examples like:
-
-- “Créer un dossier”
-- “Historique des événements”
-- “Sanction appliquée”
-- “Avertissements actuels”
-- “Joindre un fichier”
-- “Transcription liée”
-- “Confirmer le bannissement”
-
-That avoids generic English-first design.
-
-Here’s the **updated addendum** you can append to the prompt for Claude.
-This integrates what you asked **without weakening the structure**.
-
----
-
-# Additional Mandatory Requirements
-
-## Identity Separation (Required)
-
-The system must **explicitly separate identities** and never merge them.
-
-The architecture must distinguish between:
-
-- Website User Account
-- Discord Account
-- Server Username
-- Character(s)
-- Moderation Target
-- Moderator/Admin identity
-
-A single Discord account may:
-
-- own multiple characters
-- have multiple cases
-- have multiple sanctions
-- appear under different server usernames over time
-
-The system must **handle this cleanly** and allow historical traceability.
-
----
-
-## User Profile Page (from Moderation List)
-
-From the moderation user list, administrators must be able to **open a full moderation profile** for a user.
-
-This profile must display:
-
-### Identity Section
-
-- Discord username
-- Server username
-- Avatar
-- Discord ID (internal reference)
-
-### Characters Section
-
-List of characters owned by the user (from Roleplay system):
-
-- Character name
-- Status (active / dead / archived if applicable)
-- Link to character sheet (if exists)
-
-### Sanctions Section
-
-Complete sanction history:
-
-- Warns
-- Kicks
-- Temporary bans
-- Permanent bans
-
-For each sanction:
-
-- Type of sanction
-- Reason
-- Date
-- Duration (if applicable)
-- Moderator who triggered it
-- Linked case (if exists)
-
----
-
-### Warn Status
-
-Display clearly:
-
-- Current warn count
-- Next sanction threshold
-- Total warns historically
-- Last warn date
-
----
-
-### Cases Section
-
-Display all cases involving this user:
-
-- Active cases
-- Archived cases
-- Case number
-- Status
-- Creation date
-- Last activity date
-- Moderator who opened
-
-If a case already exists, administrators must be able to **open it directly**.
-
----
-
-## Case Lifecycle Rules
-
-Cases must **never be deleted**.
-
-Cases can be:
-
-- Open
-- Pending
-- Resolved
-- Archived
-
-### Archiving Behavior
-
-- Cases may be archived manually
-- Archived cases remain readable
-- Archived cases do not appear in "active" lists by default
-- Archived cases remain in search results
-
-### Reopen Behavior
-
-If a new moderation case is opened for a user:
-
-- If an archived case already exists for that user
-- The system must **automatically de-archive** that case
-- The case must move back to active state
-- A system event must be added:
-  - "Réouverture du dossier"
-
-No duplicate case should be created unless explicitly forced.
-
----
-
-## Moderation Commands in Case History
-
-All moderation actions must appear **inside the case timeline**.
-
-This includes:
-
-- Warn
-- Kick
-- Temporary ban
-- Permanent ban
-
-Each moderation action must create an **immutable event** in case history with:
-
-- Action type
-- Target user
-- Date and time
-- Moderator who triggered it
-- Reason
-- Warn count after action
-- Automatic escalation result (if applicable)
-- Discord sync status (success / failed)
-
-These events must be visually distinct from normal comments.
-
-Example events:
-
-- "Avertissement appliqué"
-- "Expulsion automatique déclenchée"
-- "Bannissement temporaire 24h"
-- "Bannissement définitif appliqué"
-
----
-
-## Case Timeline Event Types
-
-The timeline must support multiple event types:
-
-- Staff message
-- Evidence added
-- Moderation action
-- Warn escalation automatic action
-- Case reopened
-- Case archived
-- Transcript linked
-- System event
-
-Each must display:
-
-- Author (or "Système")
-- Date
-- Event type
-- Content
-
----
-
-## Search and Filtering Requirements
-
-Moderation interface must support:
-
-### User Search
-
-- Discord username
-- Server username
-- Character name
-- Discord ID
-
-### Case Filters
-
-- Active cases
-- Archived cases
-- Cases with sanctions
-- Cases with negative events
-- Cases with positive events
-- Cases by moderator
-- Cases by date range
-
-### Sanction Filters
-
-- Warns
-- Kicks
-- Temporary bans
-- Permanent bans
-
----
-
-## Case Creation Rules
-
-When opening a case:
-
-- If an active case exists → open existing case
-- If archived case exists → de-archive and reopen
-- If no case exists → create new one
-
-This prevents multiple fragmented cases for same user.
-
----
-
-## Required UI Sections (French Only)
-
-Examples Claude must follow:
-
-User list:
-
-- "Liste des utilisateurs"
-- "Ouvrir le profil"
-- "Ouvrir le dossier"
-- "Créer un dossier"
-
-User profile:
-
-- "Profil utilisateur"
-- "Personnages"
-- "Historique des sanctions"
-- "Nombre d'avertissements"
-- "Dossiers associés"
-
-Case view:
-
-- "Historique du dossier"
-- "Nouvel événement"
-- "Sanction appliquée"
-- "Archiver le dossier"
-- "Réouvrir le dossier"
-
----
-
-## Important Behavioral Rules
-
-- Moderation actions must **always** be tied to a case
-- Sanctions cannot exist without case linkage
-- Warn escalation must be automatic but logged
-- Case history must be immutable
-- Editing past moderation actions must not be allowed
-- Only new events may be appended
+{
+"modId": "65D4D82C726A9430",
+"name": "ADSSway - Big Chungus Weapons",
+"version": "1.0.3"
+},
+{
+"modId": "684608DD7C7E0DFB",
+"name": "Aiming Deadzone",
+"version": "1.0.20"
+},
+{
+"modId": "661EE2F71A512D45",
+"name": "ADSSway - BigChungus Bolt Guns",
+"version": "1.0.0"
+},
+{
+"modId": "672EE3CC8A605F28",
+"name": "Hold Your Breath",
+"version": "1.0.2"
+},
+{
+"modId": "648D682E7038491E",
+"name": "ADSSway - Core",
+"version": "0.3.42"
+},
+{
+"modId": "65F76D9612BE5C94",
+"name": "Better Weapon Immersion ADSs",
+"version": "1.0.1"
+},
+{
+"modId": "6608FD6F58F3B90A",
+"name": "ADSSway - PIP DOF - TEST",
+"version": "1.0.9"
+}
+{
+"modId": "68793732D24CF559",
+"name": "GM Watchdog",
+"version": ""
+},
+{
+"modId": "66BD53D35C5AA995",
+"name": "Custom Player Names CSI COMPAT",
+"version": "1.0.4"
+},
+{
+"modId": "669523D075CFBE49",
+"name": "Custom Player Names And Roles",
+"version": "1.2.7"
+},
+{
+"modId": "65A2EA40DC9E632A",
+"name": "Warfare - Color mod -",
+"version": ""
+},
+{
+"modId": "65117E01FC88FE08",
+"name": "RTG Armbands",
+"version": ""
+},
+{
+"modId": "648D682E7038491E",
+"name": "ADSSway - Core",
+"version": ""
+},
+{
+"modId": "6738DB574AAA1CB4",
+"name": "Advanced Zeroing System",
+"version": ""
+},
+{
+"modId": "6608FD6F58F3B90A",
+"name": "ADSSway - PIP DOF - TEST",
+"version": ""
+},
+{
+"modId": "65D050C86106E5BC",
+"name": "Smokeable Smokes",
+"version": ""
+},
+{
+"modId": "6528C95796EBEDE0",
+"name": "Environmental Ambience Mod",
+"version": ""
+},
+{
+"modId": "66824CED506075E9",
+"name": "Lightweight Vegetation",
+"version": ""
+},
+{
+"modId": "684608DD7C7E0DFB",
+"name": "Aiming Deadzone",
+"version": ""
+},
+{
+"modId": "68DEE1D5497CCA7F",
+"name": "FM PersonalLocker",
+"version": ""
+},
+{
+"modId": "6864C085DBF0E9D5",
+"name": "SimMovement - Headbob",
+"version": ""
+},
+{
+"modId": "5D0551624969C92E",
+"name": "Zeliks Character",
+"version": ""
+},
+{
+"modId": "5964E0B3BB7410CE",
+"name": "Game Master Enhanced",
+"version": ""
+},
+{
+"modId": "64DE57C0A1601D14",
+"name": "Lunacy Audio",
+"version": ""
+},
+{
+"modId": "5F2944B7474F043F",
+"name": "Disable Game Master Budgets",
+"version": ""
+},
+{
+"modId": "612F512CD4CB21D5",
+"name": "WCS_Earplugs",
+"version": ""
+},
+{
+"modId": "613B4DD4A91CA144",
+"name": "LM Suppression",
+"version": ""
+},
+{
+"modId": "65BB2D0679BCA058",
+"name": "Skyhook",
+"version": ""
+},
+{
+"modId": "61ECB5EFAA346151",
+"name": "TacticalAnimationOverhaul TEST",
+"version": ""
+},
+{
+"modId": "66DF6C37335B0554",
+"name": "AHC Fuel Systems",
+"version": ""
+},
+{
+"modId": "5F268647F8A1A1F4",
+"name": "CRX Enfusion A.I.",
+"version": ""
+},
+{
+"modId": "661C43ABD9F97106",
+"name": "No Speaking when unconscious",
+"version": ""
+},
+{
+"modId": "5994AD5A9F33BE57",
+"name": "Game Master FX",
+"version": ""
+},
+{
+"modId": "650F545AB9B7E3CD",
+"name": "Lunacy Overdrive",
+"version": ""
+},
+{
+"modId": "5D3CCC039449D1C8",
+"name": "DiscordPlayerList",
+"version": ""
+},
+{
+"modId": "631D61C22E30D845",
+"name": "Realism Overhaul - Effects",
+"version": ""
+},
+{
+"modId": "65CCE7469BF08D58",
+"name": "Lunacy Audio Community Compats",
+"version": ""
+},
+{
+"modId": "5AAAC70D754245DD",
+"name": "Server Admin Tools",
+"version": ""
+},
+{
+"modId": "606B100247F5C709",
+"name": "Bacon Loadout Editor",
+"version": ""
+},
+{
+"modId": "620E426C34BE0D17",
+"name": "Laser Rangefinder",
+"version": ""
+},
+{
+"modId": "61C8AD57503CA770",
+"name": "No SL Markers",
+"version": ""
+},
+{
+"modId": "648297C0F03CE43A",
+"name": "ModularVoiceRange",
+"version": ""
+},
+{
+"modId": "64EE818E08AFCF94",
+"name": "MFD Framework",
+"version": ""
+},
+{
+"modId": "5C9758250C8C56F1",
+"name": "Bon Action Animations",
+"version": ""
+},
+{
+"modId": "66AC017A37713A62",
+"name": "BetterSounds Voice overhaul",
+"version": ""
+},
+{
+"modId": "6052A9DD45564825",
+"name": "You can sit",
+"version": ""
+},
+{
+"modId": "5D0551624969C92E",
+"name": "Zeliks Character",
+"version": ""
+},
+{
+"modId": "5C6156F84AA262A2",
+"name": "Zeliks Zones",
+"version": ""
+},
+{
+"modId": "661949530F712567",
+"name": "2-7 Vehicle Mirrors",
+"version": ""
+},
+{
+"modId": "64C4C737F0774668",
+"name": "CM-SquadRadioSound-Addon",
+"version": ""
+},
+{
+"modId": "64D15A9DF1583604",
+"name": "RadioBeeping",
+"version": ""
+},
+{
+"modId": "632759EBF041FA2D",
+"name": "CM-SquadRadioSound",
+"version": ""
+},
+{
+"modId": "668D4E5839894782",
+"name": "Fastroping",
+"version": ""
+},
+{
+"modId": "646B350F36C6D3E4",
+"name": "Breachable Doors",
+"version": ""
+},
+{
+"modId": "64C57EA1C4934CA5",
+"name": "Driver Only Third Person",
+"version": ""
+},
+{
+"modId": "65DC97E85035D7BE",
+"name": "Bacon Camera Shake",
+"version": ""
+},
+{
+"modId": "6444C79ECD4FE1AB",
+"name": "Disable Traceless Explosions",
+"version": ""
+},
+{
+"modId": "6503093901CAFCFF",
+"name": "Mortar Smoke Shells 60sec",
+"version": ""
+},
+{
+"modId": "685D2419C9F8D128",
+"name": "Console Optimization Explosion",
+"version": ""
+},
+{
+"modId": "685EF097DEB91133",
+"name": "Console Optimizion Engines",
+"version": ""
+},
+{
+"modId": "687CD5AF7A229911",
+"name": "better bullet crack sound",
+"version": ""
+},
+{
+"modId": "646B350F36C6D3E4",
+"name": "Breachable Doors",
+"version": ""
+},
+{
+"modId": "684488C617AEA638",
+"name": "AAO Camo Textures",
+"version": ""
+},
+{
+"modId": "65AD7BCC9F6B3B4E",
+"name": "ACE Chopping Dev",
+"version": ""
+},
+{
+"modId": "62F364B35E9B51B0",
+"name": "Wirecutters 2",
+"version": ""
+},
+{
+"modId": "667B230F9505C8BA",
+"name": "ACE Weather Dev",
+"version": ""
+},
+{
+"modId": "6632F94B46173164",
+"name": "Rayzi Utils",
+"version": ""
+},
+{
+"modId": "606B100247F5C709",
+"name": "Bacon Loadout Editor",
+"version": ""
+},
+{
+"modId": "65157D09F042428A",
+"name": "GRS - Apparel",
+"version": ""
+},
+{
+"modId": "66CD162C0CF6D8CE",
+"name": "2-7 Mirrors",
+"version": ""
+},
+{
+"modId": "65AD7C379CBD394D",
+"name": "ACE Carrying Dev",
+"version": ""
+},
+{
+"modId": "65AD7CB89F219E38",
+"name": "ACE Tactical Ladder Dev",
+"version": ""
+},
+{
+"modId": "5964E0B3BB7410CE",
+"name": "Game Master Enhanced",
+"version": ""
+},
+{
+"modId": "65AD7D4099944EBD",
+"name": "ACE Magazine Repack Dev",
+"version": ""
+},
+{
+"modId": "687CD5AF7A229911",
+"name": "better bullet crack sound",
+"version": ""
+},
+{
+"modId": "5F0D245931200FD1",
+"name": "Railway Generator",
+"version": ""
+},
+{
+"modId": "628EDA2ABC937159",
+"name": "Structures For GM byHeine",
+"version": ""
+},
+{
+"modId": "64DE57C0A1601D14",
+"name": "Lunacy Audio",
+"version": ""
+},
+{
+"modId": "622955949A4CBC17",
+"name": "GMFX chemical wafare expansion",
+"version": ""
+},
+{
+"modId": "5F2944B7474F043F",
+"name": "Disable Game Master Budgets",
+"version": ""
+},
+{
+"modId": "631EE12D448D7FCC",
+"name": "DarcCore",
+"version": ""
+},
+{
+"modId": "68524AAF9950D8E8",
+"name": "AAO Parachutes",
+"version": ""
+},
+{
+"modId": "612F512CD4CB21D5",
+"name": "WCS_Earplugs",
+"version": ""
+},
+{
+"modId": "66FAF6113997388F",
+"name": "More Brutal Voices",
+"version": ""
+},
+{
+"modId": "65B343F799FB521B",
+"name": "ACE Medical Hitzones Dev",
+"version": ""
+},
+{
+"modId": "65BB2D0679BCA058",
+"name": "Skyhook",
+"version": ""
+},
+{
+"modId": "65AD7CF69FAF1FDD",
+"name": "ACE Compass Dev",
+"version": ""
+},
+{
+"modId": "5E389BB9F58B79A6",
+"name": "SpaceCore",
+"version": ""
+},
+{
+"modId": "6515672F96701110",
+"name": "GRS - Essentials",
+"version": ""
+},
+{
+"modId": "65AD7C139EB4C1A1",
+"name": "ACE Backblast Dev",
+"version": ""
+},
+{
+"modId": "5ED61DC0AFE17E8E",
+"name": "Kex Scenario Core",
+"version": ""
+},
+{
+"modId": "673C5C84D48CDCA1",
+"name": "AAO M70 backpacks",
+"version": ""
+},
+{
+"modId": "651834C8D77BF86B",
+"name": "GRS - Modular Vests \u0026 Rigs",
+"version": ""
+},
+{
+"modId": "65AD7D0D9941A380",
+"name": "ACE Core Dev",
+"version": ""
+},
+{
+"modId": "6174A376E06661BF",
+"name": "Brutal Voices",
+"version": ""
+},
+{
+"modId": "5D84C738432BFE6A",
+"name": "WolfsBuildingPack",
+"version": ""
+},
+{
+"modId": "5DE612963E4B005A",
+"name": "Rail Enfusion Redux",
+"version": ""
+},
+{
+"modId": "65117E01FC88FE08",
+"name": "RTG Armbands",
+"version": ""
+},
+{
+"modId": "65B8EA178A3E94E3",
+"name": "ACE Overheating Dev",
+"version": ""
+},
+{
+"modId": "685D2419C9F8D128",
+"name": "Console Optimization Explosion",
+"version": ""
+},
+{
+"modId": "611CB1D409001EB0",
+"name": "ACE Magazine Repack",
+"version": ""
+},
+{
+"modId": "657B064AE0E231DF",
+"name": "GRS - Patches",
+"version": ""
+},
+{
+"modId": "65AD7D1E9EEAFA53",
+"name": "ACE Explosives Dev",
+"version": ""
+},
+{
+"modId": "65183608D6DA5728",
+"name": "GRS - Belts \u0026 Bags \u0026 Droplegs",
+"version": ""
+},
+{
+"modId": "61C8AD57503CA770",
+"name": "No SL Markers",
+"version": ""
+},
+{
+"modId": "5EE2A316699473D1",
+"name": "Third Person Vehicle Only",
+"version": ""
+},
+{
+"modId": "64EE818E08AFCF94",
+"name": "MFD Framework",
+"version": ""
+},
+{
+"modId": "65AD7D4F994EA327",
+"name": "ACE Medical Circulation Dev",
+"version": ""
+},
+{
+"modId": "68511E4511CD0C73",
+"name": "Frameworks NVSystem",
+"version": ""
+},
+{
+"modId": "687CD82F6E41D627",
+"name": "Attachment Framework-Core",
+"version": ""
+},
+{
+"modId": "685EF097DEB91133",
+"name": "Console Optimizion Engines",
+"version": ""
+},
+{
+"modId": "64C57EA1C4934CA5",
+"name": "Driver Only Third Person",
+"version": ""
+},
+{
+"modId": "66B073D763F66862",
+"name": "2-7 Suppressor Overheating",
+"version": ""
+},
+{
+"modId": "5B1CD0C293D38C98",
+"name": "ZBK",
+"version": ""
+},
+{
+"modId": "68C7137095836145",
+"name": "LIF CORE and ARSENAL",
+"version": ""
+},
+{
+"modId": "664AFDC993C9CE1A",
+"name": "ACE Cook-Off Dev",
+"version": ""
+},
+{
+"modId": "5C9758250C8C56F1",
+"name": "Bon Action Animations",
+"version": ""
+},
+{
+"modId": "5ED0FAC84A48D018",
+"name": "DarcMissions",
+"version": ""
+},
+{
+"modId": "66B2F0B008DC590F",
+"name": "DynamicLoot",
+"version": ""
+},
+{
+"modId": "65AD7C249E4ECDFB",
+"name": "ACE Captives Dev",
+"version": ""
+},
+{
+"modId": "6518EA4DDEA42E15",
+"name": "GRS - Bundle",
+"version": ""
+},
+{
+"modId": "66F70B7A9DE59E8D",
+"name": "Simple Demolition Charges",
+"version": ""
+},
+{
+"modId": "661C43ABD9F97106",
+"name": "No Speaking when unconscious",
+"version": ""
+},
+{
+"modId": "6052A9DD45564825",
+"name": "You can sit",
+"version": ""
+},
+{
+"modId": "65AD7CD09CAEC4E2",
+"name": "ACE Tactical Periscope Dev",
+"version": ""
+},
+{
+"modId": "668D4E5839894782",
+"name": "Fastroping",
+"version": ""
+},
+{
+"modId": "66F0560F1BDE732A",
+"name": "DynamicEconomy",
+"version": ""
+},
+{
+"modId": "631C9C204D8FAF47",
+"name": "DarcSpawner",
+"version": ""
+},
+{
+"modId": "66B523AD189F3233",
+"name": "Bandit Gear",
+"version": ""
+},
+{
+"modId": "5994AD5A9F33BE57",
+"name": "Game Master FX",
+"version": ""
+},
+{
+"modId": "5ABD0CB57F7E9EB1",
+"name": "RIS Laser Attachments",
+"version": ""
+},
+{
+"modId": "650F545AB9B7E3CD",
+"name": "Lunacy Overdrive",
+"version": ""
+},
+{
+"modId": "5C6156F84AA262A2",
+"name": "Zeliks Zones",
+"version": ""
+},
+{
+"modId": "6586079789278413",
+"name": "ACE Medical Core Dev",
+"version": ""
+},
+{
+"modId": "5B0D1E4380971EBD",
+"name": "COALITION Squad Interface",
+"version": ""
+},
+{
+"modId": "68649530113DDF1D",
+"name": "Sinsin Cobra Pilot",
+"version": ""
+},
+{
+"modId": "65AD7CE59E8DB349",
+"name": "ACE Trenches Dev",
+"version": ""
+},
+{
+"modId": "6198EC294DEC63C0",
+"name": "Bacon Parachute",
+"version": ""
+},
+{
+"modId": "5D0551624969C92E",
+"name": "Zeliks Character",
+"version": ""
+},
+{
+"modId": "65930CB4CD0237B2",
+"name": "Parachute Framework",
+"version": ""
+},
+{
+"modId": "645F08FA9E7CDEDE",
+"name": "Attachment Framework",
+"version": ""
+},
+{
+"modId": "66C4458756B32594",
+"name": "Bandit Faction",
+"version": ""
+},
+{
+"modId": "65DACC64CE785B6C",
+"name": "GRS - Dev Framework",
+"version": ""
+},
+{
+"modId": "5AAAC70D754245DD",
+"name": "Server Admin Tools",
+"version": ""
+},
+{
+"modId": "628933A0D3A0D700",
+"name": "WCS_Mi-24V",
+"version": ""
+},
+{
+"modId": "629B2BA37EFFD577",
+"name": "WCS_Armaments",
+"version": ""
+},
+{
+"modId": "62CCD69DD17E4F2F",
+"name": "AKI_Core",
+"version": ""
+},
+{
+"modId": "61FC96F494C97E9D",
+"name": "TODs Civilian Pack",
+"version": ""
+},
+{
+"modId": "68B55D451DF9A99B",
+"name": "NV and Zelik Inventory fix",
+"version": ""
+},
+{
+"modId": "646A1AFB53E782AC",
+"name": "EOD Hand Entry",
+"version": ""
+},
+{
+"modId": "66E50A238FD98826",
+"name": "IED RANDOM SPAWN",
+"version": ""
+},
+{
+"modId": "64521BDFB4718ECD",
+"name": "EOD-9 Bomb Suit",
+"version": ""
+},
+{
+"modId": "62B4A8E40D31F94B",
+"name": "WW2_Bicycle",
+"version": ""
+},
+{
+"modId": "62A711001B8FDEEA",
+"name": "Big Chungus Rifles",
+"version": ""
+},
+{
+"modId": "68D8F6DC0619FF94",
+"name": "Ambient Civilians",
+"version": ""
+},
+{
+"modId": "606B100247F5C709",
+"name": "Bacon Loadout Editor",
+"version": ""
+},
+{
+"modId": "66D6340C1D565C98",
+"name": "Chungus Core",
+"version": ""
+},
+{
+"modId": "68ED19BA24BE5013",
+"name": "Merak Island - LIF - MERCSIM",
+"version": ""
+},
+{
+"modId": "61344BDC155A5A28",
+"name": "Big Chungus LMGs",
+"version": ""
+},
+{
+"modId": "61BD6595183FCEBD",
+"name": "Big Chungus Bolt Guns",
+"version": ""
+},
+{
+"modId": "60E6F54E174C53C5",
+"name": "Big Chungus SMGs",
+"version": ""
+},
+{
+"modId": "61FC96F494C97E9D",
+"name": "TODs Civilian Pack",
+"version": ""
+},
+{
+"modId": "620E584B1D2C96A4",
+"name": "Big Chungus Shotguns",
+"version": ""
+},
+{
+"modId": "6190F1B505C08562",
+"name": "Big Chungus Launchers",
+"version": ""
+},
+{
+"modId": "68894B409DE9DA72",
+"name": "Intel \u0026 DoorLock - FRM",
+"version": ""
+},
+{
+"modId": "66AF1EC283425FDE",
+"name": "FORTEX Modern AKs Bundle",
+"version": ""
+},
+{
+"modId": "66A12C6EE436D72F",
+"name": "FORTEX SVD TG3",
+"version": ""
+},
+{
+"modId": "658B2B37C2C82AAE",
+"name": "B59 - Shotguns",
+"version": ""
+},
+{
+"modId": "620E584B1D2C96A4",
+"name": "Big Chungus Shotguns",
+"version": ""
+},
+{
+"modId": "68ED19BA24BE5013",
+"name": "Merak Island - LIF - MERCSIM",
+"version": ""
+}
