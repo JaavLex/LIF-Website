@@ -169,7 +169,7 @@ export default async function RoleplayPage({
 					textAlign: 'center',
 					overflow: 'hidden',
 					border: '1px solid var(--border)',
-					background: headerBg?.url ? 'none' : 'var(--bg-secondary)',
+					background: headerBg?.url ? 'var(--bg)' : 'var(--bg-secondary)',
 				}}
 			>
 				{headerBg?.url && (
