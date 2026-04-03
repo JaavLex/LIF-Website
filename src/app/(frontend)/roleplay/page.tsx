@@ -105,8 +105,8 @@ export default async function RoleplayPage({
 			.catch(() => ({ docs: [] })),
 	]);
 
-	const headerLogo = roleplayConfig?.headerLogo;
-	const headerBg = roleplayConfig?.headerBackground;
+	const headerLogo = typeof roleplayConfig?.headerLogo === 'object' ? roleplayConfig.headerLogo : null;
+	const headerBg = typeof roleplayConfig?.headerBackground === 'object' ? roleplayConfig.headerBackground : null;
 	const headerTitle =
 		roleplayConfig?.headerTitle || 'Dossiers du Personnel';
 	const headerSubtitle =
