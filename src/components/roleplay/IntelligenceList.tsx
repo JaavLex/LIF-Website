@@ -22,7 +22,7 @@ interface IntelReport {
 	description: any;
 	type: string;
 	coordinates?: string;
-	media?: { file?: { url: string; mimeType?: string }; caption?: string }[];
+	media?: { file?: { id?: number; url: string; mimeType?: string }; caption?: string }[];
 	linkedTarget?: { id: number; fullName: string } | null;
 	linkedFaction?: { id: number; name: string } | null;
 	postedBy?: { id: number; fullName: string } | null;
