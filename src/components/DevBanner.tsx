@@ -1,15 +1,26 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 export function DevBanner() {
 	const isDev = process.env.NEXT_PUBLIC_LIF_ENVIRONMENT === 'dev';
+	const bannerRef = useRef<HTMLDivElement>(null);
 
 	useEffect(() => {
-		if (isDev) {
+		if (!isDev || !bannerRef.current) return;
+
+		const updateHeight = () => {
+			const h = bannerRef.current?.offsetHeight ?? 0;
+			document.documentElement.style.setProperty('--dev-banner-h', `${h}px`);
 			document.documentElement.setAttribute('data-dev-banner', '');
-		}
+		};
+
+		updateHeight();
+		window.addEventListener('resize', updateHeight);
+
 		return () => {
+			window.removeEventListener('resize', updateHeight);
+			document.documentElement.style.removeProperty('--dev-banner-h');
 			document.documentElement.removeAttribute('data-dev-banner');
 		};
 	}, [isDev]);
@@ -18,6 +29,7 @@ export function DevBanner() {
 
 	return (
 		<div
+			ref={bannerRef}
 			className="dev-banner"
 			style={{
 				position: 'fixed',

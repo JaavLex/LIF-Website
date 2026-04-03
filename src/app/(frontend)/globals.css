@@ -304,7 +304,7 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Shift navbar below dev banner when present */
 html[data-dev-banner] .navbar {
-  top: 1.65rem;
+  top: var(--dev-banner-h, 0px);
 }
 
 .nav-container {
