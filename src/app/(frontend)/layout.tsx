@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { DevBanner } from '@/components/DevBanner';
+import { VersionInfo } from '@/components/VersionInfo';
 
 export const metadata: Metadata = {
 	title: 'LIF - Légion Internationale Francophone | Arma Reforger',
@@ -20,6 +21,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 		<html lang="fr">
 			<body>
 					<DevBanner />
+					<VersionInfo />
 					{children}
 				</body>
 		</html>
