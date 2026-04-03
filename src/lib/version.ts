@@ -6,9 +6,22 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.1.2',
+  version: '1.2.0',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.2.0',
+      date: '2026-04-04',
+      changes: [
+        'Refonte visuelle de la page d\'accueil — typographie militaire, animations d\'entrée',
+        'Navigation mobile avec menu hamburger',
+        'Cartes angulaires avec accents dorés et textures de fond',
+        'Barres de remplissage joueurs sur les serveurs',
+        'Section CTA redessinée avec motifs géométriques',
+        'Taille de police minimum 11px sur la section roleplay',
+        'États focus-visible globaux pour l\'accessibilité',
+      ],
+    },
     {
       version: '1.1.2',
       date: '2026-04-03',
