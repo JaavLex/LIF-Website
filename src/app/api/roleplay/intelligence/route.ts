@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
 			id: doc.id as number,
 			title: fullDoc.title,
 			type: fullDoc.type,
-			classification: fullDoc.classification,
+			classification: fullDoc.classification || 'public',
 			postedBy:
 				typeof fullDoc.postedBy === 'object'
 					? fullDoc.postedBy
