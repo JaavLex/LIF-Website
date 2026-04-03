@@ -38,3 +38,5 @@ next-env.d.ts
 media/
 roleplay-instructions.md
 roleplay-improvements.md
+.ai-instructions.md
+CLAUDE.md
