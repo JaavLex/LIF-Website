@@ -1,13 +1,19 @@
 import type React from 'react';
 
+// Serialized shapes (after serialize() strips Payload internals).
+// These use `any` for media/relation fields since the serialized data
+// can be either a populated object or an ID depending on depth.
 export interface UnitItem {
 	id: number;
 	name: string;
 	slug: string;
 	color?: string | null;
-	insignia?: { url?: string; id?: number } | null;
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	insignia?: any;
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	description?: any;
-	parentFaction?: { id: number; name: string } | number | null;
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	parentFaction?: any;
 }
 
 export interface FactionItem {
@@ -16,7 +22,9 @@ export interface FactionItem {
 	slug: string;
 	type?: string | null;
 	color?: string | null;
-	logo?: { url?: string; id?: number } | null;
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	logo?: any;
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	description?: any;
 }
 
