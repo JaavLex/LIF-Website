@@ -1,6 +1,6 @@
 # LIF Website
 
-Site web de la communauté **LIF** (Légion Internationale Francophone), une communauté milsim Arma. Construit avec **Next.js 15**, **Payload CMS 3** et **MongoDB**.
+Site web de la communauté **LIF** (Légion Internationale Francophone), une communauté milsim Arma. Construit avec **Next.js 15**, **Payload CMS 3** et **PostgreSQL**.
 
 **Production :** https://lif-arma.com
 **Dev :** https://dev.lif-arma.com
@@ -38,7 +38,7 @@ Site web de la communauté **LIF** (Légion Internationale Francophone), une com
 |---|---|
 | Framework | Next.js 15 (App Router, React 19) |
 | CMS | Payload CMS 3.x |
-| Base de données | MongoDB |
+| Base de données | PostgreSQL |
 | Auth | Discord OAuth2, sessions JWT |
 | Langage | TypeScript |
 | Éditeur riche | Lexical |
@@ -120,7 +120,7 @@ npm test
 ## Prérequis
 
 - Node.js 20+
-- MongoDB
+- PostgreSQL
 - Ansible (pour le déploiement)
 
 ## Installation locale
