@@ -1,6 +1,6 @@
 # LIF Website
 
-Site web de la communauté **LIF** (Ligue d'Intervention Francophone), une communauté milsim Arma. Construit avec **Next.js 15**, **Payload CMS 3** et **MongoDB**.
+Site web de la communauté **LIF** (Légion Internationale Francophone), une communauté milsim Arma. Construit avec **Next.js 15**, **Payload CMS 3** et **MongoDB**.
 
 **Production :** https://lif-arma.com
 **Dev :** https://dev.lif-arma.com
