@@ -262,7 +262,7 @@ export default async function CharacterPage({
 									{unitInsignia?.url && (
 										<Image
 											src={unitInsignia.url}
-											alt={unit.name}
+											alt={unit!.name}
 											width={18}
 											height={18}
 											unoptimized
