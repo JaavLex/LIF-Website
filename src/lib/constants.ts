@@ -158,8 +158,12 @@ export function lexicalToText(content: unknown): string {
  * Serialize Payload CMS data for passing to client components.
  * Strips non-serializable properties (class instances, functions, etc.)
  * This replaces the JSON.parse(JSON.stringify(data)) pattern.
+ *
+ * Returns `any` intentionally — this is a serialization boundary between
+ * server (Payload types) and client (component prop types).
  */
-export function serialize<T>(data: T): T {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function serialize(data: any): any {
 	return JSON.parse(JSON.stringify(data));
 }
 
