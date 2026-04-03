@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { ChevronUp, ChevronDown } from 'lucide-react';
 import {
 	DummyCharacterForm,
 	DummyIntelForm,
@@ -202,7 +203,17 @@ export function RoleplayTutorial({
 	const [currentStep, setCurrentStep] = useState(0);
 	const [spotlightRect, setSpotlightRect] = useState<DOMRect | null>(null);
 	const [tooltipStyle, setTooltipStyle] = useState<React.CSSProperties>({});
+	const [mobileToolbarOpen, setMobileToolbarOpen] = useState(false);
 	const animatingRef = useRef(false);
+
+	// Toggle body attribute so CSS can hide/show audio controls too
+	useEffect(() => {
+		if (mobileToolbarOpen) {
+			document.documentElement.setAttribute('data-toolbar-open', '');
+		} else {
+			document.documentElement.removeAttribute('data-toolbar-open');
+		}
+	}, [mobileToolbarOpen]);
 
 	const steps = mode === 'admin' ? ADMIN_STEPS : USER_STEPS;
 
@@ -470,45 +481,57 @@ export function RoleplayTutorial({
 	return (
 		<>
 			{!active && (
-				<div className="tutorial-buttons">
-					<VersionInfo />
+				<>
+					{/* Mobile toggle button — visible only on small screens */}
 					<button
 						type="button"
-						className="tutorial-debug-btn rules-reopen-btn"
-						onClick={() => window.dispatchEvent(new Event('open-rules-modal'))}
-						title="Relire le règlement RP"
+						className="mobile-toolbar-toggle"
+						onClick={() => setMobileToolbarOpen(prev => !prev)}
+						aria-label={mobileToolbarOpen ? 'Masquer les contrôles' : 'Afficher les contrôles'}
 					>
-						📋 RÈGLEMENT
+						{mobileToolbarOpen ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
 					</button>
-					<button
-						type="button"
-						className="tutorial-debug-btn"
-						onClick={startUserTutorial}
-						title="Relancer le tutoriel"
-					>
-						? TUTORIEL
-					</button>
-					{isAdmin && (
+
+					<div className={`tutorial-buttons ${mobileToolbarOpen ? 'mobile-open' : ''}`}>
+						<VersionInfo />
 						<button
 							type="button"
-							className="tutorial-debug-btn tutorial-admin-btn"
-							onClick={startAdminTutorial}
-							title="Tutoriel administrateur"
+							className="tutorial-debug-btn rules-reopen-btn"
+							onClick={() => window.dispatchEvent(new Event('open-rules-modal'))}
+							title="Relire le règlement RP"
 						>
-							⚙ ADMIN
+							📋 RÈGLEMENT
 						</button>
-					)}
-					{isAdmin && adminPermissions && (
-						<div className="admin-indicator">
-							<span className="admin-indicator-dot" />
-							<span>ADMIN</span>
-							<span className="admin-role-name">{adminPermissions.roleName}</span>
-							<span className="admin-perm-level">
-								({adminPermissions.level === 'full' ? 'Complet' : 'Limité'})
-							</span>
-						</div>
-					)}
-				</div>
+						<button
+							type="button"
+							className="tutorial-debug-btn"
+							onClick={startUserTutorial}
+							title="Relancer le tutoriel"
+						>
+							? TUTORIEL
+						</button>
+						{isAdmin && (
+							<button
+								type="button"
+								className="tutorial-debug-btn tutorial-admin-btn"
+								onClick={startAdminTutorial}
+								title="Tutoriel administrateur"
+							>
+								⚙ ADMIN
+							</button>
+						)}
+						{isAdmin && adminPermissions && (
+							<div className="admin-indicator">
+								<span className="admin-indicator-dot" />
+								<span>ADMIN</span>
+								<span className="admin-role-name">{adminPermissions.roleName}</span>
+								<span className="admin-perm-level">
+									({adminPermissions.level === 'full' ? 'Complet' : 'Limité'})
+								</span>
+							</div>
+						)}
+					</div>
+				</>
 			)}
 
 			{active && (

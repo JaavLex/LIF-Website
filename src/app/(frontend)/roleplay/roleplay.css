@@ -2610,12 +2610,63 @@ body:has(.tutorial-buttons) > .version-info-wrapper {
 }
 
 /* ============================
+   MOBILE TOOLBAR TOGGLE
+   Hidden on desktop, small fixed button on mobile
+   ============================ */
+.mobile-toolbar-toggle {
+	display: none;
+}
+
+/* ============================
    MOBILE LAYOUT (<768px)
-   Audio bar full-width at bottom,
-   tutorial buttons above it
+   Collapsible toolbar: buttons + audio hidden behind toggle
    ============================ */
 @media (max-width: 768px) {
-	/* Audio player: full-width bottom bar */
+	/* Toggle button: small fixed pill at bottom-left */
+	.mobile-toolbar-toggle {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		position: fixed;
+		bottom: 0.5rem;
+		left: 0.5rem;
+		z-index: 1003;
+		width: 32px;
+		height: 32px;
+		border-radius: 4px;
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		background: rgba(20, 20, 20, 0.95);
+		color: var(--primary);
+		cursor: pointer;
+		backdrop-filter: blur(8px);
+		transition: all 0.2s;
+		padding: 0;
+	}
+
+	.mobile-toolbar-toggle:hover,
+	.mobile-toolbar-toggle:active {
+		border-color: var(--primary);
+		background: rgba(74, 124, 35, 0.15);
+	}
+
+	/* Tutorial buttons: hidden by default on mobile */
+	.tutorial-buttons {
+		bottom: 2.75rem;
+		left: 0.5rem;
+		opacity: 0;
+		pointer-events: none;
+		transform: translateY(8px);
+		transition: opacity 0.25s ease, transform 0.25s ease;
+	}
+
+	/* When toggled open */
+	.tutorial-buttons.mobile-open {
+		opacity: 1;
+		pointer-events: auto;
+		transform: translateY(0);
+	}
+
+	/* Audio controls: hidden by default on mobile */
 	.roleplay-audio-controls {
 		left: 0;
 		right: 0;
@@ -2631,6 +2682,27 @@ body:has(.tutorial-buttons) > .version-info-wrapper {
 		gap: 0.5rem;
 		padding: 0.5rem 0.75rem;
 		background: rgba(12, 15, 10, 0.98);
+		opacity: 0;
+		pointer-events: none;
+		transform: translateY(100%);
+		transition: opacity 0.25s ease, transform 0.25s ease;
+	}
+
+	/* Show audio when toolbar is open (via data attribute on html) */
+	html[data-toolbar-open] .roleplay-audio-controls {
+		opacity: 1;
+		pointer-events: auto;
+		transform: translateY(0);
+	}
+
+	/* Shift tutorial buttons up when audio bar is also visible */
+	html[data-toolbar-open] .tutorial-buttons.mobile-open {
+		bottom: 3rem;
+	}
+
+	/* Shift toggle button up when toolbar is open */
+	html[data-toolbar-open] .mobile-toolbar-toggle {
+		bottom: 3rem;
 	}
 
 	.audio-track-info {
@@ -2665,24 +2737,22 @@ body:has(.tutorial-buttons) > .version-info-wrapper {
 		width: 50px;
 	}
 
-	/* Tutorial buttons: sit above the audio bar */
-	.tutorial-buttons {
-		bottom: 3rem;
-		left: 0.5rem;
-	}
-
 	/* Version info panel: constrain width on mobile */
 	.tutorial-buttons .version-info-wrapper .version-info-panel {
 		width: calc(100vw - 1.5rem);
 		max-width: 280px;
 	}
 
-	/* Disclaimer: above audio bar, centered */
+	/* Disclaimer: centered above any visible elements */
 	.disclaimer-panel {
-		bottom: 3.5rem;
+		bottom: 0.5rem;
 		left: 50%;
 		transform: translateX(-50%);
 		max-width: calc(100vw - 2rem);
+	}
+
+	html[data-toolbar-open] .disclaimer-panel {
+		bottom: 3.5rem;
 	}
 
 	/* Terminal padding reduction */
@@ -2707,11 +2777,6 @@ body:has(.tutorial-buttons) > .version-info-wrapper {
 
 /* Extra-small screens (<480px) */
 @media (max-width: 480px) {
-	.tutorial-buttons {
-		bottom: 2.75rem;
-		left: 0.25rem;
-	}
-
 	.tutorial-debug-btn {
 		padding: 0.25rem 0.5rem;
 		font-size: 0.688rem;

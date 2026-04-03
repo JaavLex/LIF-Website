@@ -6,9 +6,18 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.2.1',
+  version: '1.2.2',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.2.2',
+      date: '2026-04-04',
+      changes: [
+        'Contrôles mobiles roleplay masqués par défaut derrière un bouton toggle',
+        'Lecteur audio et boutons apparaissent en glissant avec animation',
+        'Gain d\'espace écran (~6-10%) sur mobile en mode roleplay',
+      ],
+    },
     {
       version: '1.2.1',
       date: '2026-04-04',
