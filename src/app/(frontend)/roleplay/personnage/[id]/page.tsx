@@ -149,14 +149,8 @@ export default async function CharacterPage({
 			</div>
 
 			<div className="terminal-panel">
-				<div
-					style={{
-						display: 'flex',
-						justifyContent: 'space-between',
-						alignItems: 'flex-start',
-					}}
-				>
-					<h1 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+				<div className="char-detail-header">
+					<h1 className="char-detail-title">
 						{character.isMainCharacter && (
 							<span className="main-character-badge" title="Personnage principal">
 								★
@@ -175,7 +169,7 @@ export default async function CharacterPage({
 						{character.fullName}
 					</h1>
 					{(canEdit || canDelete) && (
-						<div style={{ display: 'flex', gap: '0.5rem' }}>
+						<div className="char-detail-actions">
 							{isOwner && <SyncRankButton characterId={character.id} />}
 							{canEdit && (
 								<Link

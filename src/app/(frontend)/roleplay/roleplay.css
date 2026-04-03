@@ -409,7 +409,28 @@
   font-family: 'Courier New', monospace;
 }
 
-/* Character Detail Page */
+/* Character Detail Page — header */
+.char-detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.char-detail-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.char-detail-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
 .character-detail {
   display: grid;
   grid-template-columns: 300px 1fr;
@@ -1377,22 +1398,101 @@
 
 /* Responsive roleplay */
 @media (max-width: 768px) {
+  /* === Character detail (read) view === */
   .character-detail {
     grid-template-columns: 1fr;
   }
 
   .character-sidebar {
-    flex-direction: row;
-    flex-wrap: wrap;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
   }
 
   .character-photo,
   .character-photo-placeholder {
-    width: 120px;
-    height: 160px;
+    width: 140px;
+    height: 180px;
     aspect-ratio: auto;
   }
 
+  .character-info-block {
+    width: 100%;
+  }
+
+  .character-section {
+    padding: 1rem;
+  }
+
+  .character-section h2 {
+    font-size: 0.9rem;
+  }
+
+  /* Header title + buttons: stack on mobile */
+  .char-detail-header {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .char-detail-title {
+    font-size: 1.1rem;
+  }
+
+  .char-detail-actions {
+    flex-wrap: wrap;
+    width: 100%;
+  }
+
+  .char-detail-actions > * {
+    flex: 1 1 auto;
+    text-align: center;
+    justify-content: center;
+  }
+
+  /* Info rows: stack label above value on narrow screens */
+  .info-row {
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+
+  .info-value {
+    text-align: left;
+  }
+
+  /* Game money section */
+  .game-money-row {
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+
+  /* === Character form (create/modify) view === */
+  .char-form-grid-two {
+    grid-template-columns: 1fr !important;
+  }
+
+  .char-form-avatar-row {
+    flex-direction: column !important;
+    gap: 1rem !important;
+    align-items: stretch !important;
+  }
+
+  .char-form-avatar-row > div:first-child {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .char-form-submit {
+    flex-direction: column !important;
+  }
+
+  .char-form-submit > * {
+    width: 100%;
+    text-align: center;
+    justify-content: center;
+  }
+
+  /* === General roleplay responsive === */
   .personnel-grid {
     grid-template-columns: 1fr;
   }
@@ -2822,5 +2922,26 @@ body:has(.tutorial-buttons) > .version-info-wrapper {
 	.character-photo-placeholder {
 		width: 90px;
 		height: 120px;
+	}
+
+	.char-detail-title {
+		font-size: 0.95rem;
+	}
+
+	.char-detail-actions {
+		gap: 0.35rem;
+	}
+
+	.char-detail-actions .session-btn {
+		padding: 0.4rem 0.75rem !important;
+		font-size: 0.75rem !important;
+	}
+
+	.character-info-block h3 {
+		font-size: 0.7rem;
+	}
+
+	.info-row {
+		font-size: 0.8rem;
 	}
 }

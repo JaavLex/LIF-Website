@@ -323,6 +323,7 @@ export function CharacterForm({
 		gap: '1rem',
 		marginBottom: '1rem',
 	};
+	const gridTwoClass = 'char-form-grid-two';
 
 	return (
 		<form onSubmit={handleSubmit}>
@@ -346,6 +347,7 @@ export function CharacterForm({
 
 				{/* --- Avatar & Rank Detection --- */}
 				<div
+					className="char-form-avatar-row"
 					style={{
 						display: 'flex',
 						gap: '2rem',
@@ -484,7 +486,7 @@ export function CharacterForm({
 				<div style={{ border: 'none', padding: 0, background: 'transparent' }}>
 					<h2 style={{ color: 'var(--primary)' }}>Identité</h2>
 
-					<div style={gridTwo}>
+					<div className={gridTwoClass} style={gridTwo}>
 						<div>
 							<label style={labelStyle}>Prénom *</label>
 							<input
@@ -511,7 +513,7 @@ export function CharacterForm({
 						</div>
 					</div>
 
-					<div style={gridTwo}>
+					<div className={gridTwoClass} style={gridTwo}>
 						<div>
 							<label style={labelStyle}>Date de naissance</label>
 							<input
@@ -536,7 +538,7 @@ export function CharacterForm({
 						</div>
 					</div>
 
-					<div style={gridTwo}>
+					<div className={gridTwoClass} style={gridTwo}>
 						<div>
 							<label style={labelStyle}>Taille (cm)</label>
 							<input
@@ -698,7 +700,7 @@ export function CharacterForm({
 				>
 					<h2 style={{ color: 'var(--primary)' }}>Affectation</h2>
 
-					<div style={gridTwo}>
+					<div className={gridTwoClass} style={gridTwo}>
 						<div>
 							<label style={labelStyle}>Unité</label>
 							<select
@@ -729,7 +731,7 @@ export function CharacterForm({
 						</div>
 					</div>
 
-					<div style={gridTwo}>
+					<div className={gridTwoClass} style={gridTwo}>
 						<div>
 							<label style={labelStyle}>
 								Faction{!isAdmin && " (défini par l'administration)"}
@@ -916,7 +918,7 @@ export function CharacterForm({
 							</div>
 						)}
 
-						<div style={gridTwo}>
+						<div className={gridTwoClass} style={gridTwo}>
 							<div>
 								<label style={labelStyle}>
 									{form.isNpc ? 'Grade' : 'Grade (override admin)'}
@@ -960,7 +962,7 @@ export function CharacterForm({
 							</div>
 						</div>
 
-						<div style={gridTwo}>
+						<div className={gridTwoClass} style={gridTwo}>
 							<div>
 								<label style={labelStyle}>Classification</label>
 								<select
@@ -994,7 +996,7 @@ export function CharacterForm({
 							</div>
 						</div>
 
-						<div style={gridTwo}>
+						<div className={gridTwoClass} style={gridTwo}>
 							<div
 								style={{
 									display: 'flex',
@@ -1042,7 +1044,7 @@ export function CharacterForm({
 
 						{form.isTarget && (
 							<div style={{ marginTop: '0.5rem' }}>
-								<div style={gridTwo}>
+								<div className={gridTwoClass} style={gridTwo}>
 									<div>
 										<label style={labelStyle}>Faction de la cible</label>
 										<select
@@ -1152,6 +1154,7 @@ export function CharacterForm({
 
 				{/* --- Submit --- */}
 				<div
+					className="char-form-submit"
 					style={{
 						marginTop: '2rem',
 						display: 'flex',

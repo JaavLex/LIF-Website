@@ -6,9 +6,19 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.2.2',
+  version: '1.2.3',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.2.3',
+      date: '2026-04-04',
+      changes: [
+        'Responsivité mobile des fiches personnage (lecture, création, modification)',
+        'En-tête fiche et boutons d\'action empilés verticalement sur mobile',
+        'Grilles de formulaire en colonne unique sur petits écrans',
+        'Infos du personnage pleine largeur avec labels empilés',
+      ],
+    },
     {
       version: '1.2.2',
       date: '2026-04-04',
