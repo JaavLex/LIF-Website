@@ -165,7 +165,7 @@ export default async function CharacterPage({
 						{rankIcon?.url && (
 							<Image
 								src={rankIcon!.url}
-								alt={rank.name}
+								alt={rank!.name}
 								width={32}
 								height={32}
 								unoptimized
@@ -234,7 +234,7 @@ export default async function CharacterPage({
 									{rankIcon?.url ? (
 										<Image
 											src={rankIcon!.url}
-											alt={rank.name}
+											alt={rank!.name}
 											width={20}
 											height={20}
 											unoptimized
