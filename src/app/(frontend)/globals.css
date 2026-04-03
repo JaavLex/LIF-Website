@@ -952,29 +952,82 @@ h1, h2, h3, h4, h5, h6 {
   font-size: 0.9rem;
 }
 
+/* Hamburger button — hidden on desktop */
+.nav-hamburger {
+  display: none;
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--foreground);
+  padding: 0.4rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.nav-hamburger:hover {
+  border-color: var(--accent);
+}
+
+/* Mobile dropdown */
+.nav-mobile {
+  display: none;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
-  .nav-links {
+  .nav-links-desktop {
     display: none;
   }
-  
+
+  .nav-hamburger {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .nav-mobile {
+    display: flex;
+    flex-direction: column;
+    padding: 1rem 2rem 1.5rem;
+    border-top: 1px solid var(--border);
+    background: rgba(12, 15, 10, 0.98);
+    gap: 0.25rem;
+  }
+
+  .nav-mobile a {
+    color: var(--foreground);
+    padding: 0.75rem 0;
+    font-weight: 500;
+    font-size: var(--text-base);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .nav-mobile a:last-child {
+    border-bottom: none;
+  }
+
+  .nav-mobile .discord-btn {
+    margin-top: 0.75rem;
+    text-align: center;
+  }
+
   .hero-title {
-    font-size: 2.5rem;
+    font-size: var(--text-2xl);
   }
-  
+
   .hero-subtitle {
-    font-size: 1rem;
+    font-size: var(--text-base);
   }
-  
+
   .section-title {
-    font-size: 1.75rem;
+    font-size: var(--text-xl);
   }
-  
+
   .footer-container {
     grid-template-columns: 1fr;
     text-align: center;
   }
-  
+
   .footer-admin {
     justify-content: center;
   }
