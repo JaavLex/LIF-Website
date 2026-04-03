@@ -68,7 +68,9 @@ function renderNode(node: LexicalNode, index: number): React.ReactNode {
 export function RichTextRenderer({
 	content,
 }: {
-	content: LexicalContent | string | null | undefined;
+	// Accept both our strict LexicalContent and Payload's generated rich text types
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	content: LexicalContent | Record<string, any> | string | null | undefined;
 }) {
 	if (!content) return null;
 	// Handle plain text strings (from old data or invalid saves)
