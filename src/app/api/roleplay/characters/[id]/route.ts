@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPayloadClient } from '@/lib/payload';
-import { verifySession } from '@/lib/session';
+import { requireSession, isErrorResponse } from '@/lib/api-auth';
 import { checkAdminPermissions } from '@/lib/admin';
 import { notifyStatusChange } from '@/lib/discord-notify';
 
@@ -9,15 +9,9 @@ export async function PATCH(
 	{ params }: { params: Promise<{ id: string }> },
 ) {
 	const { id } = await params;
-	const token = request.cookies.get('roleplay-session')?.value;
-	if (!token) {
-		return NextResponse.json({ message: 'Non authentifié' }, { status: 401 });
-	}
-
-	const session = verifySession(token);
-	if (!session) {
-		return NextResponse.json({ message: 'Session invalide' }, { status: 401 });
-	}
+	const sessionResult = await requireSession(request);
+	if (isErrorResponse(sessionResult)) return sessionResult;
+	const session = sessionResult;
 
 	const characterId = parseInt(id, 10);
 	if (isNaN(characterId)) {
@@ -118,31 +112,13 @@ export async function DELETE(
 	{ params }: { params: Promise<{ id: string }> },
 ) {
 	const { id } = await params;
-	const token = request.cookies.get('roleplay-session')?.value;
-	if (!token) {
-		return NextResponse.json({ message: 'Non authentifié' }, { status: 401 });
-	}
-
-	const session = verifySession(token);
-	if (!session) {
-		return NextResponse.json({ message: 'Session invalide' }, { status: 401 });
-	}
+	const { requireFullAdmin: requireFull, isErrorResponse: isErr } = await import('@/lib/api-auth');
+	const auth = await requireFull(request);
+	if (isErr(auth)) return auth;
 
 	const characterId = parseInt(id, 10);
 	if (isNaN(characterId)) {
 		return NextResponse.json({ message: 'ID invalide' }, { status: 400 });
-	}
-
-	// Only full-permission admins can delete
-	const adminPerms = await checkAdminPermissions(session);
-	if (!adminPerms.isAdmin || adminPerms.level !== 'full') {
-		return NextResponse.json(
-			{
-				message:
-					'Non autorisé — seuls les administrateurs peuvent supprimer un dossier',
-			},
-			{ status: 403 },
-		);
 	}
 
 	try {

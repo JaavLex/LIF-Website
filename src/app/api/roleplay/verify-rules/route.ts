@@ -2,16 +2,17 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getPayloadClient } from '@/lib/payload';
 import { readFileSync } from 'fs';
 import { join } from 'path';
+import type { Roleplay } from '@/payload-types';
 
 export async function GET() {
 	try {
 		const payload = await getPayloadClient();
 		const roleplayConfig = await payload
 			.findGlobal({ slug: 'roleplay' })
-			.catch(() => null);
+			.catch(() => null) as Roleplay | null;
 
-		const password = (roleplayConfig as any)?.rpRulesPassword || 'HONNEUR';
-		let content = (roleplayConfig as any)?.rpRulesContent;
+		const password = roleplayConfig?.rpRulesPassword || 'HONNEUR';
+		let content = roleplayConfig?.rpRulesContent;
 
 		// Fallback to rprules.md if no content in database
 		if (!content) {
@@ -42,9 +43,9 @@ export async function POST(request: NextRequest) {
 		const payload = await getPayloadClient();
 		const roleplayConfig = await payload
 			.findGlobal({ slug: 'roleplay' })
-			.catch(() => null);
+			.catch(() => null) as Roleplay | null;
 
-		const correctPassword = (roleplayConfig as any)?.rpRulesPassword || 'HONNEUR';
+		const correctPassword = roleplayConfig?.rpRulesPassword || 'HONNEUR';
 
 		const valid = password.trim().toUpperCase() === correctPassword.trim().toUpperCase();
 

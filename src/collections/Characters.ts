@@ -76,7 +76,7 @@ export const Characters: CollectionConfig = {
 	},
 	access: {
 		read: () => true,
-		create: () => true,
+		create: ({ req }) => !!req.user,
 		update: ({ req }) => {
 			if (!req.user) return true;
 			if (req.user.role === 'admin') return true;

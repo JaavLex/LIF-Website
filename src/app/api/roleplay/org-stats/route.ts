@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getPayloadClient } from '@/lib/payload';
+import type { Character } from '@/payload-types';
 
 export const dynamic = 'force-dynamic';
 
@@ -27,11 +28,11 @@ export async function GET() {
 		const characterIds: number[] = [];
 		const seenBiIds = new Set<string>();
 		for (const c of characters.docs) {
-			characterIds.push(c.id as number);
-			const biId = (c as any).biId as string | undefined;
+			characterIds.push(c.id);
+			const biId = c.biId;
 			if (biId && seenBiIds.has(biId)) continue;
 			if (biId) seenBiIds.add(biId);
-			const money = (c as any).savedMoney;
+			const money = c.savedMoney;
 			if (typeof money === 'number' && money > 0) {
 				totalMoney += money;
 			}
@@ -58,7 +59,7 @@ export async function GET() {
 				// Deduplicate by biId: map characterId -> biId, only count one char per biId
 				const charBiId: Record<number, string | null> = {};
 				for (const c of characters.docs) {
-					charBiId[c.id as number] = (c as any).biId || null;
+					charBiId[c.id] = c.biId || null;
 				}
 
 				const charAmounts: Record<number, number> = {};
@@ -68,8 +69,8 @@ export async function GET() {
 					const charId =
 						typeof entry.character === 'number'
 							? entry.character
-							: (entry.character as any)?.id;
-					const amount = (entry as any).amount as number;
+							: entry.character?.id;
+					const amount = entry.amount;
 					if (charId && typeof amount === 'number') {
 						charAmounts[charId] = amount;
 						// Compute org total, deduplicating by biId

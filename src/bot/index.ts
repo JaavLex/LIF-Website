@@ -1,3 +1,4 @@
+import type { Roleplay } from '@/payload-types';
 import {
 	Client,
 	GatewayIntentBits,
@@ -32,8 +33,8 @@ async function loadNotificationChannel() {
 		const payload = await getPayload({ config });
 		const roleplayConfig = await payload
 			.findGlobal({ slug: 'roleplay' })
-			.catch(() => null);
-		notificationChannelId = (roleplayConfig as any)?.notificationChannelId || null;
+			.catch(() => null) as Roleplay | null;
+		notificationChannelId = roleplayConfig?.notificationChannelId || null;
 	} catch {
 		// ignore
 	}
@@ -195,12 +196,10 @@ async function handleOuvrirDossiers(interaction: ChatInputCommandInteraction) {
 			.setTimestamp();
 
 		for (const char of characters) {
-			const rank =
-				typeof char.rank === 'object' && char.rank
-					? (char.rank as any).abbreviation || (char.rank as any).name
-					: null;
-			const unit =
-				typeof char.unit === 'object' && char.unit ? (char.unit as any).name : null;
+			const rankObj = typeof char.rank === 'object' && char.rank ? char.rank : null;
+			const rank = rankObj ? rankObj.abbreviation || rankObj.name : null;
+			const unitObj = typeof char.unit === 'object' && char.unit ? char.unit : null;
+			const unit = unitObj ? unitObj.name : null;
 			const status = STATUS_LABELS[char.status] || char.status;
 			const url = `${SITE_URL}/roleplay/personnage/${char.id}`;
 
@@ -314,7 +313,7 @@ async function handleOuvrirRenseignements(interaction: ChatInputCommandInteracti
 			});
 
 			if (characters.docs.length > 0) {
-				const charIds = characters.docs.map((c: any) => c.id);
+				const charIds = characters.docs.map(c => c.id);
 				const result = await payload.find({
 					collection: 'intelligence',
 					where: { postedBy: { in: charIds } },

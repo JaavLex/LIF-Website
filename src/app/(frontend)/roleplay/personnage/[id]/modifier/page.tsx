@@ -1,4 +1,5 @@
 import { getPayloadClient } from '@/lib/payload';
+import { serialize } from '@/lib/constants';
 import { cookies } from 'next/headers';
 import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
@@ -104,10 +105,10 @@ export default async function EditCharacterPage({
 			</div>
 
 			<CharacterForm
-				ranks={JSON.parse(JSON.stringify(ranks.docs))}
-				units={JSON.parse(JSON.stringify(units.docs))}
-				factions={JSON.parse(JSON.stringify(factions.docs))}
-				editData={JSON.parse(JSON.stringify(character))}
+				ranks={serialize(ranks.docs)}
+				units={serialize(units.docs)}
+				factions={serialize(factions.docs)}
+				editData={serialize(character)}
 				isAdmin={isAdmin}
 				allCharacters={allCharacters}
 				allUsers={allUsers}

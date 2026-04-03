@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { RichTextRenderer } from '@/components/roleplay/RichTextRenderer';
+import type { Unit, Character, Faction, Media } from '@/payload-types';
 
 export const dynamic = 'force-dynamic';
 
@@ -21,12 +22,16 @@ export default async function UnitPage({
 		depth: 2,
 	});
 
-	const unit = units.docs[0] as any;
+	const unit = units.docs[0];
 	if (!unit) notFound();
 
 	const parentFaction =
 		typeof unit.parentFaction === 'object' ? unit.parentFaction : null;
+	const parentFactionLogo =
+		parentFaction?.logo && typeof parentFaction.logo === 'object' ? parentFaction.logo : null;
 	const commander = typeof unit.commander === 'object' ? unit.commander : null;
+	const unitInsignia =
+		unit.insignia && typeof unit.insignia === 'object' ? unit.insignia : null;
 
 	// Fetch characters in this unit
 	const characters = await payload.find({
@@ -68,9 +73,9 @@ export default async function UnitPage({
 								gap: '0.35rem',
 							}}
 						>
-							{parentFaction.logo?.url && (
+							{parentFactionLogo?.url && (
 								<Image
-									src={parentFaction.logo.url}
+									src={parentFactionLogo!.url!}
 									alt={parentFaction.name}
 									width={18}
 									height={18}
@@ -93,9 +98,9 @@ export default async function UnitPage({
 						marginBottom: '2rem',
 					}}
 				>
-					{unit.insignia?.url && (
+					{unitInsignia?.url && (
 						<Image
-							src={unit.insignia.url}
+							src={unitInsignia.url}
 							alt={unit.name}
 							width={80}
 							height={80}
@@ -144,7 +149,9 @@ export default async function UnitPage({
 								>
 									{commander.rank &&
 										typeof commander.rank === 'object' &&
-										commander.rank.icon?.url && (
+										commander.rank.icon &&
+										typeof commander.rank.icon === 'object' &&
+										commander.rank.icon.url && (
 											<Image
 												src={commander.rank.icon.url}
 												alt={commander.rank.name}
@@ -170,9 +177,9 @@ export default async function UnitPage({
 									color: parentFaction.color || 'inherit',
 								}}
 							>
-								{parentFaction.logo?.url && (
+								{parentFactionLogo?.url && (
 									<Image
-										src={parentFaction.logo.url}
+										src={parentFactionLogo!.url!}
 										alt={parentFaction.name}
 										width={18}
 										height={18}
@@ -205,9 +212,13 @@ export default async function UnitPage({
 							Membres ({characters.docs.length})
 						</h3>
 						<div className="personnel-grid">
-							{characters.docs.map((character: any) => {
+							{characters.docs.map((character) => {
 								const rank =
 									typeof character.rank === 'object' ? character.rank : null;
+								const avatar =
+									typeof character.avatar === 'object' ? character.avatar : null;
+								const rankIcon =
+									rank?.icon && typeof rank.icon === 'object' ? rank.icon : null;
 								return (
 									<Link
 										key={character.id}
@@ -215,10 +226,10 @@ export default async function UnitPage({
 										className="personnel-card"
 									>
 										<div className="personnel-card-header">
-											{character.avatar?.url ? (
+											{avatar?.url ? (
 												<Image
-													src={character.avatar.url}
-													alt={character.fullName}
+													src={avatar.url}
+													alt={character.fullName || ''}
 													width={64}
 													height={64}
 													className="personnel-avatar"
@@ -241,9 +252,9 @@ export default async function UnitPage({
 															gap: '0.35rem',
 														}}
 													>
-														{rank.icon?.url && (
+														{rankIcon?.url && (
 															<Image
-																src={rank.icon.url}
+																src={rankIcon.url}
 																alt={rank.name}
 																width={18}
 																height={18}

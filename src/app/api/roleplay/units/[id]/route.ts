@@ -1,22 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPayloadClient } from '@/lib/payload';
-import { verifySession } from '@/lib/session';
-import { checkAdminPermissions } from '@/lib/admin';
+import { requireFullAdmin, isErrorResponse } from '@/lib/api-auth';
 
 export async function PATCH(
 	request: NextRequest,
 	{ params }: { params: Promise<{ id: string }> },
 ) {
 	const { id } = await params;
-	const token = request.cookies.get('roleplay-session')?.value;
-	if (!token) {
-		return NextResponse.json({ message: 'Non authentifié' }, { status: 401 });
-	}
-
-	const session = verifySession(token);
-	if (!session) {
-		return NextResponse.json({ message: 'Session invalide' }, { status: 401 });
-	}
+	const auth = await requireFullAdmin(request);
+	if (isErrorResponse(auth)) return auth;
 
 	const docId = parseInt(id, 10);
 	if (isNaN(docId)) {
@@ -25,12 +17,6 @@ export async function PATCH(
 
 	try {
 		const payload = await getPayloadClient();
-		const { isAdmin, level } = await checkAdminPermissions(session);
-
-		if (!isAdmin || level !== 'full') {
-			return NextResponse.json({ message: 'Non autorisé' }, { status: 403 });
-		}
-
 		const body = await request.json();
 		const updateData: Record<string, unknown> = {};
 		if (body.name) updateData.name = body.name;
@@ -48,12 +34,10 @@ export async function PATCH(
 		});
 
 		return NextResponse.json({ id: doc.id, doc });
-	} catch (error: any) {
+	} catch (error: unknown) {
 		console.error('Unit update error:', error);
-		return NextResponse.json(
-			{ message: error.message || 'Erreur lors de la mise à jour' },
-			{ status: 400 },
-		);
+		const message = error instanceof Error ? error.message : 'Erreur lors de la mise à jour';
+		return NextResponse.json({ message }, { status: 400 });
 	}
 }
 
@@ -62,15 +46,8 @@ export async function DELETE(
 	{ params }: { params: Promise<{ id: string }> },
 ) {
 	const { id } = await params;
-	const token = request.cookies.get('roleplay-session')?.value;
-	if (!token) {
-		return NextResponse.json({ message: 'Non authentifié' }, { status: 401 });
-	}
-
-	const session = verifySession(token);
-	if (!session) {
-		return NextResponse.json({ message: 'Session invalide' }, { status: 401 });
-	}
+	const auth = await requireFullAdmin(request);
+	if (isErrorResponse(auth)) return auth;
 
 	const docId = parseInt(id, 10);
 	if (isNaN(docId)) {
@@ -79,23 +56,11 @@ export async function DELETE(
 
 	try {
 		const payload = await getPayloadClient();
-		const { isAdmin, level } = await checkAdminPermissions(session);
-
-		if (!isAdmin || level !== 'full') {
-			return NextResponse.json({ message: 'Non autorisé' }, { status: 403 });
-		}
-
-		await payload.delete({
-			collection: 'units',
-			id: docId,
-		});
-
+		await payload.delete({ collection: 'units', id: docId });
 		return NextResponse.json({ success: true });
-	} catch (error: any) {
+	} catch (error: unknown) {
 		console.error('Unit deletion error:', error);
-		return NextResponse.json(
-			{ message: error.message || 'Erreur lors de la suppression' },
-			{ status: 400 },
-		);
+		const message = error instanceof Error ? error.message : 'Erreur lors de la suppression';
+		return NextResponse.json({ message }, { status: 400 });
 	}
 }

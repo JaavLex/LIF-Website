@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { RichTextRenderer } from '@/components/roleplay/RichTextRenderer';
+import type { Faction, Unit, Character } from '@/payload-types';
 
 export const dynamic = 'force-dynamic';
 
@@ -27,7 +28,7 @@ export default async function FactionPage({
 		depth: 1,
 	});
 
-	const faction = factions.docs[0] as any;
+	const faction = factions.docs[0];
 	if (!faction) notFound();
 
 	// Fetch units belonging to this faction
@@ -83,7 +84,7 @@ export default async function FactionPage({
 						marginBottom: '2rem',
 					}}
 				>
-					{faction.logo?.url && (
+					{faction.logo && typeof faction.logo === 'object' && faction.logo.url && (
 						<Image
 							src={faction.logo.url}
 							alt={faction.name}
@@ -126,7 +127,9 @@ export default async function FactionPage({
 								gap: '0.5rem',
 							}}
 						>
-							{units.docs.map((unit: any) => (
+							{units.docs.map((unit) => {
+								const insignia = typeof unit.insignia === 'object' ? unit.insignia : null;
+								return (
 								<Link
 									key={unit.id}
 									href={`/roleplay/unite/${unit.slug}`}
@@ -142,9 +145,9 @@ export default async function FactionPage({
 										transition: 'border-color 0.2s',
 									}}
 								>
-									{unit.insignia?.url && (
+									{insignia?.url && (
 										<Image
-											src={unit.insignia.url}
+											src={insignia.url}
 											alt={unit.name}
 											width={28}
 											height={28}
@@ -173,7 +176,8 @@ export default async function FactionPage({
 										)}
 									</div>
 								</Link>
-							))}
+								);
+							})}
 						</div>
 					</div>
 				)}
@@ -185,9 +189,13 @@ export default async function FactionPage({
 							Membres ({characters.docs.length})
 						</h3>
 						<div className="personnel-grid">
-							{characters.docs.map((character: any) => {
+							{characters.docs.map((character) => {
 								const rank =
 									typeof character.rank === 'object' ? character.rank : null;
+								const avatar =
+									typeof character.avatar === 'object' ? character.avatar : null;
+								const rankIcon =
+									rank?.icon && typeof rank.icon === 'object' ? rank.icon : null;
 								return (
 									<Link
 										key={character.id}
@@ -195,10 +203,10 @@ export default async function FactionPage({
 										className="personnel-card"
 									>
 										<div className="personnel-card-header">
-											{character.avatar?.url ? (
+											{avatar?.url ? (
 												<Image
-													src={character.avatar.url}
-													alt={character.fullName}
+													src={avatar.url}
+													alt={character.fullName || ''}
 													width={64}
 													height={64}
 													className="personnel-avatar"
@@ -221,9 +229,9 @@ export default async function FactionPage({
 															gap: '0.35rem',
 														}}
 													>
-														{rank.icon?.url && (
+														{rankIcon?.url && (
 															<Image
-																src={rank.icon.url}
+																src={rankIcon.url}
 																alt={rank.name}
 																width={18}
 																height={18}

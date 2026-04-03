@@ -1,29 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
-import { verifySession } from '@/lib/session';
-import { checkAdminPermissions } from '@/lib/admin';
+import { requireAdmin, isErrorResponse } from '@/lib/api-auth';
 import { getPayloadClient } from '@/lib/payload';
 
-// GET: list sanctions with optional filters
 export async function GET(request: NextRequest) {
-	const cookieStore = await cookies();
-	const token = cookieStore.get('roleplay-session')?.value;
-	if (!token)
-		return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
-
-	const session = verifySession(token);
-	if (!session)
-		return NextResponse.json({ error: 'Session invalide' }, { status: 401 });
-
-	const perms = await checkAdminPermissions(session);
-	if (!perms.isAdmin)
-		return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
+	const auth = await requireAdmin(request);
+	if (isErrorResponse(auth)) return auth;
 
 	const { searchParams } = new URL(request.url);
 	const targetDiscordId = searchParams.get('targetDiscordId');
 	const type = searchParams.get('type');
 
-	const where: any = {};
+	const where: Record<string, unknown> = {};
 	if (targetDiscordId) where.targetDiscordId = { equals: targetDiscordId };
 	if (type) where.type = { equals: type };
 
@@ -38,7 +25,8 @@ export async function GET(request: NextRequest) {
 		});
 
 		return NextResponse.json({ sanctions: result.docs, total: result.totalDocs });
-	} catch (err: any) {
-		return NextResponse.json({ error: err.message }, { status: 500 });
+	} catch (err: unknown) {
+		const message = err instanceof Error ? err.message : 'Unknown error';
+		return NextResponse.json({ error: message }, { status: 500 });
 	}
 }

@@ -4,58 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-
-// Convert plain text to Lexical JSON for Payload richText fields
-function textToLexical(text: string): any {
-	if (!text || !text.trim()) return undefined;
-	const paragraphs = text.split('\n');
-	return {
-		root: {
-			type: 'root',
-			children: paragraphs.map(p => ({
-				type: 'paragraph',
-				children: p.trim()
-					? [
-							{
-								type: 'text',
-								text: p,
-								mode: 'normal',
-								detail: 0,
-								format: 0,
-								style: '',
-								version: 1,
-							},
-						]
-					: [],
-				direction: 'ltr',
-				format: '',
-				indent: 0,
-				version: 1,
-				textFormat: 0,
-				textStyle: '',
-			})),
-			direction: 'ltr',
-			format: '',
-			indent: 0,
-			version: 1,
-		},
-	};
-}
-
-// Convert Lexical JSON to plain text for editing in textarea
-function lexicalToText(content: any): string {
-	if (!content) return '';
-	if (typeof content === 'string') return content;
-	if (!content.root?.children) return '';
-	return content.root.children
-		.map((node: any) => {
-			if (node.children) {
-				return node.children.map((child: any) => child.text || '').join('');
-			}
-			return '';
-		})
-		.join('\n');
-}
+import { textToLexical, lexicalToText } from '@/lib/constants';
 
 interface SessionUser {
 	userId: number;

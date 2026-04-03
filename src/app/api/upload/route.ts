@@ -1,17 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPayloadClient } from '@/lib/payload';
-import { verifySession } from '@/lib/session';
+import { requireSession, isErrorResponse } from '@/lib/api-auth';
 
 export async function POST(request: NextRequest) {
-	const token = request.cookies.get('roleplay-session')?.value;
-	if (!token) {
-		return NextResponse.json({ message: 'Non authentifié' }, { status: 401 });
-	}
-
-	const session = verifySession(token);
-	if (!session) {
-		return NextResponse.json({ message: 'Session invalide' }, { status: 401 });
-	}
+	const sessionResult = await requireSession(request);
+	if (isErrorResponse(sessionResult)) return sessionResult;
 
 	try {
 		const formData = await request.formData();
@@ -22,10 +15,10 @@ export async function POST(request: NextRequest) {
 			return NextResponse.json({ message: 'Aucun fichier fourni' }, { status: 400 });
 		}
 
-		// Validate file type
-		if (!file.type.startsWith('image/')) {
+		// Validate file type — reject SVG to prevent XSS
+		if (!file.type.startsWith('image/') || file.type.includes('svg')) {
 			return NextResponse.json(
-				{ message: 'Seules les images sont acceptées' },
+				{ message: 'Seules les images (hors SVG) sont acceptées' },
 				{ status: 400 },
 			);
 		}
@@ -55,11 +48,9 @@ export async function POST(request: NextRequest) {
 		});
 
 		return NextResponse.json({ id: doc.id, url: doc.url });
-	} catch (error: any) {
+	} catch (error: unknown) {
 		console.error('Upload error:', error);
-		return NextResponse.json(
-			{ message: error.message || "Erreur lors de l'upload" },
-			{ status: 500 },
-		);
+		const message = error instanceof Error ? error.message : "Erreur lors de l'upload";
+		return NextResponse.json({ message }, { status: 500 });
 	}
 }

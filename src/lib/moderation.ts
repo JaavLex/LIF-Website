@@ -1,4 +1,5 @@
 import { getPayloadClient } from './payload';
+import type { Roleplay } from '@/payload-types';
 
 const DISCORD_API = 'https://discord.com/api/v10';
 
@@ -26,11 +27,8 @@ export function getNextSanctionInfo(currentWarnCount: number): {
 	return WARN_ESCALATION[next] || WARN_ESCALATION[7];
 }
 
-export function formatDuration(seconds: number): string {
-	if (seconds < 3600) return `${Math.floor(seconds / 60)} minutes`;
-	if (seconds < 86400) return `${Math.floor(seconds / 3600)} heures`;
-	return `${Math.floor(seconds / 86400)} jours`;
-}
+// Re-export from constants for backwards compatibility
+export { formatDurationLong as formatDuration } from './constants';
 
 export async function getWarnCount(discordId: string): Promise<number> {
 	const payload = await getPayloadClient();
@@ -48,8 +46,8 @@ export async function getWarnCount(discordId: string): Promise<number> {
 export async function getModerationLogChannelId(): Promise<string | null> {
 	try {
 		const payload = await getPayloadClient();
-		const config = await payload.findGlobal({ slug: 'roleplay' });
-		return (config as any)?.moderationLogChannelId || null;
+		const config = await payload.findGlobal({ slug: 'roleplay' }) as Roleplay;
+		return config?.moderationLogChannelId || null;
 	} catch {
 		return null;
 	}

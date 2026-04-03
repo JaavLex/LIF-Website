@@ -1,19 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPayloadClient } from '@/lib/payload';
-import { verifySession } from '@/lib/session';
+import { requireSession, isErrorResponse } from '@/lib/api-auth';
 import { checkAdminPermissions } from '@/lib/admin';
 import { notifyNewCharacter } from '@/lib/discord-notify';
+import type { Character, Rank, Unit } from '@/payload-types';
 
 export async function POST(request: NextRequest) {
-	const token = request.cookies.get('roleplay-session')?.value;
-	if (!token) {
-		return NextResponse.json({ message: 'Non authentifié' }, { status: 401 });
-	}
-
-	const session = verifySession(token);
-	if (!session) {
-		return NextResponse.json({ message: 'Session invalide' }, { status: 401 });
-	}
+	const sessionResult = await requireSession(request);
+	if (isErrorResponse(sessionResult)) return sessionResult;
+	const session = sessionResult;
 
 	try {
 		const body = await request.json();
@@ -78,17 +73,17 @@ export async function POST(request: NextRequest) {
 		});
 
 		// Send Discord notification (non-blocking)
-		const fullDoc = await payload.findByID({
+		const fullDoc: Character = await payload.findByID({
 			collection: 'characters',
 			id: doc.id,
 			depth: 2,
 		});
 		notifyNewCharacter({
 			id: doc.id as number,
-			fullName: (fullDoc as any).fullName,
-			discordUsername: (fullDoc as any).discordUsername,
-			rank: typeof (fullDoc as any).rank === 'object' ? (fullDoc as any).rank : null,
-			unit: typeof (fullDoc as any).unit === 'object' ? (fullDoc as any).unit : null,
+			fullName: fullDoc.fullName,
+			discordUsername: fullDoc.discordUsername,
+			rank: typeof fullDoc.rank === 'object' ? fullDoc.rank : null,
+			unit: typeof fullDoc.unit === 'object' ? fullDoc.unit : null,
 		}).catch(() => {});
 
 		return NextResponse.json({ id: doc.id, doc });

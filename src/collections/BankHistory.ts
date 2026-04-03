@@ -8,10 +8,10 @@ export const BankHistory: CollectionConfig = {
 		defaultColumns: ['character', 'amount', 'source', 'createdAt'],
 	},
 	access: {
-		read: () => true,
-		create: () => true,
+		read: ({ req }) => req.user?.role === 'admin',
+		create: ({ req }) => req.user?.role === 'admin',
 		update: () => false,
-		delete: () => true,
+		delete: ({ req }) => req.user?.role === 'admin',
 	},
 	fields: [
 		{

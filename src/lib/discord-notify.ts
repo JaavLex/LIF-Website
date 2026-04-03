@@ -1,4 +1,12 @@
 import { getPayloadClient } from './payload';
+import type { Roleplay } from '@/payload-types';
+import {
+	CHARACTER_STATUS_LABELS,
+	CHARACTER_STATUS_EMBED_COLORS,
+	INTELLIGENCE_TYPE_LABELS,
+	TIMELINE_TYPE_LABELS,
+	TIMELINE_EMOJIS,
+} from './constants';
 
 const DISCORD_API = 'https://discord.com/api/v10';
 
@@ -20,8 +28,8 @@ interface DiscordEmbed {
 async function getNotificationChannelId(): Promise<string | null> {
 	try {
 		const payload = await getPayloadClient();
-		const config = await payload.findGlobal({ slug: 'roleplay' });
-		return (config as any)?.notificationChannelId || null;
+		const config = await payload.findGlobal({ slug: 'roleplay' }) as Roleplay;
+		return config?.notificationChannelId || null;
 	} catch {
 		return null;
 	}
@@ -85,18 +93,8 @@ export async function notifyNewIntelligence(report: {
 	const channelId = await getNotificationChannelId();
 	if (!channelId) return;
 
-	const TYPE_LABELS: Record<string, string> = {
-		observation: 'Observation',
-		interception: 'Interception',
-		reconnaissance: 'Reconnaissance',
-		infiltration: 'Infiltration',
-		sigint: 'SIGINT',
-		humint: 'HUMINT',
-		other: 'Autre',
-	};
-
 	const postedByName = report.postedBy?.fullName || '—';
-	const typeName = TYPE_LABELS[report.type] || report.type;
+	const typeName = INTELLIGENCE_TYPE_LABELS[report.type] || report.type;
 
 	await sendToChannel(channelId, [
 		{
@@ -113,16 +111,6 @@ export async function notifyNewIntelligence(report: {
 	]);
 }
 
-const STATUS_LABELS: Record<string, string> = {
-	'in-service': 'En service',
-	kia: 'Tué au combat (KIA)',
-	mia: 'Porté disparu (MIA)',
-	retired: 'Retraité',
-	'honourable-discharge': 'Décharge honorable',
-	'dishonourable-discharge': 'Décharge déshonorante',
-	executed: 'Exécuté',
-};
-
 export async function notifyStatusChange(character: {
 	id: number;
 	fullName: string;
@@ -132,44 +120,18 @@ export async function notifyStatusChange(character: {
 	const channelId = await getNotificationChannelId();
 	if (!channelId) return;
 
-	const oldLabel = STATUS_LABELS[character.oldStatus] || character.oldStatus;
-	const newLabel = STATUS_LABELS[character.newStatus] || character.newStatus;
-
-	const STATUS_COLORS: Record<string, number> = {
-		'in-service': 0x4a7c23,
-		kia: 0x8b0000,
-		mia: 0xb8860b,
-		retired: 0x4682b4,
-		executed: 0x2f0000,
-	};
+	const oldLabel = CHARACTER_STATUS_LABELS[character.oldStatus] || character.oldStatus;
+	const newLabel = CHARACTER_STATUS_LABELS[character.newStatus] || character.newStatus;
 
 	await sendToChannel(channelId, [
 		{
 			title: `⚡ Changement de statut`,
 			description: `**${character.fullName}**\n\n${oldLabel} → **${newLabel}**\n\n[Voir le dossier](${SITE_URL}/roleplay/personnage/${character.id})`,
-			color: STATUS_COLORS[character.newStatus] || 0x808080,
+			color: CHARACTER_STATUS_EMBED_COLORS[character.newStatus] || 0x808080,
 			timestamp: new Date().toISOString(),
 		},
 	]);
 }
-
-const TIMELINE_TYPE_LABELS: Record<string, string> = {
-	promotion: 'Promotion',
-	mutation: 'Mutation',
-	blessure: 'Blessure',
-	medaille: 'Médaille',
-	sanction: 'Sanction',
-	autre: 'Autre',
-};
-
-const TIMELINE_EMOJIS: Record<string, string> = {
-	promotion: '⬆️',
-	mutation: '🔄',
-	blessure: '🩹',
-	medaille: '🎖️',
-	sanction: '⚠️',
-	autre: '📝',
-};
 
 export async function notifyTimelineEvent(event: {
 	characterId: number;

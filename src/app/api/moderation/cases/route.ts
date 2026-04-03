@@ -1,24 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
-import { verifySession } from '@/lib/session';
-import { checkAdminPermissions } from '@/lib/admin';
+import { requireAdmin, isErrorResponse } from '@/lib/api-auth';
 import { getPayloadClient } from '@/lib/payload';
 import { sendModerationLog } from '@/lib/moderation';
 
 // GET: list cases with optional filters
 export async function GET(request: NextRequest) {
-	const cookieStore = await cookies();
-	const token = cookieStore.get('roleplay-session')?.value;
-	if (!token)
-		return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
-
-	const session = verifySession(token);
-	if (!session)
-		return NextResponse.json({ error: 'Session invalide' }, { status: 401 });
-
-	const perms = await checkAdminPermissions(session);
-	if (!perms.isAdmin)
-		return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
+	const auth = await requireAdmin(request);
+	if (isErrorResponse(auth)) return auth;
 
 	const { searchParams } = new URL(request.url);
 	const status = searchParams.get('status');
@@ -27,7 +15,7 @@ export async function GET(request: NextRequest) {
 	const page = parseInt(searchParams.get('page') || '1');
 	const limit = Math.min(parseInt(searchParams.get('limit') || '50'), 100);
 
-	const where: any = {};
+	const where: Record<string, unknown> = {};
 	if (status) where.status = { equals: status };
 	if (targetDiscordId) where.targetDiscordId = { equals: targetDiscordId };
 	if (moderator) where.createdByDiscordId = { equals: moderator };
@@ -49,25 +37,17 @@ export async function GET(request: NextRequest) {
 			totalPages: result.totalPages,
 			page: result.page,
 		});
-	} catch (err: any) {
-		return NextResponse.json({ error: err.message }, { status: 500 });
+	} catch (err: unknown) {
+		const message = err instanceof Error ? err.message : 'Unknown error';
+		return NextResponse.json({ error: message }, { status: 500 });
 	}
 }
 
 // POST: create a new case (or reopen existing)
 export async function POST(request: NextRequest) {
-	const cookieStore = await cookies();
-	const token = cookieStore.get('roleplay-session')?.value;
-	if (!token)
-		return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
-
-	const session = verifySession(token);
-	if (!session)
-		return NextResponse.json({ error: 'Session invalide' }, { status: 401 });
-
-	const perms = await checkAdminPermissions(session);
-	if (!perms.isAdmin)
-		return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
+	const auth = await requireAdmin(request);
+	if (isErrorResponse(auth)) return auth;
+	const { session } = auth;
 
 	try {
 		const body = await request.json();
@@ -105,9 +85,9 @@ export async function POST(request: NextRequest) {
 		// Also check Discord admin roles
 		try {
 			const roleplayConfig = await payload.findGlobal({ slug: 'roleplay' });
-			const adminRoles = (roleplayConfig as any)?.adminRoles;
+			const adminRoles = (roleplayConfig as Record<string, unknown>)
+				?.adminRoles as { roleId: string }[] | undefined;
 			if (adminRoles?.length) {
-				// We need to check the target's Discord roles too
 				const botToken = process.env.DISCORD_BOT_TOKEN;
 				const guildId = process.env.DISCORD_GUILD_ID;
 				if (botToken && guildId) {
@@ -143,7 +123,7 @@ export async function POST(request: NextRequest) {
 		});
 
 		if (existing.docs.length > 0) {
-			const existingCase = existing.docs[0] as any;
+			const existingCase = existing.docs[0];
 
 			// If archived, reopen it
 			if (existingCase.status === 'archived') {
@@ -153,7 +133,6 @@ export async function POST(request: NextRequest) {
 					data: { status: 'open' },
 				});
 
-				// Add reopen event
 				await payload.create({
 					collection: 'moderation-events',
 					data: {
@@ -197,7 +176,7 @@ export async function POST(request: NextRequest) {
 			depth: 0,
 		});
 		const nextNumber =
-			lastCase.docs.length > 0 ? ((lastCase.docs[0] as any).caseNumber || 0) + 1 : 1;
+			lastCase.docs.length > 0 ? (lastCase.docs[0].caseNumber || 0) + 1 : 1;
 
 		const newCase = await payload.create({
 			collection: 'moderation-cases',
@@ -216,7 +195,6 @@ export async function POST(request: NextRequest) {
 			},
 		});
 
-		// Add creation event
 		await payload.create({
 			collection: 'moderation-events',
 			data: {
@@ -241,8 +219,9 @@ export async function POST(request: NextRequest) {
 		});
 
 		return NextResponse.json({ case: newCase, created: true });
-	} catch (err: any) {
+	} catch (err: unknown) {
 		console.error('Error creating moderation case:', err);
-		return NextResponse.json({ error: err.message }, { status: 500 });
+		const message = err instanceof Error ? err.message : 'Unknown error';
+		return NextResponse.json({ error: message }, { status: 500 });
 	}
 }

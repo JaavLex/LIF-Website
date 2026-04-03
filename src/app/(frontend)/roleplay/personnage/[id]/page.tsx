@@ -1,8 +1,10 @@
 import { getPayloadClient } from '@/lib/payload';
+import { serialize } from '@/lib/constants';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { cookies } from 'next/headers';
+import type { Character, Faction, Media } from '@/payload-types';
 import { RichTextRenderer } from '@/components/roleplay/RichTextRenderer';
 import { CharacterTimeline } from '@/components/roleplay/CharacterTimeline';
 import { SyncRankButton } from '@/components/roleplay/SyncRankButton';
@@ -42,7 +44,7 @@ export default async function CharacterPage({
 	const characterId = parseInt(id, 10);
 	if (isNaN(characterId)) notFound();
 
-	let character: any;
+	let character: Character;
 	try {
 		character = await payload.findByID({
 			collection: 'characters',
@@ -75,11 +77,11 @@ export default async function CharacterPage({
 	const factionsResult = await payload
 		.find({ collection: 'factions', limit: 100, depth: 1 })
 		.catch(() => ({ docs: [] }));
-	const factionObj = character.faction
-		? factionsResult.docs.find((f: any) => f.name === character.faction)
+	const factionObj: Faction | null | undefined = character.faction
+		? factionsResult.docs.find(f => f.name === character.faction)
 		: null;
-	const targetFactionObj = character.targetFaction
-		? factionsResult.docs.find((f: any) => f.name === character.targetFaction)
+	const targetFactionObj: Faction | null | undefined = character.targetFaction
+		? factionsResult.docs.find(f => f.name === character.targetFaction)
 		: null;
 
 	// Check if current user is the owner or admin
@@ -284,12 +286,12 @@ export default async function CharacterPage({
 											display: 'flex',
 											alignItems: 'center',
 											gap: '0.35rem',
-											color: (factionObj as any)?.color || 'inherit',
+											color: factionObj?.color || 'inherit',
 										}}
 									>
-										{(factionObj as any)?.logo?.url && (
+										{factionObj?.logo && typeof factionObj.logo === 'object' && factionObj.logo.url && (
 											<Image
-												src={(factionObj as any).logo.url}
+												src={(factionObj!.logo as Media).url!}
 												alt={character.faction}
 												width={18}
 												height={18}
@@ -297,11 +299,11 @@ export default async function CharacterPage({
 												unoptimized
 											/>
 										)}
-										{(factionObj as any)?.slug ? (
+										{factionObj?.slug ? (
 											<Link
-												href={`/roleplay/faction/${(factionObj as any).slug}`}
+												href={`/roleplay/faction/${factionObj!.slug}`}
 												style={{
-													color: (factionObj as any)?.color || 'var(--primary)',
+													color: factionObj?.color || 'var(--primary)',
 												}}
 											>
 												{character.faction}
@@ -323,12 +325,12 @@ export default async function CharacterPage({
 													display: 'flex',
 													alignItems: 'center',
 													gap: '0.35rem',
-													color: (targetFactionObj as any)?.color || 'var(--danger)',
+													color: targetFactionObj?.color || 'var(--danger)',
 												}}
 											>
-												{(targetFactionObj as any)?.logo?.url && (
+												{targetFactionObj?.logo && typeof targetFactionObj.logo === 'object' && targetFactionObj.logo.url && (
 													<Image
-														src={(targetFactionObj as any).logo.url}
+														src={(targetFactionObj!.logo as Media).url!}
 														alt={character.targetFaction}
 														width={18}
 														height={18}
@@ -550,7 +552,7 @@ export default async function CharacterPage({
 									{isAdmin && <AddTimelineEvent characterId={character.id} />}
 								</h2>
 								<CharacterTimeline
-									events={JSON.parse(JSON.stringify(timeline.docs))}
+									events={serialize(timeline.docs)}
 									isAdmin={isAdmin}
 								/>
 							</div>

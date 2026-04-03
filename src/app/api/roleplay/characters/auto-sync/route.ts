@@ -1,13 +1,18 @@
 import { NextResponse } from 'next/server';
 import { getPayloadClient } from '@/lib/payload';
 import { isGameServerConfigured, readGamePersistence } from '@/lib/game-server';
+import type { Character } from '@/payload-types';
 
 // Internal endpoint for auto-syncing all players' money
 // Called by the cron scheduler or manually by admins
 export async function POST(request: Request) {
 	// Verify internal cron secret or admin auth
 	const authHeader = request.headers.get('authorization');
-	const cronSecret = process.env.CRON_SECRET || 'internal-cron-secret';
+	const cronSecret = process.env.CRON_SECRET;
+	if (!cronSecret) {
+		console.error('[Auto-sync] CRON_SECRET not configured');
+		return NextResponse.json({ error: 'CRON_SECRET not configured' }, { status: 500 });
+	}
 	if (authHeader !== `Bearer ${cronSecret}`) {
 		return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
 	}
@@ -42,7 +47,7 @@ export async function POST(request: Request) {
 		const now = new Date().toISOString();
 
 		for (const character of characters) {
-			const biId = (character as any).biId;
+			const biId = character.biId;
 			if (!biId) continue;
 
 			const playerData = players.find(p => p.biId === biId);
@@ -55,7 +60,7 @@ export async function POST(request: Request) {
 				data: {
 					savedMoney: money,
 					lastMoneySyncAt: now,
-				} as any,
+				},
 			});
 			synced++;
 		}

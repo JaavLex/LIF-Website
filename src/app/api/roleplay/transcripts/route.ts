@@ -1,10 +1,8 @@
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
-import { verifySession } from '@/lib/session';
-import { checkAdminPermissions } from '@/lib/admin';
+import { requireAdmin, isErrorResponse } from '@/lib/api-auth';
 
 const DISCORD_API = 'https://discord.com/api/v10';
-const TRANSCRIPT_CHANNEL_ID = '1435918189589696644';
+const TRANSCRIPT_CHANNEL_ID = process.env.DISCORD_TRANSCRIPT_CHANNEL_ID || '';
 
 interface TranscriptInfo {
 	messageId: string;
@@ -120,25 +118,12 @@ async function fetchAllMessages(botToken: string): Promise<TranscriptInfo[]> {
 }
 
 export async function GET() {
-	const cookieStore = await cookies();
-	const token = cookieStore.get('roleplay-session')?.value;
-	if (!token) {
-		return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
-	}
-
-	const session = verifySession(token);
-	if (!session) {
-		return NextResponse.json({ error: 'Session invalide' }, { status: 401 });
-	}
-
-	const adminPerms = await checkAdminPermissions(session);
-	if (!adminPerms.isAdmin) {
-		return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
-	}
+	const auth = await requireAdmin();
+	if (isErrorResponse(auth)) return auth;
 
 	const botToken = process.env.DISCORD_BOT_TOKEN;
-	if (!botToken) {
-		return NextResponse.json({ error: 'Bot token non configuré' }, { status: 500 });
+	if (!botToken || !TRANSCRIPT_CHANNEL_ID) {
+		return NextResponse.json({ error: 'Transcripts non configurés' }, { status: 500 });
 	}
 
 	try {

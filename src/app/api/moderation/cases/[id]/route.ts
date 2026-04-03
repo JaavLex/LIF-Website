@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
-import { verifySession } from '@/lib/session';
-import { checkAdminPermissions } from '@/lib/admin';
+import { requireAdmin, isErrorResponse } from '@/lib/api-auth';
 import { getPayloadClient } from '@/lib/payload';
 import {
 	getWarnCount,
@@ -11,27 +9,18 @@ import {
 	discordBanUser,
 	discordUnbanUser,
 	sendModerationLog,
-	formatDuration,
 	WARN_ESCALATION,
 } from '@/lib/moderation';
+import { formatDurationLong, SANCTION_LABELS_LONG } from '@/lib/constants';
+import type { ModerationCase, ModerationSanction } from '@/payload-types';
 
 // GET: get case details + events
 export async function GET(
 	request: NextRequest,
 	{ params }: { params: Promise<{ id: string }> },
 ) {
-	const cookieStore = await cookies();
-	const token = cookieStore.get('roleplay-session')?.value;
-	if (!token)
-		return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
-
-	const session = verifySession(token);
-	if (!session)
-		return NextResponse.json({ error: 'Session invalide' }, { status: 401 });
-
-	const perms = await checkAdminPermissions(session);
-	if (!perms.isAdmin)
-		return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
+	const auth = await requireAdmin(request);
+	if (isErrorResponse(auth)) return auth;
 
 	const { id } = await params;
 	const caseId = parseInt(id);
@@ -41,7 +30,7 @@ export async function GET(
 	try {
 		const payload = await getPayloadClient();
 
-		const caseDoc = await payload.findByID({
+		const caseDoc: ModerationCase = await payload.findByID({
 			collection: 'moderation-cases',
 			id: caseId,
 			depth: 0,
@@ -60,7 +49,7 @@ export async function GET(
 		});
 
 		// Get sanctions for the target
-		const targetDiscordId = (caseDoc as any).targetDiscordId;
+		const targetDiscordId = caseDoc.targetDiscordId;
 		const sanctions = await payload.find({
 			collection: 'moderation-sanctions',
 			where: { targetDiscordId: { equals: targetDiscordId } },
@@ -69,7 +58,7 @@ export async function GET(
 			depth: 0,
 		});
 
-		const warnCount = sanctions.docs.filter((s: any) => s.type === 'warn').length;
+		const warnCount = sanctions.docs.filter(s => s.type === 'warn').length;
 
 		// Get characters
 		const characters = await payload.find({
@@ -97,18 +86,9 @@ export async function PATCH(
 	request: NextRequest,
 	{ params }: { params: Promise<{ id: string }> },
 ) {
-	const cookieStore = await cookies();
-	const token = cookieStore.get('roleplay-session')?.value;
-	if (!token)
-		return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
-
-	const session = verifySession(token);
-	if (!session)
-		return NextResponse.json({ error: 'Session invalide' }, { status: 401 });
-
-	const perms = await checkAdminPermissions(session);
-	if (!perms.isAdmin)
-		return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
+	const auth = await requireAdmin(request);
+	if (isErrorResponse(auth)) return auth;
+	const { session } = auth;
 
 	const { id } = await params;
 	const caseId = parseInt(id);
@@ -125,14 +105,14 @@ export async function PATCH(
 
 		const payload = await getPayloadClient();
 
-		const caseDoc = await payload.findByID({
+		const caseDoc: ModerationCase = await payload.findByID({
 			collection: 'moderation-cases',
 			id: caseId,
 		});
 		if (!caseDoc)
 			return NextResponse.json({ error: 'Dossier non trouvé' }, { status: 404 });
 
-		const oldStatus = (caseDoc as any).status;
+		const oldStatus = caseDoc.status;
 
 		await payload.update({
 			collection: 'moderation-cases',
@@ -168,12 +148,12 @@ export async function PATCH(
 
 		await sendModerationLog({
 			title: status === 'archived' ? '📦 Dossier archivé' : '🔄 Statut modifié',
-			description: `**Dossier #${(caseDoc as any).caseNumber}** — ${statusLabels[oldStatus]} → **${statusLabels[status]}**`,
+			description: `**Dossier #${caseDoc.caseNumber}** — ${statusLabels[oldStatus]} → **${statusLabels[status]}**`,
 			color: status === 'archived' ? 0x808080 : 0xf0ad4e,
 			fields: [
 				{
 					name: 'Cible',
-					value: (caseDoc as any).targetDiscordUsername,
+					value: caseDoc.targetDiscordUsername,
 					inline: true,
 				},
 				{ name: 'Modérateur', value: session.discordUsername, inline: true },
@@ -192,18 +172,9 @@ export async function POST(
 	request: NextRequest,
 	{ params }: { params: Promise<{ id: string }> },
 ) {
-	const cookieStore = await cookies();
-	const token = cookieStore.get('roleplay-session')?.value;
-	if (!token)
-		return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
-
-	const session = verifySession(token);
-	if (!session)
-		return NextResponse.json({ error: 'Session invalide' }, { status: 401 });
-
-	const perms = await checkAdminPermissions(session);
-	if (!perms.isAdmin)
-		return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
+	const auth = await requireAdmin(request);
+	if (isErrorResponse(auth)) return auth;
+	const { session, permissions: perms } = auth;
 
 	const { id } = await params;
 	const caseId = parseInt(id);
@@ -216,10 +187,10 @@ export async function POST(
 
 		const payload = await getPayloadClient();
 
-		const caseDoc = (await payload.findByID({
+		const caseDoc: ModerationCase = await payload.findByID({
 			collection: 'moderation-cases',
 			id: caseId,
-		})) as any;
+		});
 
 		if (!caseDoc)
 			return NextResponse.json({ error: 'Dossier non trouvé' }, { status: 404 });
@@ -457,7 +428,7 @@ export async function POST(
 					});
 
 					const durationText = escalation.duration
-						? formatDuration(escalation.duration)
+						? formatDurationLong(escalation.duration)
 						: 'définitif';
 					await sendModerationLog({
 						title: `🔨 ${escalation.label}`,
@@ -523,7 +494,7 @@ export async function POST(
 
 			const actionLabels: Record<string, string> = {
 				kick: 'Expulsion',
-				'temp-ban': `Bannissement temporaire${duration ? ` (${formatDuration(duration)})` : ''}`,
+				'temp-ban': `Bannissement temporaire${duration ? ` (${formatDurationLong(duration)})` : ''}`,
 				'perm-ban': 'Bannissement définitif',
 			};
 
@@ -619,10 +590,10 @@ export async function POST(
 					{ status: 400 },
 				);
 
-			const sanction = (await payload.findByID({
+			const sanction: ModerationSanction = await payload.findByID({
 				collection: 'moderation-sanctions',
 				id: sanctionId,
-			})) as any;
+			});
 
 			if (!sanction || sanction.type !== 'warn') {
 				return NextResponse.json(
@@ -701,10 +672,10 @@ export async function POST(
 
 			if (sanctionId) {
 				// Remove a specific sanction
-				const sanction = (await payload.findByID({
+				const sanction: ModerationSanction = await payload.findByID({
 					collection: 'moderation-sanctions',
 					id: sanctionId,
-				})) as any;
+				});
 
 				if (!sanction)
 					return NextResponse.json(
@@ -733,19 +704,12 @@ export async function POST(
 					});
 				}
 
-				const SANCTION_LABELS: Record<string, string> = {
-					warn: 'Avertissement',
-					kick: 'Expulsion',
-					'temp-ban': 'Ban temporaire',
-					'perm-ban': 'Ban définitif',
-				};
-
 				await payload.create({
 					collection: 'moderation-events',
 					data: {
 						case: caseId,
 						type: 'system',
-						content: `Pardon : ${SANCTION_LABELS[sanction.type] || sanction.type} retiré par ${session.discordUsername}`,
+						content: `Pardon : ${SANCTION_LABELS_LONG[sanction.type] || sanction.type} retiré par ${session.discordUsername}`,
 						authorDiscordId: session.discordId,
 						authorDiscordUsername: session.discordUsername,
 						authorDiscordAvatar: session.discordAvatar,
@@ -756,7 +720,7 @@ export async function POST(
 
 				await sendModerationLog({
 					title: '🕊️ Pardon',
-					description: `${SANCTION_LABELS[sanction.type]} retiré pour **${caseDoc.targetDiscordUsername}**`,
+					description: `${SANCTION_LABELS_LONG[sanction.type]} retiré pour **${caseDoc.targetDiscordUsername}**`,
 					color: 0x28a745,
 					fields: [
 						{ name: 'Modérateur', value: session.discordUsername, inline: true },
@@ -789,7 +753,7 @@ export async function POST(
 
 			// Check if any are bans — if so, unban from Discord
 			const hasBan = allSanctions.docs.some(
-				(s: any) => s.type === 'perm-ban' || s.type === 'temp-ban',
+				s => s.type === 'perm-ban' || s.type === 'temp-ban',
 			);
 			let discordResult: { success: boolean; error?: string } = { success: true };
 			if (hasBan) {

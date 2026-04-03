@@ -1,4 +1,5 @@
 import { getPayloadClient } from '@/lib/payload';
+import type { Roleplay } from '@/payload-types';
 
 const PANEL_URL = process.env.FEATHERPANEL_URL || '';
 const API_KEY = process.env.FEATHERPANEL_API_KEY || '';
@@ -16,7 +17,7 @@ async function getGameServerSettings(): Promise<{
 }> {
 	try {
 		const payload = await getPayloadClient();
-		const roleplay = (await payload.findGlobal({ slug: 'roleplay' })) as any;
+		const roleplay = await payload.findGlobal({ slug: 'roleplay' }) as Roleplay;
 		return {
 			enabled: roleplay.gameServerEnabled !== false,
 			serverId: roleplay.gameServerUuid || ENV_SERVER_ID,

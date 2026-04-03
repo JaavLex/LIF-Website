@@ -4,16 +4,9 @@ import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { RichTextRenderer } from './RichTextRenderer';
+import { INTELLIGENCE_TYPE_LABELS, textToLexical } from '@/lib/constants';
 
-const TYPE_LABELS: Record<string, string> = {
-	observation: 'Observation',
-	interception: 'Interception',
-	reconnaissance: 'Reconnaissance',
-	infiltration: 'Infiltration',
-	sigint: 'SIGINT',
-	humint: 'HUMINT',
-	other: 'Autre',
-};
+const TYPE_LABELS = INTELLIGENCE_TYPE_LABELS;
 
 const STATUS_LABELS: Record<string, string> = {
 	'to-investigate': 'À vérifier',
@@ -21,42 +14,6 @@ const STATUS_LABELS: Record<string, string> = {
 	'false-info': 'Fausse info',
 	inconclusive: 'Non concluant',
 };
-
-function textToLexical(text: string): any {
-	if (!text?.trim()) return undefined;
-	const paragraphs = text.split('\n');
-	return {
-		root: {
-			type: 'root',
-			children: paragraphs.map(p => ({
-				type: 'paragraph',
-				children: p.trim()
-					? [
-							{
-								type: 'text',
-								text: p,
-								mode: 'normal',
-								detail: 0,
-								format: 0,
-								style: '',
-								version: 1,
-							},
-						]
-					: [],
-				direction: 'ltr',
-				format: '',
-				indent: 0,
-				version: 1,
-				textFormat: 0,
-				textStyle: '',
-			})),
-			direction: 'ltr',
-			format: '',
-			indent: 0,
-			version: 1,
-		},
-	};
-}
 
 interface IntelReport {
 	id: number;
@@ -305,7 +262,7 @@ export function IntelligenceList({
 				const existingMedia = (currentReport?.media || [])
 					.filter(m => m.file)
 					.map(m => ({
-						file: (m.file as any).id || m.file,
+						file: typeof m.file === 'object' && m.file ? m.file.id : m.file,
 						caption: m.caption || '',
 					}));
 				body.media = [...existingMedia, ...uploadedMedia];

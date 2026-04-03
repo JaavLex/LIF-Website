@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPayloadClient } from '@/lib/payload';
-import { verifySession } from '@/lib/session';
+import { requireSession, isErrorResponse } from '@/lib/api-auth';
 import { getGuildMember } from '@/lib/discord';
 
 export async function POST(
@@ -8,15 +8,9 @@ export async function POST(
 	{ params }: { params: Promise<{ id: string }> },
 ) {
 	const { id } = await params;
-	const token = request.cookies.get('roleplay-session')?.value;
-	if (!token) {
-		return NextResponse.json({ message: 'Non authentifié' }, { status: 401 });
-	}
-
-	const session = verifySession(token);
-	if (!session) {
-		return NextResponse.json({ message: 'Session invalide' }, { status: 401 });
-	}
+	const sessionResult = await requireSession(request);
+	if (isErrorResponse(sessionResult)) return sessionResult;
+	const session = sessionResult;
 
 	const characterId = parseInt(id, 10);
 	if (isNaN(characterId)) {
@@ -89,11 +83,9 @@ export async function POST(
 		});
 
 		return NextResponse.json({ id: doc.id, rank: rankId, doc });
-	} catch (error: any) {
+	} catch (error: unknown) {
 		console.error('Rank sync error:', error);
-		return NextResponse.json(
-			{ message: error.message || 'Erreur lors de la synchronisation' },
-			{ status: 500 },
-		);
+		const message = error instanceof Error ? error.message : 'Erreur lors de la synchronisation';
+		return NextResponse.json({ message }, { status: 500 });
 	}
 }

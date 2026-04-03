@@ -1,9 +1,8 @@
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
-import { verifySession } from '@/lib/session';
-import { checkAdminPermissions } from '@/lib/admin';
+import { requireAdmin, isErrorResponse } from '@/lib/api-auth';
 import { getPayloadClient } from '@/lib/payload';
 import { getGuildRoles } from '@/lib/discord';
+import type { Character, ModerationCase, ModerationSanction, Roleplay } from '@/payload-types';
 
 const DISCORD_API = 'https://discord.com/api/v10';
 
@@ -47,18 +46,8 @@ async function searchMembers(query: string): Promise<any[]> {
 }
 
 export async function GET(request: Request) {
-	const cookieStore = await cookies();
-	const token = cookieStore.get('roleplay-session')?.value;
-	if (!token)
-		return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
-
-	const session = verifySession(token);
-	if (!session)
-		return NextResponse.json({ error: 'Session invalide' }, { status: 401 });
-
-	const perms = await checkAdminPermissions(session);
-	if (!perms.isAdmin)
-		return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
+	const auth = await requireAdmin();
+	if (isErrorResponse(auth)) return auth;
 
 	const url = new URL(request.url);
 	const searchQuery = url.searchParams.get('search') || '';
@@ -69,11 +58,11 @@ export async function GET(request: Request) {
 		// Fetch guild roles and admin config in parallel
 		const [guildRoles, roleplayConfig] = await Promise.all([
 			getGuildRoles(),
-			payload.findGlobal({ slug: 'roleplay' }).catch(() => null),
+			payload.findGlobal({ slug: 'roleplay' }).catch(() => null) as Promise<Roleplay | null>,
 		]);
 
 		const adminRoleIds = new Set<string>(
-			((roleplayConfig as any)?.adminRoles || []).map((r: any) => r.roleId),
+			(roleplayConfig?.adminRoles || []).map((r) => r.roleId),
 		);
 
 		// Build a compact role map: id -> { name, color, position }
@@ -160,16 +149,13 @@ export async function GET(request: Request) {
 		// Also find DB-only users who left the server
 		const knownIds = new Set<string>();
 		for (const c of cases.docs) {
-			const id = (c as any).targetDiscordId;
-			if (id) knownIds.add(id);
+			if (c.targetDiscordId) knownIds.add(c.targetDiscordId);
 		}
 		for (const s of sanctions.docs) {
-			const id = (s as any).targetDiscordId;
-			if (id) knownIds.add(id);
+			if (s.targetDiscordId) knownIds.add(s.targetDiscordId);
 		}
 		for (const ch of characters.docs) {
-			const id = (ch as any).discordId;
-			if (id) knownIds.add(id);
+			if (ch.discordId) knownIds.add(ch.discordId);
 		}
 
 		const users: any[] = allMembers.map((m: any) =>
@@ -182,7 +168,7 @@ export async function GET(request: Request) {
 			const caseData = caseMap[discordId] || [];
 			const caseName =
 				caseData.length > 0
-					? (cases.docs.find((c: any) => c.targetDiscordId === discordId) as any)
+					? cases.docs.find(c => c.targetDiscordId === discordId)
 							?.targetDiscordUsername
 					: null;
 			users.push({
@@ -215,11 +201,10 @@ export async function GET(request: Request) {
 	}
 }
 
-function buildMaps(caseDocs: any[], sanctionDocs: any[], charDocs: any[]) {
+function buildMaps(caseDocs: ModerationCase[], sanctionDocs: ModerationSanction[], charDocs: Character[]) {
 	const warnMap: Record<string, number> = {};
 	for (const s of sanctionDocs) {
-		const id = (s as any).targetDiscordId;
-		warnMap[id] = (warnMap[id] || 0) + 1;
+		warnMap[s.targetDiscordId] = (warnMap[s.targetDiscordId] || 0) + 1;
 	}
 
 	const caseMap: Record<
@@ -227,25 +212,23 @@ function buildMaps(caseDocs: any[], sanctionDocs: any[], charDocs: any[]) {
 		{ id: number; status: string; caseNumber: number }[]
 	> = {};
 	for (const c of caseDocs) {
-		const id = (c as any).targetDiscordId;
-		if (!caseMap[id]) caseMap[id] = [];
-		caseMap[id].push({
-			id: c.id as number,
-			status: (c as any).status,
-			caseNumber: (c as any).caseNumber,
+		if (!caseMap[c.targetDiscordId]) caseMap[c.targetDiscordId] = [];
+		caseMap[c.targetDiscordId].push({
+			id: c.id,
+			status: c.status,
+			caseNumber: c.caseNumber ?? 0,
 		});
 	}
 
-	const charMap: Record<string, any[]> = {};
+	const charMap: Record<string, { id: number; fullName: string | null | undefined; status: string; isMainCharacter: boolean | null | undefined }[]> = {};
 	for (const ch of charDocs) {
-		const id = (ch as any).discordId;
-		if (!id) continue;
-		if (!charMap[id]) charMap[id] = [];
-		charMap[id].push({
+		if (!ch.discordId) continue;
+		if (!charMap[ch.discordId]) charMap[ch.discordId] = [];
+		charMap[ch.discordId].push({
 			id: ch.id,
-			fullName: (ch as any).fullName,
-			status: (ch as any).status,
-			isMainCharacter: (ch as any).isMainCharacter,
+			fullName: ch.fullName,
+			status: ch.status,
+			isMainCharacter: ch.isMainCharacter,
 		});
 	}
 

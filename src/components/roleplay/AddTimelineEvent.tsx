@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { textToLexical } from '@/lib/constants';
 
 const TYPE_OPTIONS = [
 	{ value: 'promotion', label: 'Promotion' },
@@ -12,42 +13,6 @@ const TYPE_OPTIONS = [
 	{ value: 'training', label: 'Formation' },
 	{ value: 'other', label: 'Autre' },
 ];
-
-function textToLexical(text: string): any {
-	if (!text?.trim()) return undefined;
-	const paragraphs = text.split('\n');
-	return {
-		root: {
-			type: 'root',
-			children: paragraphs.map(p => ({
-				type: 'paragraph',
-				children: p.trim()
-					? [
-							{
-								type: 'text',
-								text: p,
-								mode: 'normal',
-								detail: 0,
-								format: 0,
-								style: '',
-								version: 1,
-							},
-						]
-					: [],
-				direction: 'ltr',
-				format: '',
-				indent: 0,
-				version: 1,
-				textFormat: 0,
-				textStyle: '',
-			})),
-			direction: 'ltr',
-			format: '',
-			indent: 0,
-			version: 1,
-		},
-	};
-}
 
 export function AddTimelineEvent({ characterId }: { characterId: number }) {
 	const [showForm, setShowForm] = useState(false);

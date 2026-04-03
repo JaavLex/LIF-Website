@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
-import { verifySession } from '@/lib/session';
+import { requireSession, isErrorResponse } from '@/lib/api-auth';
 import { checkAdminPermissions } from '@/lib/admin';
 import { getPayloadClient } from '@/lib/payload';
 import {
@@ -9,20 +8,16 @@ import {
 	setPlayerMoney,
 	setCustomName,
 } from '@/lib/game-server';
+import type { Character, Rank, Roleplay } from '@/payload-types';
 
 // GET: Read money from game server for this character
 export async function GET(
 	request: Request,
 	{ params }: { params: Promise<{ id: string }> },
 ) {
-	const cookieStore = await cookies();
-	const token = cookieStore.get('roleplay-session')?.value;
-	if (!token)
-		return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
-
-	const session = verifySession(token);
-	if (!session)
-		return NextResponse.json({ error: 'Session invalide' }, { status: 401 });
+	const sessionResult = await requireSession();
+	if (isErrorResponse(sessionResult)) return sessionResult;
+	const session = sessionResult;
 
 	if (!(await isGameServerConfigured())) {
 		return NextResponse.json(
@@ -33,7 +28,7 @@ export async function GET(
 
 	const { id } = await params;
 	const payload = await getPayloadClient();
-	const character = await payload.findByID({
+	const character: Character = await payload.findByID({
 		collection: 'characters',
 		id: Number(id),
 		depth: 0,
@@ -43,11 +38,11 @@ export async function GET(
 
 	// Only owner or admin can read game data
 	const perms = await checkAdminPermissions(session);
-	if (!perms.isAdmin && (character as any).discordId !== session.discordId) {
+	if (!perms.isAdmin && character.discordId !== session.discordId) {
 		return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
 	}
 
-	const biId = (character as any).biId;
+	const biId = character.biId;
 	if (!biId) {
 		return NextResponse.json(
 			{ error: 'Aucun BI ID lié à ce personnage' },
@@ -67,7 +62,7 @@ export async function GET(
 		}
 
 		// Get global sync info for countdown
-		const roleplay = (await payload.findGlobal({ slug: 'roleplay' })) as any;
+		const roleplay = await payload.findGlobal({ slug: 'roleplay' }) as Roleplay;
 
 		// Fetch bank history for admins
 		let bankHistory: any[] = [];
@@ -89,8 +84,8 @@ export async function GET(
 
 		return NextResponse.json({
 			gameMoney: Math.round(result.money * 100) / 100,
-			savedMoney: (character as any).savedMoney ?? null,
-			lastSyncAt: (character as any).lastMoneySyncAt ?? null,
+			savedMoney: character.savedMoney ?? null,
+			lastSyncAt: character.lastMoneySyncAt ?? null,
 			lastGlobalSync: roleplay.lastGlobalMoneySync ?? null,
 			syncIntervalMinutes: roleplay.gameSyncInterval ?? 15,
 			bankHistory,
@@ -106,14 +101,9 @@ export async function POST(
 	request: Request,
 	{ params }: { params: Promise<{ id: string }> },
 ) {
-	const cookieStore = await cookies();
-	const token = cookieStore.get('roleplay-session')?.value;
-	if (!token)
-		return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
-
-	const session = verifySession(token);
-	if (!session)
-		return NextResponse.json({ error: 'Session invalide' }, { status: 401 });
+	const sessionResult2 = await requireSession();
+	if (isErrorResponse(sessionResult2)) return sessionResult2;
+	const session = sessionResult2;
 
 	if (!(await isGameServerConfigured())) {
 		return NextResponse.json(
@@ -124,7 +114,7 @@ export async function POST(
 
 	const { id } = await params;
 	const payload = await getPayloadClient();
-	const character = await payload.findByID({
+	const character: Character = await payload.findByID({
 		collection: 'characters',
 		id: Number(id),
 		depth: 1,
@@ -133,9 +123,9 @@ export async function POST(
 		return NextResponse.json({ error: 'Personnage introuvable' }, { status: 404 });
 
 	const perms = await checkAdminPermissions(session);
-	const isOwner = (character as any).discordId === session.discordId;
+	const isOwner = character.discordId === session.discordId;
 
-	const biId = (character as any).biId;
+	const biId = character.biId;
 	if (!biId) {
 		return NextResponse.json(
 			{ error: 'Aucun BI ID lié à ce personnage' },
@@ -164,14 +154,14 @@ export async function POST(
 					);
 				}
 				const money = Math.round(result.money * 100) / 100;
-				const prevMoney = (character as any).savedMoney ?? null;
+				const prevMoney = character.savedMoney ?? null;
 				await payload.update({
 					collection: 'characters',
 					id: Number(id),
 					data: {
 						savedMoney: money,
 						lastMoneySyncAt: new Date().toISOString(),
-					} as any,
+					},
 				});
 				await payload.create({
 					collection: 'bank-history',
@@ -180,7 +170,7 @@ export async function POST(
 						amount: money,
 						previousAmount: prevMoney,
 						source: 'manual-save',
-					} as any,
+					},
 				});
 				return NextResponse.json({ success: true, savedMoney: money });
 			}
@@ -193,7 +183,7 @@ export async function POST(
 						{ status: 403 },
 					);
 				}
-				const savedMoney = (character as any).savedMoney;
+				const savedMoney = character.savedMoney;
 				if (savedMoney == null) {
 					return NextResponse.json(
 						{ error: 'Aucun argent sauvegardé' },
@@ -208,7 +198,7 @@ export async function POST(
 						amount: savedMoney,
 						previousAmount: savedMoney,
 						source: 'restore',
-					} as any,
+					},
 				});
 				return NextResponse.json({ success: true, restoredMoney: savedMoney });
 			}
@@ -225,7 +215,7 @@ export async function POST(
 				if (isNaN(newMoney) || newMoney < 0) {
 					return NextResponse.json({ error: 'Montant invalide' }, { status: 400 });
 				}
-				const prevAmount = (character as any).savedMoney ?? null;
+				const prevAmount = character.savedMoney ?? null;
 				await setPlayerMoney(biId, newMoney);
 				await payload.create({
 					collection: 'bank-history',
@@ -234,7 +224,7 @@ export async function POST(
 						amount: newMoney,
 						previousAmount: prevAmount,
 						source: 'admin-set',
-					} as any,
+					},
 				});
 				return NextResponse.json({ success: true, newMoney });
 			}
@@ -245,11 +235,11 @@ export async function POST(
 					return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
 				}
 				const fullName =
-					(character as any).fullName ||
-					`${(character as any).firstName} ${(character as any).lastName}`;
+					character.fullName ||
+					`${character.firstName} ${character.lastName}`;
 				// Get rank abbreviation for prefix
 				let rankPrefix = 'LIF';
-				const rank = (character as any).rank;
+				const rank = character.rank;
 				if (rank && typeof rank === 'object' && rank.abbreviation) {
 					rankPrefix = rank.abbreviation;
 				}

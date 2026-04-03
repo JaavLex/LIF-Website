@@ -1,3 +1,5 @@
+import type { Roleplay } from '@/payload-types';
+
 let intervalId: ReturnType<typeof setInterval> | null = null;
 let currentIntervalMs: number = 15 * 60 * 1000;
 
@@ -5,7 +7,7 @@ async function getSyncInterval(): Promise<number> {
 	try {
 		const { getPayloadClient } = await import('@/lib/payload');
 		const payload = await getPayloadClient();
-		const roleplay = (await payload.findGlobal({ slug: 'roleplay' })) as any;
+		const roleplay = await payload.findGlobal({ slug: 'roleplay' }) as Roleplay;
 		const minutes = roleplay.gameSyncInterval || 15;
 		return minutes * 60 * 1000;
 	} catch {
@@ -43,14 +45,14 @@ async function runSync() {
 		const now = new Date().toISOString();
 
 		for (const character of characters) {
-			const biId = (character as any).biId;
+			const biId = character.biId;
 			if (!biId) continue;
 
 			const playerData = players.find((p: any) => p.biId === biId);
 			if (!playerData) continue;
 
 			const money = Math.round(playerData.money * 100) / 100;
-			const previousAmount = (character as any).savedMoney ?? null;
+			const previousAmount = character.savedMoney ?? null;
 
 			await payload.update({
 				collection: 'characters',
@@ -58,7 +60,7 @@ async function runSync() {
 				data: {
 					savedMoney: money,
 					lastMoneySyncAt: now,
-				} as any,
+				},
 			});
 
 			// Log to bank history (only if amount changed)
@@ -70,7 +72,7 @@ async function runSync() {
 						amount: money,
 						previousAmount: previousAmount,
 						source: 'auto-sync',
-					} as any,
+					},
 				});
 			}
 
@@ -80,14 +82,14 @@ async function runSync() {
 		// Sync character names to game server
 		let namesSynced = 0;
 		for (const character of characters) {
-			const biId = (character as any).biId;
+			const biId = character.biId;
 			if (!biId) continue;
 
 			const fullName =
-				(character as any).fullName ||
-				`${(character as any).firstName} ${(character as any).lastName}`;
+				character.fullName ||
+				`${character.firstName} ${character.lastName}`;
 			let rankPrefix = 'LIF';
-			const rank = (character as any).rank;
+			const rank = character.rank;
 			if (rank && typeof rank === 'object' && rank.abbreviation) {
 				rankPrefix = rank.abbreviation;
 			}

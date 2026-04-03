@@ -1,4 +1,5 @@
 import { getPayloadClient } from '@/lib/payload';
+import { serialize } from '@/lib/constants';
 import Link from 'next/link';
 import Image from 'next/image';
 import { cookies } from 'next/headers';
@@ -12,6 +13,7 @@ import { checkAdminPermissions } from '@/lib/admin';
 import { RoleplayTutorial } from '@/components/roleplay/RoleplayTutorial';
 import { RulesModal } from '@/components/roleplay/RulesModal';
 import OrgBankStats from '@/components/roleplay/OrgBankStats';
+import type { Faction, Media, Roleplay, Unit } from '@/payload-types';
 
 export const dynamic = 'force-dynamic';
 
@@ -70,14 +72,14 @@ export default async function RoleplayPage({
 			limit: 100,
 			depth: 1,
 		}),
-		payload.findGlobal({ slug: 'roleplay' }).catch(() => null),
+		payload.findGlobal({ slug: 'roleplay' }).catch(() => null) as Promise<Roleplay | null>,
 	]);
 
 	// Intelligence data
 	let hasIntelRole = false;
 	let userCharacters: any[] = [];
 	if (session) {
-		const intelligenceRoleId = (roleplayConfig as any)?.intelligenceRoleId;
+		const intelligenceRoleId = roleplayConfig?.intelligenceRoleId;
 		hasIntelRole =
 			(intelligenceRoleId && session.roles?.includes(intelligenceRoleId)) || isAdmin;
 		if (hasIntelRole) {
@@ -103,19 +105,19 @@ export default async function RoleplayPage({
 			.catch(() => ({ docs: [] })),
 	]);
 
-	const headerLogo = (roleplayConfig as any)?.headerLogo;
-	const headerBg = (roleplayConfig as any)?.headerBackground;
+	const headerLogo = roleplayConfig?.headerLogo;
+	const headerBg = roleplayConfig?.headerBackground;
 	const headerTitle =
-		(roleplayConfig as any)?.headerTitle || 'Dossiers du Personnel';
+		roleplayConfig?.headerTitle || 'Dossiers du Personnel';
 	const headerSubtitle =
-		(roleplayConfig as any)?.headerSubtitle ||
+		roleplayConfig?.headerSubtitle ||
 		'Base de données militaire — Accès autorisé';
-	const showLore = (roleplayConfig as any)?.isLoreVisible !== false;
-	const showTimeline = (roleplayConfig as any)?.isTimelineVisible !== false;
+	const showLore = roleplayConfig?.isLoreVisible !== false;
+	const showTimeline = roleplayConfig?.isTimelineVisible !== false;
 
 	// Check operator role (after roleplayConfig is loaded)
-	const operatorRoleId = (roleplayConfig as any)?.operatorRoleId;
-	const intelligenceRoleIdCheck = (roleplayConfig as any)?.intelligenceRoleId;
+	const operatorRoleId = roleplayConfig?.operatorRoleId;
+	const intelligenceRoleIdCheck = roleplayConfig?.intelligenceRoleId;
 	if (session && !isAdmin && !disclaimerReason) {
 		const hasOperator = operatorRoleId
 			? session.roles?.includes(operatorRoleId)
@@ -131,8 +133,8 @@ export default async function RoleplayPage({
 	}
 
 	disclaimerConfig = {
-		title: (roleplayConfig as any)?.disclaimerTitle || 'ACCÈS RESTREINT',
-		inviteUrl: (roleplayConfig as any)?.discordInviteUrl,
+		title: roleplayConfig?.disclaimerTitle || 'ACCÈS RESTREINT',
+		inviteUrl: roleplayConfig?.discordInviteUrl,
 	};
 
 	const errorMessages: Record<string, string> = {
@@ -248,8 +250,8 @@ export default async function RoleplayPage({
 			{isAdmin && (
 				<div data-tutorial="admin-panel">
 					<AdminPanel
-						units={JSON.parse(JSON.stringify(units.docs))}
-						factions={JSON.parse(JSON.stringify(factions.docs))}
+						units={serialize(units.docs)}
+						factions={serialize(factions.docs)}
 						adminLevel={adminPermissions?.level === 'full' ? 'full' : 'limited'}
 					/>
 				</div>
@@ -289,7 +291,7 @@ export default async function RoleplayPage({
 						<span>
 							{
 								characters.docs.filter(
-									(c: any) => c.status === 'in-service' && !c.isTarget,
+									c => c.status === 'in-service' && !c.isTarget,
 								).length
 							}{' '}
 							en service actif
@@ -298,10 +300,10 @@ export default async function RoleplayPage({
 				</div>
 
 				<PersonnelFilters
-					characters={JSON.parse(JSON.stringify(characters.docs))}
-					ranks={JSON.parse(JSON.stringify(ranks.docs))}
-					units={JSON.parse(JSON.stringify(units.docs))}
-					factions={JSON.parse(JSON.stringify(factions.docs))}
+					characters={serialize(characters.docs)}
+					ranks={serialize(ranks.docs)}
+					units={serialize(units.docs)}
+					factions={serialize(factions.docs)}
 					sessionDiscordId={session?.discordId}
 					isAdmin={isAdmin}
 				/>
@@ -331,16 +333,18 @@ export default async function RoleplayPage({
 									FACTIONS
 								</h2>
 								<div className="orgs-grid">
-									{(factions.docs as any[]).map((faction: any) => (
+									{factions.docs.map((faction) => {
+										const logo = typeof faction.logo === 'object' ? faction.logo : null;
+										return (
 										<Link
 											key={faction.id}
 											href={`/roleplay/faction/${faction.slug}`}
 											className="org-card"
 											style={{ borderColor: faction.color || 'var(--border)' }}
 										>
-											{faction.logo?.url && (
+											{logo?.url && (
 												<Image
-													src={faction.logo.url}
+													src={logo.url}
 													alt={faction.name}
 													width={36}
 													height={36}
@@ -364,7 +368,8 @@ export default async function RoleplayPage({
 												</div>
 											</div>
 										</Link>
-									))}
+										);
+									})}
 								</div>
 							</div>
 						)}
@@ -374,16 +379,18 @@ export default async function RoleplayPage({
 									UNITÉS
 								</h2>
 								<div className="orgs-grid">
-									{(units.docs as any[]).map((unit: any) => (
+									{units.docs.map((unit) => {
+										const insignia = typeof unit.insignia === 'object' ? unit.insignia : null;
+										return (
 										<Link
 											key={unit.id}
 											href={`/roleplay/unite/${unit.slug}`}
 											className="org-card"
 											style={{ borderColor: unit.color || 'var(--border)' }}
 										>
-											{unit.insignia?.url && (
+											{insignia?.url && (
 												<Image
-													src={unit.insignia.url}
+													src={insignia.url}
 													alt={unit.name}
 													width={36}
 													height={36}
@@ -406,7 +413,8 @@ export default async function RoleplayPage({
 													)}
 											</div>
 										</Link>
-									))}
+										);
+									})}
 								</div>
 							</div>
 						)}
@@ -436,12 +444,12 @@ export default async function RoleplayPage({
 
 			<div className="terminal-panel">
 				<IntelligenceList
-					reports={JSON.parse(JSON.stringify(intelligence.docs))}
+					reports={serialize(intelligence.docs)}
 					isAdmin={isAdmin}
 					hasIntelRole={hasIntelRole}
-					userCharacters={JSON.parse(JSON.stringify(userCharacters))}
-					allCharacters={JSON.parse(JSON.stringify(characters.docs))}
-					factions={JSON.parse(JSON.stringify(factions.docs))}
+					userCharacters={serialize(userCharacters)}
+					allCharacters={serialize(characters.docs)}
+					factions={serialize(factions.docs)}
 					sessionDiscordId={session?.discordId || null}
 				/>
 			</div>

@@ -1,10 +1,12 @@
 import { getPayloadClient } from '@/lib/payload';
+import { serialize } from '@/lib/constants';
 import { cookies } from 'next/headers';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { CharacterForm } from '@/components/roleplay/CharacterForm';
 import { verifySession } from '@/lib/session';
 import { checkAdminPermissions } from '@/lib/admin';
+import type { Roleplay } from '@/payload-types';
 
 export const dynamic = 'force-dynamic';
 
@@ -35,8 +37,8 @@ export default async function NewCharacterPage() {
 		// Check operator role
 		const roleplayConfig = await payload
 			.findGlobal({ slug: 'roleplay' })
-			.catch(() => null);
-		const operatorRoleId = (roleplayConfig as any)?.operatorRoleId;
+			.catch(() => null) as Roleplay | null;
+		const operatorRoleId = roleplayConfig?.operatorRoleId;
 		if (operatorRoleId && !session.roles?.includes(operatorRoleId))
 			redirect('/roleplay');
 		if (!operatorRoleId) redirect('/roleplay');
@@ -78,9 +80,9 @@ export default async function NewCharacterPage() {
 			</div>
 
 			<CharacterForm
-				ranks={JSON.parse(JSON.stringify(ranks.docs))}
-				units={JSON.parse(JSON.stringify(units.docs))}
-				factions={JSON.parse(JSON.stringify(factions.docs))}
+				ranks={serialize(ranks.docs)}
+				units={serialize(units.docs)}
+				factions={serialize(factions.docs)}
 				isAdmin={isAdmin}
 				allCharacters={allCharacters}
 			/>

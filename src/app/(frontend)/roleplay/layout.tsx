@@ -3,6 +3,7 @@ import './roleplay.css';
 import { RoleplayShell } from '@/components/roleplay/RoleplayShell';
 import { getPayloadClient } from '@/lib/payload';
 import MatrixBackground from '@/components/roleplay/MatrixBackground';
+import type { Roleplay } from '@/payload-types';
 
 export const metadata: Metadata = {
 	title: 'Base de Données du Personnel | LIF Roleplay',
@@ -20,11 +21,11 @@ export default async function RoleplayLayout({
 	const payload = await getPayloadClient();
 	const roleplayConfig = await payload
 		.findGlobal({ slug: 'roleplay' })
-		.catch(() => null);
+		.catch(() => null) as Roleplay | null;
 
-	const loadingEnabled = (roleplayConfig as any)?.loadingEnabled !== false;
+	const loadingEnabled = roleplayConfig?.loadingEnabled !== false;
 	const loadingMessages =
-		(roleplayConfig as any)?.loadingMessages?.map((m: any) => m.message) ||
+		roleplayConfig?.loadingMessages?.map((m: { message: string }) => m.message) ||
 		undefined;
 
 	return (

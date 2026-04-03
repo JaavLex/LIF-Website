@@ -1,5 +1,6 @@
 import { getPayloadClient } from './payload';
 import type { SessionData } from './session';
+import type { Roleplay } from '@/payload-types';
 
 export interface AdminPermissions {
 	isAdmin: boolean;
@@ -24,14 +25,14 @@ export async function checkAdminPermissions(
 
 	// Check Discord roles from Payload config
 	try {
-		const roleplayConfig = await payload.findGlobal({ slug: 'roleplay' });
-		const adminRoles = (roleplayConfig as any)?.adminRoles;
+		const roleplayConfig = await payload.findGlobal({ slug: 'roleplay' }) as Roleplay;
+		const adminRoles = roleplayConfig?.adminRoles;
 		if (adminRoles?.length) {
 			for (const role of adminRoles) {
 				if (session.roles?.includes(role.roleId)) {
 					return {
 						isAdmin: true,
-						level: role.permissionLevel || 'full',
+						level: role.permissionLevel || 'limited',
 						roleName: role.roleName || role.roleId,
 					};
 				}

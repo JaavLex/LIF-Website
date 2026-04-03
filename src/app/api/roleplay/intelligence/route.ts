@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPayloadClient } from '@/lib/payload';
-import { verifySession } from '@/lib/session';
+import { requireSession, isErrorResponse } from '@/lib/api-auth';
 import { notifyNewIntelligence } from '@/lib/discord-notify';
+import type { Intelligence, Roleplay } from '@/payload-types';
 
 export async function GET() {
 	try {
@@ -13,24 +14,16 @@ export async function GET() {
 			depth: 2,
 		});
 		return NextResponse.json(docs);
-	} catch (error: any) {
-		return NextResponse.json(
-			{ message: error.message || 'Erreur' },
-			{ status: 500 },
-		);
+	} catch (error: unknown) {
+		const message = error instanceof Error ? error.message : 'Erreur';
+		return NextResponse.json({ message }, { status: 500 });
 	}
 }
 
 export async function POST(request: NextRequest) {
-	const token = request.cookies.get('roleplay-session')?.value;
-	if (!token) {
-		return NextResponse.json({ message: 'Non authentifié' }, { status: 401 });
-	}
-
-	const session = verifySession(token);
-	if (!session) {
-		return NextResponse.json({ message: 'Session invalide' }, { status: 401 });
-	}
+	const sessionResult = await requireSession(request);
+	if (isErrorResponse(sessionResult)) return sessionResult;
+	const session = sessionResult;
 
 	try {
 		const payload = await getPayloadClient();
@@ -38,8 +31,8 @@ export async function POST(request: NextRequest) {
 		// Check if user has the intelligence role
 		const roleplayConfig = await payload
 			.findGlobal({ slug: 'roleplay' })
-			.catch(() => null);
-		const intelligenceRoleId = (roleplayConfig as any)?.intelligenceRoleId;
+			.catch(() => null) as Roleplay | null;
+		const intelligenceRoleId = roleplayConfig?.intelligenceRoleId;
 
 		const hasIntelRole =
 			intelligenceRoleId && session.roles?.includes(intelligenceRoleId);
@@ -76,19 +69,19 @@ export async function POST(request: NextRequest) {
 		});
 
 		// Send Discord notification (non-blocking)
-		const fullDoc = await payload.findByID({
+		const fullDoc: Intelligence = await payload.findByID({
 			collection: 'intelligence',
 			id: doc.id,
 			depth: 2,
 		});
 		notifyNewIntelligence({
 			id: doc.id as number,
-			title: (fullDoc as any).title,
-			type: (fullDoc as any).type,
-			classification: (fullDoc as any).classification,
+			title: fullDoc.title,
+			type: fullDoc.type,
+			classification: fullDoc.classification,
 			postedBy:
-				typeof (fullDoc as any).postedBy === 'object'
-					? (fullDoc as any).postedBy
+				typeof fullDoc.postedBy === 'object'
+					? fullDoc.postedBy
 					: null,
 		}).catch(() => {});
 

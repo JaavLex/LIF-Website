@@ -15,6 +15,8 @@ interface Character {
 	faction: string;
 	isMainCharacter: boolean;
 	isTarget: boolean;
+	isArchived?: boolean;
+	discordId?: string;
 	targetFaction?: string;
 	threatLevel?: string;
 	discordUsername?: string;
@@ -26,7 +28,7 @@ interface Character {
 		order: number;
 		icon?: { url: string } | null;
 	} | null;
-	unit?: { name: string; slug: string; insignia?: { url: string } | null } | null;
+	unit?: { id: number; name: string; slug: string; insignia?: { url: string } | null } | null;
 }
 
 interface Rank {
@@ -110,7 +112,7 @@ export function PersonnelFilters({
 		const archives: Character[] = [];
 
 		for (const c of characters) {
-			if ((c as any).isArchived) {
+			if (c.isArchived) {
 				archives.push(c);
 				continue;
 			}
@@ -119,7 +121,7 @@ export function PersonnelFilters({
 			} else {
 				personnel.push(c);
 			}
-			if (sessionDiscordId && (c as any).discordId === sessionDiscordId) {
+			if (sessionDiscordId && c.discordId === sessionDiscordId) {
 				myCharacters.push(c);
 			}
 		}
@@ -158,12 +160,12 @@ export function PersonnelFilters({
 			if (statusFilter !== 'all' && c.status !== statusFilter) return false;
 			if (rankFilter !== 'all') {
 				const rankId =
-					typeof c.rank === 'object' && c.rank ? (c.rank as any).id : c.rank;
+					typeof c.rank === 'object' && c.rank ? c.rank.id : c.rank;
 				if (String(rankId) !== rankFilter) return false;
 			}
 			if (unitFilter !== 'all') {
 				const unitId =
-					typeof c.unit === 'object' && c.unit ? (c.unit as any).id : c.unit;
+					typeof c.unit === 'object' && c.unit ? c.unit.id : c.unit;
 				if (String(unitId) !== unitFilter) return false;
 			}
 			return true;

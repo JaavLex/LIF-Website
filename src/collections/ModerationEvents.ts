@@ -12,10 +12,10 @@ export const ModerationEvents: CollectionConfig = {
 		defaultColumns: ['case', 'type', 'authorDiscordUsername', 'createdAt'],
 	},
 	access: {
-		read: () => true,
-		create: () => true,
-		update: () => false, // Events are immutable
-		delete: () => true,
+		read: ({ req }) => req.user?.role === 'admin',
+		create: ({ req }) => req.user?.role === 'admin',
+		update: () => false,
+		delete: ({ req }) => req.user?.role === 'admin',
 	},
 	fields: [
 		{
