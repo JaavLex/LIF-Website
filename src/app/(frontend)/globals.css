@@ -880,17 +880,44 @@ h1, h2, h3, h4, h5, h6 {
 
 /* CTA Section */
 .cta-section {
-  background: linear-gradient(135deg, var(--primary) 0%, #2d4a15 100%);
+  background:
+    url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0L60 30L30 60L0 30Z' fill='none' stroke='rgba(201,162,39,0.06)' stroke-width='1'/%3E%3C/svg%3E"),
+    linear-gradient(135deg, var(--primary) 0%, #1a2e0d 100%);
   text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.cta-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.04) 2px,
+    rgba(0, 0, 0, 0.04) 4px
+  );
+  pointer-events: none;
+}
+
+.cta-section .section-container {
+  position: relative;
+  z-index: 1;
 }
 
 .cta-section h2 {
-  font-size: 2.5rem;
+  font-size: var(--text-2xl);
   margin-bottom: 1rem;
+  color: var(--accent);
 }
 
 .cta-section p {
-  font-size: 1.25rem;
+  font-size: var(--text-md);
   opacity: 0.9;
   margin-bottom: 2rem;
   max-width: 600px;
@@ -899,13 +926,15 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .cta-section .btn-primary {
-  background: white;
-  color: var(--primary);
+  background: var(--accent);
+  color: var(--background);
+  box-shadow: 0 4px 20px rgba(201, 162, 39, 0.3);
 }
 
 .cta-section .btn-primary:hover {
-  background: var(--accent);
-  color: white;
+  background: var(--accent-hover);
+  color: var(--background);
+  box-shadow: 0 6px 25px rgba(201, 162, 39, 0.4);
 }
 
 /* Footer */
