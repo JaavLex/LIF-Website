@@ -6,9 +6,16 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.2.3',
+  version: '1.2.4',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.2.4',
+      date: '2026-04-04',
+      changes: [
+        'Correction du logo coupé par la navbar sur mobile en page d\'accueil',
+      ],
+    },
     {
       version: '1.2.3',
       date: '2026-04-04',
