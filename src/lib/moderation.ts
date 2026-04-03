@@ -28,7 +28,9 @@ export function getNextSanctionInfo(currentWarnCount: number): {
 }
 
 // Re-export from constants for backwards compatibility
+import { formatDurationLong } from './constants';
 export { formatDurationLong as formatDuration } from './constants';
+const formatDuration = formatDurationLong;
 
 export async function getWarnCount(discordId: string): Promise<number> {
 	const payload = await getPayloadClient();
