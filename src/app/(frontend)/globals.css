@@ -979,9 +979,12 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .footer-links h4 {
-  color: var(--foreground);
+  color: var(--accent);
   margin-bottom: 1rem;
-  font-size: 1rem;
+  font-size: var(--text-sm);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 2px;
 }
 
 .footer-links a {
@@ -1007,7 +1010,9 @@ h1, h2, h3, h4, h5, h6 {
   border-top: 1px solid var(--border);
   text-align: center;
   color: var(--muted);
-  font-size: 0.9rem;
+  font-size: var(--text-sm);
+  font-family: var(--font-mono);
+  letter-spacing: 1px;
 }
 
 /* Hamburger button — hidden on desktop */
