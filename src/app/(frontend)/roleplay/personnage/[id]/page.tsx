@@ -471,7 +471,7 @@ export default async function CharacterPage({
 							</div>
 						)}
 
-						{character.specialisations?.length > 0 && (
+						{(character.specialisations?.length ?? 0) > 0 && (
 							<div className="character-section">
 								<h2>Spécialisations</h2>
 								<div className="character-section-content">
