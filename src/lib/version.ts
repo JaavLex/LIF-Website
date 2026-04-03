@@ -6,9 +6,19 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.2.0',
+  version: '1.2.1',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.2.1',
+      date: '2026-04-04',
+      changes: [
+        'Amélioration de la responsivité mobile sur la page roleplay',
+        'Lecteur audio en barre pleine largeur sur mobile',
+        'Boutons de navigation repositionnés pour éviter les chevauchements',
+        'Réduction du padding terminal sur petits écrans',
+      ],
+    },
     {
       version: '1.2.0',
       date: '2026-04-04',
