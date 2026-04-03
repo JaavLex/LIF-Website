@@ -138,7 +138,10 @@ export function ServerList({ title, titleIcon, fallbackServers }: ServerListProp
 						</>
 					) : (
 						servers.map((server, index) => (
-							<div key={index} className="server-card">
+							<div
+									key={index}
+									className={`server-card ${server.isOnline ? 'server-online' : 'server-offline'}`}
+								>
 								<div
 									className={`server-status ${server.isOnline ? 'online' : 'offline'}`}
 								></div>
@@ -155,6 +158,12 @@ export function ServerList({ title, titleIcon, fallbackServers }: ServerListProp
 										/{server.maxPlayers} joueurs
 									</span>
 									<span className="server-map">{server.map}</span>
+								</div>
+								<div className="player-bar">
+									<div
+										className={`player-bar-fill ${server.players / server.maxPlayers > 0.7 ? 'high' : ''}`}
+										style={{ width: `${(server.players / server.maxPlayers) * 100}%` }}
+									/>
 								</div>
 								{server.ping !== undefined && server.ping > 0 && (
 									<div className="server-ping">Ping: {server.ping}ms</div>

@@ -650,8 +650,37 @@ h1, h2, h3, h4, h5, h6 {
 
 .server-card:hover {
   border-color: var(--primary);
-  transform: translateY(-5px);
-  box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+}
+
+.server-card.server-online {
+  border-top: 3px solid var(--success);
+  box-shadow: 0 -2px 12px rgba(74, 124, 35, 0.08);
+}
+
+.server-card.server-offline {
+  border-top: 3px solid var(--danger);
+  opacity: 0.7;
+}
+
+.player-bar {
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  margin-top: 0.75rem;
+  overflow: hidden;
+}
+
+.player-bar-fill {
+  height: 100%;
+  background: var(--primary);
+  border-radius: 2px;
+  transition: width 0.5s ease;
+}
+
+.player-bar-fill.high {
+  background: var(--accent);
 }
 
 .server-status {
