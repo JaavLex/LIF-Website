@@ -4,7 +4,7 @@ export interface UnitItem {
 	id: number;
 	name: string;
 	slug: string;
-	color?: string;
+	color?: string | null;
 	insignia?: { url?: string; id?: number } | null;
 	description?: any;
 	parentFaction?: { id: number; name: string } | number | null;
@@ -14,8 +14,8 @@ export interface FactionItem {
 	id: number;
 	name: string;
 	slug: string;
-	type?: string;
-	color?: string;
+	type?: string | null;
+	color?: string | null;
 	logo?: { url?: string; id?: number } | null;
 	description?: any;
 }
