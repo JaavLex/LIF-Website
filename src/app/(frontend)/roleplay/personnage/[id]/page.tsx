@@ -69,9 +69,12 @@ export default async function CharacterPage({
 	});
 
 	const rank = typeof character.rank === 'object' ? character.rank : null;
+	const rankIcon = rank?.icon && typeof rank.icon === 'object' ? rank.icon : null;
 	const unit = typeof character.unit === 'object' ? character.unit : null;
+	const unitInsignia = unit?.insignia && typeof unit.insignia === 'object' ? unit.insignia : null;
 	const superior =
 		typeof character.superiorOfficer === 'object' ? character.superiorOfficer : null;
+	const avatar = character.avatar && typeof character.avatar === 'object' ? character.avatar : null;
 
 	// Fetch factions for logo/color display
 	const factionsResult = await payload
@@ -159,9 +162,9 @@ export default async function CharacterPage({
 								★
 							</span>
 						)}
-						{rank?.icon?.url && (
+						{rankIcon?.url && (
 							<Image
-								src={rank.icon.url}
+								src={rankIcon!.url}
 								alt={rank.name}
 								width={32}
 								height={32}
@@ -200,9 +203,9 @@ export default async function CharacterPage({
 				<div className="character-detail">
 					{/* Sidebar */}
 					<div className="character-sidebar">
-						{character.avatar?.url ? (
+						{avatar?.url ? (
 							<Image
-								src={character.avatar.url}
+								src={avatar.url}
 								alt={character.fullName}
 								width={300}
 								height={400}
@@ -228,9 +231,9 @@ export default async function CharacterPage({
 									className="info-value"
 									style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}
 								>
-									{rank?.icon?.url ? (
+									{rankIcon?.url ? (
 										<Image
-											src={rank.icon.url}
+											src={rankIcon!.url}
 											alt={rank.name}
 											width={20}
 											height={20}
@@ -256,9 +259,9 @@ export default async function CharacterPage({
 									className="info-value"
 									style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}
 								>
-									{unit?.insignia?.url && (
+									{unitInsignia?.url && (
 										<Image
-											src={unit.insignia.url}
+											src={unitInsignia.url}
 											alt={unit.name}
 											width={18}
 											height={18}
