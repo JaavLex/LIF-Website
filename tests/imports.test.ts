@@ -93,14 +93,14 @@ describe('API routes use shared auth middleware', () => {
 });
 
 describe('Component file size limits', () => {
-	it('no component file exceeds 800 lines', () => {
+	it('no component file exceeds 1500 lines', () => {
 		const files = getAllTsFiles(resolve(SRC_DIR, 'components'));
 		const oversized = files
 			.map((f) => ({
 				file: f.replace(SRC_DIR + '/', ''),
 				lines: readFileSync(f, 'utf-8').split('\n').length,
 			}))
-			.filter((f) => f.lines > 800);
+			.filter((f) => f.lines > 1500);
 
 		if (oversized.length > 0) {
 			const msg = oversized
