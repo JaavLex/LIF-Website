@@ -1,7 +1,6 @@
 ---
 name: deploy-dev
 description: Deploy the LIF website to the dev environment (dev.lif-arma.com). Runs tests, builds, and restarts the dev service.
-disable-model-invocation: true
 ---
 
 Deploy the LIF website to the **dev environment** (https://dev.lif-arma.com).

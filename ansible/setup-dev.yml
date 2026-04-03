@@ -37,7 +37,7 @@
 
     - name: Clone repo for dev environment
       git:
-        repo: "git@github.com:JaavLex/LIF-Website.git"
+        repo: "https://github.com/JaavLex/LIF-Website.git"
         dest: "{{ dev_app_dir }}"
         version: "{{ dev_branch }}"
         accept_hostkey: true

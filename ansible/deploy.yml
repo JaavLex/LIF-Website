@@ -45,10 +45,10 @@
 
     - name: Clone repo if not present
       git:
-        repo: "git@github.com:JaavLex/LIF-Website.git"
+        repo: "https://github.com/JaavLex/LIF-Website.git"
         dest: "{{ app_dir }}"
         version: "{{ app_branch }}"
-        accept_hostkey: true
+        accept_newhostkey: true
       when: not git_dir.stat.exists
 
     - name: Verify .env file exists
@@ -64,11 +64,11 @@
     # ─── Git pull ───
     - name: Fetch latest code
       git:
-        repo: "git@github.com:JaavLex/LIF-Website.git"
+        repo: "https://github.com/JaavLex/LIF-Website.git"
         dest: "{{ app_dir }}"
         version: "{{ app_branch }}"
         force: false
-        accept_hostkey: true
+        accept_newhostkey: true
       register: git_result
       tags: [website, bot]
 

@@ -1,7 +1,6 @@
 ---
 name: deploy-prod
 description: Deploy the LIF website to production (lif-arma.com). Runs tests, builds, and restarts the service via Ansible.
-disable-model-invocation: true
 ---
 
 Deploy the LIF website to **production** (https://lif-arma.com).

@@ -42,3 +42,6 @@ moderation-page.md
 example*.json
 .ai-instructions.md
 CLAUDE.md
+
+# Ansible secrets
+ansible/inventory.ini

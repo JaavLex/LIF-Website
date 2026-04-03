@@ -1,0 +1,2 @@
+[lif]
+lif-server ansible_host=51.75.68.111 ansible_user=armarserver ansible_ssh_private_key_file=~/.ssh/id_rsa ansible_become_password=YOUR_SUDO_PASSWORD

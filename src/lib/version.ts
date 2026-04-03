@@ -6,9 +6,17 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.1.0',
+  version: '1.1.1',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.1.1',
+      date: '2026-04-03',
+      changes: [
+        'Mise à jour des skills de déploiement et configuration Ansible',
+        'Ajout de l\'environnement de dev et fichiers de documentation',
+      ],
+    },
     {
       version: '1.1.0',
       date: '2026-04-03',
