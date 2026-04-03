@@ -54,7 +54,7 @@
 
 .audio-track-time {
   font-family: 'Courier New', monospace;
-  font-size: 0.65rem;
+  font-size: 0.688rem;
   color: var(--muted);
   white-space: nowrap;
 }
@@ -583,7 +583,7 @@
 }
 
 .timeline-type {
-  font-size: 0.65rem;
+  font-size: 0.688rem;
   text-transform: uppercase;
   letter-spacing: 1px;
   padding: 0.1rem 0.4rem;
@@ -1042,13 +1042,13 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 1px;
-  font-size: 0.65rem;
+  font-size: 0.688rem;
 }
 
 .admin-perm-level {
   color: var(--muted);
   margin-left: auto;
-  font-size: 0.65rem;
+  font-size: 0.688rem;
 }
 
 /* ============================
@@ -1195,7 +1195,7 @@
   align-items: center;
   gap: 0.3rem;
   padding: 0.15rem 0.5rem;
-  font-size: 0.65rem;
+  font-size: 0.688rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -1445,7 +1445,7 @@
   }
 
   .admin-indicator {
-    font-size: 0.6rem;
+    font-size: 0.688rem;
   }
 
   .disclaimer-panel {
@@ -1681,7 +1681,7 @@ body:has(.tutorial-buttons) > .version-info-wrapper {
 .tutorial-debug-btn {
 	padding: 0.35rem 0.75rem;
 	font-family: 'Courier New', monospace;
-	font-size: 0.65rem;
+	font-size: 0.688rem;
 	letter-spacing: 1px;
 	background: rgba(20, 20, 20, 0.95);
 	border: 1px solid rgba(255,255,255,0.08);
@@ -1765,7 +1765,7 @@ body:has(.tutorial-buttons) > .version-info-wrapper {
 
 .tutorial-dummy-status-btn {
 	padding: 0.2rem 0.5rem;
-	font-size: 0.6rem;
+	font-size: 0.688rem;
 	font-family: 'Courier New', monospace;
 	border: 1px solid var(--border);
 	color: var(--muted);
@@ -1780,7 +1780,7 @@ body:has(.tutorial-buttons) > .version-info-wrapper {
 
 .tutorial-dummy-action-btn {
 	padding: 0.2rem 0.5rem;
-	font-size: 0.6rem;
+	font-size: 0.688rem;
 	font-family: 'Courier New', monospace;
 	border: 1px solid var(--border);
 	color: var(--text);
@@ -1811,7 +1811,7 @@ body:has(.tutorial-buttons) > .version-info-wrapper {
 	.tutorial-step-badge {
 		min-width: 2rem;
 		padding: 0.1rem 0.35rem;
-		font-size: 0.6rem;
+		font-size: 0.688rem;
 	}
 
 	.tutorial-tooltip-title {
@@ -1857,14 +1857,14 @@ body:has(.tutorial-buttons) > .version-info-wrapper {
 	}
 
 	.tutorial-debug-btn {
-		font-size: 0.6rem;
+		font-size: 0.688rem;
 		padding: 0.3rem 0.5rem;
 	}
 
 	/* Dummy forms: stack grids on mobile */
 	.tutorial-dummy-form {
 		padding: 0.4rem;
-		font-size: 0.65rem;
+		font-size: 0.688rem;
 	}
 
 	.tutorial-dummy-form div[style*="grid"] {
@@ -1876,17 +1876,17 @@ body:has(.tutorial-buttons) > .version-info-wrapper {
 	}
 
 	.tutorial-dummy-title {
-		font-size: 0.65rem;
+		font-size: 0.688rem;
 	}
 
 	.tutorial-dummy-btn-submit {
-		font-size: 0.6rem;
+		font-size: 0.688rem;
 		padding: 0.25rem 0.6rem;
 	}
 
 	.tutorial-dummy-status-btn,
 	.tutorial-dummy-action-btn {
-		font-size: 0.55rem;
+		font-size: 0.688rem;
 		padding: 0.15rem 0.35rem;
 	}
 
@@ -2467,7 +2467,7 @@ body:has(.tutorial-buttons) > .version-info-wrapper {
 
 .game-history-date {
 	color: var(--muted);
-	font-size: 0.65rem;
+	font-size: 0.688rem;
 	min-width: 110px;
 }
 
@@ -2494,7 +2494,7 @@ body:has(.tutorial-buttons) > .version-info-wrapper {
 
 .game-history-source {
 	color: var(--muted);
-	font-size: 0.65rem;
+	font-size: 0.688rem;
 	font-style: italic;
 	margin-left: auto;
 }
