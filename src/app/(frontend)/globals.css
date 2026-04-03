@@ -13,6 +13,21 @@
   --card-bg: rgba(26, 31, 22, 0.8);
   --gradient-start: #0c0f0a;
   --gradient-end: #1a1f16;
+
+  /* Type scale (1.25 ratio) */
+  --text-xs: 0.694rem;    /* ~11px min */
+  --text-sm: 0.833rem;    /* ~13px */
+  --text-base: 1rem;      /* 16px */
+  --text-md: 1.25rem;     /* 20px */
+  --text-lg: 1.563rem;    /* 25px */
+  --text-xl: 1.953rem;    /* 31px */
+  --text-2xl: 2.441rem;   /* 39px */
+  --text-3xl: 3.052rem;   /* 49px */
+
+  /* Font families */
+  --font-heading: 'Rajdhani', sans-serif;
+  --font-body: 'Source Sans 3', sans-serif;
+  --font-mono: 'Courier New', 'Lucida Console', Monaco, monospace;
 }
 
 * {
@@ -30,7 +45,7 @@ body {
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+  font-family: var(--font-body);
   line-height: 1.6;
 }
 
