@@ -193,7 +193,7 @@ export default async function CharacterPage({
 							{canDelete && (
 								<DeleteCharacterButton
 									characterId={character.id}
-									characterName={character.fullName}
+									characterName={character.fullName || `${character.firstName} ${character.lastName}`}
 								/>
 							)}
 						</div>
@@ -206,7 +206,7 @@ export default async function CharacterPage({
 						{avatar?.url ? (
 							<Image
 								src={avatar.url}
-								alt={character.fullName}
+								alt={character.fullName || ''}
 								width={300}
 								height={400}
 								className="character-photo"
@@ -295,7 +295,7 @@ export default async function CharacterPage({
 										{factionObj?.logo && typeof factionObj.logo === 'object' && factionObj.logo.url && (
 											<Image
 												src={(factionObj!.logo as Media).url!}
-												alt={character.faction}
+												alt={character.faction || ''}
 												width={18}
 												height={18}
 												style={{ objectFit: 'contain' }}
@@ -334,7 +334,7 @@ export default async function CharacterPage({
 												{targetFactionObj?.logo && typeof targetFactionObj.logo === 'object' && targetFactionObj.logo.url && (
 													<Image
 														src={(targetFactionObj!.logo as Media).url!}
-														alt={character.targetFaction}
+														alt={character.targetFaction || ''}
 														width={18}
 														height={18}
 														style={{ objectFit: 'contain' }}
