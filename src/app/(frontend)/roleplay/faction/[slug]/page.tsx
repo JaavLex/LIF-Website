@@ -70,7 +70,7 @@ export default async function FactionPage({
 					<span
 						className={`status-badge ${faction.type === 'hostile' ? 'kia' : faction.type === 'allied' ? 'in-service' : 'mia'}`}
 					>
-						{TYPE_LABELS[faction.type] || 'Neutre'}
+						{(faction.type && TYPE_LABELS[faction.type]) || 'Neutre'}
 					</span>
 				</div>
 			</div>
@@ -104,7 +104,7 @@ export default async function FactionPage({
 							{faction.name}
 						</h1>
 						<p style={{ color: 'var(--muted)', margin: '0.25rem 0 0' }}>
-							{TYPE_LABELS[faction.type] || 'Neutre'}
+							{(faction.type && TYPE_LABELS[faction.type]) || 'Neutre'}
 						</p>
 					</div>
 				</div>

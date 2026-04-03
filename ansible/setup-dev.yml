@@ -1,0 +1,202 @@
+---
+# Dev Environment Setup Playbook (run once)
+#
+# Usage:
+#   ansible-playbook -i inventory.ini setup-dev.yml
+#
+# This playbook:
+#   1. Creates the dev database
+#   2. Clones the repo to the dev directory
+#   3. Creates SSL certificate for dev.lif-arma.com
+#   4. Sets up nginx reverse proxy for dev
+#   5. Creates systemd services for dev website and bot
+
+- name: Setup LIF Dev Environment
+  hosts: lif
+  vars_files:
+    - vars/main.yml
+  vars:
+    certbot_email: admin@lif-arma.com
+
+  tasks:
+    # ─── PostgreSQL dev database ───
+    - name: Create dev database
+      become: true
+      become_user: postgres
+      community.postgresql.postgresql_db:
+        name: "{{ db_name_dev }}"
+        owner: "{{ db_user }}"
+        state: present
+      ignore_errors: true
+
+    # ─── Clone repo for dev ───
+    - name: Check if dev directory exists
+      stat:
+        path: "{{ dev_app_dir }}"
+      register: dev_dir
+
+    - name: Clone repo for dev environment
+      git:
+        repo: "git@github.com:JaavLex/LIF-Website.git"
+        dest: "{{ dev_app_dir }}"
+        version: "{{ dev_branch }}"
+        accept_hostkey: true
+      when: not dev_dir.stat.exists
+
+    - name: Create dev .env from production (needs manual editing)
+      copy:
+        src: "{{ prod_app_dir }}/.env"
+        dest: "{{ dev_app_dir }}/.env"
+        remote_src: true
+        force: false
+      register: env_copied
+
+    - name: Patch dev .env for dev environment
+      lineinfile:
+        path: "{{ dev_app_dir }}/.env"
+        regexp: "{{ item.regexp }}"
+        line: "{{ item.line }}"
+      loop:
+        - regexp: "^NEXT_PUBLIC_SERVER_URL="
+          line: "NEXT_PUBLIC_SERVER_URL=https://{{ dev_domain }}"
+        - regexp: "^NEXT_PUBLIC_BASE_URL="
+          line: "NEXT_PUBLIC_BASE_URL=https://{{ dev_domain }}"
+        - regexp: "^SITE_URL="
+          line: "SITE_URL=http://127.0.0.1:{{ dev_port }}"
+        - regexp: "^PORT="
+          line: "PORT={{ dev_port }}"
+        - regexp: "^DATABASE_URI="
+          line: "DATABASE_URI=postgresql://{{ db_user }}:LIFWebsite2026!@{{ db_host }}:{{ db_port }}/{{ db_name_dev }}"
+        - regexp: "^LIF_ENVIRONMENT="
+          line: "LIF_ENVIRONMENT=dev"
+
+    # ─── SSL Certificate ───
+    - name: Install certbot (if not present)
+      become: true
+      apt:
+        name:
+          - certbot
+          - python3-certbot-nginx
+        state: present
+        update_cache: true
+
+    - name: Check if SSL cert exists for dev domain
+      stat:
+        path: "/etc/letsencrypt/live/{{ dev_domain }}/fullchain.pem"
+      register: ssl_cert
+      become: true
+
+    - name: Create temporary nginx config for SSL challenge
+      become: true
+      copy:
+        content: |
+          server {
+              listen 80;
+              server_name {{ dev_domain }};
+              location / {
+                  return 200 'ok';
+              }
+          }
+        dest: "/etc/nginx/sites-enabled/{{ dev_domain }}.conf"
+      when: not ssl_cert.stat.exists
+
+    - name: Reload nginx for SSL challenge
+      become: true
+      systemd:
+        name: nginx
+        state: reloaded
+      when: not ssl_cert.stat.exists
+
+    - name: Obtain SSL certificate for dev domain
+      become: true
+      command: >
+        certbot certonly --nginx
+        -d {{ dev_domain }}
+        --non-interactive
+        --agree-tos
+        --email {{ certbot_email }}
+      when: not ssl_cert.stat.exists
+      register: certbot_result
+
+    - name: Show certbot result
+      debug:
+        msg: "{{ certbot_result.stdout_lines | default(['Certificate already exists']) }}"
+
+    # ─── Nginx dev config ───
+    - name: Deploy nginx dev config
+      become: true
+      template:
+        src: templates/nginx-dev.conf.j2
+        dest: "/etc/nginx/sites-enabled/{{ dev_domain }}.conf"
+        mode: "0644"
+      notify: reload nginx
+
+    # ─── Systemd services ───
+    - name: Deploy dev website systemd service
+      become: true
+      template:
+        src: templates/lif-website.service.j2
+        dest: "/etc/systemd/system/{{ dev_service_name }}.service"
+        mode: "0644"
+      vars:
+        app_dir: "{{ dev_app_dir }}"
+        app_port: "{{ dev_port }}"
+        env_label: Development
+
+    - name: Deploy dev bot systemd service
+      become: true
+      template:
+        src: templates/lif-bot.service.j2
+        dest: "/etc/systemd/system/{{ dev_bot_service_name }}.service"
+        mode: "0644"
+      vars:
+        app_dir: "{{ dev_app_dir }}"
+        env_label: Development
+
+    - name: Reload systemd
+      become: true
+      systemd:
+        daemon_reload: true
+
+    - name: Install npm dependencies for dev
+      npm:
+        path: "{{ dev_app_dir }}"
+        state: present
+        production: false
+
+    - name: Build dev website
+      command: npm run build
+      args:
+        chdir: "{{ dev_app_dir }}"
+      environment:
+        NODE_ENV: production
+        NODE_OPTIONS: "--no-deprecation"
+
+    - name: Start dev services
+      become: true
+      systemd:
+        name: "{{ item }}"
+        state: started
+        enabled: true
+      loop:
+        - "{{ dev_service_name }}"
+        - "{{ dev_bot_service_name }}"
+
+    - name: Dev environment setup complete
+      debug:
+        msg: |
+          Dev environment ready!
+          Website: https://{{ dev_domain }}
+          Database: {{ db_name_dev }}
+          Port: {{ dev_port }}
+          Directory: {{ dev_app_dir }}
+
+          IMPORTANT: Review {{ dev_app_dir }}/.env and adjust any secrets
+          that should differ from production (e.g., Discord bot token for a dev bot).
+
+  handlers:
+    - name: reload nginx
+      become: true
+      systemd:
+        name: nginx
+        state: reloaded

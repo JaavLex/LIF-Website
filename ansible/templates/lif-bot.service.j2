@@ -1,0 +1,14 @@
+[Unit]
+Description=LIF Discord Bot — {{ env_label }}
+After=network.target
+
+[Service]
+Type=simple
+User={{ app_user }}
+WorkingDirectory={{ app_dir }}
+ExecStart=/usr/bin/npm run bot
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

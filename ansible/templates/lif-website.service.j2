@@ -1,0 +1,17 @@
+[Unit]
+Description=LIF Website (Next.js) — {{ env_label }}
+After=network.target postgresql.service
+
+[Service]
+Type=simple
+User={{ app_user }}
+WorkingDirectory={{ app_dir }}
+Environment=NODE_ENV=production
+Environment=PORT={{ app_port }}
+Environment=HOST=127.0.0.1
+ExecStart=/usr/bin/npm run start
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

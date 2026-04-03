@@ -1,0 +1,186 @@
+---
+# LIF Website & Bot Deployment Playbook
+#
+# Usage:
+#   Deploy production (website + bot):
+#     ansible-playbook -i inventory.ini deploy.yml
+#
+#   Deploy dev (website + bot):
+#     ansible-playbook -i inventory.ini deploy.yml -e env=dev
+#
+#   Deploy only website:
+#     ansible-playbook -i inventory.ini deploy.yml --tags website
+#
+#   Deploy only bot:
+#     ansible-playbook -i inventory.ini deploy.yml --tags bot
+#
+#   Deploy dev website only:
+#     ansible-playbook -i inventory.ini deploy.yml -e env=dev --tags website
+#
+#   Skip tests:
+#     ansible-playbook -i inventory.ini deploy.yml -e skip_tests=true
+
+- name: Deploy LIF Website & Discord Bot
+  hosts: lif
+  vars_files:
+    - vars/main.yml
+  vars:
+    env: prod
+    skip_tests: false
+    # Resolved vars based on env
+    app_dir: "{{ prod_app_dir if env == 'prod' else dev_app_dir }}"
+    app_port: "{{ prod_port if env == 'prod' else dev_port }}"
+    app_branch: "{{ prod_branch if env == 'prod' else dev_branch }}"
+    app_domain: "{{ prod_domain if env == 'prod' else dev_domain }}"
+    website_service: "{{ prod_service_name if env == 'prod' else dev_service_name }}"
+    bot_service: "{{ prod_bot_service_name if env == 'prod' else dev_bot_service_name }}"
+    env_label: "{{ 'Production' if env == 'prod' else 'Development' }}"
+
+  tasks:
+    # ─── Pre-flight checks ───
+    - name: Verify git repo exists
+      stat:
+        path: "{{ app_dir }}/.git"
+      register: git_dir
+
+    - name: Clone repo if not present
+      git:
+        repo: "git@github.com:JaavLex/LIF-Website.git"
+        dest: "{{ app_dir }}"
+        version: "{{ app_branch }}"
+        accept_hostkey: true
+      when: not git_dir.stat.exists
+
+    - name: Verify .env file exists
+      stat:
+        path: "{{ app_dir }}/.env"
+      register: env_file
+
+    - name: Fail if .env is missing
+      fail:
+        msg: ".env file not found at {{ app_dir }}/.env — create it manually with production secrets before deploying."
+      when: not env_file.stat.exists
+
+    # ─── Git pull ───
+    - name: Fetch latest code
+      git:
+        repo: "git@github.com:JaavLex/LIF-Website.git"
+        dest: "{{ app_dir }}"
+        version: "{{ app_branch }}"
+        force: false
+        accept_hostkey: true
+      register: git_result
+      tags: [website, bot]
+
+    - name: Show git changes
+      debug:
+        msg: "Git updated: {{ git_result.changed }}, before={{ git_result.before }}, after={{ git_result.after }}"
+      tags: [website, bot]
+
+    # ─── Install dependencies ───
+    - name: Install npm dependencies
+      npm:
+        path: "{{ app_dir }}"
+        state: present
+        production: false
+      tags: [website, bot]
+
+    # ─── Run tests ───
+    - name: Run tests
+      command: npm run test
+      args:
+        chdir: "{{ app_dir }}"
+      register: test_result
+      when: not skip_tests | bool
+      tags: [website]
+
+    - name: Show test results
+      debug:
+        msg: "{{ test_result.stdout_lines | default([]) }}"
+      when: not skip_tests | bool and test_result is defined
+      tags: [website]
+
+    - name: Fail on test failure
+      fail:
+        msg: "Tests failed! Aborting deployment.\n{{ test_result.stderr | default('') }}"
+      when: not skip_tests | bool and test_result.rc != 0
+      tags: [website]
+
+    # ─── Build website ───
+    - name: Build Next.js application
+      command: npm run build
+      args:
+        chdir: "{{ app_dir }}"
+      environment:
+        NODE_ENV: production
+        NODE_OPTIONS: "--no-deprecation"
+      register: build_result
+      tags: [website]
+
+    - name: Fail on build failure
+      fail:
+        msg: "Build failed!\n{{ build_result.stderr | default('') }}"
+      when: build_result.rc != 0
+      tags: [website]
+
+    # ─── Deploy systemd services ───
+    - name: Deploy website systemd service
+      become: true
+      template:
+        src: templates/lif-website.service.j2
+        dest: "/etc/systemd/system/{{ website_service }}.service"
+        mode: "0644"
+      notify: reload systemd
+      tags: [website]
+
+    - name: Deploy bot systemd service
+      become: true
+      template:
+        src: templates/lif-bot.service.j2
+        dest: "/etc/systemd/system/{{ bot_service }}.service"
+        mode: "0644"
+      notify: reload systemd
+      tags: [bot]
+
+    - name: Flush handlers (reload systemd before restart)
+      meta: flush_handlers
+
+    # ─── Restart services ───
+    - name: Restart website service
+      become: true
+      systemd:
+        name: "{{ website_service }}"
+        state: restarted
+        enabled: true
+      tags: [website]
+
+    - name: Restart bot service
+      become: true
+      systemd:
+        name: "{{ bot_service }}"
+        state: restarted
+        enabled: true
+      tags: [bot]
+
+    # ─── Health check ───
+    - name: Wait for website to start
+      uri:
+        url: "http://127.0.0.1:{{ app_port }}"
+        method: GET
+        status_code: [200, 301, 302]
+      register: health_check
+      retries: 10
+      delay: 3
+      until: health_check is succeeded
+      tags: [website]
+
+    - name: Deployment complete
+      debug:
+        msg: "{{ env_label }} deployment successful! Website: https://{{ app_domain }}"
+      tags: [website, bot]
+
+  handlers:
+    - name: reload systemd
+      become: true
+      systemd:
+        daemon_reload: true

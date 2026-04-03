@@ -12,7 +12,9 @@
     "lint": "cross-env NODE_OPTIONS=--no-deprecation next lint",
     "generate:types": "payload generate:types",
     "payload": "cross-env NODE_OPTIONS=--no-deprecation payload",
-    "bot": "cross-env NODE_OPTIONS=--no-deprecation tsx src/bot/index.ts"
+    "bot": "cross-env NODE_OPTIONS=--no-deprecation tsx src/bot/index.ts",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@payloadcms/db-postgres": "^3.77.0",

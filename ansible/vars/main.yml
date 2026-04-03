@@ -1,0 +1,27 @@
+# ─── Common ───
+app_user: armarserver
+app_group: armarserver
+node_version: "20"
+
+# ─── Production ───
+prod_app_dir: /home/armarserver/LIF-Website
+prod_port: 3001
+prod_domain: lif-arma.com
+prod_branch: master
+prod_service_name: lif-website
+prod_bot_service_name: lif-bot
+
+# ─── Dev ───
+dev_app_dir: /home/armarserver/LIF-Website-Dev
+dev_port: 3002
+dev_domain: dev.lif-arma.com
+dev_branch: dev
+dev_service_name: lif-website-dev
+dev_bot_service_name: lif-bot-dev
+
+# ─── Database ───
+db_host: 127.0.0.1
+db_port: 5432
+db_name_prod: lif_website
+db_name_dev: lif_website_dev
+db_user: lif_admin
