@@ -484,7 +484,7 @@ export default async function CharacterPage({
 											flexWrap: 'wrap',
 										}}
 									>
-										{character.specialisations.map((s: any, i: number) => (
+										{character.specialisations!.map((s: any, i: number) => (
 											<li
 												key={i}
 												style={{
