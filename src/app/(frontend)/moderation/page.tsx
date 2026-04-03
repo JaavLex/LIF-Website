@@ -22,7 +22,12 @@ interface ModerationUser {
 	roles: string[];
 	warnCount: number;
 	cases: { id: number; status: string; caseNumber: number }[];
-	characters: { id: number; fullName: string; status: string; isMainCharacter: boolean }[];
+	characters: {
+		id: number;
+		fullName: string;
+		status: string;
+		isMainCharacter: boolean;
+	}[];
 }
 
 interface Transcript {
@@ -56,7 +61,9 @@ export default function ModerationPage() {
 	const [users, setUsers] = useState<ModerationUser[]>([]);
 	const [usersLoading, setUsersLoading] = useState(true);
 	const [usersSource, setUsersSource] = useState<'known' | 'search'>('known');
-	const [guildRoles, setGuildRoles] = useState<{ id: string; name: string; color: string }[]>([]);
+	const [guildRoles, setGuildRoles] = useState<
+		{ id: string; name: string; color: string }[]
+	>([]);
 	const [adminRoleIds, setAdminRoleIds] = useState<string[]>([]);
 	const [search, setSearch] = useState('');
 	const [searchTimer, setSearchTimer] = useState<NodeJS.Timeout | null>(null);
@@ -74,7 +81,11 @@ export default function ModerationPage() {
 	const [profileUser, setProfileUser] = useState<ModerationUser | null>(null);
 
 	// Reopen case modal
-	const [reopenCase, setReopenCase] = useState<{ userId: string; caseId: number; caseName: string } | null>(null);
+	const [reopenCase, setReopenCase] = useState<{
+		userId: string;
+		caseId: number;
+		caseName: string;
+	} | null>(null);
 	const [reopenReason, setReopenReason] = useState('');
 	const [reopening, setReopening] = useState(false);
 
@@ -185,7 +196,7 @@ export default function ModerationPage() {
 	async function handleCreateCase(user: ModerationUser) {
 		// Check for active or archived case first
 		const activeCase = user.cases.find(
-			(c) => c.status === 'open' || c.status === 'pending',
+			c => c.status === 'open' || c.status === 'pending',
 		);
 		if (activeCase) {
 			router.push(`/moderation/dossier/${activeCase.id}`);
@@ -205,7 +216,8 @@ export default function ModerationPage() {
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
 					targetDiscordId: createModal.discordId,
-					targetDiscordUsername: createModal.globalName || createModal.discordUsername,
+					targetDiscordUsername:
+						createModal.globalName || createModal.discordUsername,
 					targetServerUsername: createModal.serverNick || createModal.globalName,
 					targetDiscordAvatar: createModal.avatar,
 					reason: createReason,
@@ -295,11 +307,12 @@ export default function ModerationPage() {
 		if (transcriptPanel) list = list.filter(t => t.panelName === transcriptPanel);
 		if (transcriptSearch.trim()) {
 			const q = transcriptSearch.toLowerCase();
-			list = list.filter(t =>
-				t.ticketName.toLowerCase().includes(q) ||
-				t.ticketOwner.toLowerCase().includes(q) ||
-				t.panelName.toLowerCase().includes(q) ||
-				t.participants.some(p => p.name.toLowerCase().includes(q)),
+			list = list.filter(
+				t =>
+					t.ticketName.toLowerCase().includes(q) ||
+					t.ticketOwner.toLowerCase().includes(q) ||
+					t.panelName.toLowerCase().includes(q) ||
+					t.participants.some(p => p.name.toLowerCase().includes(q)),
 			);
 		}
 		return list;
@@ -325,12 +338,12 @@ export default function ModerationPage() {
 	};
 
 	const isUserAdmin = (user: ModerationUser) =>
-		adminRoleIds.length > 0 && user.roles.some((r) => adminRoleIds.includes(r));
+		adminRoleIds.length > 0 && user.roles.some(r => adminRoleIds.includes(r));
 
 	const getUserRoles = (user: ModerationUser) =>
-		guildRoles.filter((r) => user.roles.includes(r.id));
+		guildRoles.filter(r => user.roles.includes(r.id));
 
-	const filtered = users.filter((u) => {
+	const filtered = users.filter(u => {
 		if (filterWarn && u.warnCount === 0) return false;
 		if (filterCase && u.cases.length === 0) return false;
 		return true;
@@ -354,7 +367,10 @@ export default function ModerationPage() {
 						<h1>Accès refusé</h1>
 						<p>Vous n&apos;êtes pas autorisé à accéder à cette page.</p>
 						{!sessionUser ? (
-						<a href="/api/auth/discord?redirect=/moderation" className="mod-btn primary">
+							<a
+								href="/api/auth/discord?redirect=/moderation"
+								className="mod-btn primary"
+							>
 								Connexion Discord
 							</a>
 						) : (
@@ -370,7 +386,9 @@ export default function ModerationPage() {
 
 	const totalWarns = users.reduce((acc, u) => acc + u.warnCount, 0);
 	const activeCases = users.reduce(
-		(acc, u) => acc + u.cases.filter((c) => c.status === 'open' || c.status === 'pending').length,
+		(acc, u) =>
+			acc +
+			u.cases.filter(c => c.status === 'open' || c.status === 'pending').length,
 		0,
 	);
 
@@ -390,8 +408,13 @@ export default function ModerationPage() {
 									src={sessionUser.discordAvatar}
 									alt=""
 								/>
-								<span className="mod-session-name">{sessionUser.discordUsername}</span>
-							<a href="/api/auth/logout?redirect=/moderation" className="mod-header-btn mod-header-btn-danger">
+								<span className="mod-session-name">
+									{sessionUser.discordUsername}
+								</span>
+								<a
+									href="/api/auth/logout?redirect=/moderation"
+									className="mod-header-btn mod-header-btn-danger"
+								>
 									Déconnexion
 								</a>
 							</div>
@@ -434,10 +457,12 @@ export default function ModerationPage() {
 							{/* Stats */}
 							<div className="mod-stats">
 								<span>
-									<span className="mod-stat-value">{users.length}</span> {usersSource === 'search' ? 'résultats' : 'membres connus'}
+									<span className="mod-stat-value">{users.length}</span>{' '}
+									{usersSource === 'search' ? 'résultats' : 'membres connus'}
 								</span>
 								<span>
-									<span className="mod-stat-value">{activeCases}</span> dossiers actifs
+									<span className="mod-stat-value">{activeCases}</span> dossiers
+									actifs
 								</span>
 								<span>
 									<span className="mod-stat-value">{totalWarns}</span> avertissements
@@ -451,13 +476,13 @@ export default function ModerationPage() {
 									type="text"
 									placeholder="Rechercher un membre Discord (min. 2 caractères)..."
 									value={search}
-									onChange={(e) => handleSearchChange(e.target.value)}
+									onChange={e => handleSearchChange(e.target.value)}
 								/>
 								<label className="mod-comment-checkbox">
 									<input
 										type="checkbox"
 										checked={filterWarn}
-										onChange={(e) => setFilterWarn(e.target.checked)}
+										onChange={e => setFilterWarn(e.target.checked)}
 									/>
 									Avec warns
 								</label>
@@ -465,7 +490,7 @@ export default function ModerationPage() {
 									<input
 										type="checkbox"
 										checked={filterCase}
-										onChange={(e) => setFilterCase(e.target.checked)}
+										onChange={e => setFilterCase(e.target.checked)}
 									/>
 									Avec dossier
 								</label>
@@ -473,25 +498,33 @@ export default function ModerationPage() {
 
 							{/* User list */}
 							{usersLoading ? (
-								<div className="mod-loading">
-									Chargement des utilisateurs
-								</div>
+								<div className="mod-loading">Chargement des utilisateurs</div>
 							) : users.length === 0 && !error ? (
 								<div className="mod-empty">Aucun utilisateur trouvé</div>
 							) : filtered.length === 0 ? (
 								<div className="mod-empty">Aucun utilisateur trouvé</div>
 							) : (
 								<ul className="mod-user-list">
-									{filtered.map((user) => {
+									{filtered.map(user => {
 										const activeCase = user.cases.find(
-											(c) => c.status === 'open' || c.status === 'pending',
+											c => c.status === 'open' || c.status === 'pending',
 										);
-										const archivedCase = !activeCase ? user.cases.find(
-											(c) => c.status === 'archived',
-										) : null;
+										const archivedCase = !activeCase
+											? user.cases.find(c => c.status === 'archived')
+											: null;
 										return (
 											<li key={user.discordId} className="mod-user-item">
-												<div className="mod-user-identity" onClick={() => setProfileUser(user)} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.75rem', flex: 1 }}>
+												<div
+													className="mod-user-identity"
+													onClick={() => setProfileUser(user)}
+													style={{
+														cursor: 'pointer',
+														display: 'flex',
+														alignItems: 'center',
+														gap: '0.75rem',
+														flex: 1,
+													}}
+												>
 													<img
 														className="mod-user-avatar"
 														src={user.avatar}
@@ -538,9 +571,7 @@ export default function ModerationPage() {
 														<button
 															className="mod-btn primary"
 															onClick={() =>
-																router.push(
-																	`/moderation/dossier/${activeCase.id}`,
-																)
+																router.push(`/moderation/dossier/${activeCase.id}`)
 															}
 														>
 															Ouvrir le dossier
@@ -548,11 +579,13 @@ export default function ModerationPage() {
 													) : archivedCase ? (
 														<button
 															className="mod-btn warn-btn"
-															onClick={() => setReopenCase({
-																userId: user.discordId,
-																caseId: archivedCase.id,
-																caseName: user.serverNick || user.globalName,
-															})}
+															onClick={() =>
+																setReopenCase({
+																	userId: user.discordId,
+																	caseId: archivedCase.id,
+																	caseName: user.serverNick || user.globalName,
+																})
+															}
 														>
 															Réouvrir le dossier
 														</button>
@@ -580,7 +613,7 @@ export default function ModerationPage() {
 								<select
 									className="mod-filter-select"
 									value={caseStatusFilter}
-									onChange={(e) => setCaseStatusFilter(e.target.value)}
+									onChange={e => setCaseStatusFilter(e.target.value)}
 								>
 									<option value="">Tous les statuts</option>
 									<option value="open">Ouvert</option>
@@ -600,22 +633,16 @@ export default function ModerationPage() {
 										<li
 											key={c.id}
 											className="mod-case-list-item"
-											onClick={() =>
-												router.push(`/moderation/dossier/${c.id}`)
-											}
+											onClick={() => router.push(`/moderation/dossier/${c.id}`)}
 										>
-											<span className="mod-case-list-number">
-												#{c.caseNumber}
-											</span>
+											<span className="mod-case-list-number">#{c.caseNumber}</span>
 											<div className="mod-case-list-target">
 												<div>{c.targetDiscordUsername}</div>
 												<div className="mod-case-list-reason">
 													{REASON_LABELS[c.reason] || c.reason}
 												</div>
 											</div>
-											<span
-												className={`mod-case-status ${c.status}`}
-											>
+											<span className={`mod-case-status ${c.status}`}>
 												{c.status === 'open'
 													? 'Ouvert'
 													: c.status === 'pending'
@@ -647,36 +674,46 @@ export default function ModerationPage() {
 											type="text"
 											placeholder="Rechercher par nom, ticket, participant..."
 											value={transcriptSearch}
-											onChange={(e) => setTranscriptSearch(e.target.value)}
+											onChange={e => setTranscriptSearch(e.target.value)}
 										/>
 										<select
 											className="mod-filter-select"
 											value={transcriptOwner}
-											onChange={(e) => setTranscriptOwner(e.target.value)}
+											onChange={e => setTranscriptOwner(e.target.value)}
 										>
 											<option value="">Tous les propriétaires</option>
-											{transcriptOwners.map((o) => (
-												<option key={o} value={o}>{o}</option>
+											{transcriptOwners.map(o => (
+												<option key={o} value={o}>
+													{o}
+												</option>
 											))}
 										</select>
 										<select
 											className="mod-filter-select"
 											value={transcriptPanel}
-											onChange={(e) => setTranscriptPanel(e.target.value)}
+											onChange={e => setTranscriptPanel(e.target.value)}
 										>
 											<option value="">Tous les panels</option>
-											{transcriptPanels.map((p) => (
-												<option key={p} value={p}>{p}</option>
+											{transcriptPanels.map(p => (
+												<option key={p} value={p}>
+													{p}
+												</option>
 											))}
 										</select>
 									</div>
 
 									<div className="mod-stats">
 										<span>
-											<span className="mod-stat-value">{filteredTranscripts.length}</span> transcript{filteredTranscripts.length > 1 ? 's' : ''}
+											<span className="mod-stat-value">
+												{filteredTranscripts.length}
+											</span>{' '}
+											transcript{filteredTranscripts.length > 1 ? 's' : ''}
 										</span>
 										<span>
-											<span className="mod-stat-value">{groupedTranscripts.length}</span> propriétaire{groupedTranscripts.length > 1 ? 's' : ''}
+											<span className="mod-stat-value">
+												{groupedTranscripts.length}
+											</span>{' '}
+											propriétaire{groupedTranscripts.length > 1 ? 's' : ''}
 										</span>
 									</div>
 
@@ -700,17 +737,31 @@ export default function ModerationPage() {
 																alt=""
 															/>
 														)}
-														<span className="mod-transcript-owner-name">{owner}</span>
-														<span className="mod-badge characters">{items.length}</span>
+														<span className="mod-transcript-owner-name">
+															{owner}
+														</span>
+														<span className="mod-badge characters">
+															{items.length}
+														</span>
 													</button>
 													{expandedOwners.has(owner) && (
 														<ul className="mod-transcript-tickets">
-															{items.map((t) => (
-																<li key={t.messageId} className="mod-transcript-ticket">
+															{items.map(t => (
+																<li
+																	key={t.messageId}
+																	className="mod-transcript-ticket"
+																>
 																	<div className="mod-transcript-ticket-info">
-																		<div className="mod-transcript-ticket-name">{t.ticketName}</div>
+																		<div className="mod-transcript-ticket-name">
+																			{t.ticketName}
+																		</div>
 																		<div className="mod-transcript-ticket-meta">
-																			{t.panelName} · {new Date(t.timestamp).toLocaleDateString('fr-FR')} · {t.participants.length} participant{t.participants.length > 1 ? 's' : ''}
+																			{t.panelName} ·{' '}
+																			{new Date(t.timestamp).toLocaleDateString(
+																				'fr-FR',
+																			)}{' '}
+																			· {t.participants.length} participant
+																			{t.participants.length > 1 ? 's' : ''}
 																		</div>
 																	</div>
 																	<div className="mod-user-actions">
@@ -751,7 +802,7 @@ export default function ModerationPage() {
 			{previewUrl && (
 				<div
 					className="mod-modal-overlay"
-					onClick={(e) => {
+					onClick={e => {
 						if (e.target === e.currentTarget) {
 							setPreviewUrl(null);
 							setPreviewTitle('');
@@ -786,7 +837,7 @@ export default function ModerationPage() {
 			{profileUser && (
 				<div
 					className="mod-modal-overlay"
-					onClick={(e) => {
+					onClick={e => {
 						if (e.target === e.currentTarget) setProfileUser(null);
 					}}
 				>
@@ -817,12 +868,11 @@ export default function ModerationPage() {
 											profileUser.serverNick !== profileUser.globalName &&
 											` · ${profileUser.globalName}`}
 									</div>
-									<div className="mod-profile-id">
-										ID: {profileUser.discordId}
-									</div>
+									<div className="mod-profile-id">ID: {profileUser.discordId}</div>
 									{profileUser.joinedAt && (
 										<div className="mod-profile-joined">
-											Rejoint le {new Date(profileUser.joinedAt).toLocaleDateString('fr-FR')}
+											Rejoint le{' '}
+											{new Date(profileUser.joinedAt).toLocaleDateString('fr-FR')}
 										</div>
 									)}
 								</div>
@@ -831,11 +881,9 @@ export default function ModerationPage() {
 							{/* Roles */}
 							{getUserRoles(profileUser).length > 0 && (
 								<div className="mod-profile-section">
-									<div className="mod-profile-section-title">
-										🏷️ Rôles Discord
-									</div>
+									<div className="mod-profile-section-title">🏷️ Rôles Discord</div>
 									<div className="mod-profile-roles">
-										{getUserRoles(profileUser).map((role) => (
+										{getUserRoles(profileUser).map(role => (
 											<span
 												key={role.id}
 												className="mod-role-badge"
@@ -864,7 +912,9 @@ export default function ModerationPage() {
 									<div className="mod-profile-empty">Aucun avertissement</div>
 								) : (
 									<div className="mod-profile-warn-count">
-										{profileUser.warnCount} avertissement{profileUser.warnCount > 1 ? 's' : ''} actif{profileUser.warnCount > 1 ? 's' : ''}
+										{profileUser.warnCount} avertissement
+										{profileUser.warnCount > 1 ? 's' : ''} actif
+										{profileUser.warnCount > 1 ? 's' : ''}
 									</div>
 								)}
 							</div>
@@ -874,14 +924,16 @@ export default function ModerationPage() {
 								<div className="mod-profile-section-title">
 									📁 Dossiers
 									{profileUser.cases.length > 0 && (
-										<span className="mod-badge characters">{profileUser.cases.length}</span>
+										<span className="mod-badge characters">
+											{profileUser.cases.length}
+										</span>
 									)}
 								</div>
 								{profileUser.cases.length === 0 ? (
 									<div className="mod-profile-empty">Aucun dossier</div>
 								) : (
 									<ul className="mod-profile-list">
-										{profileUser.cases.map((c) => (
+										{profileUser.cases.map(c => (
 											<li
 												key={c.id}
 												className="mod-profile-list-item mod-profile-case"
@@ -911,14 +963,16 @@ export default function ModerationPage() {
 								<div className="mod-profile-section-title">
 									🎭 Personnages
 									{profileUser.characters.length > 0 && (
-										<span className="mod-badge characters">{profileUser.characters.length}</span>
+										<span className="mod-badge characters">
+											{profileUser.characters.length}
+										</span>
 									)}
 								</div>
 								{profileUser.characters.length === 0 ? (
 									<div className="mod-profile-empty">Aucun personnage</div>
 								) : (
 									<ul className="mod-profile-list">
-										{profileUser.characters.map((ch) => (
+										{profileUser.characters.map(ch => (
 											<li
 												key={ch.id}
 												className="mod-profile-list-item"
@@ -932,8 +986,14 @@ export default function ModerationPage() {
 													{ch.isMainCharacter && (
 														<span className="mod-badge case-open">Principal</span>
 													)}
-													<span className={`mod-badge ${ch.status === 'alive' ? 'characters' : ch.status === 'dead' ? 'warn' : 'case-open'}`}>
-														{ch.status === 'alive' ? 'Vivant' : ch.status === 'dead' ? 'Mort' : ch.status}
+													<span
+														className={`mod-badge ${ch.status === 'alive' ? 'characters' : ch.status === 'dead' ? 'warn' : 'case-open'}`}
+													>
+														{ch.status === 'alive'
+															? 'Vivant'
+															: ch.status === 'dead'
+																? 'Mort'
+																: ch.status}
 													</span>
 												</div>
 											</li>
@@ -943,10 +1003,7 @@ export default function ModerationPage() {
 							</div>
 						</div>
 						<div className="mod-modal-footer">
-							<button
-								className="mod-btn"
-								onClick={() => setProfileUser(null)}
-							>
+							<button className="mod-btn" onClick={() => setProfileUser(null)}>
 								Fermer
 							</button>
 							<button
@@ -967,7 +1024,7 @@ export default function ModerationPage() {
 			{reopenCase && (
 				<div
 					className="mod-modal-overlay"
-					onClick={(e) => {
+					onClick={e => {
 						if (e.target === e.currentTarget) setReopenCase(null);
 					}}
 				>
@@ -990,16 +1047,13 @@ export default function ModerationPage() {
 								<textarea
 									className="mod-modal-textarea"
 									value={reopenReason}
-									onChange={(e) => setReopenReason(e.target.value)}
+									onChange={e => setReopenReason(e.target.value)}
 									placeholder="Raison de la réouverture du dossier..."
 								/>
 							</div>
 						</div>
 						<div className="mod-modal-footer">
-							<button
-								className="mod-btn"
-								onClick={() => setReopenCase(null)}
-							>
+							<button className="mod-btn" onClick={() => setReopenCase(null)}>
 								Annuler
 							</button>
 							<button
@@ -1018,7 +1072,7 @@ export default function ModerationPage() {
 			{createModal && (
 				<div
 					className="mod-modal-overlay"
-					onClick={(e) => {
+					onClick={e => {
 						if (e.target === e.currentTarget) setCreateModal(null);
 					}}
 				>
@@ -1034,7 +1088,8 @@ export default function ModerationPage() {
 						</div>
 						<div className="mod-modal-body">
 							<div className="mod-modal-info">
-								Cible : <strong>{createModal.serverNick || createModal.globalName}</strong>{' '}
+								Cible :{' '}
+								<strong>{createModal.serverNick || createModal.globalName}</strong>{' '}
 								(@{createModal.discordUsername})
 							</div>
 
@@ -1043,7 +1098,7 @@ export default function ModerationPage() {
 								<select
 									className="mod-reason-select"
 									value={createReason}
-									onChange={(e) => setCreateReason(e.target.value)}
+									onChange={e => setCreateReason(e.target.value)}
 								>
 									{Object.entries(REASON_LABELS).map(([v, l]) => (
 										<option key={v} value={v}>
@@ -1058,16 +1113,13 @@ export default function ModerationPage() {
 								<textarea
 									className="mod-modal-textarea"
 									value={createDetail}
-									onChange={(e) => setCreateDetail(e.target.value)}
+									onChange={e => setCreateDetail(e.target.value)}
 									placeholder="Détail supplémentaire..."
 								/>
 							</div>
 						</div>
 						<div className="mod-modal-footer">
-							<button
-								className="mod-btn"
-								onClick={() => setCreateModal(null)}
-							>
+							<button className="mod-btn" onClick={() => setCreateModal(null)}>
 								Annuler
 							</button>
 							<button

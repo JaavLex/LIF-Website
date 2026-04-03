@@ -13,7 +13,10 @@ export async function POST(request: Request) {
 	}
 
 	if (!(await isGameServerConfigured())) {
-		return NextResponse.json({ error: 'Serveur de jeu non configuré' }, { status: 503 });
+		return NextResponse.json(
+			{ error: 'Serveur de jeu non configuré' },
+			{ status: 503 },
+		);
 	}
 
 	try {
@@ -42,7 +45,7 @@ export async function POST(request: Request) {
 			const biId = (character as any).biId;
 			if (!biId) continue;
 
-			const playerData = players.find((p) => p.biId === biId);
+			const playerData = players.find(p => p.biId === biId);
 			if (!playerData) continue;
 
 			const money = Math.round(playerData.money * 100) / 100;
@@ -63,7 +66,9 @@ export async function POST(request: Request) {
 			data: { lastGlobalMoneySync: now } as any,
 		});
 
-		console.log(`[Auto-sync] Synced money for ${synced}/${characters.length} characters`);
+		console.log(
+			`[Auto-sync] Synced money for ${synced}/${characters.length} characters`,
+		);
 		return NextResponse.json({ synced, total: characters.length, timestamp: now });
 	} catch (err: any) {
 		console.error('[Auto-sync] Error:', err);

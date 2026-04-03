@@ -375,7 +375,7 @@ export const Roleplay: GlobalConfig = {
 					fields: [
 						{
 							name: 'gameServerEnabled',
-							label: 'Activer l\'intégration serveur de jeu',
+							label: "Activer l'intégration serveur de jeu",
 							type: 'checkbox',
 							defaultValue: true,
 						},
@@ -384,16 +384,19 @@ export const Roleplay: GlobalConfig = {
 							label: 'UUID du serveur FeatherPanel',
 							type: 'text',
 							admin: {
-								description: 'UUID complet du serveur (ex: 6af86c71-c6a1-4c72-adec-5e142d32fdc3). Les 8 premiers caractères sont utilisés pour l\'API.',
+								description:
+									"UUID complet du serveur (ex: 6af86c71-c6a1-4c72-adec-5e142d32fdc3). Les 8 premiers caractères sont utilisés pour l'API.",
 							},
 						},
 						{
 							name: 'gameServerSavePath',
 							label: 'Chemin de sauvegarde',
 							type: 'text',
-							defaultValue: '/profile/profile/.save/game/16402406C7FFB16E-MERAK-ISLAND-LIF',
+							defaultValue:
+								'/profile/profile/.save/game/16402406C7FFB16E-MERAK-ISLAND-LIF',
 							admin: {
-								description: 'Chemin vers le dossier de sauvegarde du monde sur le serveur.',
+								description:
+									'Chemin vers le dossier de sauvegarde du monde sur le serveur.',
 							},
 						},
 						{
@@ -402,7 +405,8 @@ export const Roleplay: GlobalConfig = {
 							type: 'number',
 							defaultValue: 15,
 							admin: {
-								description: 'L\'argent de tous les joueurs liés est automatiquement lu et sauvegardé à cet intervalle.',
+								description:
+									"L'argent de tous les joueurs liés est automatiquement lu et sauvegardé à cet intervalle.",
 							},
 						},
 						{
@@ -411,7 +415,8 @@ export const Roleplay: GlobalConfig = {
 							type: 'date',
 							admin: {
 								readOnly: true,
-								description: 'Mis à jour automatiquement lors de chaque synchronisation.',
+								description:
+									'Mis à jour automatiquement lors de chaque synchronisation.',
 							},
 						},
 					],
@@ -439,7 +444,8 @@ export const Roleplay: GlobalConfig = {
 							label: 'Motifs de dossier personnalisés',
 							type: 'array',
 							admin: {
-								description: 'Motifs supplémentaires pour ouvrir un dossier (les motifs par défaut sont toujours disponibles)',
+								description:
+									'Motifs supplémentaires pour ouvrir un dossier (les motifs par défaut sont toujours disponibles)',
 							},
 							fields: [
 								{

@@ -55,7 +55,11 @@ const generateFullName: CollectionBeforeChangeHook = ({ data }) => {
 	return data;
 };
 
-const clearMoneyOnUnlink: CollectionBeforeChangeHook = async ({ data, operation, originalDoc }) => {
+const clearMoneyOnUnlink: CollectionBeforeChangeHook = async ({
+	data,
+	operation,
+	originalDoc,
+}) => {
 	if (operation === 'update' && originalDoc?.biId && !data?.biId) {
 		data.savedMoney = null;
 		data.lastMoneySyncAt = null;
@@ -395,7 +399,8 @@ export const Characters: CollectionConfig = {
 			unique: true,
 			admin: {
 				position: 'sidebar',
-				description: 'UUID Bohemia Interactive du joueur (visible dans le profil joueur en jeu)',
+				description:
+					'UUID Bohemia Interactive du joueur (visible dans le profil joueur en jeu)',
 			},
 		},
 		{
@@ -405,7 +410,7 @@ export const Characters: CollectionConfig = {
 			admin: {
 				position: 'sidebar',
 				readOnly: true,
-				description: 'Backup de l\'argent en jeu',
+				description: "Backup de l'argent en jeu",
 			},
 		},
 		{
@@ -424,7 +429,7 @@ export const Characters: CollectionConfig = {
 			defaultValue: false,
 			admin: {
 				position: 'sidebar',
-				description: 'Si activé, seul le joueur et les admins peuvent voir l\'argent',
+				description: "Si activé, seul le joueur et les admins peuvent voir l'argent",
 			},
 		},
 		{

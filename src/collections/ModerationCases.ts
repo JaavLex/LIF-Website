@@ -6,7 +6,13 @@ export const ModerationCases: CollectionConfig = {
 	admin: {
 		useAsTitle: 'caseNumber',
 		group: 'Modération',
-		defaultColumns: ['caseNumber', 'targetDiscordUsername', 'status', 'reason', 'createdAt'],
+		defaultColumns: [
+			'caseNumber',
+			'targetDiscordUsername',
+			'status',
+			'reason',
+			'createdAt',
+		],
 	},
 	access: {
 		read: () => true,
@@ -36,7 +42,10 @@ export const ModerationCases: CollectionConfig = {
 					depth: 0,
 				});
 				for (const sanction of sanctions.docs) {
-					await payload.delete({ collection: 'moderation-sanctions', id: sanction.id });
+					await payload.delete({
+						collection: 'moderation-sanctions',
+						id: sanction.id,
+					});
 				}
 			},
 		],

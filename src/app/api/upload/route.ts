@@ -24,12 +24,18 @@ export async function POST(request: NextRequest) {
 
 		// Validate file type
 		if (!file.type.startsWith('image/')) {
-			return NextResponse.json({ message: 'Seules les images sont acceptées' }, { status: 400 });
+			return NextResponse.json(
+				{ message: 'Seules les images sont acceptées' },
+				{ status: 400 },
+			);
 		}
 
 		// Limit file size to 5MB
 		if (file.size > 5 * 1024 * 1024) {
-			return NextResponse.json({ message: 'Le fichier est trop volumineux (max 5 Mo)' }, { status: 400 });
+			return NextResponse.json(
+				{ message: 'Le fichier est trop volumineux (max 5 Mo)' },
+				{ status: 400 },
+			);
 		}
 
 		const payload = await getPayloadClient();

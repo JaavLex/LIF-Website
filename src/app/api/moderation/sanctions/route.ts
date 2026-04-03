@@ -8,13 +8,16 @@ import { getPayloadClient } from '@/lib/payload';
 export async function GET(request: NextRequest) {
 	const cookieStore = await cookies();
 	const token = cookieStore.get('roleplay-session')?.value;
-	if (!token) return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
+	if (!token)
+		return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
 
 	const session = verifySession(token);
-	if (!session) return NextResponse.json({ error: 'Session invalide' }, { status: 401 });
+	if (!session)
+		return NextResponse.json({ error: 'Session invalide' }, { status: 401 });
 
 	const perms = await checkAdminPermissions(session);
-	if (!perms.isAdmin) return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
+	if (!perms.isAdmin)
+		return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
 
 	const { searchParams } = new URL(request.url);
 	const targetDiscordId = searchParams.get('targetDiscordId');

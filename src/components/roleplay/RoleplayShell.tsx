@@ -14,7 +14,10 @@ const MUSIC_DISABLED_KEY = 'lif-roleplay-music-disabled';
 const MUSIC_VOLUME_KEY = 'lif-roleplay-music-volume';
 
 const PLAYLIST = [
-	{ src: '/song/Aube%20Op%C3%A9rationelle%20-%20LIF.mp3', title: 'Aube Opérationnelle' },
+	{
+		src: '/song/Aube%20Op%C3%A9rationelle%20-%20LIF.mp3',
+		title: 'Aube Opérationnelle',
+	},
 	{ src: '/song/Contrat%20-%20LIF.mp3', title: 'Contrat' },
 	{ src: '/song/Discipline%20-%20LIF.mp3', title: 'Discipline' },
 	{ src: '/song/Guerre%20Electronique%20-%20LIF.mp3', title: 'Guerre Électronique' },
@@ -73,15 +76,18 @@ function RoleplayAudio({ enabled }: { enabled: boolean }) {
 		localStorage.setItem(MUSIC_DISABLED_KEY, disabled ? '1' : '0');
 	}, [disabled]);
 
-	const playTrack = useCallback((index: number) => {
-		const audio = audioRef.current;
-		if (!audio) return;
-		audio.src = PLAYLIST[order[index]].src;
-		audio.load();
-		if (!disabled) {
-			void audio.play().catch(() => {});
-		}
-	}, [order, disabled]);
+	const playTrack = useCallback(
+		(index: number) => {
+			const audio = audioRef.current;
+			if (!audio) return;
+			audio.src = PLAYLIST[order[index]].src;
+			audio.load();
+			if (!disabled) {
+				void audio.play().catch(() => {});
+			}
+		},
+		[order, disabled],
+	);
 
 	const nextTrack = useCallback(() => {
 		setCurrentIndex(prev => {

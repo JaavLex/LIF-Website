@@ -170,7 +170,9 @@ export default async function RoleplayPage({
 					textAlign: 'center',
 					overflow: 'hidden',
 					border: '1px solid var(--border)',
-					background: headerBg?.url ? 'var(--background)' : 'var(--background-secondary)',
+					background: headerBg?.url
+						? 'var(--background)'
+						: 'var(--background-secondary)',
 				}}
 			>
 				{headerBg?.url && (
@@ -454,9 +456,7 @@ export default async function RoleplayPage({
 					</div>
 					<span className="terminal-title">FONDS DE L&apos;ORGANISATION</span>
 				</div>
-				<div className="terminal-header-right">
-					LIF-FINANCE v1.0 | COMPTABILITÉ
-				</div>
+				<div className="terminal-header-right">LIF-FINANCE v1.0 | COMPTABILITÉ</div>
 			</div>
 
 			<div className="terminal-panel">

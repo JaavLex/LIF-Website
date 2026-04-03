@@ -22,17 +22,21 @@ export async function GET(
 ) {
 	const cookieStore = await cookies();
 	const token = cookieStore.get('roleplay-session')?.value;
-	if (!token) return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
+	if (!token)
+		return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
 
 	const session = verifySession(token);
-	if (!session) return NextResponse.json({ error: 'Session invalide' }, { status: 401 });
+	if (!session)
+		return NextResponse.json({ error: 'Session invalide' }, { status: 401 });
 
 	const perms = await checkAdminPermissions(session);
-	if (!perms.isAdmin) return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
+	if (!perms.isAdmin)
+		return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
 
 	const { id } = await params;
 	const caseId = parseInt(id);
-	if (isNaN(caseId)) return NextResponse.json({ error: 'ID invalide' }, { status: 400 });
+	if (isNaN(caseId))
+		return NextResponse.json({ error: 'ID invalide' }, { status: 400 });
 
 	try {
 		const payload = await getPayloadClient();
@@ -43,7 +47,8 @@ export async function GET(
 			depth: 0,
 		});
 
-		if (!caseDoc) return NextResponse.json({ error: 'Dossier non trouvé' }, { status: 404 });
+		if (!caseDoc)
+			return NextResponse.json({ error: 'Dossier non trouvé' }, { status: 404 });
 
 		// Get events for this case
 		const events = await payload.find({
@@ -94,17 +99,21 @@ export async function PATCH(
 ) {
 	const cookieStore = await cookies();
 	const token = cookieStore.get('roleplay-session')?.value;
-	if (!token) return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
+	if (!token)
+		return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
 
 	const session = verifySession(token);
-	if (!session) return NextResponse.json({ error: 'Session invalide' }, { status: 401 });
+	if (!session)
+		return NextResponse.json({ error: 'Session invalide' }, { status: 401 });
 
 	const perms = await checkAdminPermissions(session);
-	if (!perms.isAdmin) return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
+	if (!perms.isAdmin)
+		return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
 
 	const { id } = await params;
 	const caseId = parseInt(id);
-	if (isNaN(caseId)) return NextResponse.json({ error: 'ID invalide' }, { status: 400 });
+	if (isNaN(caseId))
+		return NextResponse.json({ error: 'ID invalide' }, { status: 400 });
 
 	try {
 		const body = await request.json();
@@ -120,7 +129,8 @@ export async function PATCH(
 			collection: 'moderation-cases',
 			id: caseId,
 		});
-		if (!caseDoc) return NextResponse.json({ error: 'Dossier non trouvé' }, { status: 404 });
+		if (!caseDoc)
+			return NextResponse.json({ error: 'Dossier non trouvé' }, { status: 404 });
 
 		const oldStatus = (caseDoc as any).status;
 
@@ -138,7 +148,12 @@ export async function PATCH(
 		};
 
 		// Add status change event
-		const eventType = status === 'archived' ? 'case-archived' : status === 'open' && oldStatus === 'archived' ? 'case-reopened' : 'status-change';
+		const eventType =
+			status === 'archived'
+				? 'case-archived'
+				: status === 'open' && oldStatus === 'archived'
+					? 'case-reopened'
+					: 'status-change';
 		await payload.create({
 			collection: 'moderation-events',
 			data: {
@@ -156,7 +171,11 @@ export async function PATCH(
 			description: `**Dossier #${(caseDoc as any).caseNumber}** — ${statusLabels[oldStatus]} → **${statusLabels[status]}**`,
 			color: status === 'archived' ? 0x808080 : 0xf0ad4e,
 			fields: [
-				{ name: 'Cible', value: (caseDoc as any).targetDiscordUsername, inline: true },
+				{
+					name: 'Cible',
+					value: (caseDoc as any).targetDiscordUsername,
+					inline: true,
+				},
 				{ name: 'Modérateur', value: session.discordUsername, inline: true },
 			],
 			timestamp: new Date().toISOString(),
@@ -175,17 +194,21 @@ export async function POST(
 ) {
 	const cookieStore = await cookies();
 	const token = cookieStore.get('roleplay-session')?.value;
-	if (!token) return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
+	if (!token)
+		return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
 
 	const session = verifySession(token);
-	if (!session) return NextResponse.json({ error: 'Session invalide' }, { status: 401 });
+	if (!session)
+		return NextResponse.json({ error: 'Session invalide' }, { status: 401 });
 
 	const perms = await checkAdminPermissions(session);
-	if (!perms.isAdmin) return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
+	if (!perms.isAdmin)
+		return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
 
 	const { id } = await params;
 	const caseId = parseInt(id);
-	if (isNaN(caseId)) return NextResponse.json({ error: 'ID invalide' }, { status: 400 });
+	if (isNaN(caseId))
+		return NextResponse.json({ error: 'ID invalide' }, { status: 400 });
 
 	try {
 		const body = await request.json();
@@ -193,12 +216,13 @@ export async function POST(
 
 		const payload = await getPayloadClient();
 
-		const caseDoc = await payload.findByID({
+		const caseDoc = (await payload.findByID({
 			collection: 'moderation-cases',
 			id: caseId,
-		}) as any;
+		})) as any;
 
-		if (!caseDoc) return NextResponse.json({ error: 'Dossier non trouvé' }, { status: 404 });
+		if (!caseDoc)
+			return NextResponse.json({ error: 'Dossier non trouvé' }, { status: 404 });
 
 		// Action: add a comment or event
 		if (action === 'comment') {
@@ -226,7 +250,11 @@ export async function POST(
 		// Action: link a transcript
 		if (action === 'link-transcript') {
 			const { transcriptUrl, transcriptName } = body;
-			if (!transcriptUrl) return NextResponse.json({ error: 'URL de transcript requis' }, { status: 400 });
+			if (!transcriptUrl)
+				return NextResponse.json(
+					{ error: 'URL de transcript requis' },
+					{ status: 400 },
+				);
 
 			const event = await payload.create({
 				collection: 'moderation-events',
@@ -249,7 +277,11 @@ export async function POST(
 				fields: [
 					{ name: 'Cible', value: caseDoc.targetDiscordUsername, inline: true },
 					{ name: 'Modérateur', value: session.discordUsername, inline: true },
-					{ name: 'Transcript', value: transcriptName || transcriptUrl, inline: false },
+					{
+						name: 'Transcript',
+						value: transcriptName || transcriptUrl,
+						inline: false,
+					},
 				],
 				timestamp: new Date().toISOString(),
 			});
@@ -258,9 +290,17 @@ export async function POST(
 		}
 
 		// Moderation actions (warn/kick/ban) — require full access
-		if (action === 'warn' || action === 'kick' || action === 'temp-ban' || action === 'perm-ban') {
+		if (
+			action === 'warn' ||
+			action === 'kick' ||
+			action === 'temp-ban' ||
+			action === 'perm-ban'
+		) {
 			if (perms.level !== 'full') {
-				return NextResponse.json({ error: 'Accès insuffisant pour les actions de modération' }, { status: 403 });
+				return NextResponse.json(
+					{ error: 'Accès insuffisant pour les actions de modération' },
+					{ status: 403 },
+				);
 			}
 
 			// Check if target is an admin — cannot sanction admins
@@ -270,11 +310,15 @@ export async function POST(
 				limit: 1,
 			});
 			if (targetUser.docs[0]?.role === 'admin') {
-				return NextResponse.json({ error: 'Impossible de sanctionner un administrateur' }, { status: 403 });
+				return NextResponse.json(
+					{ error: 'Impossible de sanctionner un administrateur' },
+					{ status: 403 },
+				);
 			}
 
 			const { reason: actionReason } = body;
-			if (!actionReason) return NextResponse.json({ error: 'Raison requise' }, { status: 400 });
+			if (!actionReason)
+				return NextResponse.json({ error: 'Raison requise' }, { status: 400 });
 
 			const targetDiscordId = caseDoc.targetDiscordId;
 
@@ -285,7 +329,11 @@ export async function POST(
 				const escalation = WARN_ESCALATION[Math.min(newWarnNumber, 7)];
 
 				// Send DM
-				const warnResult = await discordWarnUser(targetDiscordId, actionReason, newWarnNumber);
+				const warnResult = await discordWarnUser(
+					targetDiscordId,
+					actionReason,
+					newWarnNumber,
+				);
 
 				// Create warn sanction
 				const sanction = await payload.create({
@@ -337,7 +385,11 @@ export async function POST(
 						{ name: 'Modérateur', value: session.discordUsername, inline: true },
 						{ name: 'Raison', value: actionReason, inline: true },
 						{ name: 'Dossier', value: `#${caseDoc.caseNumber}`, inline: true },
-						{ name: 'Sync Discord', value: warnResult.success ? '✅ Succès' : `❌ ${warnResult.error}`, inline: false },
+						{
+							name: 'Sync Discord',
+							value: warnResult.success ? '✅ Succès' : `❌ ${warnResult.error}`,
+							inline: false,
+						},
 					],
 					timestamp: new Date().toISOString(),
 				});
@@ -347,11 +399,22 @@ export async function POST(
 					let escalationResult: { success: boolean; error?: string };
 
 					if (escalation.action === 'kick') {
-						escalationResult = await discordKickUser(targetDiscordId, `Escalade automatique — ${newWarnNumber} avertissements — ${actionReason}`);
+						escalationResult = await discordKickUser(
+							targetDiscordId,
+							`Escalade automatique — ${newWarnNumber} avertissements — ${actionReason}`,
+						);
 					} else if (escalation.action === 'temp-ban' && escalation.duration) {
-						escalationResult = await discordBanUser(targetDiscordId, `Escalade automatique — ${newWarnNumber} avertissements — ${actionReason}`, escalation.duration);
+						escalationResult = await discordBanUser(
+							targetDiscordId,
+							`Escalade automatique — ${newWarnNumber} avertissements — ${actionReason}`,
+							escalation.duration,
+						);
 					} else {
-						escalationResult = await discordBanUser(targetDiscordId, `Escalade automatique — ${newWarnNumber} avertissements — ${actionReason}`, null);
+						escalationResult = await discordBanUser(
+							targetDiscordId,
+							`Escalade automatique — ${newWarnNumber} avertissements — ${actionReason}`,
+							null,
+						);
 					}
 
 					// Create escalation sanction
@@ -380,7 +443,11 @@ export async function POST(
 							content: `${escalation.label} déclenché automatiquement — ${newWarnNumber} avertissements`,
 							authorDiscordId: 'system',
 							authorDiscordUsername: 'Système',
-								actionType: escalation.action as 'warn' | 'kick' | 'temp-ban' | 'perm-ban',
+							actionType: escalation.action as
+								| 'warn'
+								| 'kick'
+								| 'temp-ban'
+								| 'perm-ban',
 							actionReason: `Escalade automatique (${newWarnNumber} warns)`,
 							actionDuration: escalation.duration || undefined,
 							warnCountAfter: newWarnNumber,
@@ -389,20 +456,37 @@ export async function POST(
 						},
 					});
 
-					const durationText = escalation.duration ? formatDuration(escalation.duration) : 'définitif';
+					const durationText = escalation.duration
+						? formatDuration(escalation.duration)
+						: 'définitif';
 					await sendModerationLog({
 						title: `🔨 ${escalation.label}`,
 						description: `**${caseDoc.targetDiscordUsername}** — Escalade automatique (${newWarnNumber} warns)`,
-						color: escalation.action === 'perm-ban' ? 0x8b0000 : escalation.action === 'kick' ? 0xff6b35 : 0xdc3545,
+						color:
+							escalation.action === 'perm-ban'
+								? 0x8b0000
+								: escalation.action === 'kick'
+									? 0xff6b35
+									: 0xdc3545,
 						fields: [
 							{ name: 'Action', value: escalation.label, inline: true },
 							{ name: 'Dossier', value: `#${caseDoc.caseNumber}`, inline: true },
-							{ name: 'Sync Discord', value: escalationResult.success ? '✅ Succès' : `❌ ${escalationResult.error}`, inline: false },
+							{
+								name: 'Sync Discord',
+								value: escalationResult.success
+									? '✅ Succès'
+									: `❌ ${escalationResult.error}`,
+								inline: false,
+							},
 						],
 						timestamp: new Date().toISOString(),
 					});
 
-					return NextResponse.json({ sanction, escalation: { ...escalation, syncResult: escalationResult }, warnCount: newWarnNumber });
+					return NextResponse.json({
+						sanction,
+						escalation: { ...escalation, syncResult: escalationResult },
+						warnCount: newWarnNumber,
+					});
 				}
 
 				return NextResponse.json({ sanction, warnCount: newWarnNumber });
@@ -474,7 +558,11 @@ export async function POST(
 					{ name: 'Modérateur', value: session.discordUsername, inline: true },
 					{ name: 'Raison', value: actionReason, inline: true },
 					{ name: 'Dossier', value: `#${caseDoc.caseNumber}`, inline: true },
-					{ name: 'Sync Discord', value: result.success ? '✅ Succès' : `❌ ${result.error}`, inline: false },
+					{
+						name: 'Sync Discord',
+						value: result.success ? '✅ Succès' : `❌ ${result.error}`,
+						inline: false,
+					},
 				],
 				timestamp: new Date().toISOString(),
 			});
@@ -485,7 +573,8 @@ export async function POST(
 		// Action: change case reason
 		if (action === 'change-reason') {
 			const { reason, reasonDetail } = body;
-			if (!reason) return NextResponse.json({ error: 'Motif requis' }, { status: 400 });
+			if (!reason)
+				return NextResponse.json({ error: 'Motif requis' }, { status: 400 });
 
 			const oldReason = caseDoc.reason;
 			await payload.update({
@@ -524,28 +613,41 @@ export async function POST(
 			}
 
 			const { sanctionId } = body;
-			if (!sanctionId) return NextResponse.json({ error: 'ID de sanction requis' }, { status: 400 });
+			if (!sanctionId)
+				return NextResponse.json(
+					{ error: 'ID de sanction requis' },
+					{ status: 400 },
+				);
 
-			const sanction = await payload.findByID({
+			const sanction = (await payload.findByID({
 				collection: 'moderation-sanctions',
 				id: sanctionId,
-			}) as any;
+			})) as any;
 
 			if (!sanction || sanction.type !== 'warn') {
-				return NextResponse.json({ error: 'Sanction introuvable ou pas un warn' }, { status: 404 });
+				return NextResponse.json(
+					{ error: 'Sanction introuvable ou pas un warn' },
+					{ status: 404 },
+				);
 			}
 
 			// Verify this is the most recent warn (highest warnNumber)
 			const allWarns = await payload.find({
 				collection: 'moderation-sanctions',
-				where: { targetDiscordId: { equals: caseDoc.targetDiscordId }, type: { equals: 'warn' } },
+				where: {
+					targetDiscordId: { equals: caseDoc.targetDiscordId },
+					type: { equals: 'warn' },
+				},
 				sort: '-warnNumber',
 				limit: 1,
 				depth: 0,
 			});
 
 			if (allWarns.docs.length > 0 && allWarns.docs[0].id !== sanctionId) {
-				return NextResponse.json({ error: 'Seul le dernier avertissement peut être retiré' }, { status: 400 });
+				return NextResponse.json(
+					{ error: 'Seul le dernier avertissement peut être retiré' },
+					{ status: 400 },
+				);
 			}
 
 			await payload.delete({
@@ -599,17 +701,24 @@ export async function POST(
 
 			if (sanctionId) {
 				// Remove a specific sanction
-				const sanction = await payload.findByID({
+				const sanction = (await payload.findByID({
 					collection: 'moderation-sanctions',
 					id: sanctionId,
-				}) as any;
+				})) as any;
 
-				if (!sanction) return NextResponse.json({ error: 'Sanction introuvable' }, { status: 404 });
+				if (!sanction)
+					return NextResponse.json(
+						{ error: 'Sanction introuvable' },
+						{ status: 404 },
+					);
 
 				// Unban from Discord if it was a ban
 				let discordResult: { success: boolean; error?: string } = { success: true };
 				if (sanction.type === 'perm-ban' || sanction.type === 'temp-ban') {
-					discordResult = await discordUnbanUser(targetDiscordId, `Pardon par ${session.discordUsername}`);
+					discordResult = await discordUnbanUser(
+						targetDiscordId,
+						`Pardon par ${session.discordUsername}`,
+					);
 				}
 
 				await payload.delete({ collection: 'moderation-sanctions', id: sanctionId });
@@ -617,10 +726,19 @@ export async function POST(
 				// Recalculate warn count if it was a warn
 				if (sanction.type === 'warn') {
 					const newWarnCount = await getWarnCount(targetDiscordId);
-					await payload.update({ collection: 'moderation-cases', id: caseId, data: { warnCount: newWarnCount } });
+					await payload.update({
+						collection: 'moderation-cases',
+						id: caseId,
+						data: { warnCount: newWarnCount },
+					});
 				}
 
-				const SANCTION_LABELS: Record<string, string> = { warn: 'Avertissement', kick: 'Expulsion', 'temp-ban': 'Ban temporaire', 'perm-ban': 'Ban définitif' };
+				const SANCTION_LABELS: Record<string, string> = {
+					warn: 'Avertissement',
+					kick: 'Expulsion',
+					'temp-ban': 'Ban temporaire',
+					'perm-ban': 'Ban définitif',
+				};
 
 				await payload.create({
 					collection: 'moderation-events',
@@ -670,10 +788,15 @@ export async function POST(
 			});
 
 			// Check if any are bans — if so, unban from Discord
-			const hasBan = allSanctions.docs.some((s: any) => s.type === 'perm-ban' || s.type === 'temp-ban');
+			const hasBan = allSanctions.docs.some(
+				(s: any) => s.type === 'perm-ban' || s.type === 'temp-ban',
+			);
 			let discordResult: { success: boolean; error?: string } = { success: true };
 			if (hasBan) {
-				discordResult = await discordUnbanUser(targetDiscordId, `Pardon complet par ${session.discordUsername}`);
+				discordResult = await discordUnbanUser(
+					targetDiscordId,
+					`Pardon complet par ${session.discordUsername}`,
+				);
 			}
 
 			// Delete all sanctions
@@ -682,7 +805,11 @@ export async function POST(
 			}
 
 			// Reset warn count
-			await payload.update({ collection: 'moderation-cases', id: caseId, data: { warnCount: 0 } });
+			await payload.update({
+				collection: 'moderation-cases',
+				id: caseId,
+				data: { warnCount: 0 },
+			});
 
 			await payload.create({
 				collection: 'moderation-events',
@@ -709,7 +836,11 @@ export async function POST(
 				timestamp: new Date().toISOString(),
 			});
 
-			return NextResponse.json({ success: true, removed: allSanctions.docs.length, discordResult });
+			return NextResponse.json({
+				success: true,
+				removed: allSanctions.docs.length,
+				discordResult,
+			});
 		}
 
 		return NextResponse.json({ error: 'Action inconnue' }, { status: 400 });

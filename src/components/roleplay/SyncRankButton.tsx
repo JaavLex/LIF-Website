@@ -31,7 +31,11 @@ export function SyncRankButton({ characterId }: { characterId: number }) {
 			onClick={handleSync}
 			disabled={loading}
 			className="session-btn"
-			style={{ padding: '0.5rem 1rem', fontSize: '0.85rem', opacity: loading ? 0.6 : 1 }}
+			style={{
+				padding: '0.5rem 1rem',
+				fontSize: '0.85rem',
+				opacity: loading ? 0.6 : 1,
+			}}
 		>
 			{loading ? 'Synchronisation...' : 'Mettre à jour le grade'}
 		</button>

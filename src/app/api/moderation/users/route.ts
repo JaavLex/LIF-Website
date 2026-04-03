@@ -49,13 +49,16 @@ async function searchMembers(query: string): Promise<any[]> {
 export async function GET(request: Request) {
 	const cookieStore = await cookies();
 	const token = cookieStore.get('roleplay-session')?.value;
-	if (!token) return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
+	if (!token)
+		return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
 
 	const session = verifySession(token);
-	if (!session) return NextResponse.json({ error: 'Session invalide' }, { status: 401 });
+	if (!session)
+		return NextResponse.json({ error: 'Session invalide' }, { status: 401 });
 
 	const perms = await checkAdminPermissions(session);
-	if (!perms.isAdmin) return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
+	if (!perms.isAdmin)
+		return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
 
 	const url = new URL(request.url);
 	const searchQuery = url.searchParams.get('search') || '';
@@ -75,9 +78,13 @@ export async function GET(request: Request) {
 
 		// Build a compact role map: id -> { name, color, position }
 		const guildRoleMap = guildRoles
-			.filter((r) => r.name !== '@everyone')
+			.filter(r => r.name !== '@everyone')
 			.sort((a, b) => b.position - a.position)
-			.map((r) => ({ id: r.id, name: r.name, color: r.color ? `#${r.color.toString(16).padStart(6, '0')}` : '#99aab5' }));
+			.map(r => ({
+				id: r.id,
+				name: r.name,
+				color: r.color ? `#${r.color.toString(16).padStart(6, '0')}` : '#99aab5',
+			}));
 
 		// If search query provided, search Discord directly
 		if (searchQuery.length >= 2) {
@@ -87,45 +94,97 @@ export async function GET(request: Request) {
 			const discordIds = members.map((m: any) => m.user.id);
 
 			const [cases, sanctions, characters] = await Promise.all([
-				payload.find({ collection: 'moderation-cases', where: { targetDiscordId: { in: discordIds } }, limit: 10000, depth: 0 }),
-				payload.find({ collection: 'moderation-sanctions', where: { targetDiscordId: { in: discordIds }, type: { equals: 'warn' } }, limit: 10000, depth: 0 }),
-				payload.find({ collection: 'characters', where: { discordId: { in: discordIds } }, limit: 10000, depth: 1 }),
+				payload.find({
+					collection: 'moderation-cases',
+					where: { targetDiscordId: { in: discordIds } },
+					limit: 10000,
+					depth: 0,
+				}),
+				payload.find({
+					collection: 'moderation-sanctions',
+					where: { targetDiscordId: { in: discordIds }, type: { equals: 'warn' } },
+					limit: 10000,
+					depth: 0,
+				}),
+				payload.find({
+					collection: 'characters',
+					where: { discordId: { in: discordIds } },
+					limit: 10000,
+					depth: 1,
+				}),
 			]);
 
-			const { warnMap, caseMap, charMap } = buildMaps(cases.docs, sanctions.docs, characters.docs);
+			const { warnMap, caseMap, charMap } = buildMaps(
+				cases.docs,
+				sanctions.docs,
+				characters.docs,
+			);
 
-			const users = members.map((m: any) => memberToUser(m, warnMap, caseMap, charMap));
-			users.sort((a: any, b: any) => (a.serverNick || a.globalName).localeCompare(b.serverNick || b.globalName));
+			const users = members.map((m: any) =>
+				memberToUser(m, warnMap, caseMap, charMap),
+			);
+			users.sort((a: any, b: any) =>
+				(a.serverNick || a.globalName).localeCompare(b.serverNick || b.globalName),
+			);
 
-			return NextResponse.json({ users, source: 'search', guildRoles: guildRoleMap, adminRoleIds: Array.from(adminRoleIds) });
+			return NextResponse.json({
+				users,
+				source: 'search',
+				guildRoles: guildRoleMap,
+				adminRoleIds: Array.from(adminRoleIds),
+			});
 		}
 
 		// Default: fetch ALL guild members
 		const [cases, sanctions, characters, allMembers] = await Promise.all([
 			payload.find({ collection: 'moderation-cases', limit: 10000, depth: 0 }),
-			payload.find({ collection: 'moderation-sanctions', where: { type: { equals: 'warn' } }, limit: 10000, depth: 0 }),
+			payload.find({
+				collection: 'moderation-sanctions',
+				where: { type: { equals: 'warn' } },
+				limit: 10000,
+				depth: 0,
+			}),
 			payload.find({ collection: 'characters', limit: 10000, depth: 1 }),
 			fetchAllMembers(),
 		]);
 
-		const { warnMap, caseMap, charMap } = buildMaps(cases.docs, sanctions.docs, characters.docs);
+		const { warnMap, caseMap, charMap } = buildMaps(
+			cases.docs,
+			sanctions.docs,
+			characters.docs,
+		);
 
 		// Build set of member IDs we got from Discord
 		const memberIds = new Set(allMembers.map((m: any) => m.user.id));
 
 		// Also find DB-only users who left the server
 		const knownIds = new Set<string>();
-		for (const c of cases.docs) { const id = (c as any).targetDiscordId; if (id) knownIds.add(id); }
-		for (const s of sanctions.docs) { const id = (s as any).targetDiscordId; if (id) knownIds.add(id); }
-		for (const ch of characters.docs) { const id = (ch as any).discordId; if (id) knownIds.add(id); }
+		for (const c of cases.docs) {
+			const id = (c as any).targetDiscordId;
+			if (id) knownIds.add(id);
+		}
+		for (const s of sanctions.docs) {
+			const id = (s as any).targetDiscordId;
+			if (id) knownIds.add(id);
+		}
+		for (const ch of characters.docs) {
+			const id = (ch as any).discordId;
+			if (id) knownIds.add(id);
+		}
 
-		const users: any[] = allMembers.map((m: any) => memberToUser(m, warnMap, caseMap, charMap));
+		const users: any[] = allMembers.map((m: any) =>
+			memberToUser(m, warnMap, caseMap, charMap),
+		);
 
 		// Add users who left the server but have DB records
 		for (const discordId of knownIds) {
 			if (memberIds.has(discordId)) continue;
 			const caseData = caseMap[discordId] || [];
-			const caseName = caseData.length > 0 ? (cases.docs.find((c: any) => c.targetDiscordId === discordId) as any)?.targetDiscordUsername : null;
+			const caseName =
+				caseData.length > 0
+					? (cases.docs.find((c: any) => c.targetDiscordId === discordId) as any)
+							?.targetDiscordUsername
+					: null;
 			users.push({
 				discordId,
 				discordUsername: caseName || discordId,
@@ -141,8 +200,15 @@ export async function GET(request: Request) {
 			});
 		}
 
-		users.sort((a: any, b: any) => (a.serverNick || a.globalName).localeCompare(b.serverNick || b.globalName));
-		return NextResponse.json({ users, source: 'known', guildRoles: guildRoleMap, adminRoleIds: Array.from(adminRoleIds) });
+		users.sort((a: any, b: any) =>
+			(a.serverNick || a.globalName).localeCompare(b.serverNick || b.globalName),
+		);
+		return NextResponse.json({
+			users,
+			source: 'known',
+			guildRoles: guildRoleMap,
+			adminRoleIds: Array.from(adminRoleIds),
+		});
 	} catch (err: any) {
 		console.error('Error fetching moderation users:', err);
 		return NextResponse.json({ error: err.message }, { status: 500 });
@@ -156,11 +222,18 @@ function buildMaps(caseDocs: any[], sanctionDocs: any[], charDocs: any[]) {
 		warnMap[id] = (warnMap[id] || 0) + 1;
 	}
 
-	const caseMap: Record<string, { id: number; status: string; caseNumber: number }[]> = {};
+	const caseMap: Record<
+		string,
+		{ id: number; status: string; caseNumber: number }[]
+	> = {};
 	for (const c of caseDocs) {
 		const id = (c as any).targetDiscordId;
 		if (!caseMap[id]) caseMap[id] = [];
-		caseMap[id].push({ id: c.id as number, status: (c as any).status, caseNumber: (c as any).caseNumber });
+		caseMap[id].push({
+			id: c.id as number,
+			status: (c as any).status,
+			caseNumber: (c as any).caseNumber,
+		});
 	}
 
 	const charMap: Record<string, any[]> = {};
@@ -168,13 +241,23 @@ function buildMaps(caseDocs: any[], sanctionDocs: any[], charDocs: any[]) {
 		const id = (ch as any).discordId;
 		if (!id) continue;
 		if (!charMap[id]) charMap[id] = [];
-		charMap[id].push({ id: ch.id, fullName: (ch as any).fullName, status: (ch as any).status, isMainCharacter: (ch as any).isMainCharacter });
+		charMap[id].push({
+			id: ch.id,
+			fullName: (ch as any).fullName,
+			status: (ch as any).status,
+			isMainCharacter: (ch as any).isMainCharacter,
+		});
 	}
 
 	return { warnMap, caseMap, charMap };
 }
 
-function memberToUser(m: any, warnMap: Record<string, number>, caseMap: Record<string, any[]>, charMap: Record<string, any[]>) {
+function memberToUser(
+	m: any,
+	warnMap: Record<string, number>,
+	caseMap: Record<string, any[]>,
+	charMap: Record<string, any[]>,
+) {
 	const discordId = m.user.id;
 	const avatar = m.user.avatar
 		? `https://cdn.discordapp.com/avatars/${discordId}/${m.user.avatar}.png?size=128`

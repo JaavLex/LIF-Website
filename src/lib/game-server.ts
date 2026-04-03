@@ -3,14 +3,20 @@ import { getPayloadClient } from '@/lib/payload';
 const PANEL_URL = process.env.FEATHERPANEL_URL || '';
 const API_KEY = process.env.FEATHERPANEL_API_KEY || '';
 const ENV_SERVER_ID = process.env.FEATHERPANEL_SERVER_ID || '';
-const ENV_SAVE_BASE = process.env.FEATHERPANEL_SAVE_PATH || '/profile/profile/.save/game/16402406C7FFB16E-MERAK-ISLAND-LIF';
+const ENV_SAVE_BASE =
+	process.env.FEATHERPANEL_SAVE_PATH ||
+	'/profile/profile/.save/game/16402406C7FFB16E-MERAK-ISLAND-LIF';
 const CUSTOM_NAMES_PATH = '/profile/profile/CustomNames.json';
 
 // Fetch game server settings from Payload global (with env fallback)
-async function getGameServerSettings(): Promise<{ serverId: string; saveBase: string; enabled: boolean }> {
+async function getGameServerSettings(): Promise<{
+	serverId: string;
+	saveBase: string;
+	enabled: boolean;
+}> {
 	try {
 		const payload = await getPayloadClient();
-		const roleplay = await payload.findGlobal({ slug: 'roleplay' }) as any;
+		const roleplay = (await payload.findGlobal({ slug: 'roleplay' })) as any;
 		return {
 			enabled: roleplay.gameServerEnabled !== false,
 			serverId: roleplay.gameServerUuid || ENV_SERVER_ID,
@@ -51,7 +57,12 @@ async function listFiles(serverId: string, directory: string): Promise<any[]> {
 	const contents = data.data?.contents || [];
 	return contents.map((f: any) => ({
 		name: f.name,
-		is_file: f.file !== undefined ? f.file : f.isFile !== undefined ? f.isFile : !f.directory,
+		is_file:
+			f.file !== undefined
+				? f.file
+				: f.isFile !== undefined
+					? f.isFile
+					: !f.directory,
 		size: f.size,
 	}));
 }
@@ -71,7 +82,11 @@ async function readFile(serverId: string, filePath: string): Promise<string> {
 }
 
 // Write file contents
-async function writeFile(serverId: string, filePath: string, content: string): Promise<void> {
+async function writeFile(
+	serverId: string,
+	filePath: string,
+	content: string,
+): Promise<void> {
 	const res = await fetch(
 		apiUrl(serverId, `/write-file?path=${encodeURIComponent(filePath)}`),
 		{
@@ -89,18 +104,21 @@ async function writeFile(serverId: string, filePath: string, content: string): P
 // Find latest numbered directory (playthroughN, savepointN)
 function findLatest(dirs: any[], prefix: string): string | null {
 	const matching = dirs
-		.filter((d) => !d.is_file && d.name.startsWith(prefix))
-		.map((d) => ({
+		.filter(d => !d.is_file && d.name.startsWith(prefix))
+		.map(d => ({
 			name: d.name,
 			num: parseInt(d.name.replace(prefix, ''), 10),
 		}))
-		.filter((d) => !isNaN(d.num))
+		.filter(d => !isNaN(d.num))
 		.sort((a, b) => b.num - a.num);
 	return matching.length > 0 ? matching[0].name : null;
 }
 
 // Find the latest persistence file path
-async function findLatestPersistencePath(serverId: string, saveBase: string): Promise<string> {
+async function findLatestPersistencePath(
+	serverId: string,
+	saveBase: string,
+): Promise<string> {
 	// Find latest playthrough
 	const playthroughs = await listFiles(serverId, saveBase);
 	const latestPlaythrough = findLatest(playthroughs, 'playthrough');
@@ -114,7 +132,7 @@ async function findLatestPersistencePath(serverId: string, saveBase: string): Pr
 	// Find WorldState .json file
 	const worldStatePath = `${saveBase}/${latestPlaythrough}/${latestSavepoint}/WorldState`;
 	const wsFiles = await listFiles(serverId, worldStatePath);
-	const jsonFile = wsFiles.find((f) => f.is_file && f.name.endsWith('.json'));
+	const jsonFile = wsFiles.find(f => f.is_file && f.name.endsWith('.json'));
 	if (!jsonFile) throw new Error('Aucun fichier WorldState trouvé');
 
 	return `${worldStatePath}/${jsonFile.name}`;
@@ -132,7 +150,10 @@ export async function readGamePersistence(): Promise<{
 	filePath: string;
 }> {
 	const settings = await getGameServerSettings();
-	const filePath = await findLatestPersistencePath(settings.serverId, settings.saveBase);
+	const filePath = await findLatestPersistencePath(
+		settings.serverId,
+		settings.saveBase,
+	);
 	const content = await readFile(settings.serverId, filePath);
 	const data = JSON.parse(content);
 
@@ -174,7 +195,7 @@ export async function getPlayerMoney(biId: string): Promise<{
 	filePath: string;
 } | null> {
 	const { players, filePath } = await readGamePersistence();
-	const player = players.find((p) => p.biId === biId);
+	const player = players.find(p => p.biId === biId);
 	if (!player) return null;
 	return { money: player.money, playerEntityId: player.playerEntityId, filePath };
 }
@@ -182,11 +203,15 @@ export async function getPlayerMoney(biId: string): Promise<{
 // Write money back to a player's persistence file
 export async function setPlayerMoney(biId: string, newMoney: number): Promise<void> {
 	const settings = await getGameServerSettings();
-	const filePath = await findLatestPersistencePath(settings.serverId, settings.saveBase);
+	const filePath = await findLatestPersistencePath(
+		settings.serverId,
+		settings.saveBase,
+	);
 	const content = await readFile(settings.serverId, filePath);
 	const data = JSON.parse(content);
 
-	if (!Array.isArray(data.Player)) throw new Error('Pas de données Player dans le fichier');
+	if (!Array.isArray(data.Player))
+		throw new Error('Pas de données Player dans le fichier');
 
 	let found = false;
 	for (const player of data.Player) {
@@ -196,9 +221,7 @@ export async function setPlayerMoney(biId: string, newMoney: number): Promise<vo
 			for (const compKey of Object.keys(player.components)) {
 				const comp = player.components[compKey];
 				if (comp?.resources && Array.isArray(comp.resources)) {
-					const moneyRes = comp.resources.find(
-						(r: any) => r.m_eResourceType === 2,
-					);
+					const moneyRes = comp.resources.find((r: any) => r.m_eResourceType === 2);
 					if (moneyRes) {
 						moneyRes.m_fValue = newMoney;
 					}
@@ -246,5 +269,9 @@ export async function setCustomName(
 		lastUpdated: Math.floor(Date.now() / 1000),
 		lastPlayerName: existing?.lastPlayerName || '',
 	};
-	await writeFile(settings.serverId, CUSTOM_NAMES_PATH, JSON.stringify(names, null, 4));
+	await writeFile(
+		settings.serverId,
+		CUSTOM_NAMES_PATH,
+		JSON.stringify(names, null, 4),
+	);
 }

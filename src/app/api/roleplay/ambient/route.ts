@@ -61,16 +61,22 @@ export async function GET() {
 			classification: i.classification,
 			linkedTarget: i.linkedTarget
 				? {
-					firstName: typeof i.linkedTarget === 'object' ? i.linkedTarget.firstName : null,
-					lastName: typeof i.linkedTarget === 'object' ? i.linkedTarget.lastName : null,
-					avatar: typeof i.linkedTarget === 'object' && typeof i.linkedTarget.avatar === 'object'
-						? i.linkedTarget.avatar?.url : null,
-				}
+						firstName:
+							typeof i.linkedTarget === 'object' ? i.linkedTarget.firstName : null,
+						lastName:
+							typeof i.linkedTarget === 'object' ? i.linkedTarget.lastName : null,
+						avatar:
+							typeof i.linkedTarget === 'object' &&
+							typeof i.linkedTarget.avatar === 'object'
+								? i.linkedTarget.avatar?.url
+								: null,
+					}
 				: null,
-			media: i.media?.slice(0, 1).map((m: any) => ({
-				url: typeof m.file === 'object' ? m.file?.url : null,
-				caption: m.caption,
-			})) || [],
+			media:
+				i.media?.slice(0, 1).map((m: any) => ({
+					url: typeof m.file === 'object' ? m.file?.url : null,
+					caption: m.caption,
+				})) || [],
 		}));
 
 		return NextResponse.json({ characters, intel });

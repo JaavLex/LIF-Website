@@ -160,7 +160,10 @@ export default function CaseDetailPage() {
 			setComment('');
 			setEventType('message');
 			await loadCase();
-			setTimeout(() => timelineEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+			setTimeout(
+				() => timelineEndRef.current?.scrollIntoView({ behavior: 'smooth' }),
+				100,
+			);
 		} catch (err: any) {
 			setError(err.message);
 		}
@@ -271,7 +274,10 @@ export default function CaseDetailPage() {
 	}
 
 	async function handlePardon(sanctionId: number) {
-		if (!confirm('Pardonner cette sanction ? Si c\'est un ban, le joueur sera débanni.')) return;
+		if (
+			!confirm("Pardonner cette sanction ? Si c'est un ban, le joueur sera débanni.")
+		)
+			return;
 		setPardonSubmitting(sanctionId);
 		setError('');
 		try {
@@ -292,7 +298,12 @@ export default function CaseDetailPage() {
 	}
 
 	async function handlePardonAll() {
-		if (!confirm('Pardonner TOUTES les sanctions de ce joueur ? Cette action retirera tous les warns, kicks et bans.')) return;
+		if (
+			!confirm(
+				'Pardonner TOUTES les sanctions de ce joueur ? Cette action retirera tous les warns, kicks et bans.',
+			)
+		)
+			return;
 		setPardonAllSubmitting(true);
 		setError('');
 		try {
@@ -320,7 +331,11 @@ export default function CaseDetailPage() {
 			const res = await fetch(`/api/moderation/cases/${id}`, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ action: 'change-reason', reason: newReason, reasonDetail: newReasonDetail }),
+				body: JSON.stringify({
+					action: 'change-reason',
+					reason: newReason,
+					reasonDetail: newReasonDetail,
+				}),
 			});
 			if (!res.ok) {
 				const d = await res.json();
@@ -376,7 +391,10 @@ export default function CaseDetailPage() {
 			setComment('');
 			if (fileInputRef.current) fileInputRef.current.value = '';
 			await loadCase();
-			setTimeout(() => timelineEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+			setTimeout(
+				() => timelineEndRef.current?.scrollIntoView({ behavior: 'smooth' }),
+				100,
+			);
 		} catch (err: any) {
 			setError(err.message);
 		}
@@ -400,7 +418,9 @@ export default function CaseDetailPage() {
 					<div className="mod-denied">
 						<h1>Accès refusé</h1>
 						<p>Vous n&apos;êtes pas autorisé à accéder à cette page.</p>
-						<a href="/roleplay" className="mod-btn primary">Retour au Roleplay</a>
+						<a href="/roleplay" className="mod-btn primary">
+							Retour au Roleplay
+						</a>
 					</div>
 				</div>
 			</div>
@@ -434,13 +454,14 @@ export default function CaseDetailPage() {
 					<div className="mod-case-header">
 						<img
 							className="mod-case-avatar"
-							src={caseData.targetDiscordAvatar || `https://cdn.discordapp.com/embed/avatars/0.png`}
+							src={
+								caseData.targetDiscordAvatar ||
+								`https://cdn.discordapp.com/embed/avatars/0.png`
+							}
 							alt=""
 						/>
 						<div className="mod-case-info">
-							<div className="mod-case-number">
-								Dossier #{caseData.caseNumber}
-							</div>
+							<div className="mod-case-number">Dossier #{caseData.caseNumber}</div>
 							<div className="mod-case-target-name">
 								{caseData.targetServerUsername || caseData.targetDiscordUsername}
 							</div>
@@ -464,7 +485,9 @@ export default function CaseDetailPage() {
 										</button>
 									)}
 								</span>
-								<span>Créé le {new Date(caseData.createdAt).toLocaleDateString('fr-FR')}</span>
+								<span>
+									Créé le {new Date(caseData.createdAt).toLocaleDateString('fr-FR')}
+								</span>
 							</div>
 						</div>
 
@@ -570,7 +593,12 @@ export default function CaseDetailPage() {
 									<div className="mod-empty">Aucun événement</div>
 								) : (
 									events.map((event: any) => {
-										const isSystem = ['system', 'case-reopened', 'case-archived', 'status-change'].includes(event.type);
+										const isSystem = [
+											'system',
+											'case-reopened',
+											'case-archived',
+											'status-change',
+										].includes(event.type);
 										const isAction = event.type === 'moderation-action';
 										const isEscalation = event.type === 'auto-escalation';
 
@@ -588,14 +616,17 @@ export default function CaseDetailPage() {
 														alt=""
 													/>
 												) : (
-													<div className="mod-event-avatar" style={{
-														background: 'var(--bg-tertiary)',
-														display: 'flex',
-														alignItems: 'center',
-														justifyContent: 'center',
-														fontSize: '0.65rem',
-														color: 'var(--muted)',
-													}}>
+													<div
+														className="mod-event-avatar"
+														style={{
+															background: 'var(--bg-tertiary)',
+															display: 'flex',
+															alignItems: 'center',
+															justifyContent: 'center',
+															fontSize: '0.65rem',
+															color: 'var(--muted)',
+														}}
+													>
 														{isSystem ? '⚙' : isAction ? '⚠' : '📎'}
 													</div>
 												)}
@@ -617,9 +648,7 @@ export default function CaseDetailPage() {
 															})}
 														</span>
 													</div>
-													<div className="mod-event-content">
-														{event.content}
-													</div>
+													<div className="mod-event-content">{event.content}</div>
 													{event.transcriptUrl && (
 														<a
 															className="mod-transcript-link"
@@ -630,39 +659,76 @@ export default function CaseDetailPage() {
 															📄 {event.transcriptName || 'Voir le transcript'}
 														</a>
 													)}
-													{event.discordSyncStatus && event.discordSyncStatus !== 'na' && (
-														<div className={`mod-event-sync ${event.discordSyncStatus}`}>
-															{event.discordSyncStatus === 'success'
-																? '✓ Synchronisé avec Discord'
-																: `✗ Erreur Discord: ${event.discordSyncError || 'inconnue'}`}
-														</div>
-													)}
+													{event.discordSyncStatus &&
+														event.discordSyncStatus !== 'na' && (
+															<div
+																className={`mod-event-sync ${event.discordSyncStatus}`}
+															>
+																{event.discordSyncStatus === 'success'
+																	? '✓ Synchronisé avec Discord'
+																	: `✗ Erreur Discord: ${event.discordSyncError || 'inconnue'}`}
+															</div>
+														)}
 													{event.attachments?.length > 0 && (
 														<div className="mod-event-attachments">
 															{event.attachments.map((att: any, i: number) => {
-																const fileUrl = typeof att.file === 'object' ? att.file.url : '#';
-																const mimeType = typeof att.file === 'object' ? att.file.mimeType || '' : '';
-																const fileName = att.description || `Pièce jointe ${i + 1}`;
+																const fileUrl =
+																	typeof att.file === 'object' ? att.file.url : '#';
+																const mimeType =
+																	typeof att.file === 'object'
+																		? att.file.mimeType || ''
+																		: '';
+																const fileName =
+																	att.description || `Pièce jointe ${i + 1}`;
 
 																if (mimeType.startsWith('image/')) {
 																	return (
-																		<a key={i} href={fileUrl} target="_blank" rel="noopener noreferrer" className="mod-attachment-media">
-																			<img src={fileUrl} alt={fileName} className="mod-attachment-img" loading="lazy" />
+																		<a
+																			key={i}
+																			href={fileUrl}
+																			target="_blank"
+																			rel="noopener noreferrer"
+																			className="mod-attachment-media"
+																		>
+																			<img
+																				src={fileUrl}
+																				alt={fileName}
+																				className="mod-attachment-img"
+																				loading="lazy"
+																			/>
 																		</a>
 																	);
 																}
 																if (mimeType.startsWith('video/')) {
 																	return (
-																		<video key={i} src={fileUrl} controls className="mod-attachment-video" preload="metadata" />
+																		<video
+																			key={i}
+																			src={fileUrl}
+																			controls
+																			className="mod-attachment-video"
+																			preload="metadata"
+																		/>
 																	);
 																}
 																if (mimeType.startsWith('audio/')) {
 																	return (
-																		<audio key={i} src={fileUrl} controls className="mod-attachment-audio" preload="metadata" />
+																		<audio
+																			key={i}
+																			src={fileUrl}
+																			controls
+																			className="mod-attachment-audio"
+																			preload="metadata"
+																		/>
 																	);
 																}
 																return (
-																	<a key={i} className="mod-event-attachment" href={fileUrl} target="_blank" rel="noopener noreferrer">
+																	<a
+																		key={i}
+																		className="mod-event-attachment"
+																		href={fileUrl}
+																		target="_blank"
+																		rel="noopener noreferrer"
+																	>
 																		📎 {fileName}
 																	</a>
 																);
@@ -683,14 +749,14 @@ export default function CaseDetailPage() {
 									<textarea
 										className="mod-comment-textarea"
 										value={comment}
-										onChange={(e) => setComment(e.target.value)}
+										onChange={e => setComment(e.target.value)}
 										placeholder="Ajouter un commentaire ou un événement..."
 									/>
 									<div className="mod-comment-options">
 										<select
 											className="mod-event-type-select"
 											value={eventType}
-											onChange={(e) => setEventType(e.target.value)}
+											onChange={e => setEventType(e.target.value)}
 										>
 											<option value="message">Commentaire</option>
 											<option value="evidence">Preuve</option>
@@ -703,7 +769,7 @@ export default function CaseDetailPage() {
 											multiple
 											accept="image/*,video/*,audio/*"
 											style={{ display: 'none' }}
-											onChange={(e) => handleFileUpload(e.target.files)}
+											onChange={e => handleFileUpload(e.target.files)}
 										/>
 										<button
 											type="button"
@@ -735,7 +801,10 @@ export default function CaseDetailPage() {
 
 							{/* Moderation action buttons */}
 							{isOpen && isFull && (
-								<div className="mod-comment-form" style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+								<div
+									className="mod-comment-form"
+									style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}
+								>
 									<button
 										className="mod-btn warn-btn"
 										onClick={() => setActionModal('warn')}
@@ -773,7 +842,9 @@ export default function CaseDetailPage() {
 									<ul className="mod-char-list">
 										{characters.map((c: any) => (
 											<li key={c.id} className="mod-char-item">
-												<span className="mod-char-name">{c.firstName} {c.lastName}</span>
+												<span className="mod-char-name">
+													{c.firstName} {c.lastName}
+												</span>
 												<span className="mod-char-status">{c.status}</span>
 											</li>
 										))}
@@ -841,46 +912,60 @@ export default function CaseDetailPage() {
 											{(() => {
 												const lastWarnId = sanctions
 													.filter((s: any) => s.type === 'warn')
-													.sort((a: any, b: any) => (b.warnNumber || 0) - (a.warnNumber || 0))[0]?.id;
+													.sort(
+														(a: any, b: any) =>
+															(b.warnNumber || 0) - (a.warnNumber || 0),
+													)[0]?.id;
 												return sanctions.map((s: any) => (
-												<tr key={s.id}>
-													<td>
-														<span className={`mod-sanction-type ${s.type}`}>
-															{SANCTION_LABELS[s.type] || s.type}
-															{s.type === 'warn' && s.warnNumber ? ` ${s.warnNumber}/7` : ''}
-															{s.duration ? ` (${formatDuration(s.duration)})` : ''}
-														</span>
-													</td>
-													<td style={{ maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-														{s.reason}
-													</td>
-													<td>
-														{new Date(s.createdAt).toLocaleDateString('fr-FR')}
-													</td>
-													{isFull && (
+													<tr key={s.id}>
 														<td>
-															{s.type === 'warn' && s.id === lastWarnId ? (
-																<button
-																	className="mod-btn-small danger"
-																	onClick={() => handleRemoveWarn(s.id)}
-																	disabled={pardonSubmitting === s.id}
-																	title="Retirer ce warn"
-																>
-																	{pardonSubmitting === s.id ? '...' : '✕'}
-																</button>
-															) : s.type !== 'warn' ? (
-																<button
-																	className="mod-btn-small pardon"
-																	onClick={() => handlePardon(s.id)}
-																	disabled={pardonSubmitting === s.id}
-																	title="Pardonner cette sanction"
-																>
-																	{pardonSubmitting === s.id ? '...' : '🕊️'}
-																</button>
-															) : null}
+															<span className={`mod-sanction-type ${s.type}`}>
+																{SANCTION_LABELS[s.type] || s.type}
+																{s.type === 'warn' && s.warnNumber
+																	? ` ${s.warnNumber}/7`
+																	: ''}
+																{s.duration
+																	? ` (${formatDuration(s.duration)})`
+																	: ''}
+															</span>
 														</td>
-													)}
-												</tr>
+														<td
+															style={{
+																maxWidth: '150px',
+																overflow: 'hidden',
+																textOverflow: 'ellipsis',
+																whiteSpace: 'nowrap',
+															}}
+														>
+															{s.reason}
+														</td>
+														<td>
+															{new Date(s.createdAt).toLocaleDateString('fr-FR')}
+														</td>
+														{isFull && (
+															<td>
+																{s.type === 'warn' && s.id === lastWarnId ? (
+																	<button
+																		className="mod-btn-small danger"
+																		onClick={() => handleRemoveWarn(s.id)}
+																		disabled={pardonSubmitting === s.id}
+																		title="Retirer ce warn"
+																	>
+																		{pardonSubmitting === s.id ? '...' : '✕'}
+																	</button>
+																) : s.type !== 'warn' ? (
+																	<button
+																		className="mod-btn-small pardon"
+																		onClick={() => handlePardon(s.id)}
+																		disabled={pardonSubmitting === s.id}
+																		title="Pardonner cette sanction"
+																	>
+																		{pardonSubmitting === s.id ? '...' : '🕊️'}
+																	</button>
+																) : null}
+															</td>
+														)}
+													</tr>
 												));
 											})()}
 										</tbody>
@@ -896,7 +981,9 @@ export default function CaseDetailPage() {
 			{actionModal && (
 				<div
 					className="mod-modal-overlay"
-					onClick={(e) => { if (e.target === e.currentTarget) setActionModal(null); }}
+					onClick={e => {
+						if (e.target === e.currentTarget) setActionModal(null);
+					}}
 				>
 					<div className="mod-modal">
 						<div className="mod-modal-header">
@@ -906,7 +993,10 @@ export default function CaseDetailPage() {
 								{actionModal === 'temp-ban' && 'Bannir temporairement'}
 								{actionModal === 'perm-ban' && 'Bannir définitivement'}
 							</span>
-							<button className="mod-modal-close" onClick={() => setActionModal(null)}>
+							<button
+								className="mod-modal-close"
+								onClick={() => setActionModal(null)}
+							>
 								✕
 							</button>
 						</div>
@@ -915,24 +1005,31 @@ export default function CaseDetailPage() {
 								<div className="mod-modal-warning">
 									Cet avertissement sera le <strong>#{warnCount + 1}/7</strong>.
 									{nextSanction.action !== 'warn' && (
-										<> Action automatique : <strong>{nextSanction.label}</strong></>
+										<>
+											{' '}
+											Action automatique : <strong>{nextSanction.label}</strong>
+										</>
 									)}
 								</div>
 							)}
-							{(actionModal === 'perm-ban') && (
+							{actionModal === 'perm-ban' && (
 								<div className="mod-modal-warning">
-									⚠ Cette action est irréversible. Le joueur sera banni définitivement du serveur Discord.
+									⚠ Cette action est irréversible. Le joueur sera banni
+									définitivement du serveur Discord.
 								</div>
 							)}
 							<div className="mod-modal-info">
-								Cible : <strong>{caseData.targetServerUsername || caseData.targetDiscordUsername}</strong>
+								Cible :{' '}
+								<strong>
+									{caseData.targetServerUsername || caseData.targetDiscordUsername}
+								</strong>
 							</div>
 							<div className="mod-modal-field">
 								<label className="mod-modal-label">Raison</label>
 								<textarea
 									className="mod-modal-textarea"
 									value={actionReason}
-									onChange={(e) => setActionReason(e.target.value)}
+									onChange={e => setActionReason(e.target.value)}
 									placeholder="Raison de la sanction..."
 								/>
 							</div>
@@ -942,7 +1039,7 @@ export default function CaseDetailPage() {
 									<select
 										className="mod-reason-select"
 										value={actionDuration}
-										onChange={(e) => setActionDuration(Number(e.target.value))}
+										onChange={e => setActionDuration(Number(e.target.value))}
 									>
 										<option value={3600}>1 heure</option>
 										<option value={21600}>6 heures</option>
@@ -976,12 +1073,17 @@ export default function CaseDetailPage() {
 			{transcriptModal && (
 				<div
 					className="mod-modal-overlay"
-					onClick={(e) => { if (e.target === e.currentTarget) setTranscriptModal(false); }}
+					onClick={e => {
+						if (e.target === e.currentTarget) setTranscriptModal(false);
+					}}
 				>
 					<div className="mod-modal">
 						<div className="mod-modal-header">
 							<span>Lier un transcript</span>
-							<button className="mod-modal-close" onClick={() => setTranscriptModal(false)}>
+							<button
+								className="mod-modal-close"
+								onClick={() => setTranscriptModal(false)}
+							>
 								✕
 							</button>
 						</div>
@@ -992,7 +1094,7 @@ export default function CaseDetailPage() {
 									className="mod-modal-input"
 									type="url"
 									value={transcriptUrl}
-									onChange={(e) => setTranscriptUrl(e.target.value)}
+									onChange={e => setTranscriptUrl(e.target.value)}
 									placeholder="https://..."
 								/>
 							</div>
@@ -1002,7 +1104,7 @@ export default function CaseDetailPage() {
 									className="mod-modal-input"
 									type="text"
 									value={transcriptName}
-									onChange={(e) => setTranscriptName(e.target.value)}
+									onChange={e => setTranscriptName(e.target.value)}
 									placeholder="Ticket #1234"
 								/>
 							</div>
@@ -1027,12 +1129,17 @@ export default function CaseDetailPage() {
 			{reasonModal && (
 				<div
 					className="mod-modal-overlay"
-					onClick={(e) => { if (e.target === e.currentTarget) setReasonModal(false); }}
+					onClick={e => {
+						if (e.target === e.currentTarget) setReasonModal(false);
+					}}
 				>
 					<div className="mod-modal">
 						<div className="mod-modal-header">
 							<span>Modifier le motif</span>
-							<button className="mod-modal-close" onClick={() => setReasonModal(false)}>
+							<button
+								className="mod-modal-close"
+								onClick={() => setReasonModal(false)}
+							>
 								✕
 							</button>
 						</div>
@@ -1042,10 +1149,12 @@ export default function CaseDetailPage() {
 								<select
 									className="mod-reason-select"
 									value={newReason}
-									onChange={(e) => setNewReason(e.target.value)}
+									onChange={e => setNewReason(e.target.value)}
 								>
 									{Object.entries(REASON_LABELS).map(([v, l]) => (
-										<option key={v} value={v}>{l}</option>
+										<option key={v} value={v}>
+											{l}
+										</option>
 									))}
 								</select>
 							</div>
@@ -1054,7 +1163,7 @@ export default function CaseDetailPage() {
 								<textarea
 									className="mod-modal-textarea"
 									value={newReasonDetail}
-									onChange={(e) => setNewReasonDetail(e.target.value)}
+									onChange={e => setNewReasonDetail(e.target.value)}
 									placeholder="Détail supplémentaire..."
 								/>
 							</div>

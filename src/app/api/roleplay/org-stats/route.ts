@@ -65,9 +65,10 @@ export async function GET() {
 				const dataPoints: { date: Date; total: number }[] = [];
 
 				for (const entry of bankHistory.docs) {
-					const charId = typeof entry.character === 'number'
-						? entry.character
-						: (entry.character as any)?.id;
+					const charId =
+						typeof entry.character === 'number'
+							? entry.character
+							: (entry.character as any)?.id;
 					const amount = (entry as any).amount as number;
 					if (charId && typeof amount === 'number') {
 						charAmounts[charId] = amount;

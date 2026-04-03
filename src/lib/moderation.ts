@@ -3,7 +3,10 @@ import { getPayloadClient } from './payload';
 const DISCORD_API = 'https://discord.com/api/v10';
 
 // Warn escalation: warn number → resulting sanction
-export const WARN_ESCALATION: Record<number, { action: string; duration: number | null; label: string }> = {
+export const WARN_ESCALATION: Record<
+	number,
+	{ action: string; duration: number | null; label: string }
+> = {
 	1: { action: 'warn', duration: null, label: 'Avertissement' },
 	2: { action: 'kick', duration: null, label: 'Expulsion automatique' },
 	3: { action: 'temp-ban', duration: 86400, label: 'Bannissement 24h' },
@@ -13,7 +16,11 @@ export const WARN_ESCALATION: Record<number, { action: string; duration: number 
 	7: { action: 'perm-ban', duration: null, label: 'Bannissement définitif' },
 };
 
-export function getNextSanctionInfo(currentWarnCount: number): { action: string; duration: number | null; label: string } {
+export function getNextSanctionInfo(currentWarnCount: number): {
+	action: string;
+	duration: number | null;
+	label: string;
+} {
 	const next = currentWarnCount + 1;
 	if (next >= 7) return WARN_ESCALATION[7];
 	return WARN_ESCALATION[next] || WARN_ESCALATION[7];
@@ -77,24 +84,37 @@ export async function sendModerationLog(embed: ModerationLogEmbed) {
 	}
 }
 
-export async function discordWarnUser(userId: string, reason: string, warnNumber: number): Promise<{ success: boolean; error?: string }> {
+export async function discordWarnUser(
+	userId: string,
+	reason: string,
+	warnNumber: number,
+): Promise<{ success: boolean; error?: string }> {
 	// Warns are tracked on the website only. Send DM to user.
 	try {
-		await sendDiscordDM(userId, `⚠️ **Avertissement** (${warnNumber}/7)\n\n**Raison :** ${reason}\n\nVous avez reçu un avertissement sur le serveur LIF.`);
+		await sendDiscordDM(
+			userId,
+			`⚠️ **Avertissement** (${warnNumber}/7)\n\n**Raison :** ${reason}\n\nVous avez reçu un avertissement sur le serveur LIF.`,
+		);
 		return { success: true };
 	} catch (err: any) {
 		return { success: false, error: err.message || 'Échec envoi DM' };
 	}
 }
 
-export async function discordKickUser(userId: string, reason: string): Promise<{ success: boolean; error?: string }> {
+export async function discordKickUser(
+	userId: string,
+	reason: string,
+): Promise<{ success: boolean; error?: string }> {
 	const botToken = process.env.DISCORD_BOT_TOKEN;
 	const guildId = process.env.DISCORD_GUILD_ID;
 	if (!botToken || !guildId) return { success: false, error: 'Bot non configuré' };
 
 	try {
 		// Send DM first (before kick, since they leave the server)
-		await sendDiscordDM(userId, `👢 **Expulsion**\n\n**Raison :** ${reason}\n\nVous avez été expulsé du serveur LIF.`).catch(() => {});
+		await sendDiscordDM(
+			userId,
+			`👢 **Expulsion**\n\n**Raison :** ${reason}\n\nVous avez été expulsé du serveur LIF.`,
+		).catch(() => {});
 
 		const res = await fetch(`${DISCORD_API}/guilds/${guildId}/members/${userId}`, {
 			method: 'DELETE',
@@ -114,14 +134,23 @@ export async function discordKickUser(userId: string, reason: string): Promise<{
 	}
 }
 
-export async function discordBanUser(userId: string, reason: string, durationSeconds: number | null): Promise<{ success: boolean; error?: string }> {
+export async function discordBanUser(
+	userId: string,
+	reason: string,
+	durationSeconds: number | null,
+): Promise<{ success: boolean; error?: string }> {
 	const botToken = process.env.DISCORD_BOT_TOKEN;
 	const guildId = process.env.DISCORD_GUILD_ID;
 	if (!botToken || !guildId) return { success: false, error: 'Bot non configuré' };
 
 	try {
-		const durationText = durationSeconds ? formatDuration(durationSeconds) : 'définitif';
-		await sendDiscordDM(userId, `🔨 **Bannissement ${durationText}**\n\n**Raison :** ${reason}\n\nVous avez été banni du serveur LIF.`).catch(() => {});
+		const durationText = durationSeconds
+			? formatDuration(durationSeconds)
+			: 'définitif';
+		await sendDiscordDM(
+			userId,
+			`🔨 **Bannissement ${durationText}**\n\n**Raison :** ${reason}\n\nVous avez été banni du serveur LIF.`,
+		).catch(() => {});
 
 		const body: any = { delete_message_seconds: 0 };
 
@@ -149,7 +178,10 @@ export async function discordBanUser(userId: string, reason: string, durationSec
 	}
 }
 
-export async function discordUnbanUser(userId: string, reason: string): Promise<{ success: boolean; error?: string }> {
+export async function discordUnbanUser(
+	userId: string,
+	reason: string,
+): Promise<{ success: boolean; error?: string }> {
 	const botToken = process.env.DISCORD_BOT_TOKEN;
 	const guildId = process.env.DISCORD_GUILD_ID;
 	if (!botToken || !guildId) return { success: false, error: 'Bot non configuré' };
@@ -200,7 +232,7 @@ async function sendDiscordDM(userId: string, content: string): Promise<void> {
 		body: JSON.stringify({ content }),
 	});
 
-	if (!msgRes.ok) throw new Error('Impossible d\'envoyer le DM');
+	if (!msgRes.ok) throw new Error("Impossible d'envoyer le DM");
 }
 
 export async function fetchGuildMembers(limit = 1000): Promise<any[]> {

@@ -33,7 +33,11 @@ export function GameMoneySection({
 	// Countdown state
 	const [lastGlobalSync, setLastGlobalSync] = useState<string | null>(null);
 	const [syncIntervalMinutes, setSyncIntervalMinutes] = useState(15);
-	const [countdown, setCountdown] = useState<{ minutes: number; seconds: number; progress: number } | null>(null);
+	const [countdown, setCountdown] = useState<{
+		minutes: number;
+		seconds: number;
+		progress: number;
+	} | null>(null);
 	const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
 	// Anonymous toggle state
@@ -41,7 +45,9 @@ export function GameMoneySection({
 	const [anonymousLoading, setAnonymousLoading] = useState(false);
 
 	// Bank history (admin only)
-	const [bankHistory, setBankHistory] = useState<{ amount: number; previousAmount: number | null; source: string; date: string }[]>([]);
+	const [bankHistory, setBankHistory] = useState<
+		{ amount: number; previousAmount: number | null; source: string; date: string }[]
+	>([]);
 	const [showHistory, setShowHistory] = useState(false);
 
 	const clearMessages = () => {
@@ -123,7 +129,9 @@ export function GameMoneySection({
 					setSuccess(`Argent sauvegardé : ${formatMoney(data.savedMoney)}`);
 					break;
 				case 'restore-money':
-					setSuccess(`Argent restauré sur le serveur : ${formatMoney(data.restoredMoney)}`);
+					setSuccess(
+						`Argent restauré sur le serveur : ${formatMoney(data.restoredMoney)}`,
+					);
 					break;
 				case 'set-money':
 					setSuccess(`Argent défini à ${formatMoney(data.newMoney)} sur le serveur`);
@@ -189,7 +197,7 @@ export function GameMoneySection({
 				<div className="game-money-row">
 					<span className="game-money-label">Argent en jeu</span>
 					<span className="game-money-value">
-						{(isOwner || isAdmin) ? (
+						{isOwner || isAdmin ? (
 							loading ? (
 								<span className="game-loading">Chargement...</span>
 							) : gameMoney !== null ? (
@@ -197,8 +205,10 @@ export function GameMoneySection({
 							) : (
 								<span className="game-muted">—</span>
 							)
+						) : savedMoney !== null ? (
+							formatMoney(savedMoney)
 						) : (
-							savedMoney !== null ? formatMoney(savedMoney) : <span className="game-muted">—</span>
+							<span className="game-muted">—</span>
 						)}
 					</span>
 				</div>
@@ -207,13 +217,20 @@ export function GameMoneySection({
 						<div className="game-money-row">
 							<span className="game-money-label">Dernier backup</span>
 							<span className="game-money-value">
-								{savedMoney !== null ? formatMoney(savedMoney) : <span className="game-muted">Aucun</span>}
+								{savedMoney !== null ? (
+									formatMoney(savedMoney)
+								) : (
+									<span className="game-muted">Aucun</span>
+								)}
 							</span>
 						</div>
 						{lastSyncAt && (
 							<div className="game-money-row">
 								<span className="game-money-label">Date du backup</span>
-								<span className="game-money-value game-muted" style={{ fontSize: '0.8rem' }}>
+								<span
+									className="game-money-value game-muted"
+									style={{ fontSize: '0.8rem' }}
+								>
 									{new Date(lastSyncAt).toLocaleString('fr-FR')}
 								</span>
 							</div>
@@ -223,7 +240,10 @@ export function GameMoneySection({
 				{!(isOwner || isAdmin) && lastSyncAt && (
 					<div className="game-money-row">
 						<span className="game-money-label">Mis à jour</span>
-						<span className="game-money-value game-muted" style={{ fontSize: '0.8rem' }}>
+						<span
+							className="game-money-value game-muted"
+							style={{ fontSize: '0.8rem' }}
+						>
 							{new Date(lastSyncAt).toLocaleString('fr-FR')}
 						</span>
 					</div>
@@ -238,7 +258,11 @@ export function GameMoneySection({
 							onClick={toggleAnonymous}
 							disabled={anonymousLoading}
 							className={`game-btn-toggle ${isAnonymous ? 'active' : ''}`}
-							title={isAnonymous ? 'Votre argent est masqué aux autres joueurs' : 'Votre argent est visible par tous'}
+							title={
+								isAnonymous
+									? 'Votre argent est masqué aux autres joueurs'
+									: 'Votre argent est visible par tous'
+							}
 						>
 							{anonymousLoading ? '...' : isAnonymous ? '🔒 Oui' : '🔓 Non'}
 						</button>
@@ -286,7 +310,11 @@ export function GameMoneySection({
 								<button
 									type="button"
 									onClick={() => {
-										if (confirm(`Restaurer ${formatMoney(savedMoney)} sur le serveur ?`)) {
+										if (
+											confirm(
+												`Restaurer ${formatMoney(savedMoney)} sur le serveur ?`,
+											)
+										) {
 											performAction('restore-money');
 										}
 									}}
@@ -322,7 +350,11 @@ export function GameMoneySection({
 										setError('Montant invalide');
 										return;
 									}
-									if (confirm(`Définir l'argent à ${formatMoney(amount)} sur le serveur ?`)) {
+									if (
+										confirm(
+											`Définir l'argent à ${formatMoney(amount)} sur le serveur ?`,
+										)
+									) {
 										performAction('set-money', { amount });
 									}
 								}}
@@ -348,13 +380,15 @@ export function GameMoneySection({
 						{showHistory && (
 							<div className="game-history-list">
 								{bankHistory.map((entry, i) => {
-									const delta = entry.previousAmount !== null && entry.previousAmount !== undefined
-										? entry.amount - entry.previousAmount
-										: null;
+									const delta =
+										entry.previousAmount !== null &&
+										entry.previousAmount !== undefined
+											? entry.amount - entry.previousAmount
+											: null;
 									const sourceLabels: Record<string, string> = {
 										'auto-sync': 'Sync auto',
 										'manual-save': 'Sauvegarde',
-										'restore': 'Restauration',
+										restore: 'Restauration',
 										'admin-set': 'Modif. admin',
 									};
 									return (
@@ -366,8 +400,11 @@ export function GameMoneySection({
 												{formatMoney(entry.amount)}
 											</span>
 											{delta !== null && (
-												<span className={`game-history-delta ${delta >= 0 ? 'positive' : 'negative'}`}>
-													{delta >= 0 ? '+' : ''}{formatMoney(delta)}
+												<span
+													className={`game-history-delta ${delta >= 0 ? 'positive' : 'negative'}`}
+												>
+													{delta >= 0 ? '+' : ''}
+													{formatMoney(delta)}
 												</span>
 											)}
 											<span className="game-history-source">

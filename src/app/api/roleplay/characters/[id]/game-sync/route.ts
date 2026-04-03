@@ -17,19 +17,29 @@ export async function GET(
 ) {
 	const cookieStore = await cookies();
 	const token = cookieStore.get('roleplay-session')?.value;
-	if (!token) return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
+	if (!token)
+		return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
 
 	const session = verifySession(token);
-	if (!session) return NextResponse.json({ error: 'Session invalide' }, { status: 401 });
+	if (!session)
+		return NextResponse.json({ error: 'Session invalide' }, { status: 401 });
 
 	if (!(await isGameServerConfigured())) {
-		return NextResponse.json({ error: 'Serveur de jeu non configuré' }, { status: 503 });
+		return NextResponse.json(
+			{ error: 'Serveur de jeu non configuré' },
+			{ status: 503 },
+		);
 	}
 
 	const { id } = await params;
 	const payload = await getPayloadClient();
-	const character = await payload.findByID({ collection: 'characters', id: Number(id), depth: 0 });
-	if (!character) return NextResponse.json({ error: 'Personnage introuvable' }, { status: 404 });
+	const character = await payload.findByID({
+		collection: 'characters',
+		id: Number(id),
+		depth: 0,
+	});
+	if (!character)
+		return NextResponse.json({ error: 'Personnage introuvable' }, { status: 404 });
 
 	// Only owner or admin can read game data
 	const perms = await checkAdminPermissions(session);
@@ -39,19 +49,25 @@ export async function GET(
 
 	const biId = (character as any).biId;
 	if (!biId) {
-		return NextResponse.json({ error: 'Aucun BI ID lié à ce personnage' }, { status: 400 });
+		return NextResponse.json(
+			{ error: 'Aucun BI ID lié à ce personnage' },
+			{ status: 400 },
+		);
 	}
 
 	try {
 		const result = await getPlayerMoney(biId);
 		if (!result) {
-			return NextResponse.json({
-				error: 'Joueur non trouvé dans la persistence du serveur',
-			}, { status: 404 });
+			return NextResponse.json(
+				{
+					error: 'Joueur non trouvé dans la persistence du serveur',
+				},
+				{ status: 404 },
+			);
 		}
 
 		// Get global sync info for countdown
-		const roleplay = await payload.findGlobal({ slug: 'roleplay' }) as any;
+		const roleplay = (await payload.findGlobal({ slug: 'roleplay' })) as any;
 
 		// Fetch bank history for admins
 		let bankHistory: any[] = [];
@@ -92,26 +108,39 @@ export async function POST(
 ) {
 	const cookieStore = await cookies();
 	const token = cookieStore.get('roleplay-session')?.value;
-	if (!token) return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
+	if (!token)
+		return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
 
 	const session = verifySession(token);
-	if (!session) return NextResponse.json({ error: 'Session invalide' }, { status: 401 });
+	if (!session)
+		return NextResponse.json({ error: 'Session invalide' }, { status: 401 });
 
 	if (!(await isGameServerConfigured())) {
-		return NextResponse.json({ error: 'Serveur de jeu non configuré' }, { status: 503 });
+		return NextResponse.json(
+			{ error: 'Serveur de jeu non configuré' },
+			{ status: 503 },
+		);
 	}
 
 	const { id } = await params;
 	const payload = await getPayloadClient();
-	const character = await payload.findByID({ collection: 'characters', id: Number(id), depth: 1 });
-	if (!character) return NextResponse.json({ error: 'Personnage introuvable' }, { status: 404 });
+	const character = await payload.findByID({
+		collection: 'characters',
+		id: Number(id),
+		depth: 1,
+	});
+	if (!character)
+		return NextResponse.json({ error: 'Personnage introuvable' }, { status: 404 });
 
 	const perms = await checkAdminPermissions(session);
 	const isOwner = (character as any).discordId === session.discordId;
 
 	const biId = (character as any).biId;
 	if (!biId) {
-		return NextResponse.json({ error: 'Aucun BI ID lié à ce personnage' }, { status: 400 });
+		return NextResponse.json(
+			{ error: 'Aucun BI ID lié à ce personnage' },
+			{ status: 400 },
+		);
 	}
 
 	const body = await request.json();
@@ -122,11 +151,17 @@ export async function POST(
 			// Save current game money to website (backup) — admin only
 			case 'save-money': {
 				if (!perms.isAdmin) {
-					return NextResponse.json({ error: 'Réservé aux administrateurs' }, { status: 403 });
+					return NextResponse.json(
+						{ error: 'Réservé aux administrateurs' },
+						{ status: 403 },
+					);
 				}
 				const result = await getPlayerMoney(biId);
 				if (!result) {
-					return NextResponse.json({ error: 'Joueur non trouvé dans la persistence' }, { status: 404 });
+					return NextResponse.json(
+						{ error: 'Joueur non trouvé dans la persistence' },
+						{ status: 404 },
+					);
 				}
 				const money = Math.round(result.money * 100) / 100;
 				const prevMoney = (character as any).savedMoney ?? null;
@@ -140,7 +175,12 @@ export async function POST(
 				});
 				await payload.create({
 					collection: 'bank-history',
-					data: { character: Number(id), amount: money, previousAmount: prevMoney, source: 'manual-save' } as any,
+					data: {
+						character: Number(id),
+						amount: money,
+						previousAmount: prevMoney,
+						source: 'manual-save',
+					} as any,
 				});
 				return NextResponse.json({ success: true, savedMoney: money });
 			}
@@ -148,16 +188,27 @@ export async function POST(
 			// Restore saved money back to game — admin only
 			case 'restore-money': {
 				if (!perms.isAdmin) {
-					return NextResponse.json({ error: 'Réservé aux administrateurs' }, { status: 403 });
+					return NextResponse.json(
+						{ error: 'Réservé aux administrateurs' },
+						{ status: 403 },
+					);
 				}
 				const savedMoney = (character as any).savedMoney;
 				if (savedMoney == null) {
-					return NextResponse.json({ error: 'Aucun argent sauvegardé' }, { status: 400 });
+					return NextResponse.json(
+						{ error: 'Aucun argent sauvegardé' },
+						{ status: 400 },
+					);
 				}
 				await setPlayerMoney(biId, savedMoney);
 				await payload.create({
 					collection: 'bank-history',
-					data: { character: Number(id), amount: savedMoney, previousAmount: savedMoney, source: 'restore' } as any,
+					data: {
+						character: Number(id),
+						amount: savedMoney,
+						previousAmount: savedMoney,
+						source: 'restore',
+					} as any,
 				});
 				return NextResponse.json({ success: true, restoredMoney: savedMoney });
 			}
@@ -165,7 +216,10 @@ export async function POST(
 			// Admin: set money to a specific amount on the game server
 			case 'set-money': {
 				if (!perms.isAdmin) {
-					return NextResponse.json({ error: 'Réservé aux administrateurs' }, { status: 403 });
+					return NextResponse.json(
+						{ error: 'Réservé aux administrateurs' },
+						{ status: 403 },
+					);
 				}
 				const newMoney = parseFloat(body.amount);
 				if (isNaN(newMoney) || newMoney < 0) {
@@ -175,7 +229,12 @@ export async function POST(
 				await setPlayerMoney(biId, newMoney);
 				await payload.create({
 					collection: 'bank-history',
-					data: { character: Number(id), amount: newMoney, previousAmount: prevAmount, source: 'admin-set' } as any,
+					data: {
+						character: Number(id),
+						amount: newMoney,
+						previousAmount: prevAmount,
+						source: 'admin-set',
+					} as any,
 				});
 				return NextResponse.json({ success: true, newMoney });
 			}
@@ -185,7 +244,9 @@ export async function POST(
 				if (!perms.isAdmin && !isOwner) {
 					return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
 				}
-				const fullName = (character as any).fullName || `${(character as any).firstName} ${(character as any).lastName}`;
+				const fullName =
+					(character as any).fullName ||
+					`${(character as any).firstName} ${(character as any).lastName}`;
 				// Get rank abbreviation for prefix
 				let rankPrefix = 'LIF';
 				const rank = (character as any).rank;
@@ -193,7 +254,11 @@ export async function POST(
 					rankPrefix = rank.abbreviation;
 				}
 				await setCustomName(biId, fullName, rankPrefix);
-				return NextResponse.json({ success: true, name: fullName, prefix: rankPrefix });
+				return NextResponse.json({
+					success: true,
+					name: fullName,
+					prefix: rankPrefix,
+				});
 			}
 
 			default:

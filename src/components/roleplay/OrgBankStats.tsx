@@ -71,11 +71,12 @@ export default function OrgBankStats() {
 			ctx.lineTo(w - padRight, y);
 			ctx.stroke();
 
-			const label = val >= 1000000
-				? (val / 1000000).toFixed(1) + 'M'
-				: val >= 1000
-					? (val / 1000).toFixed(0) + 'K'
-					: val.toFixed(0);
+			const label =
+				val >= 1000000
+					? (val / 1000000).toFixed(1) + 'M'
+					: val >= 1000
+						? (val / 1000).toFixed(0) + 'K'
+						: val.toFixed(0);
 			ctx.fillText('$' + label, padLeft - 8, y + 4);
 		}
 
@@ -193,9 +194,14 @@ export default function OrgBankStats() {
 					REVENUS CONTRACTUELS AMASSÉS — LÉGION INTERNATIONALE FRANCOPHONE
 				</div>
 				<div className="org-stats-sub">
-					<span>{stats.memberCount} opérateur{stats.memberCount !== 1 ? 's' : ''} actif{stats.memberCount !== 1 ? 's' : ''}</span>
+					<span>
+						{stats.memberCount} opérateur{stats.memberCount !== 1 ? 's' : ''} actif
+						{stats.memberCount !== 1 ? 's' : ''}
+					</span>
 					{changePercent !== null && (
-						<span className={`org-stats-change ${changePercent >= 0 ? 'positive' : 'negative'}`}>
+						<span
+							className={`org-stats-change ${changePercent >= 0 ? 'positive' : 'negative'}`}
+						>
 							{changePercent >= 0 ? '▲' : '▼'} {Math.abs(changePercent).toFixed(1)}%
 						</span>
 					)}

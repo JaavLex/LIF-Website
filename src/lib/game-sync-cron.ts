@@ -5,7 +5,7 @@ async function getSyncInterval(): Promise<number> {
 	try {
 		const { getPayloadClient } = await import('@/lib/payload');
 		const payload = await getPayloadClient();
-		const roleplay = await payload.findGlobal({ slug: 'roleplay' }) as any;
+		const roleplay = (await payload.findGlobal({ slug: 'roleplay' })) as any;
 		const minutes = roleplay.gameSyncInterval || 15;
 		return minutes * 60 * 1000;
 	} catch {
@@ -15,7 +15,8 @@ async function getSyncInterval(): Promise<number> {
 
 async function runSync() {
 	try {
-		const { isGameServerConfigured, readGamePersistence, setCustomName } = await import('@/lib/game-server');
+		const { isGameServerConfigured, readGamePersistence, setCustomName } =
+			await import('@/lib/game-server');
 
 		if (!(await isGameServerConfigured())) {
 			console.log('[Game Sync Cron] Server not configured, skipping');
@@ -82,7 +83,9 @@ async function runSync() {
 			const biId = (character as any).biId;
 			if (!biId) continue;
 
-			const fullName = (character as any).fullName || `${(character as any).firstName} ${(character as any).lastName}`;
+			const fullName =
+				(character as any).fullName ||
+				`${(character as any).firstName} ${(character as any).lastName}`;
 			let rankPrefix = 'LIF';
 			const rank = (character as any).rank;
 			if (rank && typeof rank === 'object' && rank.abbreviation) {
@@ -102,7 +105,9 @@ async function runSync() {
 			data: { lastGlobalMoneySync: now } as any,
 		});
 
-		console.log(`[Game Sync Cron] OK: ${synced}/${characters.length} money synced, ${namesSynced} names synced`);
+		console.log(
+			`[Game Sync Cron] OK: ${synced}/${characters.length} money synced, ${namesSynced} names synced`,
+		);
 	} catch (err) {
 		console.error('[Game Sync Cron] Error:', err);
 	}
@@ -111,7 +116,9 @@ async function runSync() {
 	try {
 		const newInterval = await getSyncInterval();
 		if (newInterval !== currentIntervalMs) {
-			console.log(`[Game Sync Cron] Interval changed: ${currentIntervalMs / 60000}m -> ${newInterval / 60000}m`);
+			console.log(
+				`[Game Sync Cron] Interval changed: ${currentIntervalMs / 60000}m -> ${newInterval / 60000}m`,
+			);
 			currentIntervalMs = newInterval;
 			if (intervalId) clearInterval(intervalId);
 			intervalId = setInterval(runSync, currentIntervalMs);
@@ -127,7 +134,9 @@ export function startGameSyncCron() {
 	// Start after a 30s delay to let the server fully start
 	setTimeout(async () => {
 		currentIntervalMs = await getSyncInterval();
-		console.log(`[Game Sync Cron] Started with ${currentIntervalMs / 60000}m interval`);
+		console.log(
+			`[Game Sync Cron] Started with ${currentIntervalMs / 60000}m interval`,
+		);
 
 		// Run first sync immediately
 		runSync();

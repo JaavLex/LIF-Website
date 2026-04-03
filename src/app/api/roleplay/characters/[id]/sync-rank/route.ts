@@ -32,7 +32,10 @@ export async function POST(
 		});
 
 		if (!character) {
-			return NextResponse.json({ message: 'Personnage non trouvé' }, { status: 404 });
+			return NextResponse.json(
+				{ message: 'Personnage non trouvé' },
+				{ status: 404 },
+			);
 		}
 
 		// Only owner can sync their own rank
@@ -44,7 +47,10 @@ export async function POST(
 		const member = await getGuildMember(session.discordId);
 		if (!member) {
 			return NextResponse.json(
-				{ message: 'Impossible de récupérer vos rôles Discord. Vérifiez que vous êtes sur le serveur.' },
+				{
+					message:
+						'Impossible de récupérer vos rôles Discord. Vérifiez que vous êtes sur le serveur.',
+				},
 				{ status: 400 },
 			);
 		}
@@ -68,7 +74,10 @@ export async function POST(
 				limit: 1,
 			});
 			if (defaultRank.docs.length === 0) {
-				return NextResponse.json({ message: 'Aucun grade configuré' }, { status: 500 });
+				return NextResponse.json(
+					{ message: 'Aucun grade configuré' },
+					{ status: 500 },
+				);
 			}
 			rankId = defaultRank.docs[0].id;
 		}

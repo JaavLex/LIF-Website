@@ -2,7 +2,10 @@ import type { CollectionConfig } from 'payload';
 
 export const ModerationEvents: CollectionConfig = {
 	slug: 'moderation-events',
-	labels: { singular: 'Événement de modération', plural: 'Événements de modération' },
+	labels: {
+		singular: 'Événement de modération',
+		plural: 'Événements de modération',
+	},
 	admin: {
 		useAsTitle: 'type',
 		group: 'Modération',
@@ -77,7 +80,8 @@ export const ModerationEvents: CollectionConfig = {
 			],
 			admin: {
 				condition: (data, siblingData) =>
-					siblingData?.type === 'moderation-action' || siblingData?.type === 'auto-escalation',
+					siblingData?.type === 'moderation-action' ||
+					siblingData?.type === 'auto-escalation',
 			},
 		},
 		{
@@ -86,7 +90,8 @@ export const ModerationEvents: CollectionConfig = {
 			type: 'textarea',
 			admin: {
 				condition: (data, siblingData) =>
-					siblingData?.type === 'moderation-action' || siblingData?.type === 'auto-escalation',
+					siblingData?.type === 'moderation-action' ||
+					siblingData?.type === 'auto-escalation',
 			},
 		},
 		{
@@ -95,7 +100,8 @@ export const ModerationEvents: CollectionConfig = {
 			type: 'number',
 			admin: {
 				condition: (data, siblingData) =>
-					siblingData?.type === 'moderation-action' || siblingData?.type === 'auto-escalation',
+					siblingData?.type === 'moderation-action' ||
+					siblingData?.type === 'auto-escalation',
 			},
 		},
 		{
@@ -104,7 +110,8 @@ export const ModerationEvents: CollectionConfig = {
 			type: 'number',
 			admin: {
 				condition: (data, siblingData) =>
-					siblingData?.type === 'moderation-action' || siblingData?.type === 'auto-escalation',
+					siblingData?.type === 'moderation-action' ||
+					siblingData?.type === 'auto-escalation',
 			},
 		},
 		{

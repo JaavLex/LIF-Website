@@ -9,13 +9,16 @@ import { sendModerationLog } from '@/lib/moderation';
 export async function GET(request: NextRequest) {
 	const cookieStore = await cookies();
 	const token = cookieStore.get('roleplay-session')?.value;
-	if (!token) return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
+	if (!token)
+		return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
 
 	const session = verifySession(token);
-	if (!session) return NextResponse.json({ error: 'Session invalide' }, { status: 401 });
+	if (!session)
+		return NextResponse.json({ error: 'Session invalide' }, { status: 401 });
 
 	const perms = await checkAdminPermissions(session);
-	if (!perms.isAdmin) return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
+	if (!perms.isAdmin)
+		return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
 
 	const { searchParams } = new URL(request.url);
 	const status = searchParams.get('status');
@@ -55,20 +58,33 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
 	const cookieStore = await cookies();
 	const token = cookieStore.get('roleplay-session')?.value;
-	if (!token) return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
+	if (!token)
+		return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
 
 	const session = verifySession(token);
-	if (!session) return NextResponse.json({ error: 'Session invalide' }, { status: 401 });
+	if (!session)
+		return NextResponse.json({ error: 'Session invalide' }, { status: 401 });
 
 	const perms = await checkAdminPermissions(session);
-	if (!perms.isAdmin) return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
+	if (!perms.isAdmin)
+		return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
 
 	try {
 		const body = await request.json();
-		const { targetDiscordId, targetDiscordUsername, targetServerUsername, targetDiscordAvatar, reason, reasonDetail } = body;
+		const {
+			targetDiscordId,
+			targetDiscordUsername,
+			targetServerUsername,
+			targetDiscordAvatar,
+			reason,
+			reasonDetail,
+		} = body;
 
 		if (!targetDiscordId || !targetDiscordUsername || !reason) {
-			return NextResponse.json({ error: 'Champs requis manquants' }, { status: 400 });
+			return NextResponse.json(
+				{ error: 'Champs requis manquants' },
+				{ status: 400 },
+			);
 		}
 
 		const payload = await getPayloadClient();
@@ -80,7 +96,10 @@ export async function POST(request: NextRequest) {
 			limit: 1,
 		});
 		if (targetUser.docs[0]?.role === 'admin') {
-			return NextResponse.json({ error: 'Impossible de créer un dossier sur un administrateur' }, { status: 403 });
+			return NextResponse.json(
+				{ error: 'Impossible de créer un dossier sur un administrateur' },
+				{ status: 403 },
+			);
 		}
 
 		// Also check Discord admin roles
@@ -101,7 +120,10 @@ export async function POST(request: NextRequest) {
 						const targetRoles: string[] = member.roles || [];
 						for (const role of adminRoles) {
 							if (targetRoles.includes(role.roleId)) {
-								return NextResponse.json({ error: 'Impossible de créer un dossier sur un membre du staff' }, { status: 403 });
+								return NextResponse.json(
+									{ error: 'Impossible de créer un dossier sur un membre du staff' },
+									{ status: 403 },
+								);
 							}
 						}
 					}
@@ -155,7 +177,10 @@ export async function POST(request: NextRequest) {
 					timestamp: new Date().toISOString(),
 				});
 
-				return NextResponse.json({ case: { ...existingCase, status: 'open' }, reopened: true });
+				return NextResponse.json({
+					case: { ...existingCase, status: 'open' },
+					reopened: true,
+				});
 			}
 
 			// If active, just return the existing case
@@ -171,7 +196,8 @@ export async function POST(request: NextRequest) {
 			limit: 1,
 			depth: 0,
 		});
-		const nextNumber = lastCase.docs.length > 0 ? ((lastCase.docs[0] as any).caseNumber || 0) + 1 : 1;
+		const nextNumber =
+			lastCase.docs.length > 0 ? ((lastCase.docs[0] as any).caseNumber || 0) + 1 : 1;
 
 		const newCase = await payload.create({
 			collection: 'moderation-cases',
