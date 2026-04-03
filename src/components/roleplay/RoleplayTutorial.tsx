@@ -8,6 +8,7 @@ import {
 	DummyAdminIntelForm,
 	DummyAdminTimelineForm,
 } from './TutorialDummyForms';
+import { VersionInfo } from '@/components/VersionInfo';
 
 const TUTORIAL_SEEN_KEY = 'lif-roleplay-tutorial-seen';
 const ADMIN_TUTORIAL_SEEN_KEY = 'lif-roleplay-admin-tutorial-seen';
@@ -470,6 +471,7 @@ export function RoleplayTutorial({
 		<>
 			{!active && (
 				<div className="tutorial-buttons">
+					<VersionInfo />
 					<button
 						type="button"
 						className="tutorial-debug-btn rules-reopen-btn"

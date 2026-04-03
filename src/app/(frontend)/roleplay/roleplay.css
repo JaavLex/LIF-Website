@@ -1656,6 +1656,11 @@
 	border-color: var(--primary);
 }
 
+/* Hide global version-info when tutorial buttons are present */
+body:has(.tutorial-buttons) > .version-info-wrapper {
+	display: none;
+}
+
 /* Tutorial Buttons Container */
 .tutorial-buttons {
 	position: fixed;
@@ -1665,6 +1670,12 @@
 	display: flex;
 	gap: 0;
 	flex-direction: column;
+}
+
+.tutorial-buttons .version-info-wrapper {
+	position: static;
+	z-index: auto;
+	margin-bottom: 0.25rem;
 }
 
 .tutorial-debug-btn {
@@ -1680,7 +1691,7 @@
 	transition: all 0.2s;
 }
 
-.tutorial-debug-btn:first-child {
+.tutorial-debug-btn:first-of-type {
 	border-bottom: none;
 }
 

@@ -6,9 +6,16 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.1.1',
+  version: '1.1.2',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.1.2',
+      date: '2026-04-03',
+      changes: [
+        'Correction de la superposition des boutons sur la page roleplay',
+      ],
+    },
     {
       version: '1.1.1',
       date: '2026-04-03',
