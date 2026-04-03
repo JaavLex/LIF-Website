@@ -88,7 +88,7 @@ export async function notifyNewIntelligence(report: {
 	title: string;
 	type: string;
 	classification: string;
-	postedBy?: { fullName?: string } | null;
+	postedBy?: { fullName?: string | null } | null;
 }) {
 	const channelId = await getNotificationChannelId();
 	if (!channelId) return;
