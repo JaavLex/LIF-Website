@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
 	const page = parseInt(searchParams.get('page') || '1');
 	const limit = Math.min(parseInt(searchParams.get('limit') || '50'), 100);
 
-	const where: Record<string, unknown> = {};
+	const where: Record<string, any> = {};
 	if (status) where.status = { equals: status };
 	if (targetDiscordId) where.targetDiscordId = { equals: targetDiscordId };
 	if (moderator) where.createdByDiscordId = { equals: moderator };
@@ -84,9 +84,8 @@ export async function POST(request: NextRequest) {
 
 		// Also check Discord admin roles
 		try {
-			const roleplayConfig = await payload.findGlobal({ slug: 'roleplay' });
-			const adminRoles = (roleplayConfig as Record<string, unknown>)
-				?.adminRoles as { roleId: string }[] | undefined;
+			const roleplayConfig = await payload.findGlobal({ slug: 'roleplay' }) as any;
+			const adminRoles = roleplayConfig?.adminRoles as { roleId: string }[] | undefined;
 			if (adminRoles?.length) {
 				const botToken = process.env.DISCORD_BOT_TOKEN;
 				const guildId = process.env.DISCORD_GUILD_ID;

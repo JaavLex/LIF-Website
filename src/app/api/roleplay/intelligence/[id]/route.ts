@@ -50,7 +50,7 @@ export async function PATCH(
 			depth: 0,
 		});
 
-		const isOwner = (existing as Record<string, unknown>).postedByDiscordId === session.discordId;
+		const isOwner = (existing as Record<string, any>).postedByDiscordId === session.discordId;
 
 		if (!isAdmin && !isOwner) {
 			return NextResponse.json({ message: 'Non autorisé' }, { status: 403 });

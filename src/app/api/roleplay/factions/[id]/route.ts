@@ -18,7 +18,7 @@ export async function PATCH(
 	try {
 		const payload = await getPayloadClient();
 		const body = await request.json();
-		const updateData: Record<string, unknown> = {};
+		const updateData: Record<string, any> = {};
 		if (body.name) updateData.name = body.name;
 		if (body.slug) updateData.slug = body.slug;
 		if (body.type) updateData.type = body.type;

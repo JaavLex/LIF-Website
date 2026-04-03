@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
 	const targetDiscordId = searchParams.get('targetDiscordId');
 	const type = searchParams.get('type');
 
-	const where: Record<string, unknown> = {};
+	const where: Record<string, any> = {};
 	if (targetDiscordId) where.targetDiscordId = { equals: targetDiscordId };
 	if (type) where.type = { equals: type };
 
