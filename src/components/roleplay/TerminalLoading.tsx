@@ -77,8 +77,17 @@ export function TerminalLoading({
 		}
 	}, [complete, onComplete]);
 
+	const handleSkip = useCallback(() => {
+		if (!complete) {
+			setComplete(true);
+		}
+	}, [complete]);
+
 	return (
-		<div className={`terminal-loading-overlay ${complete ? 'fade-out' : ''}`}>
+		<div
+			className={`terminal-loading-overlay ${complete ? 'fade-out' : ''}`}
+			onClick={handleSkip}
+		>
 			<div className="terminal-loading-screen">
 				<div className="terminal-loading-header">
 					<span className="terminal-loading-logo">LIF</span>
@@ -102,6 +111,11 @@ export function TerminalLoading({
 				</div>
 				{complete && (
 					<div className="terminal-loading-access">ACCÈS AUTORISÉ — BIENVENUE</div>
+				)}
+				{!complete && (
+					<div className="terminal-loading-skip">
+						Cliquer pour passer
+					</div>
 				)}
 			</div>
 			<div className="terminal-loading-scanlines" />
