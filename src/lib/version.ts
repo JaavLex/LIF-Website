@@ -6,9 +6,18 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.2.4',
+  version: '1.2.5',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.2.5',
+      date: '2026-04-04',
+      changes: [
+        'Option pour passer l\'écran de chargement (cliquer n\'importe où)',
+        'Correction du bandeau dev qui bloquait la navbar sur mobile',
+        'Correction des accents dans le bandeau dev',
+      ],
+    },
     {
       version: '1.2.4',
       date: '2026-04-04',
