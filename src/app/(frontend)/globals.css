@@ -968,3 +968,176 @@ a:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(74, 124, 35, 0.4);
 }
+
+/* ============================
+   VERSION INFO WIDGET
+   ============================ */
+
+.version-info-wrapper {
+  position: fixed;
+  bottom: 4rem;
+  left: 1rem;
+  z-index: 1001;
+}
+
+.version-info-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: rgba(12, 15, 10, 0.95);
+  color: var(--muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(8px);
+  transition: all 0.2s;
+}
+
+.version-info-btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.version-info-panel {
+  position: absolute;
+  bottom: calc(100% + 0.5rem);
+  left: 0;
+  width: 280px;
+  background: rgba(12, 15, 10, 0.98);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(12px);
+  font-size: 0.8rem;
+  font-family: 'Courier New', monospace;
+}
+
+.version-info-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.version-info-version {
+  color: var(--foreground);
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.version-info-env {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  padding: 0.15rem 0.4rem;
+  text-transform: uppercase;
+}
+
+.version-info-env--prod {
+  color: var(--primary);
+  border: 1px solid var(--primary);
+}
+
+.version-info-env--dev {
+  color: var(--accent);
+  border: 1px solid var(--accent);
+}
+
+.version-info-close {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 0.2rem;
+  display: flex;
+}
+
+.version-info-close:hover {
+  color: var(--foreground);
+}
+
+.version-info-creator {
+  padding: 0.5rem 0.75rem;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+}
+
+.version-info-creator strong {
+  color: var(--foreground);
+}
+
+.version-info-changelog-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-family: 'Courier New', monospace;
+  cursor: pointer;
+  text-align: left;
+  letter-spacing: 0.5px;
+}
+
+.version-info-changelog-toggle:hover {
+  color: var(--foreground);
+  background: rgba(74, 124, 35, 0.08);
+}
+
+.version-info-changelog {
+  max-height: 200px;
+  overflow-y: auto;
+  border-top: 1px solid var(--border);
+}
+
+.version-info-changelog-entry {
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px dashed rgba(45, 52, 37, 0.5);
+}
+
+.version-info-changelog-entry:last-child {
+  border-bottom: none;
+}
+
+.version-info-changelog-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.3rem;
+}
+
+.version-info-changelog-version {
+  color: var(--primary);
+  font-weight: 700;
+  font-size: 0.75rem;
+}
+
+.version-info-changelog-date {
+  color: var(--muted);
+  font-size: 0.7rem;
+}
+
+.version-info-changelog-changes {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.version-info-changelog-changes li {
+  color: var(--muted);
+  font-size: 0.72rem;
+  line-height: 1.4;
+  padding-left: 0.75rem;
+  position: relative;
+}
+
+.version-info-changelog-changes li::before {
+  content: '>';
+  position: absolute;
+  left: 0;
+  color: var(--primary);
+}
