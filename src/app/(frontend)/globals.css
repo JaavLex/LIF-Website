@@ -302,6 +302,11 @@ h1, h2, h3, h4, h5, h6 {
   border-bottom: 1px solid var(--border);
 }
 
+/* Shift navbar below dev banner when present */
+html[data-dev-banner] .navbar {
+  top: 1.65rem;
+}
+
 .nav-container {
   max-width: 1400px;
   margin: 0 auto;

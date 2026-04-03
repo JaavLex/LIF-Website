@@ -1,16 +1,30 @@
 'use client';
 
+import { useEffect } from 'react';
+
 export function DevBanner() {
-	if (process.env.NEXT_PUBLIC_LIF_ENVIRONMENT !== 'dev') return null;
+	const isDev = process.env.NEXT_PUBLIC_LIF_ENVIRONMENT === 'dev';
+
+	useEffect(() => {
+		if (isDev) {
+			document.documentElement.setAttribute('data-dev-banner', '');
+		}
+		return () => {
+			document.documentElement.removeAttribute('data-dev-banner');
+		};
+	}, [isDev]);
+
+	if (!isDev) return null;
 
 	return (
 		<div
+			className="dev-banner"
 			style={{
 				position: 'fixed',
 				top: 0,
 				left: 0,
 				right: 0,
-				zIndex: 99999,
+				zIndex: 1001,
 				background: 'rgba(220, 50, 50, 0.95)',
 				color: '#fff',
 				textAlign: 'center',
@@ -22,7 +36,7 @@ export function DevBanner() {
 				borderBottom: '2px solid #ff0000',
 			}}
 		>
-			ENVIRONNEMENT DE DEVELOPPEMENT — Les donnees peuvent etre reinitilisees a tout
+			ENVIRONNEMENT DE DÉVELOPPEMENT — Les données peuvent être réinitialisées à tout
 			moment
 		</div>
 	);
