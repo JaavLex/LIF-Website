@@ -80,8 +80,8 @@ export async function POST(request: NextRequest) {
 		});
 		notifyNewCharacter({
 			id: doc.id as number,
-			fullName: fullDoc.fullName,
-			discordUsername: fullDoc.discordUsername,
+			fullName: fullDoc.fullName || `${fullDoc.firstName} ${fullDoc.lastName}`,
+			discordUsername: fullDoc.discordUsername || '',
 			rank: typeof fullDoc.rank === 'object' ? fullDoc.rank : null,
 			unit: typeof fullDoc.unit === 'object' ? fullDoc.unit : null,
 		}).catch(() => {});
