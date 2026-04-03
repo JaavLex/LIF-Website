@@ -8,6 +8,7 @@ import { NewsSection } from '@/components/NewsSection';
 import { Navbar } from '@/components/Navbar';
 import type { Media } from '@/payload-types';
 import { PresentationVideo } from '@/components/PresentationVideo';
+import { ScrollReveal } from '@/components/ScrollReveal';
 
 export const dynamic = 'force-dynamic';
 
@@ -218,58 +219,68 @@ export default async function Home() {
 			</section>
 
 			{/* Servers Section - Uses client component for live A2S data */}
-			<ServerList
-				title={content.serversTitle || defaults.serversTitle}
-				titleIcon={content.serversIcon || defaults.serversIcon}
-				fallbackServers={servers}
-			/>
+			<ScrollReveal>
+				<ServerList
+					title={content.serversTitle || defaults.serversTitle}
+					titleIcon={content.serversIcon || defaults.serversIcon}
+					fallbackServers={servers}
+				/>
+			</ScrollReveal>
 
 			{/* Presentation Video Section */}
 			{content.isPresentationVisible && (
-				<PresentationVideo
-					title={content.presentationTitle || defaults.presentationTitle}
-					titleIcon={content.presentationIcon || defaults.presentationIcon}
-					videoTitle={
-						content.presentationVideoTitle || defaults.presentationVideoTitle
-					}
-					link={content.presentationVideoLink || defaults.presentationVideoLink}
-				/>
+				<ScrollReveal>
+					<PresentationVideo
+						title={content.presentationTitle || defaults.presentationTitle}
+						titleIcon={content.presentationIcon || defaults.presentationIcon}
+						videoTitle={
+							content.presentationVideoTitle || defaults.presentationVideoTitle
+						}
+						link={content.presentationVideoLink || defaults.presentationVideoLink}
+					/>
+				</ScrollReveal>
 			)}
 
 			{/* Features Section */}
 			{content.isFeaturesVisible && (
-				<FeaturesSection
-					title={content.featuresTitle || defaults.featuresTitle}
-					titleIcon={content.featuresIcon || defaults.featuresIcon}
-					features={features}
-				/>
+				<ScrollReveal>
+					<FeaturesSection
+						title={content.featuresTitle || defaults.featuresTitle}
+						titleIcon={content.featuresIcon || defaults.featuresIcon}
+						features={features}
+					/>
+				</ScrollReveal>
 			)}
 
 			{/* News Section */}
 			{content.isNewsVisible && (
-				<NewsSection
-					title={content.newsTitle || defaults.newsTitle}
-					titleIcon={content.newsIcon || defaults.newsIcon}
-					posts={formattedPosts}
-				/>
+				<ScrollReveal>
+					<NewsSection
+						title={content.newsTitle || defaults.newsTitle}
+						titleIcon={content.newsIcon || defaults.newsIcon}
+						posts={formattedPosts}
+					/>
+				</ScrollReveal>
 			)}
 
 			{/* CTA Section */}
 			{content.isCtaVisible && (
-				<section className="cta-section">
-					<div className="section-container">
-						<h2>{content.ctaTitle || defaults.ctaTitle}</h2>
-						<p>{content.ctaDescription || defaults.ctaDescription}</p>
-						<a
-							href={content.ctaButtonUrl || defaults.ctaButtonUrl}
-							className="btn btn-primary btn-large"
-							target="_blank"
-							rel="noopener noreferrer"
-						>
-							{content.ctaButtonText || defaults.ctaButtonText}
-						</a>
-					</div>
-				</section>
+				<ScrollReveal>
+					<section className="cta-section">
+						<div className="section-container">
+							<h2>{content.ctaTitle || defaults.ctaTitle}</h2>
+							<p>{content.ctaDescription || defaults.ctaDescription}</p>
+							<a
+								href={content.ctaButtonUrl || defaults.ctaButtonUrl}
+								className="btn btn-primary btn-large"
+								target="_blank"
+								rel="noopener noreferrer"
+							>
+								{content.ctaButtonText || defaults.ctaButtonText}
+							</a>
+						</div>
+					</section>
+				</ScrollReveal>
 			)}
 
 			{/* Footer */}
