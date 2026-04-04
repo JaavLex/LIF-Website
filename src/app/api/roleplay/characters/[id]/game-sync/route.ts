@@ -51,14 +51,14 @@ export async function GET(
 	}
 
 	try {
-		const result = await getPlayerMoney(biId);
-		if (!result) {
-			return NextResponse.json(
-				{
-					error: 'Joueur non trouvé dans la persistence du serveur',
-				},
-				{ status: 404 },
-			);
+		let gameMoney: number | null = null;
+		try {
+			const result = await getPlayerMoney(biId);
+			if (result) {
+				gameMoney = Math.round(result.money * 100) / 100;
+			}
+		} catch (err: any) {
+			console.warn('Game sync: could not fetch player money, defaulting to 0:', err.message);
 		}
 
 		// Get global sync info for countdown
@@ -83,7 +83,7 @@ export async function GET(
 		}
 
 		return NextResponse.json({
-			gameMoney: Math.round(result.money * 100) / 100,
+			gameMoney: gameMoney ?? 0,
 			savedMoney: character.savedMoney ?? null,
 			lastSyncAt: character.lastMoneySyncAt ?? null,
 			lastGlobalSync: roleplay.lastGlobalMoneySync ?? null,

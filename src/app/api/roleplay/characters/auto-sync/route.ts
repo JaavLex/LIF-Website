@@ -27,8 +27,15 @@ export async function POST(request: Request) {
 	try {
 		const payload = await getPayloadClient();
 
-		// Read all players from game server
-		const { players } = await readGamePersistence();
+		// Read all players from game server — if panel is unreachable, return gracefully
+		let players: Awaited<ReturnType<typeof readGamePersistence>>['players'] = [];
+		try {
+			const persistence = await readGamePersistence();
+			players = persistence.players;
+		} catch (err: any) {
+			console.warn('[Auto-sync] Could not read game persistence, skipping:', err.message);
+			return NextResponse.json({ synced: 0, message: 'Persistence indisponible', error: err.message });
+		}
 		if (!players.length) {
 			return NextResponse.json({ synced: 0, message: 'Aucun joueur trouvé' });
 		}
