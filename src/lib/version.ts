@@ -6,9 +6,16 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.2.5',
+  version: '1.3.0',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.3.0',
+      date: '2026-04-04',
+      changes: [
+        'Système de liaison roleplay',
+      ],
+    },
     {
       version: '1.2.5',
       date: '2026-04-04',
