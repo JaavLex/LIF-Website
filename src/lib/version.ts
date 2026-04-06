@@ -6,9 +6,17 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.3.1',
+  version: '1.3.2',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.3.2',
+      date: '2026-04-06',
+      changes: [
+        'Page de liaison : vérification membre Discord et rôle opérateur requis',
+        'Message et lien Discord si non-membre ou sans entrée en service',
+      ],
+    },
     {
       version: '1.3.1',
       date: '2026-04-06',

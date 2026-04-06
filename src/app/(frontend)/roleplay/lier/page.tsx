@@ -17,13 +17,18 @@ export default function LinkAccountPage() {
 	>([]);
 	const [biId, setBiId] = useState('');
 	const [characterName, setCharacterName] = useState('');
-	const [authenticated, setAuthenticated] = useState<boolean | null>(null);
+	const [authState, setAuthState] = useState<{
+		loading: boolean;
+		eligible: boolean;
+		reason?: string;
+		discordInviteUrl?: string;
+	}>({ loading: true, eligible: false });
 
 	useEffect(() => {
-		fetch('/api/auth/me')
-			.then(res => (res.ok ? res.json() : null))
-			.then(data => setAuthenticated(data?.authenticated ?? false))
-			.catch(() => setAuthenticated(false));
+		fetch('/api/roleplay/link/eligibility')
+			.then(res => res.json())
+			.then(data => setAuthState({ loading: false, eligible: data.eligible, reason: data.reason, discordInviteUrl: data.discordInviteUrl }))
+			.catch(() => setAuthState({ loading: false, eligible: false, reason: 'not_authenticated' }));
 	}, []);
 
 	async function handleSubmit(characterId?: number) {
@@ -103,7 +108,7 @@ export default function LinkAccountPage() {
 		}
 	}
 
-	if (authenticated === null) {
+	if (authState.loading) {
 		return (
 			<div className="terminal-container">
 				<div style={{ maxWidth: '500px', margin: '2rem auto', textAlign: 'center', padding: '3rem' }}>
@@ -113,7 +118,8 @@ export default function LinkAccountPage() {
 		);
 	}
 
-	if (!authenticated) {
+	if (!authState.eligible) {
+		const isNotLoggedIn = authState.reason === 'not_authenticated';
 		return (
 			<div className="terminal-container">
 				<div
@@ -138,31 +144,67 @@ export default function LinkAccountPage() {
 					>
 						Liaison de compte
 					</h1>
-					<p
-						style={{
-							color: 'var(--muted)',
-							fontSize: '0.9rem',
-							marginBottom: '1.5rem',
-							lineHeight: '1.5',
-						}}
-					>
-						Vous devez vous connecter via Discord avant de pouvoir lier votre compte.
-					</p>
-					<a
-						href="/api/auth/discord"
-						style={{
-							display: 'inline-block',
-							padding: '0.75rem 1.5rem',
-							background: '#5865F2',
-							color: '#fff',
-							textDecoration: 'none',
-							fontSize: '0.9rem',
-							fontWeight: 600,
-							borderRadius: '4px',
-						}}
-					>
-						Connexion Discord
-					</a>
+					{isNotLoggedIn ? (
+						<>
+							<p
+								style={{
+									color: 'var(--muted)',
+									fontSize: '0.9rem',
+									marginBottom: '1.5rem',
+									lineHeight: '1.5',
+								}}
+							>
+								Vous devez vous connecter via Discord avant de pouvoir lier votre compte.
+							</p>
+							<a
+								href="/api/auth/discord"
+								style={{
+									display: 'inline-block',
+									padding: '0.75rem 1.5rem',
+									background: '#5865F2',
+									color: '#fff',
+									textDecoration: 'none',
+									fontSize: '0.9rem',
+									fontWeight: 600,
+									borderRadius: '4px',
+								}}
+							>
+								Connexion Discord
+							</a>
+						</>
+					) : (
+						<>
+							<p
+								style={{
+									color: 'var(--muted)',
+									fontSize: '0.9rem',
+									marginBottom: '1.5rem',
+									lineHeight: '1.5',
+								}}
+							>
+								Veuillez rejoindre le serveur Discord et effectuer votre entrée en service avant de pouvoir lier votre compte.
+							</p>
+							{authState.discordInviteUrl && (
+								<a
+									href={authState.discordInviteUrl}
+									target="_blank"
+									rel="noopener noreferrer"
+									style={{
+										display: 'inline-block',
+										padding: '0.75rem 1.5rem',
+										background: '#5865F2',
+										color: '#fff',
+										textDecoration: 'none',
+										fontSize: '0.9rem',
+										fontWeight: 600,
+										borderRadius: '4px',
+									}}
+								>
+									Rejoindre le Discord
+								</a>
+							)}
+						</>
+					)}
 				</div>
 			</div>
 		);
