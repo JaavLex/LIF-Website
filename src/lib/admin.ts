@@ -54,7 +54,7 @@ export async function checkAdminPermissions(
 		return { isAdmin: false, level: 'none', roleName: null };
 	}
 
-	// Dev-only: check if admin is viewing as user
+	// Dev-only: check if admin is viewing as user via cookie
 	if (process.env.NEXT_PUBLIC_LIF_ENVIRONMENT === 'dev') {
 		try {
 			const cookieStore = await cookies();
@@ -62,9 +62,28 @@ export async function checkAdminPermissions(
 				return { isAdmin: false, level: 'none', roleName: null, viewingAsUser: true };
 			}
 		} catch {
-			// cookies() not available in some contexts
+			// cookies() not available outside of request context — ignore
 		}
 	}
 
 	return realPermissions;
+}
+
+/** Check admin permissions with an explicit view-as-user override (for API routes) */
+export async function checkAdminPermissionsWithRequest(
+	session: SessionData,
+	viewAsUserCookie?: string,
+): Promise<AdminPermissions> {
+	const perms = await checkAdminPermissions(session);
+	// If cookies() worked inside checkAdminPermissions, viewingAsUser is already set
+	if (perms.viewingAsUser) return perms;
+	// Otherwise check the explicitly passed cookie
+	if (
+		perms.isAdmin &&
+		process.env.NEXT_PUBLIC_LIF_ENVIRONMENT === 'dev' &&
+		viewAsUserCookie === '1'
+	) {
+		return { isAdmin: false, level: 'none', roleName: null, viewingAsUser: true };
+	}
+	return perms;
 }
