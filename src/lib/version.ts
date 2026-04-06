@@ -6,9 +6,17 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.3.3',
+  version: '1.3.4',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.3.4',
+      date: '2026-04-06',
+      changes: [
+        'Bouton admin pour réinitialiser le graphique des revenus (double confirmation)',
+        'Correction du graphique : affiche la baisse à 0 quand un personnage est délié',
+      ],
+    },
     {
       version: '1.3.3',
       date: '2026-04-06',

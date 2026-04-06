@@ -8,8 +8,9 @@ interface OrgStats {
 	history: { date: string; total: number }[];
 }
 
-export default function OrgBankStats() {
+export default function OrgBankStats({ isAdmin }: { isAdmin?: boolean }) {
 	const [stats, setStats] = useState<OrgStats | null>(null);
+	const [resetting, setResetting] = useState(false);
 	const canvasRef = useRef<HTMLCanvasElement>(null);
 	const containerRef = useRef<HTMLDivElement>(null);
 
@@ -215,6 +216,38 @@ export default function OrgBankStats() {
 			{stats.history.length < 2 && (
 				<div className="org-stats-no-data">
 					Données historiques insuffisantes pour afficher le graphique
+				</div>
+			)}
+			{isAdmin && (
+				<div style={{ textAlign: 'right', marginTop: '0.75rem' }}>
+					<button
+						type="button"
+						disabled={resetting}
+						onClick={async () => {
+							if (!window.confirm('Êtes-vous sûr de vouloir réinitialiser le graphique des revenus ? Tout l\'historique bancaire sera supprimé.')) return;
+							if (!window.confirm('Cette action est irréversible. Confirmer la suppression ?')) return;
+							setResetting(true);
+							try {
+								const res = await fetch('/api/roleplay/org-stats', { method: 'DELETE' });
+								if (res.ok) {
+									setStats({ totalMoney: 0, memberCount: 0, history: [] });
+								}
+							} catch {}
+							setResetting(false);
+						}}
+						style={{
+							background: 'none',
+							border: '1px solid var(--danger)',
+							color: 'var(--danger)',
+							padding: '0.4rem 0.75rem',
+							fontSize: '0.75rem',
+							cursor: resetting ? 'not-allowed' : 'pointer',
+							opacity: resetting ? 0.5 : 1,
+							fontFamily: 'inherit',
+						}}
+					>
+						{resetting ? 'Suppression...' : 'Réinitialiser le graphique'}
+					</button>
 				</div>
 			)}
 		</div>

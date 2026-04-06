@@ -468,7 +468,7 @@ export default async function RoleplayPage({
 			</div>
 
 			<div className="terminal-panel">
-				<OrgBankStats />
+				<OrgBankStats isAdmin={isAdmin} />
 			</div>
 
 			<div style={{ textAlign: 'center', padding: '1rem' }}>
