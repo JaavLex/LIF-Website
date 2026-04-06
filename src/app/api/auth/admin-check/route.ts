@@ -14,5 +14,12 @@ export async function GET(request: NextRequest) {
 	}
 
 	const permissions = await checkAdminPermissions(session);
+
+	// In dev view-as-user mode, also expose that they are a real admin
+	// so the toggle button knows to stay visible
+	if (permissions.viewingAsUser) {
+		return NextResponse.json({ ...permissions, isRealAdmin: true });
+	}
+
 	return NextResponse.json(permissions);
 }

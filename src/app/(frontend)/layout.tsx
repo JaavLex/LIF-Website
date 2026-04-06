@@ -3,6 +3,7 @@ import { Rajdhani, Source_Sans_3 } from 'next/font/google';
 import './globals.css';
 import { DevBanner } from '@/components/DevBanner';
 import { VersionInfo } from '@/components/VersionInfo';
+import { ViewAsUserToggle } from '@/components/ViewAsUserToggle';
 
 const heading = Rajdhani({
 	subsets: ['latin'],
@@ -37,6 +38,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 			<body className={`${heading.variable} ${body.variable}`}>
 				<DevBanner />
 				<VersionInfo />
+				<ViewAsUserToggle />
 				{children}
 			</body>
 		</html>

@@ -6,9 +6,17 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.3.4',
+  version: '1.3.5',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.3.5',
+      date: '2026-04-06',
+      changes: [
+        '[DEV] Mode "Voir comme utilisateur" pour les admins (bouton flottant)',
+        '[DEV] Désactive temporairement tous les privilèges admin sur le site',
+      ],
+    },
     {
       version: '1.3.4',
       date: '2026-04-06',
