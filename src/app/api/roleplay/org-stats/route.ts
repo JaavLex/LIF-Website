@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getPayloadClient } from '@/lib/payload';
 import { requireFullAdmin, isErrorResponse } from '@/lib/api-auth';
 import type { Character } from '@/payload-types';
@@ -117,7 +117,7 @@ export async function GET() {
 }
 
 // DELETE: Admin-only — reset the income graph by clearing all bank history
-export async function DELETE(request: Request) {
+export async function DELETE(request: NextRequest) {
 	const auth = await requireFullAdmin(request);
 	if (isErrorResponse(auth)) return auth;
 
