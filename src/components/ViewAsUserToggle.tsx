@@ -29,11 +29,10 @@ export function ViewAsUserToggle() {
 		setToggling(true);
 		try {
 			const res = await fetch('/api/auth/view-as-user', { method: 'POST' });
-			const data = await res.json();
 			if (res.ok) {
-				setViewingAsUser(data.viewAsUser);
-				// Reload to apply the change across the whole site
-				window.location.reload();
+				// Hard reload with cache bust to ensure server re-renders
+				window.location.href = window.location.pathname + '?t=' + Date.now();
+				return;
 			}
 		} catch {}
 		setToggling(false);
