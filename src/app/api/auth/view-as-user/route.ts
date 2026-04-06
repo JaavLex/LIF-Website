@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifySession } from '@/lib/session';
 import { getPayloadClient } from '@/lib/payload';
+import type { Roleplay } from '@/payload-types';
 
 /**
  * POST /api/auth/view-as-user
@@ -17,14 +18,30 @@ export async function POST(request: NextRequest) {
 	const session = verifySession(token);
 	if (!session) return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
 
-	// Verify the user is actually an admin (check DB directly, bypass view-as-user)
+	// Verify the user is actually an admin (DB role or Discord roles, bypass view-as-user cookie)
 	const payload = await getPayloadClient();
 	const user = await payload.find({
 		collection: 'users',
 		where: { discordId: { equals: session.discordId } },
 		limit: 1,
 	});
-	const isRealAdmin = user.docs[0]?.role === 'admin';
+	let isRealAdmin = user.docs[0]?.role === 'admin';
+
+	if (!isRealAdmin) {
+		try {
+			const roleplayConfig = await payload.findGlobal({ slug: 'roleplay' }) as Roleplay;
+			const adminRoles = roleplayConfig?.adminRoles;
+			if (adminRoles?.length) {
+				for (const role of adminRoles) {
+					if (session.roles?.includes(role.roleId)) {
+						isRealAdmin = true;
+						break;
+					}
+				}
+			}
+		} catch {}
+	}
+
 	if (!isRealAdmin) {
 		return NextResponse.json({ error: 'Admin requis' }, { status: 403 });
 	}
