@@ -45,8 +45,8 @@ export function ViewAsUserToggle() {
 			disabled={toggling}
 			style={{
 				position: 'fixed',
-				bottom: '1rem',
-				right: '1rem',
+				top: 'calc(var(--dev-banner-h, 0px) + 0.5rem)',
+				left: '0.5rem',
 				zIndex: 10000,
 				padding: '0.6rem 1rem',
 				background: viewingAsUser ? '#c44' : 'rgba(74, 124, 35, 0.9)',
