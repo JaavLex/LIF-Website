@@ -85,7 +85,7 @@ export function CharacterForm({
 		previousUnit: editData?.previousUnit || '',
 		faction: editData?.faction || 'LIF',
 		unit: editData?.unit?.id || editData?.unit || '',
-		isMainCharacter: editData?.isMainCharacter || false,
+		isMainCharacter: true,
 		civilianBackground: lexicalToText(editData?.civilianBackground),
 		militaryBackground: lexicalToText(editData?.militaryBackground),
 		legalBackground: lexicalToText(editData?.legalBackground),
@@ -463,24 +463,7 @@ export function CharacterForm({
 							</div>
 						)}
 
-						<div style={{ marginTop: '1rem' }}>
-							<label
-								style={{
-									display: 'flex',
-									alignItems: 'center',
-									gap: '0.5rem',
-									cursor: 'pointer',
-								}}
-							>
-								<input
-									type="checkbox"
-									name="isMainCharacter"
-									checked={form.isMainCharacter}
-									onChange={handleChange}
-								/>
-								<span style={{ fontSize: '0.85rem' }}>Personnage principal</span>
-							</label>
-						</div>
+						{/* isMainCharacter is always true — set automatically */}
 					</div>
 				</div>
 

@@ -25,7 +25,29 @@ export async function POST(request: NextRequest) {
 			// Ensure discordId matches session for non-NPC
 			body.discordId = session.discordId;
 			body.discordUsername = session.discordUsername;
+
+			// Check: only one in-service character allowed per player
+			const existing = await payload.find({
+				collection: 'characters',
+				where: {
+					and: [
+						{ discordId: { equals: session.discordId } },
+						{ status: { equals: 'in-service' } },
+					],
+				},
+				limit: 1,
+				depth: 0,
+			});
+			if (existing.docs.length > 0) {
+				return NextResponse.json(
+					{ message: 'Vous ne pouvez pas avoir plus d\'un personnage actif à la fois.' },
+					{ status: 400 },
+				);
+			}
 		}
+
+		// Main character is always true for new characters
+		body.isMainCharacter = true;
 
 		// Non-admins: strip admin-only fields, auto-assign rank from Discord roles
 		if (!isAdmin) {

@@ -6,9 +6,18 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.3.5',
+  version: '1.3.6',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.3.6',
+      date: '2026-04-06',
+      changes: [
+        'Limite d\'un seul personnage actif par joueur',
+        'Changement de statut (KIA, MIA, etc.) délie automatiquement l\'UUID et retire le personnage principal',
+        'Personnage principal coché par défaut à la création (non modifiable)',
+      ],
+    },
     {
       version: '1.3.5',
       date: '2026-04-06',

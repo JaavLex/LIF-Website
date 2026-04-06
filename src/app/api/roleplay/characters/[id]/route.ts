@@ -82,6 +82,14 @@ export async function PATCH(
 
 		const oldStatus = existing.status;
 
+		// When status changes away from in-service, unlink UUID and remove main character
+		if (body.status && body.status !== 'in-service' && oldStatus === 'in-service') {
+			body.biId = null;
+			body.isMainCharacter = false;
+			body.savedMoney = null;
+			body.lastMoneySyncAt = null;
+		}
+
 		const doc = await payload.update({
 			collection: 'characters',
 			id: characterId,

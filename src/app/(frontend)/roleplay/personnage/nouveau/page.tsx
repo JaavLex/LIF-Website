@@ -44,6 +44,48 @@ export default async function NewCharacterPage() {
 		if (!operatorRoleId) redirect('/roleplay');
 	}
 
+	// Check if user already has an in-service character
+	const existingActive = await payload.find({
+		collection: 'characters',
+		where: {
+			and: [
+				{ discordId: { equals: session.discordId } },
+				{ status: { equals: 'in-service' } },
+			],
+		},
+		limit: 1,
+		depth: 0,
+	});
+	if (existingActive.docs.length > 0) {
+		return (
+			<div className="terminal-container">
+				<Link href="/roleplay" className="retour-link">
+					← Retour à la base de données
+				</Link>
+				<div className="terminal-panel" style={{ textAlign: 'center', padding: '3rem' }}>
+					<h2 style={{ color: 'var(--danger)', marginBottom: '1rem' }}>Création impossible</h2>
+					<p style={{ color: 'var(--muted)' }}>
+						Vous ne pouvez pas avoir plus d&apos;un personnage actif à la fois.
+					</p>
+					<Link
+						href={`/roleplay/personnage/${existingActive.docs[0].id}`}
+						style={{
+							display: 'inline-block',
+							marginTop: '1rem',
+							padding: '0.5rem 1rem',
+							border: '1px solid var(--primary)',
+							color: 'var(--primary)',
+							textDecoration: 'none',
+							fontSize: '0.85rem',
+						}}
+					>
+						Voir votre personnage actif
+					</Link>
+				</div>
+			</div>
+		);
+	}
+
 	const [ranks, units, factions] = await Promise.all([
 		payload.find({ collection: 'ranks', sort: 'order', limit: 100, depth: 2 }),
 		payload.find({ collection: 'units', limit: 100, depth: 1 }),
