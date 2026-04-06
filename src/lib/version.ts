@@ -14,6 +14,7 @@ export const VERSION_INFO = {
       date: '2026-04-06',
       changes: [
         'Admins peuvent modifier l\'UUID manuellement via bouton "Saisie manuelle" avec confirmation',
+        'Bouton "Lier mon compte" visible pour tous (admins inclus)',
       ],
     },
     {

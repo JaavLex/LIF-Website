@@ -810,6 +810,23 @@ export function CharacterForm({
 									style={{ flex: 1, fontFamily: 'monospace', opacity: 0.7 }}
 								/>
 							)}
+							{!biIdManualEdit && (
+								<a
+									href="/roleplay/lier"
+									style={{
+										padding: '0.6rem 1rem',
+										background: 'var(--accent)',
+										color: '#000',
+										textDecoration: 'none',
+										fontSize: '0.8rem',
+										fontWeight: 600,
+										whiteSpace: 'nowrap',
+										border: 'none',
+									}}
+								>
+									{biId ? 'Relier' : 'Lier mon compte'}
+								</a>
+							)}
 							{isAdmin && !biIdManualEdit && (
 								<button
 									type="button"
@@ -831,23 +848,6 @@ export function CharacterForm({
 								>
 									Saisie manuelle
 								</button>
-							)}
-							{!isAdmin && (
-								<a
-									href="/roleplay/lier"
-									style={{
-										padding: '0.6rem 1rem',
-										background: 'var(--accent)',
-										color: '#000',
-										textDecoration: 'none',
-										fontSize: '0.8rem',
-										fontWeight: 600,
-										whiteSpace: 'nowrap',
-										border: 'none',
-									}}
-								>
-									{biId ? 'Relier' : 'Lier mon compte'}
-								</a>
 							)}
 						</div>
 						<p
