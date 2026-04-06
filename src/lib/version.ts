@@ -6,9 +6,19 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.3.0',
+  version: '1.3.1',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.3.1',
+      date: '2026-04-06',
+      changes: [
+        'Filtre des unités par faction dans le formulaire personnage',
+        'Graphique finances exclut les personnages non liés',
+        'Page de liaison : connexion Discord requise avant liaison',
+        'Champ UUID en lecture seule avec bouton de liaison via le jeu',
+      ],
+    },
     {
       version: '1.3.0',
       date: '2026-04-04',
