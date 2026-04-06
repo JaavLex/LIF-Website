@@ -22,16 +22,17 @@ export async function GET() {
 			depth: 0,
 		});
 
-		// Sum current money from all LIF characters (including anonymous ones)
+		// Sum current money from all LIF characters that have a biId linked
 		// Deduplicate by biId so characters sharing the same game account aren't counted twice
 		let totalMoney = 0;
 		const characterIds: number[] = [];
 		const seenBiIds = new Set<string>();
 		for (const c of characters.docs) {
-			characterIds.push(c.id);
 			const biId = c.biId;
-			if (biId && seenBiIds.has(biId)) continue;
-			if (biId) seenBiIds.add(biId);
+			if (!biId) continue; // skip unlinked characters
+			if (seenBiIds.has(biId)) continue;
+			seenBiIds.add(biId);
+			characterIds.push(c.id);
 			const money = c.savedMoney;
 			if (typeof money === 'number' && money > 0) {
 				totalMoney += money;
@@ -56,10 +57,10 @@ export async function GET() {
 			if (bankHistory.docs.length > 0) {
 				// Build a timeline: for each record, update the character's known amount
 				// then at each timestamp we can compute the org total
-				// Deduplicate by biId: map characterId -> biId, only count one char per biId
+				// Map characterId -> biId for linked characters only
 				const charBiId: Record<number, string | null> = {};
 				for (const c of characters.docs) {
-					charBiId[c.id] = c.biId || null;
+					if (c.biId) charBiId[c.id] = c.biId;
 				}
 
 				const charAmounts: Record<number, number> = {};
@@ -104,7 +105,7 @@ export async function GET() {
 
 		return NextResponse.json({
 			totalMoney,
-			memberCount: characters.totalDocs,
+			memberCount: characterIds.length,
 			history,
 		});
 	} catch (error) {

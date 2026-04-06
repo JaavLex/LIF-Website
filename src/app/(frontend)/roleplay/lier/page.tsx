@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function LinkAccountPage() {
 	const [code, setCode] = useState('');
@@ -17,6 +17,14 @@ export default function LinkAccountPage() {
 	>([]);
 	const [biId, setBiId] = useState('');
 	const [characterName, setCharacterName] = useState('');
+	const [authenticated, setAuthenticated] = useState<boolean | null>(null);
+
+	useEffect(() => {
+		fetch('/api/auth/me')
+			.then(res => (res.ok ? res.json() : null))
+			.then(data => setAuthenticated(data?.authenticated ?? false))
+			.catch(() => setAuthenticated(false));
+	}, []);
 
 	async function handleSubmit(characterId?: number) {
 		if (!code.trim() && !characterId) return;
@@ -93,6 +101,71 @@ export default function LinkAccountPage() {
 			setStatus('error');
 			setMessage('Erreur de connexion au serveur.');
 		}
+	}
+
+	if (authenticated === null) {
+		return (
+			<div className="terminal-container">
+				<div style={{ maxWidth: '500px', margin: '2rem auto', textAlign: 'center', padding: '3rem' }}>
+					<p style={{ color: 'var(--muted)' }}>Chargement...</p>
+				</div>
+			</div>
+		);
+	}
+
+	if (!authenticated) {
+		return (
+			<div className="terminal-container">
+				<div
+					style={{
+						maxWidth: '500px',
+						margin: '2rem auto',
+						border: '1px solid var(--border)',
+						padding: '2rem',
+						background: 'rgba(12, 15, 10, 0.9)',
+						textAlign: 'center',
+					}}
+				>
+					<h1
+						style={{
+							fontFamily: 'var(--font-heading)',
+							fontSize: '1.5rem',
+							color: 'var(--primary)',
+							marginBottom: '0.5rem',
+							textTransform: 'uppercase',
+							letterSpacing: '0.1em',
+						}}
+					>
+						Liaison de compte
+					</h1>
+					<p
+						style={{
+							color: 'var(--muted)',
+							fontSize: '0.9rem',
+							marginBottom: '1.5rem',
+							lineHeight: '1.5',
+						}}
+					>
+						Vous devez vous connecter via Discord avant de pouvoir lier votre compte.
+					</p>
+					<a
+						href="/api/auth/discord"
+						style={{
+							display: 'inline-block',
+							padding: '0.75rem 1.5rem',
+							background: '#5865F2',
+							color: '#fff',
+							textDecoration: 'none',
+							fontSize: '0.9rem',
+							fontWeight: 600,
+							borderRadius: '4px',
+						}}
+					>
+						Connexion Discord
+					</a>
+				</div>
+			</div>
+		);
 	}
 
 	return (

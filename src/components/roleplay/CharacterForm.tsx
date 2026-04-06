@@ -26,6 +26,7 @@ interface Rank {
 interface Unit {
 	id: number;
 	name: string;
+	parentFaction?: { id: number; name: string } | number | null;
 }
 
 interface Faction {
@@ -711,11 +712,19 @@ export function CharacterForm({
 								style={{ width: '100%' }}
 							>
 								<option value="">— Aucune —</option>
-								{units.map(u => (
-									<option key={u.id} value={u.id}>
-										{u.name}
-									</option>
-								))}
+								{units
+									.filter(u => {
+										if (!form.faction) return true;
+										const factionName = typeof u.parentFaction === 'object' && u.parentFaction
+											? u.parentFaction.name
+											: null;
+										return !factionName || factionName === form.faction;
+									})
+									.map(u => (
+										<option key={u.id} value={u.id}>
+											{u.name}
+										</option>
+									))}
 							</select>
 						</div>
 						<div>
@@ -780,14 +789,31 @@ export function CharacterForm({
 					</h2>
 					<div>
 						<label style={labelStyle}>Identifiant Bohemia Interactive (UUID)</label>
-						<input
-							type="text"
-							value={biId}
-							onChange={e => setBiId(e.target.value)}
-							className="filter-input"
-							style={{ width: '100%', fontFamily: 'monospace' }}
-							placeholder="ex: df7e8a35-6fcd-4308-b98d-34775430a0c6"
-						/>
+						<div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+							<input
+								type="text"
+								value={biId || '—'}
+								readOnly
+								disabled
+								className="filter-input"
+								style={{ flex: 1, fontFamily: 'monospace', opacity: 0.7 }}
+							/>
+							<a
+								href="/roleplay/lier"
+								style={{
+									padding: '0.6rem 1rem',
+									background: 'var(--accent)',
+									color: '#000',
+									textDecoration: 'none',
+									fontSize: '0.8rem',
+									fontWeight: 600,
+									whiteSpace: 'nowrap',
+									border: 'none',
+								}}
+							>
+								{biId ? 'Relier' : 'Lier mon compte'}
+							</a>
+						</div>
 						<p
 							style={{
 								fontSize: '0.7rem',
@@ -795,8 +821,7 @@ export function CharacterForm({
 								marginTop: '0.25rem',
 							}}
 						>
-							Votre UUID Bohemia Interactive permet de lier votre personnage au
-							serveur de jeu pour synchroniser l&apos;argent et le nom en jeu.
+							La liaison se fait via le serveur de jeu Arma Reforger. Rejoignez le serveur et suivez les instructions.
 						</p>
 					</div>
 					<div style={{ marginTop: '1rem' }}>

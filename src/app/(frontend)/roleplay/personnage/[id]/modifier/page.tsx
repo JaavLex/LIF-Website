@@ -48,7 +48,7 @@ export default async function EditCharacterPage({
 
 	const [ranks, units, factions] = await Promise.all([
 		payload.find({ collection: 'ranks', sort: 'order', limit: 100, depth: 2 }),
-		payload.find({ collection: 'units', limit: 100 }),
+		payload.find({ collection: 'units', limit: 100, depth: 1 }),
 		payload.find({ collection: 'factions', sort: 'name', limit: 100 }),
 	]);
 
