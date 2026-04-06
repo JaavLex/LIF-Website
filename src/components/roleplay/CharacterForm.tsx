@@ -71,6 +71,7 @@ export function CharacterForm({
 	const [bankAnonymous, setBankAnonymous] = useState<boolean>(
 		editData?.bankAnonymous || false,
 	);
+	const [biIdManualEdit, setBiIdManualEdit] = useState(false);
 
 	const [form, setForm] = useState({
 		firstName: editData?.firstName || '',
@@ -790,29 +791,64 @@ export function CharacterForm({
 					<div>
 						<label style={labelStyle}>Identifiant Bohemia Interactive (UUID)</label>
 						<div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-							<input
-								type="text"
-								value={biId || '—'}
-								readOnly
-								disabled
-								className="filter-input"
-								style={{ flex: 1, fontFamily: 'monospace', opacity: 0.7 }}
-							/>
-							<a
-								href="/roleplay/lier"
-								style={{
-									padding: '0.6rem 1rem',
-									background: 'var(--accent)',
-									color: '#000',
-									textDecoration: 'none',
-									fontSize: '0.8rem',
-									fontWeight: 600,
-									whiteSpace: 'nowrap',
-									border: 'none',
-								}}
-							>
-								{biId ? 'Relier' : 'Lier mon compte'}
-							</a>
+							{biIdManualEdit ? (
+								<input
+									type="text"
+									value={biId}
+									onChange={e => setBiId(e.target.value)}
+									className="filter-input"
+									style={{ flex: 1, fontFamily: 'monospace' }}
+									placeholder="ex: df7e8a35-6fcd-4308-b98d-34775430a0c6"
+								/>
+							) : (
+								<input
+									type="text"
+									value={biId || '—'}
+									readOnly
+									disabled
+									className="filter-input"
+									style={{ flex: 1, fontFamily: 'monospace', opacity: 0.7 }}
+								/>
+							)}
+							{isAdmin && !biIdManualEdit && (
+								<button
+									type="button"
+									onClick={() => {
+										if (window.confirm('Êtes-vous sûr de vouloir modifier manuellement l\'UUID ? Cette action peut désynchroniser la liaison avec le serveur de jeu.')) {
+											setBiIdManualEdit(true);
+										}
+									}}
+									style={{
+										padding: '0.6rem 1rem',
+										background: 'var(--primary)',
+										color: '#fff',
+										fontSize: '0.8rem',
+										fontWeight: 600,
+										whiteSpace: 'nowrap',
+										border: 'none',
+										cursor: 'pointer',
+									}}
+								>
+									Saisie manuelle
+								</button>
+							)}
+							{!isAdmin && (
+								<a
+									href="/roleplay/lier"
+									style={{
+										padding: '0.6rem 1rem',
+										background: 'var(--accent)',
+										color: '#000',
+										textDecoration: 'none',
+										fontSize: '0.8rem',
+										fontWeight: 600,
+										whiteSpace: 'nowrap',
+										border: 'none',
+									}}
+								>
+									{biId ? 'Relier' : 'Lier mon compte'}
+								</a>
+							)}
 						</div>
 						<p
 							style={{
@@ -821,7 +857,9 @@ export function CharacterForm({
 								marginTop: '0.25rem',
 							}}
 						>
-							La liaison se fait via le serveur de jeu Arma Reforger. Rejoignez le serveur et suivez les instructions.
+							{biIdManualEdit
+								? 'Mode édition manuelle — entrez l\'UUID Bohemia Interactive.'
+								: 'La liaison se fait via le serveur de jeu Arma Reforger. Rejoignez le serveur et suivez les instructions.'}
 						</p>
 					</div>
 					<div style={{ marginTop: '1rem' }}>

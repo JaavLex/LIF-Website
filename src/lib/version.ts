@@ -6,9 +6,16 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.3.2',
+  version: '1.3.3',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.3.3',
+      date: '2026-04-06',
+      changes: [
+        'Admins peuvent modifier l\'UUID manuellement via bouton "Saisie manuelle" avec confirmation',
+      ],
+    },
     {
       version: '1.3.2',
       date: '2026-04-06',
