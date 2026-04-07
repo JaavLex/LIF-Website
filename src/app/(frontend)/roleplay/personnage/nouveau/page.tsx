@@ -4,13 +4,19 @@ import { cookies } from 'next/headers';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { CharacterForm } from '@/components/roleplay/CharacterForm';
+import { UnitSelector } from '@/components/roleplay/UnitSelector';
 import { verifySession } from '@/lib/session';
 import { checkAdminPermissions } from '@/lib/admin';
 import type { Roleplay } from '@/payload-types';
 
 export const dynamic = 'force-dynamic';
 
-export default async function NewCharacterPage() {
+export default async function NewCharacterPage({
+	searchParams,
+}: {
+	searchParams: Promise<{ unit?: string }>;
+}) {
+	const { unit: unitSlug } = await searchParams;
 	const payload = await getPayloadClient();
 
 	// Check auth
@@ -25,7 +31,6 @@ export default async function NewCharacterPage() {
 	const isAdmin = adminPermissions.isAdmin;
 
 	if (!isAdmin) {
-		// Check guild membership
 		const user = await payload.find({
 			collection: 'users',
 			where: { discordId: { equals: session.discordId } },
@@ -34,10 +39,9 @@ export default async function NewCharacterPage() {
 		const userData = user.docs[0];
 		if (!userData?.isGuildMember) redirect('/roleplay');
 
-		// Check operator role
-		const roleplayConfig = await payload
+		const roleplayConfig = (await payload
 			.findGlobal({ slug: 'roleplay' })
-			.catch(() => null) as Roleplay | null;
+			.catch(() => null)) as Roleplay | null;
 		const operatorRoleId = roleplayConfig?.operatorRoleId;
 		if (operatorRoleId && !session.roles?.includes(operatorRoleId))
 			redirect('/roleplay');
@@ -62,8 +66,13 @@ export default async function NewCharacterPage() {
 				<Link href="/roleplay" className="retour-link">
 					← Retour à la base de données
 				</Link>
-				<div className="terminal-panel" style={{ textAlign: 'center', padding: '3rem' }}>
-					<h2 style={{ color: 'var(--danger)', marginBottom: '1rem' }}>Création impossible</h2>
+				<div
+					className="terminal-panel"
+					style={{ textAlign: 'center', padding: '3rem' }}
+				>
+					<h2 style={{ color: 'var(--danger)', marginBottom: '1rem' }}>
+						Création impossible
+					</h2>
 					<p style={{ color: 'var(--muted)' }}>
 						Vous ne pouvez pas avoir plus d&apos;un personnage actif à la fois.
 					</p>
@@ -92,6 +101,37 @@ export default async function NewCharacterPage() {
 		payload.find({ collection: 'factions', sort: 'name', limit: 100 }),
 	]);
 
+	// Restrict the unit chooser to LIF parent units (the ones a player joins)
+	const playerUnits = units.docs.filter((u: any) => {
+		const fname =
+			typeof u.parentFaction === 'object' && u.parentFaction
+				? u.parentFaction.name
+				: null;
+		return !fname || fname === 'LIF';
+	});
+
+	// If no unit selected → show the chooser
+	if (!unitSlug) {
+		return (
+			<div className="terminal-container">
+				<Link href="/roleplay" className="retour-link">
+					← Retour à la base de données
+				</Link>
+				<UnitSelector units={serialize(playerUnits) as any} />
+			</div>
+		);
+	}
+
+	// Resolve the chosen unit by slug
+	const lockedUnit = playerUnits.find(
+		(u: any) => (u.slug || '').toLowerCase() === unitSlug.toLowerCase(),
+	);
+
+	if (!lockedUnit) {
+		// Unknown slug → bounce back to selector
+		redirect('/roleplay/personnage/nouveau');
+	}
+
 	let allCharacters: any[] = [];
 	if (isAdmin) {
 		const chars = await payload.find({
@@ -100,26 +140,20 @@ export default async function NewCharacterPage() {
 			depth: 0,
 			sort: 'fullName',
 		});
-		allCharacters = chars.docs.map((c: any) => ({ id: c.id, fullName: c.fullName }));
+		allCharacters = chars.docs.map((c: any) => ({
+			id: c.id,
+			fullName: c.fullName,
+		}));
 	}
 
 	return (
 		<div className="terminal-container">
-			<Link href="/roleplay" className="retour-link">
-				← Retour à la base de données
+			<Link
+				href="/roleplay/personnage/nouveau"
+				className="retour-link"
+			>
+				← Changer d&apos;unité
 			</Link>
-
-			<div className="terminal-header">
-				<div className="terminal-header-left">
-					<div className="terminal-header-dots">
-						<span className="terminal-dot green" />
-						<span className="terminal-dot yellow" />
-						<span className="terminal-dot red" />
-					</div>
-					<span className="terminal-title">CRÉATION DE DOSSIER PERSONNEL</span>
-				</div>
-				<div className="terminal-header-right">FORMULAIRE D&apos;ENREGISTREMENT</div>
-			</div>
 
 			<CharacterForm
 				ranks={serialize(ranks.docs)}
@@ -127,6 +161,7 @@ export default async function NewCharacterPage() {
 				factions={serialize(factions.docs)}
 				isAdmin={isAdmin}
 				allCharacters={allCharacters}
+				lockedUnit={serialize(lockedUnit) as any}
 			/>
 		</div>
 	);

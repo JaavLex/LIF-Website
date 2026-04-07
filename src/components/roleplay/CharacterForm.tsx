@@ -26,6 +26,9 @@ interface Rank {
 interface Unit {
 	id: number;
 	name: string;
+	slug?: string;
+	color?: string | null;
+	insignia?: { url?: string | null } | null;
 	parentFaction?: { id: number; name: string } | number | null;
 }
 
@@ -43,6 +46,7 @@ export function CharacterForm({
 	isAdmin,
 	allCharacters,
 	allUsers,
+	lockedUnit,
 }: {
 	ranks: Rank[];
 	units: Unit[];
@@ -51,6 +55,7 @@ export function CharacterForm({
 	isAdmin?: boolean;
 	allCharacters?: { id: number; fullName: string }[];
 	allUsers?: { discordId: string; discordUsername: string }[];
+	lockedUnit?: Unit;
 }) {
 	const router = useRouter();
 	const [user, setUser] = useState<SessionUser | null>(null);
@@ -85,7 +90,7 @@ export function CharacterForm({
 		motto: editData?.motto || '',
 		previousUnit: editData?.previousUnit || '',
 		faction: editData?.faction || 'LIF',
-		unit: editData?.unit?.id || editData?.unit || '',
+		unit: lockedUnit?.id || editData?.unit?.id || editData?.unit || '',
 		isMainCharacter: true,
 		civilianBackground: lexicalToText(editData?.civilianBackground),
 		militaryBackground: lexicalToText(editData?.militaryBackground),
@@ -201,7 +206,10 @@ export function CharacterForm({
 			if (form.dateOfBirth) body.dateOfBirth = form.dateOfBirth;
 			if (form.height) body.height = parseInt(form.height);
 			if (form.weight) body.weight = parseInt(form.weight);
-			if (form.unit) body.unit = parseInt(form.unit);
+			// Unit: only set on create (or admin edits). Non-admin edits cannot change unit.
+			if (form.unit && (!editData || isAdmin)) {
+				body.unit = parseInt(form.unit);
+			}
 			if (avatarId) body.avatar = avatarId;
 
 			// Specialisations
@@ -707,28 +715,98 @@ export function CharacterForm({
 					<div className={gridTwoClass} style={gridTwo}>
 						<div>
 							<label style={labelStyle}>Unité</label>
-							<select
-								name="unit"
-								value={form.unit}
-								onChange={handleChange}
-								className="filter-select"
-								style={{ width: '100%' }}
-							>
-								<option value="">— Aucune —</option>
-								{units
-									.filter(u => {
-										if (!form.faction) return true;
-										const factionName = typeof u.parentFaction === 'object' && u.parentFaction
-											? u.parentFaction.name
-											: null;
-										return !factionName || factionName === form.faction;
-									})
-									.map(u => (
-										<option key={u.id} value={u.id}>
-											{u.name}
-										</option>
-									))}
-							</select>
+							{lockedUnit ? (
+								<div
+									className="char-form-locked-unit"
+									style={{ ['--unit-color' as any]: lockedUnit.color || '#4a7c23' }}
+								>
+									<div className="char-form-locked-unit-insignia">
+										{lockedUnit.insignia?.url ? (
+											<Image
+												src={lockedUnit.insignia.url}
+												alt={lockedUnit.name}
+												width={48}
+												height={48}
+											/>
+										) : (
+											<span aria-hidden>★</span>
+										)}
+									</div>
+									<div className="char-form-locked-unit-text">
+										<div className="char-form-locked-unit-eyebrow">
+											AFFECTATION VERROUILLÉE
+										</div>
+										<div className="char-form-locked-unit-name">
+											{lockedUnit.name}
+										</div>
+									</div>
+									<div className="char-form-locked-unit-badge" aria-hidden>
+										🔒
+									</div>
+								</div>
+							) : isAdmin || !editData ? (
+								<select
+									name="unit"
+									value={form.unit}
+									onChange={handleChange}
+									className="filter-select"
+									style={{ width: '100%' }}
+								>
+									<option value="">— Aucune —</option>
+									{units
+										.filter(u => {
+											if (!form.faction) return true;
+											const factionName =
+												typeof u.parentFaction === 'object' && u.parentFaction
+													? u.parentFaction.name
+													: null;
+											return !factionName || factionName === form.faction;
+										})
+										.map(u => (
+											<option key={u.id} value={u.id}>
+												{u.name}
+											</option>
+										))}
+								</select>
+							) : (
+								(() => {
+									const currentUnit = units.find(
+										u => String(u.id) === String(form.unit),
+									);
+									return (
+										<div
+											className="char-form-locked-unit"
+											style={{
+												['--unit-color' as any]: currentUnit?.color || '#4a7c23',
+											}}
+										>
+											<div className="char-form-locked-unit-insignia">
+												{currentUnit?.insignia?.url ? (
+													<Image
+														src={currentUnit.insignia.url}
+														alt={currentUnit.name}
+														width={48}
+														height={48}
+													/>
+												) : (
+													<span aria-hidden>★</span>
+												)}
+											</div>
+											<div className="char-form-locked-unit-text">
+												<div className="char-form-locked-unit-eyebrow">
+													AFFECTATION (verrouillée)
+												</div>
+												<div className="char-form-locked-unit-name">
+													{currentUnit?.name || '— Aucune —'}
+												</div>
+											</div>
+											<div className="char-form-locked-unit-badge" aria-hidden>
+												🔒
+											</div>
+										</div>
+									);
+								})()
+							)}
 						</div>
 						<div>
 							<label style={labelStyle}>Unité précédente</label>

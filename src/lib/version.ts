@@ -6,9 +6,21 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.6.20',
+  version: '1.6.21',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.6.21',
+      date: '2026-04-07',
+      changes: [
+        'CRÉATION PERSONNAGE — Nouvelle étape 01 obligatoire : choix d\'unité (Cerberus / Spectre) avant la création de la fiche',
+        'CRÉATION PERSONNAGE — Hero « Étape 01/02 » avec numéro géant Rajdhani, scanlines, et avertissement « décision définitive »',
+        'CRÉATION PERSONNAGE — Cartes de choix d\'unité « cinématiques » : insigne en grand, watermark du nom, coins HUD, lore (tagline + pitch + traits), CTA « S\'ENGAGER » qui s\'illumine au hover',
+        'CRÉATION PERSONNAGE — Une fois l\'unité choisie, le formulaire affiche un panneau « AFFECTATION VERROUILLÉE » avec insigne et nom (plus de select)',
+        'FICHE PERSONNAGE — L\'unité n\'est plus modifiable par le joueur sur sa propre fiche (verrou UI + verrou serveur sur PATCH /api/roleplay/characters/[id])',
+        'ADMIN — Les administrateurs conservent le contrôle total et peuvent réaffecter un personnage à une autre unité',
+      ],
+    },
     {
       version: '1.6.20',
       date: '2026-04-07',

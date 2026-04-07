@@ -93,6 +93,9 @@ export async function PATCH(
 			delete body.etatMajorNotes;
 			delete body.faction;
 			delete body.rankOverride;
+			// Unit is chosen at character creation and locked thereafter — only admins can move
+			// a player between units.
+			delete body.unit;
 		}
 
 		// Auto-derive rank from Discord roles unless rankOverride is explicitly enabled.
