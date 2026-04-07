@@ -6,9 +6,20 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.4.2',
+  version: '1.5.0',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.5.0',
+      date: '2026-04-07',
+      changes: [
+        'COMMS — bouton « Membres » dans l\'en-tête du canal ouvrant la liste complète',
+        'COMMS — clic sur un nom d\'expéditeur (non anonyme) ouvre la fiche personnage en modal',
+        'COMMS — clic sur une fiche personnage ou un renseignement joint ouvre un modal avec « Voir la fiche complète » / « Voir le renseignement »',
+        'COMMS — Entrée envoie le message, Maj+Entrée pour un retour à la ligne',
+        'COMMS — synchronisation automatique de tous les canaux faction/unité (création + ajout des membres) à chaque chargement',
+      ],
+    },
     {
       version: '1.4.2',
       date: '2026-04-07',

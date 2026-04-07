@@ -15,13 +15,21 @@ export function MessageComposer({
 	const [attachments, setAttachments] = useState<any[]>([]);
 	const [showPicker, setShowPicker] = useState(false);
 
-	function handleSubmit(e: React.FormEvent) {
-		e.preventDefault();
+	function handleSubmit(e?: React.FormEvent) {
+		if (e) e.preventDefault();
 		if (!body.trim() && attachments.length === 0) return;
 		onSend({ body, isAnonymous, attachments });
 		setBody('');
 		setAttachments([]);
 		setIsAnonymous(false);
+	}
+
+	function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
+		// Enter sends, Shift+Enter inserts newline
+		if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
+			e.preventDefault();
+			handleSubmit();
+		}
 	}
 
 	return (
@@ -33,7 +41,8 @@ export function MessageComposer({
 			<textarea
 				value={body}
 				onChange={(e) => setBody(e.target.value)}
-				placeholder="Transmettre un message... (markdown supporté: **gras** *italique* `code` &gt; quote)"
+				onKeyDown={handleKeyDown}
+				placeholder="Transmettre... (Entrée = envoyer · Maj+Entrée = retour ligne · markdown: **gras** *italique* `code` &gt; quote)"
 				disabled={disabled}
 				maxLength={4000}
 			/>

@@ -9,6 +9,9 @@ import { MessageComposer } from './MessageComposer';
 import { DisclaimerModal } from './DisclaimerModal';
 import { NewDmModal } from './NewDmModal';
 import { NewGroupModal } from './NewGroupModal';
+import { MembersPanel } from './MembersPanel';
+import { CharacterProfileModal } from './CharacterProfileModal';
+import { IntelPreviewModal } from './IntelPreviewModal';
 
 export interface CommsChannel {
 	id: number;
@@ -50,6 +53,9 @@ export function CommsLayout({ character }: { character: ActiveCharacter }) {
 	const [bannerClosed, setBannerClosed] = useState(false);
 	const [showNewDm, setShowNewDm] = useState(false);
 	const [showNewGroup, setShowNewGroup] = useState(false);
+	const [showMembers, setShowMembers] = useState(false);
+	const [profileCharacterId, setProfileCharacterId] = useState<number | null>(null);
+	const [previewIntelId, setPreviewIntelId] = useState<number | null>(null);
 	const [mobileShowMain, setMobileShowMain] = useState(false);
 	const pollingRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -239,14 +245,26 @@ export function CommsLayout({ character }: { character: ActiveCharacter }) {
 									</button>
 									<h2>{activeChannel.name}</h2>
 								</div>
-								<div className="comms-main-header-meta">
-									{activeChannel.type.toUpperCase()} · {activeChannel.memberCount} membres
+								<div
+									className="comms-main-header-meta"
+									style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+								>
+									<span>{activeChannel.type.toUpperCase()}</span>
+									<button
+										type="button"
+										className="comms-icon-btn"
+										onClick={() => setShowMembers(true)}
+									>
+										👥 {activeChannel.memberCount} membres
+									</button>
 								</div>
 							</div>
 							<MessageList
 								messages={messages}
 								onDelete={handleDelete}
 								onEdit={handleEdit}
+								onOpenCharacter={(id) => setProfileCharacterId(id)}
+								onOpenIntel={(id) => setPreviewIntelId(id)}
 							/>
 							<MessageComposer
 								key={activeChannel.id}
@@ -281,6 +299,31 @@ export function CommsLayout({ character }: { character: ActiveCharacter }) {
 						setShowNewGroup(false);
 						loadChannels().then(() => setActiveId(channelId));
 					}}
+				/>
+			)}
+
+			{showMembers && activeId && (
+				<MembersPanel
+					channelId={activeId}
+					onClose={() => setShowMembers(false)}
+					onSelectMember={(id) => {
+						setShowMembers(false);
+						setProfileCharacterId(id);
+					}}
+				/>
+			)}
+
+			{profileCharacterId !== null && (
+				<CharacterProfileModal
+					characterId={profileCharacterId}
+					onClose={() => setProfileCharacterId(null)}
+				/>
+			)}
+
+			{previewIntelId !== null && (
+				<IntelPreviewModal
+					intelId={previewIntelId}
+					onClose={() => setPreviewIntelId(null)}
 				/>
 			)}
 		</div>

@@ -3,6 +3,7 @@ import { getSession } from '@/lib/api-auth';
 import {
 	checkCommsEligibility,
 	syncAutoChannelsForCharacter,
+	syncAllAutoChannels,
 	listChannelsForCharacter,
 	COMMS_LIMITS,
 } from '@/lib/comms';
@@ -17,6 +18,8 @@ export async function GET(request: NextRequest) {
 
 	// Make sure auto-channels exist & sync membership
 	await syncAutoChannelsForCharacter(eligibility.character);
+	// Full sync of all factions/units (cached 30s in-memory)
+	await syncAllAutoChannels();
 
 	const channels = await listChannelsForCharacter(eligibility.character.id);
 

@@ -265,6 +265,135 @@ export async function syncAutoChannelsForCharacter(
 }
 
 /**
+ * Full sync of all faction & unit auto-channels.
+ *
+ * - For every Faction in DB, ensures a 'faction' channel exists with name
+ *   matching the faction.name and members = all in-service characters whose
+ *   `faction` text matches that name.
+ * - For every Unit in DB, ensures a 'unit' channel exists and members = all
+ *   in-service characters whose `unit` relation points at it.
+ *
+ * Idempotent. Safe to call on every channels GET. Cached for 30s in memory
+ * to avoid hammering the DB on rapid polling.
+ */
+let lastFullSyncAt = 0;
+const FULL_SYNC_TTL_MS = 30_000;
+
+export async function syncAllAutoChannels(force = false): Promise<void> {
+	const now = Date.now();
+	if (!force && now - lastFullSyncAt < FULL_SYNC_TTL_MS) return;
+	lastFullSyncAt = now;
+
+	const payload = await getPayloadClient();
+
+	const [factions, units, characters] = await Promise.all([
+		payload.find({ collection: 'factions', limit: 500 }),
+		payload.find({ collection: 'units', limit: 500, depth: 1 }),
+		payload.find({
+			collection: 'characters',
+			where: { status: { equals: 'in-service' } },
+			limit: 1000,
+			depth: 0,
+		}),
+	]);
+
+	const charsByFaction = new Map<string, number[]>();
+	const charsByUnit = new Map<number, number[]>();
+	for (const c of characters.docs as any[]) {
+		if (c.faction) {
+			const arr = charsByFaction.get(c.faction) || [];
+			arr.push(c.id);
+			charsByFaction.set(c.faction, arr);
+		}
+		if (c.unit) {
+			const unitId = typeof c.unit === 'object' ? c.unit.id : c.unit;
+			if (unitId) {
+				const arr = charsByUnit.get(unitId) || [];
+				arr.push(c.id);
+				charsByUnit.set(unitId, arr);
+			}
+		}
+	}
+
+	// Existing channels keyed by ref
+	const existingFactionCh = await payload.find({
+		collection: 'comms-channels',
+		where: { type: { equals: 'faction' } },
+		limit: 500,
+	});
+	const factionChByRef = new Map<string, any>();
+	for (const ch of existingFactionCh.docs as any[]) {
+		if (ch.factionRef) factionChByRef.set(ch.factionRef, ch);
+	}
+
+	const existingUnitCh = await payload.find({
+		collection: 'comms-channels',
+		where: { type: { equals: 'unit' } },
+		limit: 500,
+	});
+	const unitChByRef = new Map<number, any>();
+	for (const ch of existingUnitCh.docs as any[]) {
+		if (ch.unitRefId) unitChByRef.set(Number(ch.unitRefId), ch);
+	}
+
+	// Faction channels: ensure exists & members up to date
+	for (const f of factions.docs as any[]) {
+		const desiredMembers = (charsByFaction.get(f.name) || []).sort((a, b) => a - b);
+		const existing = factionChByRef.get(f.name);
+		if (!existing) {
+			await payload.create({
+				collection: 'comms-channels',
+				data: {
+					name: `Faction — ${f.name}`,
+					type: 'faction',
+					factionRef: f.name,
+					members: desiredMembers,
+				} as any,
+			});
+		} else {
+			const current: number[] = (Array.isArray(existing.members) ? existing.members : [])
+				.map(Number)
+				.sort((a: number, b: number) => a - b);
+			if (JSON.stringify(current) !== JSON.stringify(desiredMembers)) {
+				await payload.update({
+					collection: 'comms-channels',
+					id: existing.id,
+					data: { members: desiredMembers } as any,
+				});
+			}
+		}
+	}
+
+	// Unit channels: ensure exists & members up to date
+	for (const u of units.docs as any[]) {
+		const desiredMembers = (charsByUnit.get(u.id) || []).sort((a, b) => a - b);
+		const existing = unitChByRef.get(u.id);
+		if (!existing) {
+			await payload.create({
+				collection: 'comms-channels',
+				data: {
+					name: `Unité — ${u.name}`,
+					type: 'unit',
+					unitRefId: u.id,
+					members: desiredMembers,
+				} as any,
+			});
+		} else {
+			const current: number[] = (Array.isArray(existing.members) ? existing.members : [])
+				.map(Number)
+				.sort((a: number, b: number) => a - b);
+			if (JSON.stringify(current) !== JSON.stringify(desiredMembers)) {
+				await payload.update({
+					collection: 'comms-channels',
+					id: existing.id,
+					data: { members: desiredMembers } as any,
+				});
+			}
+		}
+	}
+}
+
+/**
  * Lists all channels visible to a character.
  */
 export async function listChannelsForCharacter(characterId: number) {

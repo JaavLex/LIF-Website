@@ -260,6 +260,33 @@
 	color: var(--danger);
 }
 
+.comms-sender-link {
+	background: transparent;
+	border: none;
+	padding: 0;
+	font: inherit;
+	cursor: pointer;
+	text-align: left;
+}
+
+.comms-sender-link:hover {
+	text-decoration: underline;
+}
+
+.comms-attachment-button {
+	background: rgba(0, 0, 0, 0.3);
+	border: 1px solid var(--primary);
+	color: inherit;
+	font: inherit;
+	cursor: pointer;
+	text-align: left;
+	width: 100%;
+}
+
+.comms-attachment-button:hover {
+	background: rgba(80, 180, 80, 0.08);
+}
+
 .comms-message-time {
 	font-size: 0.7rem;
 	color: var(--muted);

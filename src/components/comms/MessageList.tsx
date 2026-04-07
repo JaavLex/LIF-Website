@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import Link from 'next/link';
 import { SafeMarkdown } from '@/lib/safe-markdown';
 import type { CommsMessage } from './CommsLayout';
 
@@ -15,10 +14,14 @@ export function MessageList({
 	messages,
 	onDelete,
 	onEdit,
+	onOpenCharacter,
+	onOpenIntel,
 }: {
 	messages: CommsMessage[];
 	onDelete: (id: number) => void;
 	onEdit: (id: number, body: string) => void;
+	onOpenCharacter: (id: number) => void;
+	onOpenIntel: (id: number) => void;
 }) {
 	const scrollRef = useRef<HTMLDivElement>(null);
 	const [editingId, setEditingId] = useState<number | null>(null);
@@ -61,12 +64,23 @@ export function MessageList({
 						</div>
 						<div className="comms-message-body">
 							<div className="comms-message-header">
-								<span
-									className={`comms-message-sender${m.isAnonymous ? ' anonymous' : ''}`}
-								>
-									{sender?.rankName ? `${sender.rankName} ` : ''}
-									{sender?.fullName || '[INCONNU]'}
-								</span>
+								{!m.isAnonymous && sender?.id ? (
+									<button
+										type="button"
+										className="comms-message-sender comms-sender-link"
+										onClick={() => onOpenCharacter(sender.id!)}
+									>
+										{sender.rankName ? `${sender.rankName} ` : ''}
+										{sender.fullName}
+									</button>
+								) : (
+									<span
+										className={`comms-message-sender${m.isAnonymous ? ' anonymous' : ''}`}
+									>
+										{sender?.rankName ? `${sender.rankName} ` : ''}
+										{sender?.fullName || '[INCONNU]'}
+									</span>
+								)}
 								<span className="comms-message-time">
 									{formatTimestamp(m.createdAt)}
 								</span>
@@ -132,7 +146,12 @@ export function MessageList({
 									{m.attachments && m.attachments.length > 0 && (
 										<div className="comms-attachments">
 											{m.attachments.map((att: any, idx: number) => (
-												<AttachmentCard key={idx} att={att} />
+												<AttachmentCard
+													key={idx}
+													att={att}
+													onOpenCharacter={onOpenCharacter}
+													onOpenIntel={onOpenIntel}
+												/>
 											))}
 										</div>
 									)}
@@ -146,28 +165,50 @@ export function MessageList({
 	);
 }
 
-function AttachmentCard({ att }: { att: any }) {
+function AttachmentCard({
+	att,
+	onOpenCharacter,
+	onOpenIntel,
+}: {
+	att: any;
+	onOpenCharacter: (id: number) => void;
+	onOpenIntel: (id: number) => void;
+}) {
 	if (att.kind === 'character') {
 		return (
-			<div className="comms-attachment">
+			<button
+				type="button"
+				className="comms-attachment comms-attachment-button"
+				onClick={() => onOpenCharacter(att.refId)}
+			>
 				<span style={{ color: 'var(--primary)' }}>FICHE</span>
-				<Link href={`/roleplay/personnage/${att.refId}`}>
+				<span style={{ color: 'var(--text)' }}>
 					{att.meta?.fullName || `Personnage #${att.refId}`}
-				</Link>
+				</span>
 				{att.meta?.rankName && (
 					<span style={{ color: 'var(--muted)' }}>· {att.meta.rankName}</span>
 				)}
-			</div>
+				<span style={{ color: 'var(--muted)', marginLeft: 'auto', fontSize: '0.7rem' }}>
+					Ouvrir →
+				</span>
+			</button>
 		);
 	}
 	if (att.kind === 'intel') {
 		return (
-			<div className="comms-attachment">
+			<button
+				type="button"
+				className="comms-attachment comms-attachment-button"
+				onClick={() => onOpenIntel(att.refId)}
+			>
 				<span style={{ color: 'var(--primary)' }}>RENS</span>
-				<Link href={`/roleplay#intel-${att.refId}`}>
+				<span style={{ color: 'var(--text)' }}>
 					{att.meta?.title || `Renseignement #${att.refId}`}
-				</Link>
-			</div>
+				</span>
+				<span style={{ color: 'var(--muted)', marginLeft: 'auto', fontSize: '0.7rem' }}>
+					Ouvrir →
+				</span>
+			</button>
 		);
 	}
 	if (att.kind === 'media') {
