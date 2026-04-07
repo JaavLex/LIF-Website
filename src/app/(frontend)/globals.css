@@ -1383,3 +1383,61 @@ html[data-dev-banner] .navbar {
   left: 0;
   color: var(--primary);
 }
+
+/* Site-wide comms toast notifier (also reused inside /comms page) */
+.comms-toast-stack {
+  position: fixed;
+  top: 5rem;
+  right: 1rem;
+  z-index: 1100;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-width: 320px;
+}
+
+.comms-toast {
+  background: rgba(0, 0, 0, 0.92);
+  border: 1px solid var(--primary);
+  border-left: 4px solid var(--primary);
+  color: var(--foreground);
+  font-family: inherit;
+  padding: 0.6rem 0.8rem;
+  cursor: pointer;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5), 0 0 12px rgba(80, 180, 80, 0.25);
+  animation: comms-toast-in 0.25s ease-out;
+}
+
+.comms-toast:hover {
+  background: rgba(80, 180, 80, 0.12);
+}
+
+.comms-toast-channel {
+  font-size: 0.78rem;
+  font-weight: bold;
+  color: var(--primary);
+  letter-spacing: 0.5px;
+}
+
+.comms-toast-snippet {
+  font-size: 0.72rem;
+  color: var(--muted, #888);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@keyframes comms-toast-in {
+  from {
+    transform: translateX(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}

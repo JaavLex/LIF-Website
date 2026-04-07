@@ -6,9 +6,19 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.6.1',
+  version: '1.6.2',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.6.2',
+      date: '2026-04-07',
+      changes: [
+        'COMMS — notifications globales : les toasts apparaissent sur tout le site (pas seulement /comms)',
+        'COMMS — clic sur un toast ouvre directement le canal concerné (?channel=ID)',
+        'COMMS — insigne de grade : agrandi, encadré, affiché comme un badge à côté du nom',
+        'COMMS — correctif : profondeur de récupération du grade portée à 2 (l\'icône s\'affichait pas dans les messages)',
+      ],
+    },
     {
       version: '1.6.1',
       date: '2026-04-07',

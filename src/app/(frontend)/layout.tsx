@@ -4,6 +4,7 @@ import './globals.css';
 import { DevBanner } from '@/components/DevBanner';
 import { VersionInfo } from '@/components/VersionInfo';
 import { ViewAsUserToggle } from '@/components/ViewAsUserToggle';
+import { GlobalCommsNotifier } from '@/components/comms/GlobalCommsNotifier';
 
 const heading = Rajdhani({
 	subsets: ['latin'],
@@ -39,6 +40,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 				<DevBanner />
 				<VersionInfo />
 				<ViewAsUserToggle />
+				<GlobalCommsNotifier />
 				{children}
 			</body>
 		</html>

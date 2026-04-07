@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import type { ActiveCharacter } from '@/lib/comms';
 import { ChannelList } from './ChannelList';
 import { MessageList } from './MessageList';
@@ -61,6 +62,12 @@ export interface CommsMessage {
 }
 
 export function CommsLayout({ character }: { character: ActiveCharacter }) {
+	const searchParams = useSearchParams();
+	const requestedChannelId = (() => {
+		const v = searchParams?.get('channel');
+		const n = v ? parseInt(v, 10) : NaN;
+		return isNaN(n) ? null : n;
+	})();
 	const [channels, setChannels] = useState<CommsChannel[]>([]);
 	const [activeId, setActiveId] = useState<number | null>(null);
 	const [messages, setMessages] = useState<CommsMessage[]>([]);
@@ -95,7 +102,10 @@ export function CommsLayout({ character }: { character: ActiveCharacter }) {
 			const newChannels: CommsChannel[] = data.channels || [];
 			setChannels(newChannels);
 			if (!activeId && newChannels.length) {
-				setActiveId(newChannels[0].id);
+				const requested =
+					requestedChannelId &&
+					newChannels.find((c) => c.id === requestedChannelId);
+				setActiveId(requested ? requested.id : newChannels[0].id);
 			}
 
 			// Detect channels that advanced since last poll → toast (skip active
@@ -127,7 +137,7 @@ export function CommsLayout({ character }: { character: ActiveCharacter }) {
 			}
 			initializedSeenRef.current = true;
 		} catch {}
-	}, [activeId]);
+	}, [activeId, requestedChannelId]);
 
 	const loadMessages = useCallback(async (channelId: number) => {
 		try {

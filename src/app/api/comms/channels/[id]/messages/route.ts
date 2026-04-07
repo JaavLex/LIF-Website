@@ -69,7 +69,7 @@ export async function GET(
 				collection: 'characters',
 				where: { id: { in: senderIds } },
 				limit: 200,
-				depth: 1,
+				depth: 2,
 			})
 		: { docs: [] };
 	const senderMap = new Map(
