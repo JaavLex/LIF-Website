@@ -7407,6 +7407,12 @@
 .section-window-body {
   position: relative;
   z-index: 2;
+  /* Establish a new block formatting context so child margin-bottom can't
+     collapse out of the body and lift its bottom edge upward. Without this,
+     sections whose last child carries a `margin-bottom` (PersonnelFilters,
+     factions-panel) would render the corner stamp floating inside the panel
+     instead of sitting in the diagonal cut at the actual section corner. */
+  display: flow-root;
 }
 
 /* Bottom-right "stamp" detail at the diagonal cut */

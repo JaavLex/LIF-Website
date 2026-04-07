@@ -6,9 +6,16 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.6.35',
+  version: '1.6.36',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.6.36',
+      date: '2026-04-08',
+      changes: [
+        'ROLEPLAY — Vraie cause du coin bas-droit cassé sur les fenêtres 1 et 2 (Personnel et Organisations) enfin trouvée : effondrement de marges. Le tampon en diagonale était positionné en `position: absolute` relativement à `.section-window-body` avec `bottom: -2.6rem`. Quand le dernier enfant du body avait un `margin-bottom` (ce qui est le cas pour `PersonnelFilters` et `factions-panel` mais PAS pour `IntelligenceList` ni `OrgBankStats`), cette marge s\'effondrait hors de la boîte du body, remontant son edge bottom de la valeur de la marge. Le tampon se retrouvait alors flottant À L\'INTÉRIEUR de la section au lieu de se loger dans la coupe diagonale du coin. Fix : `display: flow-root` sur `.section-window-body` pour établir un nouveau contexte de formatage de bloc, ce qui empêche les marges des enfants de s\'évader. Reproduit puis vérifié visuellement avant déploiement.',
+      ],
+    },
     {
       version: '1.6.35',
       date: '2026-04-08',
