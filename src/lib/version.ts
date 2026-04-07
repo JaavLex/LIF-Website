@@ -6,9 +6,16 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.4.1',
+  version: '1.4.2',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.4.2',
+      date: '2026-04-07',
+      changes: [
+        'Correction : page /comms invisible — le canvas Matrix (position:fixed) passait par-dessus le contenu. Ajout d\'un stacking context sur .comms-page.',
+      ],
+    },
     {
       version: '1.4.1',
       date: '2026-04-07',

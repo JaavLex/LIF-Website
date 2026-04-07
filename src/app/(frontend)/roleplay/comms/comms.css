@@ -7,6 +7,8 @@
 	background: var(--background);
 	color: var(--text);
 	font-family: var(--font-mono, 'Courier New', monospace);
+	position: relative;
+	z-index: 1;
 }
 
 .comms-disclaimer-banner {
