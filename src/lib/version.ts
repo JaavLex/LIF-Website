@@ -6,9 +6,17 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.6.5',
+  version: '1.6.6',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.6.6',
+      date: '2026-04-07',
+      changes: [
+        'COMMS — badge global de mentions sur le bouton 📡 COMMS de /roleplay (somme de tous les canaux)',
+        'COMMS — fenêtre de chat ne grandit plus avec les messages : scroll interne (hauteur fixe = viewport)',
+      ],
+    },
     {
       version: '1.6.5',
       date: '2026-04-07',

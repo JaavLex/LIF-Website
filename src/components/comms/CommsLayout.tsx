@@ -96,7 +96,28 @@ export function CommsLayout({ character }: { character: ActiveCharacter }) {
 	const lastTypingPingRef = useRef<number>(0);
 	const [onlineMemberIds, setOnlineMemberIds] = useState<number[]>([]);
 	const [toasts, setToasts] = useState<Array<{ id: number; channelId: number; channelName: string; snippet: string }>>([]);
-	const [mentionCounts, setMentionCounts] = useState<Record<number, number>>({});
+	const [mentionCounts, setMentionCounts] = useState<Record<number, number>>(() => {
+		if (typeof window === 'undefined') return {};
+		try {
+			const raw = window.localStorage.getItem('comms.mentionCounts.v1');
+			return raw ? JSON.parse(raw) : {};
+		} catch {
+			return {};
+		}
+	});
+
+	// Persist mentionCounts to localStorage so the /roleplay COMMS button badge
+	// stays in sync with the in-page badges.
+	useEffect(() => {
+		if (typeof window === 'undefined') return;
+		try {
+			window.localStorage.setItem(
+				'comms.mentionCounts.v1',
+				JSON.stringify(mentionCounts),
+			);
+			window.dispatchEvent(new CustomEvent('comms-mention-counts-change'));
+		} catch {}
+	}, [mentionCounts]);
 	// Tracks the last seen lastMessageAt per channel so we only toast on advances
 	const seenLastMessageAtRef = useRef<Map<number, string>>(new Map());
 	const initializedSeenRef = useRef(false);
@@ -161,6 +182,20 @@ export function CommsLayout({ character }: { character: ActiveCharacter }) {
 				if (ch.lastMessageAt) seen.set(ch.id, ch.lastMessageAt);
 			}
 			initializedSeenRef.current = true;
+			// Mirror seen-baseline into localStorage so the /roleplay COMMS button
+			// poller (CommsNavButton) doesn't re-count messages already handled here.
+			if (typeof window !== 'undefined') {
+				try {
+					const seenObj: Record<string, string> = {};
+					seen.forEach((v, k) => {
+						seenObj[String(k)] = v;
+					});
+					window.localStorage.setItem(
+						'comms.seenLastAt.v1',
+						JSON.stringify(seenObj),
+					);
+				} catch {}
+			}
 		} catch {}
 	}, [activeId, requestedChannelId]);
 

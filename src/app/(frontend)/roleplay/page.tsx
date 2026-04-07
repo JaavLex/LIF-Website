@@ -8,6 +8,7 @@ import { SessionBar } from '@/components/roleplay/SessionBar';
 import { DiscordDisclaimer } from '@/components/roleplay/DiscordDisclaimer';
 import { IntelligenceList } from '@/components/roleplay/IntelligenceList';
 import { AdminPanel } from '@/components/roleplay/AdminPanel';
+import { CommsNavButton } from '@/components/roleplay/CommsNavButton';
 import { verifySession } from '@/lib/session';
 import { checkAdminPermissions } from '@/lib/admin';
 import { RoleplayTutorial } from '@/components/roleplay/RoleplayTutorial';
@@ -232,13 +233,7 @@ export default async function RoleplayPage({
 						Lore & Chronologie
 					</Link>
 				)}
-				<Link
-					href="/roleplay/comms"
-					className="session-btn"
-					style={{ padding: '0.6rem 1.2rem', fontSize: '0.85rem' }}
-				>
-					📡 COMMS
-				</Link>
+				<CommsNavButton />
 				{isAdmin && (
 					<Link
 						href="/moderation"

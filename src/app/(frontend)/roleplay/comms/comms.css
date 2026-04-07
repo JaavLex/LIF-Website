@@ -3,7 +3,11 @@
 .comms-page {
 	display: flex;
 	flex-direction: column;
-	min-height: calc(100vh - 4rem);
+	/* Fixed height (not min-height) so the inner message list can scroll
+	   instead of pushing the whole page to grow. */
+	height: calc(100vh - 4rem);
+	min-height: 0;
+	overflow: hidden;
 	/* Transparent so the Matrix canvas (z-index:0) shows through.
 	   Panels below have their own opaque-ish backgrounds for readability. */
 	background: transparent;
