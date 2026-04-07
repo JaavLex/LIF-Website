@@ -6,9 +6,18 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.6.0',
+  version: '1.6.1',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.6.1',
+      date: '2026-04-07',
+      changes: [
+        'COMMS — bouton « Quitter le groupe » : message système notifiant les autres membres',
+        'COMMS — bouton « Fermer la conversation » sur les DM (supprime le canal)',
+        'COMMS — insigne de grade affiché à la place du texte du grade dans les bulles de message',
+      ],
+    },
     {
       version: '1.6.0',
       date: '2026-04-07',

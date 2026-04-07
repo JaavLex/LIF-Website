@@ -92,10 +92,10 @@ export function MessageList({
 											<img
 												className="comms-message-rank-icon"
 												src={sender.rankIconUrl}
-												alt=""
+												alt={sender.rankName || ''}
+												title={sender.rankName || ''}
 											/>
 										)}
-										{sender.rankName ? `${sender.rankName} ` : ''}
 										{sender.fullName}
 									</button>
 								) : (
@@ -106,10 +106,10 @@ export function MessageList({
 											<img
 												className="comms-message-rank-icon"
 												src={sender.rankIconUrl}
-												alt=""
+												alt={sender.rankName || ''}
+												title={sender.rankName || ''}
 											/>
 										)}
-										{sender?.rankName ? `${sender.rankName} ` : ''}
 										{sender?.fullName || '[INCONNU]'}
 									</span>
 								)}

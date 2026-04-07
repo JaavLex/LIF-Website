@@ -278,6 +278,25 @@ export function CommsLayout({ character }: { character: ActiveCharacter }) {
 		if (activeId) loadMessages(activeId);
 	}
 
+	async function handleLeaveOrClose(channel: CommsChannel) {
+		const isGroup = channel.type === 'group';
+		const isDm = channel.type === 'dm';
+		if (!isGroup && !isDm) return;
+		const confirmMsg = isGroup
+			? 'Quitter ce groupe ? Les autres membres seront notifiés.'
+			: 'Fermer cette conversation ? Elle sera supprimée pour les deux participants.';
+		if (!confirm(confirmMsg)) return;
+		const res = await fetch(`/api/comms/channels/${channel.id}`, { method: 'DELETE' });
+		if (!res.ok) {
+			const data = await res.json().catch(() => ({}));
+			alert(data.error || 'Erreur');
+			return;
+		}
+		setActiveId(null);
+		setMessages([]);
+		await loadChannels();
+	}
+
 	const activeChannel = channels.find((c) => c.id === activeId) || null;
 
 	if (loading) {
@@ -429,6 +448,21 @@ export function CommsLayout({ character }: { character: ActiveCharacter }) {
 									>
 										👥 {activeChannel.memberCount} membres
 									</button>
+									{(activeChannel.type === 'group' ||
+										activeChannel.type === 'dm') && (
+										<button
+											type="button"
+											className="comms-icon-btn"
+											onClick={() => handleLeaveOrClose(activeChannel)}
+											title={
+												activeChannel.type === 'group'
+													? 'Quitter le groupe'
+													: 'Fermer la conversation'
+											}
+										>
+											{activeChannel.type === 'group' ? '🚪 Quitter' : '✕ Fermer'}
+										</button>
+									)}
 								</div>
 							</div>
 							<MessageList

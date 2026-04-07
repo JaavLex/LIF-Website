@@ -98,24 +98,44 @@ export async function DELETE(
 		return NextResponse.json({ error: 'Canal automatique' }, { status: 403 });
 	}
 
-	// Group: creator or admin can hard delete; member can leave
+	// Group: creator or admin can hard delete; any member can leave (with notice)
 	if (channel.type === 'group') {
 		if (isCreator || isAdmin) {
 			await payload.delete({ collection: 'comms-channels', id: channelId });
 			return NextResponse.json({ success: true, deleted: true });
 		}
+		if (!members.includes(eligibility.character.id)) {
+			return NextResponse.json({ error: 'Non membre' }, { status: 403 });
+		}
+		// Post a system-style notice from the leaving character before removal so
+		// the remaining members see who left in the channel history.
+		await payload.create({
+			collection: 'comms-messages',
+			data: {
+				channelId,
+				senderCharacterId: eligibility.character.id,
+				senderDiscordId: session!.discordId,
+				isAnonymous: false,
+				body: `*${eligibility.character.fullName} a quitté le canal.*`,
+			} as any,
+		});
 		const newMembers = members.filter((m) => m !== eligibility.character.id);
 		await payload.update({
 			collection: 'comms-channels',
 			id: channelId,
-			data: { members: newMembers } as any,
+			data: {
+				members: newMembers,
+				lastMessageAt: new Date().toISOString(),
+			} as any,
 		});
 		return NextResponse.json({ success: true, left: true });
 	}
 
-	// DM: admin only
+	// DM: any participant can close it for everyone (deletes the channel record).
+	// Admins can always delete.
 	if (channel.type === 'dm') {
-		if (!isAdmin) {
+		const isParticipant = members.includes(eligibility.character.id);
+		if (!isParticipant && !isAdmin) {
 			return NextResponse.json({ error: 'Non autorisé' }, { status: 403 });
 		}
 		await payload.delete({ collection: 'comms-channels', id: channelId });
