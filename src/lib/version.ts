@@ -6,9 +6,21 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.6.13',
+  version: '1.6.14',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.6.14',
+      date: '2026-04-07',
+      changes: [
+        'PERSONNEL — Refonte des cartes « dossier » : grille plus dense (min 290px), bande de statut colorée à gauche, coins HUD sur l\'avatar, texture de grain subtile',
+        'PERSONNEL — Ligne principale = icône de grade + CALLSIGN en Rajdhani, nom complet en sous-ligne monospace, étoile dorée pour personnage principal',
+        'PERSONNEL — Chips unité/faction compactes avec insigne/logo, bordure colorée par faction',
+        'PERSONNEL — Footer : matricule monospace + pastille de statut + lettre de classification (P/R/C)',
+        'PERSONNEL — Ruban « menace » en coin pour les cibles (pulse animé pour CRITIQUE)',
+        'PERSONNEL — Barre de filtres compactée avec accent latéral, onglets Rajdhani plus denses, en-têtes de grade avec ligne de gradient',
+      ],
+    },
     {
       version: '1.6.13',
       date: '2026-04-07',
