@@ -71,5 +71,23 @@ export const Users: CollectionConfig = {
 				position: 'sidebar',
 			},
 		},
+		{
+			name: 'commsDisclaimerAcceptedAt',
+			label: 'Avis Comms accepté',
+			type: 'date',
+			admin: {
+				readOnly: true,
+				position: 'sidebar',
+			},
+		},
+		{
+			name: 'commsBanned',
+			label: 'Banni de Comms',
+			type: 'checkbox',
+			defaultValue: false,
+			admin: {
+				position: 'sidebar',
+			},
+		},
 	],
 };
