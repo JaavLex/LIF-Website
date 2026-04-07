@@ -14,6 +14,15 @@ export async function POST(request: NextRequest) {
 		const body = await request.json();
 		const payload = await getPayloadClient();
 
+		// Callsign is mandatory
+		if (!body.callsign || typeof body.callsign !== 'string' || !body.callsign.trim()) {
+			return NextResponse.json(
+				{ message: 'Le callsign est obligatoire.' },
+				{ status: 400 },
+			);
+		}
+		body.callsign = body.callsign.trim();
+
 		// Check if user is admin (via DB role or Discord roles)
 		const { isAdmin } = await checkAdminPermissions(session);
 

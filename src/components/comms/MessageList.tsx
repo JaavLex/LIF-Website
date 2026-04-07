@@ -107,7 +107,7 @@ export function MessageList({
 												title={sender.rankName || ''}
 											/>
 										)}
-										{sender.fullName}
+										{sender.callsign || sender.fullName}
 									</button>
 								) : (
 									<span
@@ -121,7 +121,7 @@ export function MessageList({
 												title={sender.rankName || ''}
 											/>
 										)}
-										{sender?.fullName || '[INCONNU]'}
+										{sender?.callsign || sender?.fullName || '[INCONNU]'}
 									</span>
 								)}
 								<span className="comms-message-time">

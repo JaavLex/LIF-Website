@@ -1,6 +1,7 @@
 import type { SessionData } from './session';
 import { getPayloadClient } from './payload';
 import { checkAdminPermissions } from './admin';
+import { generateUniqueCallsign } from './callsign';
 import type { Roleplay } from '@/payload-types';
 
 export type CommsEligibility =
@@ -110,6 +111,17 @@ export async function checkCommsEligibility(
 	const charDoc = characters.docs[0] as any;
 	if (!charDoc) {
 		return { eligible: false, reason: 'no_active_character' };
+	}
+
+	// Safety net: backfill a callsign for legacy rows that somehow still lack one
+	if (!charDoc.callsign) {
+		const generated = await generateUniqueCallsign(payload);
+		await payload.update({
+			collection: 'characters',
+			id: charDoc.id,
+			data: { callsign: generated } as any,
+		});
+		charDoc.callsign = generated;
 	}
 
 	// Resolve faction logo (faction is a free-text field on character)

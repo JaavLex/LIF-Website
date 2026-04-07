@@ -67,6 +67,7 @@ export interface CommsMessage {
 	senderCharacter: {
 		id?: number;
 		fullName: string;
+		callsign?: string | null;
 		avatarUrl?: string | null;
 		rankName?: string | null;
 		rankIconUrl?: string | null;

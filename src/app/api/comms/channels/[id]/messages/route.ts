@@ -78,6 +78,7 @@ export async function GET(
 			{
 				id: c.id,
 				fullName: c.fullName,
+				callsign: c.callsign || null,
 				avatarUrl: typeof c.avatar === 'object' ? c.avatar?.url || null : null,
 				rankName: typeof c.rank === 'object' ? c.rank?.name : null,
 				rankIconUrl:
@@ -172,7 +173,7 @@ export async function GET(
 				attachments: m.attachments || [],
 				isAnonymous: effectiveAnon,
 				senderCharacter: effectiveAnon
-					? { fullName: '[ANONYME]', avatarUrl: null, rankName: null, rankIconUrl: null }
+					? { fullName: '[ANONYME]', callsign: null, avatarUrl: null, rankName: null, rankIconUrl: null }
 					: sender,
 				senderCharacterId: effectiveAnon ? null : senderId,
 				replyTo: m.replyToMessageId ? replyMap.get(Number(m.replyToMessageId)) || null : null,

@@ -6,9 +6,19 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.6.9',
+  version: '1.6.10',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.6.10',
+      date: '2026-04-07',
+      changes: [
+        'CHARACTER — Callsign désormais obligatoire à la création et à la modification (validation côté serveur + champ requis dans le formulaire)',
+        'CHARACTER — Backfill automatique des personnages legacy sans callsign (génération style militaire « ECHO-42 », modifiable ensuite)',
+        'COMMS — Le nom affiché dans les messages devient « insigne de grade + callsign » (au lieu du nom complet)',
+        'COMMS — Filet de sécurité : si un personnage actif n\'a pas de callsign à l\'entrée /comms, un est généré et persisté automatiquement',
+      ],
+    },
     {
       version: '1.6.9',
       date: '2026-04-07',

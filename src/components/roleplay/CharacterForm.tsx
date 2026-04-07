@@ -182,7 +182,7 @@ export function CharacterForm({
 			const body: any = {
 				firstName: form.firstName,
 				lastName: form.lastName,
-				callsign: form.callsign || undefined,
+				callsign: form.callsign,
 				placeOfOrigin: form.placeOfOrigin || undefined,
 				physicalDescription: form.physicalDescription || undefined,
 				motto: form.motto || undefined,
@@ -501,18 +501,19 @@ export function CharacterForm({
 					</div>
 
 					<div>
-						<label style={labelStyle}>Callsign</label>
+						<label style={labelStyle}>Callsign *</label>
 						<input
 							type="text"
 							name="callsign"
 							value={form.callsign}
 							onChange={handleChange}
 							placeholder="Ex: Eagle"
+							required
 							className="filter-input"
 							style={{ width: '100%' }}
 						/>
 						<div style={{ fontSize: '0.75rem', color: 'var(--muted)', marginTop: '0.25rem' }}>
-							Surnom affiché entre prénom et nom
+							Surnom affiché entre prénom et nom (obligatoire)
 						</div>
 					</div>
 

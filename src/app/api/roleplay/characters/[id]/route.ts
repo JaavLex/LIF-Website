@@ -3,6 +3,7 @@ import { getPayloadClient } from '@/lib/payload';
 import { requireSession, isErrorResponse } from '@/lib/api-auth';
 import { checkAdminPermissions } from '@/lib/admin';
 import { notifyStatusChange } from '@/lib/discord-notify';
+import { generateUniqueCallsign } from '@/lib/callsign';
 
 export async function PATCH(
 	request: NextRequest,
@@ -54,6 +55,19 @@ export async function PATCH(
 		// Convert empty biId to null (unique constraint rejects empty strings)
 		if (body.biId !== undefined && !body.biId) {
 			body.biId = null;
+		}
+
+		// Callsign is mandatory: reject clearing; auto-fill legacy rows missing one
+		if (body.callsign !== undefined) {
+			if (typeof body.callsign !== 'string' || !body.callsign.trim()) {
+				return NextResponse.json(
+					{ message: 'Le callsign est obligatoire.' },
+					{ status: 400 },
+				);
+			}
+			body.callsign = body.callsign.trim();
+		} else if (!existing.callsign) {
+			body.callsign = await generateUniqueCallsign(payload);
 		}
 
 		// Admin reassign: allow full admins to change linked Discord account
