@@ -1441,3 +1441,584 @@ html[data-dev-banner] .navbar {
     opacity: 1;
   }
 }
+
+/* ============================================================================
+   BOOT SCREEN — Suspense fallback / loading.tsx
+   Editorial-brutalist tactical terminal — Rajdhani + Courier
+   Full-bleed, animated boot sequence.
+   ============================================================================ */
+
+.boot-screen {
+  --bs-color: #6da542;
+  --bs-amber: #c9a040;
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(
+      ellipse at center,
+      #0a120a 0%,
+      #060906 65%,
+      #030503 100%
+    );
+  color: #d8e3cf;
+  font-family: var(--font-body);
+  overflow: hidden;
+  isolation: isolate;
+  animation: boot-screen-fade-in 0.35s ease-out;
+}
+
+@keyframes boot-screen-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.boot-screen-grid {
+  position: absolute;
+  inset: -2px;
+  background-image:
+    linear-gradient(rgba(109, 165, 66, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(109, 165, 66, 0.06) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(ellipse at center, #000 30%, transparent 80%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.boot-screen-vignette {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(
+      ellipse at center,
+      transparent 40%,
+      rgba(0, 0, 0, 0.7) 100%
+    );
+  pointer-events: none;
+  z-index: 1;
+}
+
+.boot-screen-noise {
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(
+    0deg,
+    rgba(255, 255, 255, 0.02) 0 1px,
+    transparent 1px 3px
+  );
+  mix-blend-mode: overlay;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.boot-screen-scanline {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--bs-color) 70%, transparent) 50%,
+    transparent
+  );
+  opacity: 0.55;
+  pointer-events: none;
+  z-index: 3;
+  animation: boot-screen-scan 4.2s linear infinite;
+}
+
+@keyframes boot-screen-scan {
+  0%   { top: -3px; opacity: 0; }
+  10%  { opacity: 0.6; }
+  90%  { opacity: 0.6; }
+  100% { top: 100%; opacity: 0; }
+}
+
+.boot-screen-rail {
+  position: absolute;
+  top: 50%;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 6px;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--bs-color) 55%, transparent);
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 4;
+}
+
+.boot-screen-rail--left {
+  left: 1.4rem;
+  transform: translateY(-50%) rotate(-90deg);
+  transform-origin: left center;
+}
+
+.boot-screen-rail--right {
+  right: 1.4rem;
+  transform: translateY(-50%) rotate(90deg);
+  transform-origin: right center;
+}
+
+.boot-screen-frame {
+  position: relative;
+  z-index: 5;
+  width: min(720px, calc(100vw - 6rem));
+  padding: 2.4rem 2.6rem 2rem;
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--bs-color) 7%, rgba(6, 9, 6, 0.96)) 0%,
+      rgba(6, 9, 6, 0.97) 100%
+    );
+  border: 1px solid color-mix(in srgb, var(--bs-color) 55%, var(--border));
+  clip-path: polygon(
+    0 18px,
+    18px 0,
+    100% 0,
+    100% calc(100% - 32px),
+    calc(100% - 32px) 100%,
+    0 100%
+  );
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.6),
+    0 30px 80px rgba(0, 0, 0, 0.7),
+    inset 0 0 80px color-mix(in srgb, var(--bs-color) 6%, transparent);
+}
+
+.boot-screen-frame::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(
+    90deg,
+    var(--bs-color) 0%,
+    var(--bs-color) 35%,
+    color-mix(in srgb, var(--bs-color) 30%, transparent) 70%,
+    transparent 100%
+  );
+  box-shadow: 0 0 18px color-mix(in srgb, var(--bs-color) 55%, transparent);
+}
+
+.boot-screen-corner {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  pointer-events: none;
+}
+.boot-screen-corner.tl {
+  top: 22px;
+  left: 4px;
+  border-top: 2px solid var(--bs-color);
+  border-left: 2px solid var(--bs-color);
+}
+.boot-screen-corner.tr {
+  top: 4px;
+  right: 4px;
+  border-top: 2px solid var(--bs-color);
+  border-right: 2px solid var(--bs-color);
+}
+.boot-screen-corner.bl {
+  bottom: 4px;
+  left: 4px;
+  border-bottom: 2px solid var(--bs-color);
+  border-left: 2px solid var(--bs-color);
+}
+.boot-screen-corner.br {
+  bottom: 36px;
+  right: 4px;
+  border-bottom: 2px solid var(--bs-color);
+  border-right: 2px solid var(--bs-color);
+}
+
+.boot-screen-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.85rem 1.4rem;
+  margin: -0.4rem -0.6rem 1.6rem 0;
+  padding-bottom: 0.85rem;
+  border-bottom: 1px dashed color-mix(in srgb, var(--bs-color) 35%, transparent);
+}
+
+.boot-screen-tab {
+  display: inline-flex;
+  align-items: stretch;
+  gap: 0.85rem;
+  padding: 0.5rem 1.85rem 0.5rem 0.85rem;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--bs-color) 30%, rgba(0, 0, 0, 0.85)) 0%,
+    rgba(0, 0, 0, 0.85) 100%
+  );
+  border: 1px solid var(--bs-color);
+  clip-path: polygon(0 0, 100% 0, calc(100% - 14px) 100%, 0 100%);
+  box-shadow:
+    0 6px 18px rgba(0, 0, 0, 0.45),
+    inset 0 0 22px color-mix(in srgb, var(--bs-color) 18%, transparent);
+}
+
+.boot-screen-tab-num {
+  display: flex;
+  align-items: center;
+  font-family: var(--font-heading);
+  font-size: 1.85rem;
+  font-weight: 800;
+  line-height: 0.85;
+  color: var(--bs-color);
+  text-shadow: 0 0 12px color-mix(in srgb, var(--bs-color) 50%, transparent);
+  letter-spacing: -0.02em;
+}
+
+.boot-screen-tab-divider {
+  width: 1px;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    color-mix(in srgb, var(--bs-color) 70%, transparent) 25%,
+    color-mix(in srgb, var(--bs-color) 70%, transparent) 75%,
+    transparent 100%
+  );
+}
+
+.boot-screen-tab-text {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.18rem;
+}
+
+.boot-screen-tab-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2.5px;
+  color: color-mix(in srgb, var(--bs-color) 75%, var(--muted));
+  opacity: 0.85;
+}
+
+.boot-screen-tab-title {
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  line-height: 1;
+  color: #f0eee5;
+}
+
+.boot-screen-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.4rem 0.85rem;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--bs-color) 65%, var(--muted));
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid color-mix(in srgb, var(--bs-color) 40%, var(--border));
+  border-left: 3px solid var(--bs-color);
+}
+
+.boot-screen-meta-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--bs-color);
+  box-shadow: 0 0 8px var(--bs-color);
+  animation: boot-screen-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes boot-screen-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.5; transform: scale(0.85); }
+}
+
+.boot-screen-meta-sep {
+  opacity: 0.45;
+}
+
+.boot-screen-stage {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 1.6rem;
+  align-items: start;
+}
+
+.boot-screen-glyph {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.boot-screen-glyph-ring {
+  position: absolute;
+  inset: 0;
+  border: 2px solid color-mix(in srgb, var(--bs-color) 60%, transparent);
+  border-radius: 50%;
+  border-right-color: transparent;
+  border-bottom-color: transparent;
+  animation: boot-screen-spin 2.4s linear infinite;
+}
+
+.boot-screen-glyph-ring--alt {
+  inset: 12px;
+  border-width: 1px;
+  border-color: color-mix(in srgb, var(--bs-amber) 55%, transparent);
+  border-top-color: transparent;
+  border-left-color: transparent;
+  animation: boot-screen-spin 3.6s linear infinite reverse;
+}
+
+@keyframes boot-screen-spin {
+  to { transform: rotate(360deg); }
+}
+
+.boot-screen-glyph-core {
+  position: relative;
+  font-family: var(--font-heading);
+  font-size: 3.2rem;
+  font-weight: 800;
+  color: var(--bs-color);
+  text-shadow:
+    0 0 18px color-mix(in srgb, var(--bs-color) 60%, transparent),
+    2px 2px 0 rgba(0, 0, 0, 0.6);
+  line-height: 1;
+  z-index: 2;
+}
+
+.boot-screen-glyph-blip {
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  width: 8px;
+  height: 8px;
+  margin-left: -4px;
+  border-radius: 50%;
+  background: var(--bs-amber);
+  box-shadow: 0 0 12px var(--bs-amber);
+  transform-origin: 4px 54px;
+  animation: boot-screen-orbit 2.4s linear infinite;
+  z-index: 3;
+}
+
+@keyframes boot-screen-orbit {
+  to { transform: rotate(360deg); }
+}
+
+.boot-screen-readout {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  min-width: 0;
+}
+
+.boot-screen-title {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  font-family: var(--font-heading);
+  font-weight: 800;
+  text-transform: uppercase;
+  line-height: 0.95;
+}
+
+.boot-screen-title-num {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 3px;
+  color: color-mix(in srgb, var(--bs-color) 65%, var(--muted));
+  margin-bottom: 0.25rem;
+}
+
+.boot-screen-title-line {
+  font-size: 2.2rem;
+  letter-spacing: 1.5px;
+  color: #f0eee5;
+  text-shadow: 0 0 14px color-mix(in srgb, var(--bs-color) 25%, transparent);
+}
+
+.boot-screen-title-line.accent {
+  color: var(--bs-color);
+}
+
+.boot-screen-subtitle {
+  margin: 0.1rem 0 0.6rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--bs-color) 60%, var(--muted));
+}
+
+.boot-screen-log {
+  list-style: none;
+  margin: 0;
+  padding: 0.6rem 0.75rem;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid color-mix(in srgb, var(--bs-color) 25%, var(--border));
+  border-left: 2px solid var(--bs-color);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.5px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.boot-screen-log li {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  color: #c0cdb4;
+  opacity: 0;
+  animation: boot-screen-log-in 0.3s ease-out forwards;
+}
+.boot-screen-log li:nth-child(1) { animation-delay: 0.15s; }
+.boot-screen-log li:nth-child(2) { animation-delay: 0.45s; }
+.boot-screen-log li:nth-child(3) { animation-delay: 0.75s; }
+.boot-screen-log li:nth-child(4) { animation-delay: 1.05s; }
+
+@keyframes boot-screen-log-in {
+  from { opacity: 0; transform: translateX(-6px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.boot-screen-log-prompt {
+  color: var(--bs-color);
+  font-weight: 700;
+}
+
+.boot-screen-log-status {
+  margin-left: auto;
+  padding: 0.05rem 0.4rem;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.boot-screen-log-status.ok {
+  color: var(--bs-color);
+  border: 1px solid color-mix(in srgb, var(--bs-color) 50%, var(--border));
+  background: color-mix(in srgb, var(--bs-color) 10%, transparent);
+}
+
+.boot-screen-log-status.pending {
+  color: var(--bs-amber);
+  border: 1px solid color-mix(in srgb, var(--bs-amber) 50%, var(--border));
+  background: color-mix(in srgb, var(--bs-amber) 10%, transparent);
+  animation: boot-screen-blink 1s ease-in-out infinite;
+}
+
+@keyframes boot-screen-blink {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.35; }
+}
+
+.boot-screen-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-top: 0.4rem;
+}
+
+.boot-screen-bar-track {
+  position: relative;
+  height: 6px;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid color-mix(in srgb, var(--bs-color) 35%, var(--border));
+  overflow: hidden;
+}
+
+.boot-screen-bar-fill {
+  position: absolute;
+  inset: 0;
+  width: 32%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--bs-color) 25%, transparent) 30%,
+    var(--bs-color) 50%,
+    color-mix(in srgb, var(--bs-color) 25%, transparent) 70%,
+    transparent 100%
+  );
+  box-shadow: 0 0 14px color-mix(in srgb, var(--bs-color) 60%, transparent);
+  animation: boot-screen-bar-sweep 1.6s ease-in-out infinite;
+}
+
+@keyframes boot-screen-bar-sweep {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(380%); }
+}
+
+.boot-screen-bar-meta {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--bs-color) 55%, var(--muted));
+}
+
+.boot-screen-foot {
+  margin-top: 1.4rem;
+  padding-top: 0.9rem;
+  border-top: 1px dashed color-mix(in srgb, var(--bs-color) 30%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--bs-color) 60%, var(--muted));
+}
+
+.boot-screen-foot-cursor {
+  color: var(--bs-color);
+  animation: boot-screen-blink 1s steps(1) infinite;
+}
+
+@media (max-width: 640px) {
+  .boot-screen-rail { display: none; }
+  .boot-screen-frame {
+    width: calc(100vw - 2rem);
+    padding: 1.8rem 1.4rem 1.4rem;
+  }
+  .boot-screen-stage {
+    grid-template-columns: 1fr;
+    gap: 1.2rem;
+    justify-items: center;
+    text-align: center;
+  }
+  .boot-screen-readout { width: 100%; }
+  .boot-screen-title-line { font-size: 1.7rem; }
+  .boot-screen-glyph { width: 96px; height: 96px; }
+  .boot-screen-glyph-core { font-size: 2.6rem; }
+  .boot-screen-glyph-blip { transform-origin: 4px 44px; }
+  .boot-screen-tab-num { font-size: 1.5rem; }
+  .boot-screen-tab-title { font-size: 1rem; }
+  .boot-screen-foot {
+    flex-direction: column;
+    gap: 0.4rem;
+    text-align: center;
+  }
+}

@@ -300,13 +300,53 @@ export default function CommsTab({ authorized, onError }: CommsTabProps) {
 										<div className="mod-comms-message-body">{m.body}</div>
 										{m.attachments && m.attachments.length > 0 && (
 											<div className="mod-comms-message-attachments">
-												{m.attachments.length} pièce(s) jointe(s):{' '}
-												{m.attachments
-													.map(
-														(a: any) =>
-															`${a.kind}${a.meta?.filename || a.meta?.fullName || a.meta?.title ? `:${a.meta?.filename || a.meta?.fullName || a.meta?.title}` : ''}`,
-													)
-													.join(', ')}
+												<div className="mod-comms-message-thumbs">
+													{m.attachments.map((a: any, idx: number) => {
+														const mime = a.meta?.mimeType || '';
+														const url = a.meta?.url || '';
+														const isImage =
+															a.kind === 'media' && mime.startsWith('image/');
+														if (isImage && url) {
+															return (
+																<a
+																	key={idx}
+																	href={url}
+																	target="_blank"
+																	rel="noopener noreferrer"
+																	className="mod-comms-message-thumb"
+																>
+																	<img src={url} alt="" />
+																</a>
+															);
+														}
+														const label =
+															a.meta?.filename ||
+															a.meta?.fullName ||
+															a.meta?.title ||
+															a.kind;
+														if (a.kind === 'media' && url) {
+															return (
+																<a
+																	key={idx}
+																	href={url}
+																	target="_blank"
+																	rel="noopener noreferrer"
+																	className="mod-comms-message-file"
+																>
+																	{a.kind}: {label}
+																</a>
+															);
+														}
+														return (
+															<span
+																key={idx}
+																className="mod-comms-message-file"
+															>
+																{a.kind}: {label}
+															</span>
+														);
+													})}
+												</div>
 											</div>
 										)}
 										<div className="mod-comms-message-meta">

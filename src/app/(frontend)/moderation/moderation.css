@@ -1760,8 +1760,54 @@
 .mod-comms-message-attachments {
 	font-size: 0.7rem;
 	color: var(--muted);
-	margin-top: 0.3rem;
-	font-style: italic;
+	margin-top: 0.4rem;
+}
+
+.mod-comms-message-thumbs {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+	align-items: flex-start;
+}
+
+.mod-comms-message-thumb {
+	display: block;
+	width: 140px;
+	height: 105px;
+	border: 1px solid var(--border);
+	background: rgba(0, 0, 0, 0.6);
+	overflow: hidden;
+	transition: border-color 0.15s ease, transform 0.15s ease;
+}
+
+.mod-comms-message-thumb:hover {
+	border-color: var(--primary);
+	transform: translateY(-1px);
+}
+
+.mod-comms-message-thumb img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+}
+
+.mod-comms-message-file {
+	display: inline-flex;
+	align-items: center;
+	padding: 0.35rem 0.55rem;
+	font-family: 'Courier New', monospace;
+	font-size: 0.68rem;
+	color: var(--text);
+	background: rgba(0, 0, 0, 0.55);
+	border: 1px solid var(--border);
+	text-decoration: none;
+	letter-spacing: 0.04em;
+}
+
+a.mod-comms-message-file:hover {
+	border-color: var(--primary);
+	color: var(--primary);
 }
 
 .mod-comms-message-meta {

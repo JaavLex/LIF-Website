@@ -6,9 +6,18 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.6.29',
+  version: '1.6.30',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.6.30',
+      date: '2026-04-07',
+      changes: [
+        'ROLEPLAY — Sections 1 & 2 (Personnel, Organisations) avaient le coin bas-droit visuellement « tronqué » par le clip-path diagonal car leurs grilles de cartes (PersonnelFilters, FactionGroups) poussaient le contenu jusque dans la zone de coupe. Augmentation du `padding-right` (1.6 → 2.4rem) et `padding-bottom` (1.85 → 2.6rem) du `.section-window` pour que toutes les sections respirent identiquement comme 3 & 4 (Intelligence, Treasury). Stamp et padding mobile ajustés en proportion.',
+        'MODÉRATION — Dans l\'onglet Comms, les pièces jointes des messages affichaient seulement le nom du fichier (ex: `media: image.png`) au lieu de l\'image elle-même. Ajout de vraies vignettes 140×105px cliquables pour les attachments `kind: media` avec mimeType image — les autres types restent affichés comme tags monospace cliquables.',
+        'BOOT SCREEN — Refonte complète du splash de chargement (`/loading.tsx`) : terminal tactique éditorial-brutaliste plein écran avec frame ambré-vert clip-pathé, masthead onglet `SYS // INITIALISATION`, glyph orbital animé (deux anneaux contre-rotatifs + blip ambré), readout avec titre stencil tri-ligne, log de boot animé (4 lignes en cascade `handshake.tls OK / auth.session OK / roster.sync OK / render.layout …`), barre de progression sweep, scanline horizontal, grille subtile, vignette radiale et footer cursor clignotant.',
+      ],
+    },
     {
       version: '1.6.29',
       date: '2026-04-07',
