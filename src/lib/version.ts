@@ -6,9 +6,16 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.6.32',
+  version: '1.6.33',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.6.33',
+      date: '2026-04-07',
+      changes: [
+        'SPLASH — Suppression du DEUXIÈME splash qui se déclenchait en parallèle : `TerminalLoading` (composant utilisé par `RoleplayShell` pour le sous-domaine roleplay, avec ses lignes `Chargement de la base de données…`, `Authentification Discord…`, `Vérification des habilitations…`, etc) est complètement retiré. Fichier `TerminalLoading.tsx` supprimé, props `loadingEnabled`/`loadingMessages` retirées de `RoleplayShell` et de `roleplay/layout.tsx`. Plus qu\'un seul splash sur tout le site : le `<SplashScreen />` racine.',
+      ],
+    },
     {
       version: '1.6.32',
       date: '2026-04-07',
