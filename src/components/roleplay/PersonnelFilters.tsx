@@ -105,6 +105,15 @@ export function PersonnelFilters({
 	const [unitFilter, setUnitFilter] = useState('all');
 	const [activeTab, setActiveTab] = useState<TabType>('personnel');
 
+	// Faction lookup map (by name) for logos & colors
+	const factionMap = useMemo(() => {
+		const map = new Map<string, FactionItem>();
+		(factions || []).forEach(f => {
+			if (f?.name) map.set(f.name, f);
+		});
+		return map;
+	}, [factions]);
+
 	// Split and filter
 	const { personnel, targets, myCharacters, archives } = useMemo(() => {
 		const personnel: Character[] = [];
@@ -367,6 +376,9 @@ export function PersonnelFilters({
 									const factionName = character.isTarget
 										? character.targetFaction
 										: character.faction;
+									const factionObj = factionName
+										? factionMap.get(factionName)
+										: null;
 									return (
 										<Link
 											key={character.id}
@@ -433,14 +445,36 @@ export function PersonnelFilters({
 													{unit && (
 														<>
 															<span className="char-card-meta-sep">·</span>
-															<span>{unit.name}</span>
+															<span className="char-card-meta-unit">
+																{unit.insignia?.url && (
+																	<Image
+																		src={unit.insignia.url}
+																		alt={unit.name}
+																		title={unit.name}
+																		width={14}
+																		height={14}
+																		unoptimized
+																	/>
+																)}
+																<span>{unit.name}</span>
+															</span>
 														</>
 													)}
 													{factionName && (
 														<>
 															<span className="char-card-meta-sep">·</span>
 															<span className="char-card-meta-faction">
-																{factionName}
+																{factionObj?.logo?.url && (
+																	<Image
+																		src={factionObj.logo.url}
+																		alt={factionName}
+																		title={factionName}
+																		width={14}
+																		height={14}
+																		unoptimized
+																	/>
+																)}
+																<span>{factionName}</span>
 															</span>
 														</>
 													)}

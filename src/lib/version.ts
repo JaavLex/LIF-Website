@@ -6,9 +6,21 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.6.17',
+  version: '1.6.18',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.6.18',
+      date: '2026-04-07',
+      changes: [
+        'FINANCES — Refonte « org-card » du composant finances en jeu : bande or à gauche, gradient, watermark $ géant, coins HUD sur l\'icône',
+        'FINANCES — Montant principal en or, agrandi avec text-shadow, lignes en pointillés, boutons d\'action en chips Rajdhani',
+        'FINANCES — Barre de progression du countdown avec gradient + glow doré',
+        'PERSONNEL — Cartes de la base de données : ajout des logos d\'unité et de faction inline (à côté du nom de chacun)',
+        'RENSEIGNEMENTS — Filtres type/statut, compteur et bouton « Nouveau rapport » stylés (bandeau org-card, label Rajdhani, bouton glow)',
+        'RENSEIGNEMENTS — Refonte complète de la fiche détail (/roleplay/renseignement/[id]) : hero org-card avec icône HUD, titre Rajdhani géant en couleur de classification, watermark INTEL, méta en grille (date, auteur, coords, cible, faction) avec icônes Lucide, sections séparées avec barre verticale colorée',
+      ],
+    },
     {
       version: '1.6.17',
       date: '2026-04-07',
