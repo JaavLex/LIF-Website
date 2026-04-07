@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { X, UserMinus } from 'lucide-react';
+import { ArrowLeft, UserMinus } from 'lucide-react';
 
 interface Member {
 	id: number;
@@ -92,34 +92,27 @@ export function MembersPanel({
 	return (
 		<div className="comms-modal-backdrop" onClick={onClose}>
 			<div
-				className="comms-modal"
+				className="comms-modal comms-members-panel"
 				onClick={(e) => e.stopPropagation()}
-				style={{ maxWidth: '500px' }}
 			>
-				<div
-					style={{
-						display: 'flex',
-						justifyContent: 'space-between',
-						alignItems: 'center',
-						marginBottom: '0.75rem',
-					}}
-				>
-					<h2 style={{ color: 'var(--primary)', margin: 0, letterSpacing: 1 }}>
-						MEMBRES ({members.length})
-					</h2>
+				<div className="comms-members-panel-header">
 					<button
-						className="comms-modal-btn"
+						type="button"
+						className="comms-members-back"
 						onClick={onClose}
-						aria-label="Fermer"
-						style={{ padding: '0.25rem 0.6rem', display: 'flex', alignItems: 'center' }}
+						aria-label="Retour"
+						title="Retour"
 					>
-						<X size={14} />
+						<ArrowLeft size={18} />
+						<span>Retour</span>
 					</button>
+					<h2>MEMBRES ({members.length})</h2>
 				</div>
+				<div className="comms-members-panel-body">
 				{loading ? (
-					<div style={{ color: 'var(--muted)', padding: '1rem' }}>Chargement…</div>
+					<div style={{ color: 'var(--cc-text-mute)', padding: '1rem' }}>Chargement…</div>
 				) : members.length === 0 ? (
-					<div style={{ color: 'var(--muted)', padding: '1rem' }}>Aucun membre</div>
+					<div style={{ color: 'var(--cc-text-mute)', padding: '1rem' }}>Aucun membre</div>
 				) : (
 					<div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
 						{members.map((m) => (
@@ -251,6 +244,7 @@ export function MembersPanel({
 						))}
 					</div>
 				)}
+				</div>
 			</div>
 		</div>
 	);

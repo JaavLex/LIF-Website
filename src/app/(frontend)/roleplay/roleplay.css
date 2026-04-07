@@ -32,7 +32,7 @@
   border: 1px solid var(--border);
   background: var(--background);
   backdrop-filter: blur(8px);
-  min-width: 180px;
+  width: 240px;
   max-width: calc(100vw - 2rem);
 }
 
@@ -47,10 +47,12 @@
   transform: translateX(0);
 }
 
+/* Tab is flush to the right edge when closed, and slides left to sit
+   flush against the drawer's left edge when open. */
 .roleplay-audio-drawer-tab {
   position: fixed;
   right: 0;
-  bottom: 1.4rem;
+  bottom: 1rem;
   z-index: 1002;
   background: var(--background);
   border: 1px solid var(--border);
@@ -58,9 +60,9 @@
   color: var(--primary);
   font-family: inherit;
   font-size: 0.9rem;
-  padding: 0.5rem 0.4rem;
+  padding: 0.6rem 0.5rem;
   cursor: pointer;
-  transition: background 0.15s, padding 0.15s;
+  transition: right 0.25s ease-out, background 0.15s;
 }
 
 .roleplay-audio-drawer-tab:hover {
@@ -72,9 +74,19 @@
   transform: translateX(50%);
 }
 
+/* When open: tab sits just left of the drawer (drawer width 240px + 1rem gutter) */
 .roleplay-audio-drawer-tab.open {
-  /* Push tab slightly left so it sits flush against the open drawer */
-  right: calc(1rem + 0px);
+  right: calc(1rem + 240px);
+}
+
+@media (max-width: 600px) {
+  .roleplay-audio-controls {
+    width: calc(100vw - 4rem);
+    max-width: 260px;
+  }
+  .roleplay-audio-drawer-tab.open {
+    right: calc(1rem + min(260px, 100vw - 4rem));
+  }
 }
 
 .audio-track-info {

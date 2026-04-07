@@ -6,9 +6,19 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.6.12',
+  version: '1.6.13',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.6.13',
+      date: '2026-04-07',
+      changes: [
+        'COMMS — Modal « Membres » : en-tête sticky avec bouton « Retour » bien visible (plus de X minuscule), edge-to-edge sur mobile',
+        'COMMS — Horodatage des messages épuré : suppression du suffixe « // ENC » redondant',
+        'COMMS — Icône de grade dans les messages : plus d\'encadré carré, juste l\'insigne avec un léger glow',
+        'ROLEPLAY — Lecteur audio : le bouton onglet (flèche) ne chevauche plus les contrôles quand le lecteur est ouvert (il se décale à gauche du panneau)',
+      ],
+    },
     {
       version: '1.6.12',
       date: '2026-04-07',
