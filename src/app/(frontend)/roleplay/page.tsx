@@ -14,6 +14,7 @@ import { checkAdminPermissions } from '@/lib/admin';
 import { RoleplayTutorial } from '@/components/roleplay/RoleplayTutorial';
 import { RulesModal } from '@/components/roleplay/RulesModal';
 import OrgBankStats from '@/components/roleplay/OrgBankStats';
+import { SectionWindow } from '@/components/roleplay/SectionWindow';
 import type { Faction, Media, Roleplay, Unit } from '@/payload-types';
 
 export const dynamic = 'force-dynamic';
@@ -259,23 +260,20 @@ export default async function RoleplayPage({
 				</div>
 			)}
 
-			<div className="terminal-header">
-				<div className="terminal-header-left">
-					<div className="terminal-header-dots">
-						<span className="terminal-dot green" />
-						<span className="terminal-dot yellow" />
-						<span className="terminal-dot red" />
-					</div>
-					<span className="terminal-title">SYSTÈME DE GESTION DU PERSONNEL</span>
-				</div>
-				<div className="terminal-header-right">
-					LIF-PERSONNEL v2.0 | CLASSIFICATION: RESTREINT
-				</div>
-			</div>
-
-			<div className="terminal-panel" data-tutorial="personnel-panel">
-				<h1>BASE DE DONNÉES DU PERSONNEL</h1>
-
+			<SectionWindow
+				theme="primary"
+				number="01"
+				eyebrow="DOSSIER // SECTION"
+				title="Base de données du personnel"
+				tutorial="personnel-panel"
+				meta={
+					<>
+						<span>LIF-PERSONNEL v2.0</span>
+						<span className="section-window-meta-sep">·</span>
+						<span>CLASSIFICATION: RESTREINT</span>
+					</>
+				}
+			>
 				<div className="system-status">
 					<div className="status-item">
 						<span className="status-indicator" />
@@ -309,7 +307,7 @@ export default async function RoleplayPage({
 					sessionDiscordId={session?.discordId}
 					isAdmin={isAdmin}
 				/>
-			</div>
+			</SectionWindow>
 
 			{/* Factions & Units section for all users */}
 			{(factions.docs.length > 0 || units.docs.length > 0) && (() => {
@@ -412,22 +410,24 @@ export default async function RoleplayPage({
 				};
 
 				return (
-					<>
-						<div className="terminal-header" style={{ marginTop: '2rem' }}>
-							<div className="terminal-header-left">
-								<div className="terminal-header-dots">
-									<span className="terminal-dot green" />
-									<span className="terminal-dot yellow" />
-									<span className="terminal-dot red" />
-								</div>
-								<span className="terminal-title">ORGANISATIONS & UNITÉS</span>
-							</div>
-							<div className="terminal-header-right">
-								{factions.docs.length} faction{factions.docs.length !== 1 ? 's' : ''} |{' '}
-								{units.docs.length} unité{units.docs.length !== 1 ? 's' : ''}
-							</div>
-						</div>
-						<div className="terminal-panel factions-panel">
+					<SectionWindow
+						theme="accent"
+						number="02"
+						eyebrow="HIÉRARCHIE // COMMANDEMENT"
+						title="Organisations & Unités"
+						meta={
+							<>
+								<span>
+									{factions.docs.length} faction{factions.docs.length !== 1 ? 's' : ''}
+								</span>
+								<span className="section-window-meta-sep">·</span>
+								<span>
+									{units.docs.length} unité{units.docs.length !== 1 ? 's' : ''}
+								</span>
+							</>
+						}
+					>
+						<div className="factions-panel">
 							{/* Featured main faction */}
 							{mainFaction && (() => {
 								const logo =
@@ -568,31 +568,28 @@ export default async function RoleplayPage({
 								</div>
 							)}
 						</div>
-					</>
+					</SectionWindow>
 				);
 			})()}
 
 			{/* Intelligence section */}
-			<div
-				data-tutorial="intelligence"
-				className="terminal-header"
-				style={{ marginTop: '2rem' }}
+			<SectionWindow
+				theme="primary"
+				number="03"
+				eyebrow="ARCHIVES // INTELLIGENCE"
+				title="Renseignements"
+				tutorial="intelligence"
+				meta={
+					<>
+						<span>LIF-INTEL v1.0</span>
+						<span className="section-window-meta-sep">·</span>
+						<span>
+							{intelligence.totalDocs} rapport
+							{intelligence.totalDocs !== 1 ? 's' : ''}
+						</span>
+					</>
+				}
 			>
-				<div className="terminal-header-left">
-					<div className="terminal-header-dots">
-						<span className="terminal-dot green" />
-						<span className="terminal-dot yellow" />
-						<span className="terminal-dot red" />
-					</div>
-					<span className="terminal-title">RENSEIGNEMENTS</span>
-				</div>
-				<div className="terminal-header-right">
-					LIF-INTEL v1.0 | {intelligence.totalDocs} rapport
-					{intelligence.totalDocs !== 1 ? 's' : ''}
-				</div>
-			</div>
-
-			<div className="terminal-panel">
 				<IntelligenceList
 					reports={serialize(intelligence.docs)}
 					isAdmin={isAdmin}
@@ -602,24 +599,24 @@ export default async function RoleplayPage({
 					factions={serialize(factions.docs)}
 					sessionDiscordId={session?.discordId || null}
 				/>
-			</div>
+			</SectionWindow>
 
 			{/* Organisation Bank Stats */}
-			<div className="terminal-header" style={{ marginTop: '2rem' }}>
-				<div className="terminal-header-left">
-					<div className="terminal-header-dots">
-						<span className="terminal-dot green" />
-						<span className="terminal-dot yellow" />
-						<span className="terminal-dot red" />
-					</div>
-					<span className="terminal-title">FONDS DE L&apos;ORGANISATION</span>
-				</div>
-				<div className="terminal-header-right">LIF-FINANCE v1.0 | COMPTABILITÉ</div>
-			</div>
-
-			<div className="terminal-panel">
+			<SectionWindow
+				theme="gold"
+				number="04"
+				eyebrow="TRÉSORERIE // COMPTABILITÉ"
+				title="Fonds de l'organisation"
+				meta={
+					<>
+						<span>LIF-FINANCE v1.0</span>
+						<span className="section-window-meta-sep">·</span>
+						<span>COMPTABILITÉ</span>
+					</>
+				}
+			>
 				<OrgBankStats isAdmin={isAdmin} />
-			</div>
+			</SectionWindow>
 
 			<div style={{ textAlign: 'center', padding: '1rem' }}>
 				<Link href="/" className="retour-link">

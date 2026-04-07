@@ -6,9 +6,20 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.6.19',
+  version: '1.6.20',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.6.20',
+      date: '2026-04-07',
+      changes: [
+        'ROLEPLAY — Refonte des fenêtres conteneurs des sections Personnel / Organisations / Renseignements / Trésorerie',
+        'ROLEPLAY — Nouveau composant SectionWindow « dossier d\'opérations » : rail supérieur lumineux, bande latérale, scanlines, ligne de scan animée, crochets HUD aux 4 coins, coin inférieur-droit coupé en diagonale avec accent dégradé',
+        'ROLEPLAY — Plaque de titre angulaire avec numéro de section géant en Rajdhani, divider lumineux, eyebrow monospace et titre 1.55rem en couleur thématique, ombre noire double',
+        'ROLEPLAY — Bande méta latérale (LIF-XXX vXX | classification) avec pastille pulsante en couleur de section',
+        'ROLEPLAY — Couleurs thématiques par section : Personnel vert (01), Organisations ambre (02), Intel vert (03), Trésorerie or (04)',
+      ],
+    },
     {
       version: '1.6.19',
       date: '2026-04-07',
