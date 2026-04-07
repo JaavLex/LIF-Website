@@ -6,6 +6,7 @@ import * as migration_20260407_130000_comms_locked_documents_rels from './202604
 import * as migration_20260407_140000_comms_replies_anon_mentions from './20260407_140000_comms_replies_anon_mentions';
 import * as migration_20260407_150000_backfill_callsigns from './20260407_150000_backfill_callsigns';
 import * as migration_20260407_160000_add_main_faction from './20260407_160000_add_main_faction';
+import * as migration_20260407_170000_add_unit_selector_fields from './20260407_170000_add_unit_selector_fields';
 
 export const migrations = [
   {
@@ -47,5 +48,10 @@ export const migrations = [
     up: migration_20260407_160000_add_main_faction.up,
     down: migration_20260407_160000_add_main_faction.down,
     name: '20260407_160000_add_main_faction',
+  },
+  {
+    up: migration_20260407_170000_add_unit_selector_fields.up,
+    down: migration_20260407_170000_add_unit_selector_fields.down,
+    name: '20260407_170000_add_unit_selector_fields',
   },
 ];
