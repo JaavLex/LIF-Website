@@ -6,9 +6,16 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.6.7',
+  version: '1.6.8',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.6.8',
+      date: '2026-04-07',
+      changes: [
+        'COMMS — son de mention rallongé (statique ~1.1s, deux-tons soutenus) pour un signal radio plus marqué',
+      ],
+    },
     {
       version: '1.6.7',
       date: '2026-04-07',

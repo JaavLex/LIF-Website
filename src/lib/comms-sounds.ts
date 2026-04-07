@@ -126,7 +126,7 @@ export function playRadioPing(): void {
 	click1.start(now);
 
 	// ---- Static carrier ----
-	const noiseDur = 0.45;
+	const noiseDur = 1.1;
 	const noiseBuffer = ctx.createBuffer(
 		1,
 		Math.floor(ctx.sampleRate * noiseDur),
@@ -143,42 +143,48 @@ export function playRadioPing(): void {
 	const noiseGain = ctx.createGain();
 	noiseGain.gain.setValueAtTime(0.0001, now + 0.02);
 	noiseGain.gain.exponentialRampToValueAtTime(0.35, now + 0.04);
-	noiseGain.gain.setValueAtTime(0.35, now + 0.32);
-	noiseGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.45);
+	noiseGain.gain.setValueAtTime(0.35, now + 0.95);
+	noiseGain.gain.exponentialRampToValueAtTime(0.0001, now + 1.1);
 	noise.connect(noiseFilter).connect(noiseGain).connect(out);
 	noise.start(now + 0.02);
 	noise.stop(now + 0.02 + noiseDur);
 
 	// ---- Two-tone alert chirp (rides on top of the static) ----
-	const toneStart = now + 0.12;
+	// Tones are sustained longer so the alert reads as a deliberate radio
+	// signal, not a quick blip.
+	const toneFilter = ctx.createBiquadFilter();
+	toneFilter.type = 'bandpass';
+	toneFilter.frequency.value = 1400;
+	toneFilter.Q.value = 1.8;
+	toneFilter.connect(out);
+
+	const toneStart = now + 0.15;
+	const tone1Dur = 0.32;
 	const tone1 = ctx.createOscillator();
 	const tone1Gain = ctx.createGain();
 	tone1.type = 'square';
 	tone1.frequency.setValueAtTime(1100, toneStart);
 	tone1Gain.gain.setValueAtTime(0.0001, toneStart);
-	tone1Gain.gain.exponentialRampToValueAtTime(0.4, toneStart + 0.01);
-	tone1Gain.gain.setValueAtTime(0.4, toneStart + 0.11);
-	tone1Gain.gain.exponentialRampToValueAtTime(0.0001, toneStart + 0.13);
-	const toneFilter = ctx.createBiquadFilter();
-	toneFilter.type = 'bandpass';
-	toneFilter.frequency.value = 1400;
-	toneFilter.Q.value = 1.8;
-	tone1.connect(tone1Gain).connect(toneFilter).connect(out);
+	tone1Gain.gain.exponentialRampToValueAtTime(0.4, toneStart + 0.015);
+	tone1Gain.gain.setValueAtTime(0.4, toneStart + tone1Dur - 0.03);
+	tone1Gain.gain.exponentialRampToValueAtTime(0.0001, toneStart + tone1Dur);
+	tone1.connect(tone1Gain).connect(toneFilter);
 	tone1.start(toneStart);
-	tone1.stop(toneStart + 0.14);
+	tone1.stop(toneStart + tone1Dur + 0.02);
 
-	const tone2Start = toneStart + 0.16;
+	const tone2Start = toneStart + tone1Dur + 0.05;
+	const tone2Dur = 0.42;
 	const tone2 = ctx.createOscillator();
 	const tone2Gain = ctx.createGain();
 	tone2.type = 'square';
 	tone2.frequency.setValueAtTime(1650, tone2Start);
 	tone2Gain.gain.setValueAtTime(0.0001, tone2Start);
-	tone2Gain.gain.exponentialRampToValueAtTime(0.4, tone2Start + 0.01);
-	tone2Gain.gain.setValueAtTime(0.4, tone2Start + 0.13);
-	tone2Gain.gain.exponentialRampToValueAtTime(0.0001, tone2Start + 0.16);
+	tone2Gain.gain.exponentialRampToValueAtTime(0.4, tone2Start + 0.015);
+	tone2Gain.gain.setValueAtTime(0.4, tone2Start + tone2Dur - 0.04);
+	tone2Gain.gain.exponentialRampToValueAtTime(0.0001, tone2Start + tone2Dur);
 	tone2.connect(tone2Gain).connect(toneFilter);
 	tone2.start(tone2Start);
-	tone2.stop(tone2Start + 0.17);
+	tone2.stop(tone2Start + tone2Dur + 0.02);
 
 	// ---- Squelch-close click ----
 	const click2 = ctx.createBufferSource();
@@ -186,5 +192,5 @@ export function playRadioPing(): void {
 	const click2Gain = ctx.createGain();
 	click2Gain.gain.value = 0.5;
 	click2.connect(click2Gain).connect(out);
-	click2.start(now + 0.5);
+	click2.start(now + 1.15);
 }
