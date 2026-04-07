@@ -16,11 +16,14 @@ export function MembersPanel({
 	channelId,
 	onClose,
 	onSelectMember,
+	onlineIds,
 }: {
 	channelId: number;
 	onClose: () => void;
 	onSelectMember: (id: number) => void;
+	onlineIds?: number[];
 }) {
+	const onlineSet = new Set(onlineIds || []);
 	const [members, setMembers] = useState<Member[]>([]);
 	const [loading, setLoading] = useState(true);
 
@@ -122,10 +125,36 @@ export function MembersPanel({
 									)}
 								</div>
 								<div style={{ flex: 1, minWidth: 0 }}>
-									<div style={{ color: 'var(--text)', fontSize: '0.85rem' }}>
-										{m.rankName ? `${m.rankName} ` : ''}
-										{m.fullName}
-										{m.callsign ? ` « ${m.callsign} »` : ''}
+									<div
+										style={{
+											color: 'var(--text)',
+											fontSize: '0.85rem',
+											display: 'flex',
+											alignItems: 'center',
+											gap: '0.4rem',
+										}}
+									>
+										<span
+											aria-label={onlineSet.has(m.id) ? 'En ligne' : 'Hors ligne'}
+											title={onlineSet.has(m.id) ? 'En ligne' : 'Hors ligne'}
+											style={{
+												width: 8,
+												height: 8,
+												borderRadius: '50%',
+												background: onlineSet.has(m.id)
+													? 'var(--primary)'
+													: 'rgba(120,120,120,0.5)',
+												boxShadow: onlineSet.has(m.id)
+													? '0 0 6px rgba(80,180,80,0.6)'
+													: 'none',
+												flexShrink: 0,
+											}}
+										/>
+										<span>
+											{m.rankName ? `${m.rankName} ` : ''}
+											{m.fullName}
+											{m.callsign ? ` « ${m.callsign} »` : ''}
+										</span>
 									</div>
 									<div
 										style={{

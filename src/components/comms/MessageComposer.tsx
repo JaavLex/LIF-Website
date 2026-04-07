@@ -1,30 +1,160 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { AttachmentPicker } from './AttachmentPickers';
+import type { CommsMessage } from './CommsLayout';
+
+interface MentionMember {
+	id: number;
+	fullName: string;
+	avatarUrl: string | null;
+}
 
 export function MessageComposer({
 	onSend,
 	disabled,
+	replyingTo,
+	onCancelReply,
+	members,
+	onTyping,
 }: {
-	onSend: (payload: { body: string; isAnonymous: boolean; attachments: any[] }) => void;
+	onSend: (payload: {
+		body: string;
+		isAnonymous: boolean;
+		attachments: any[];
+		replyToMessageId?: number | null;
+	}) => void;
 	disabled?: boolean;
+	replyingTo?: CommsMessage | null;
+	onCancelReply?: () => void;
+	members?: MentionMember[];
+	onTyping?: () => void;
 }) {
 	const [body, setBody] = useState('');
 	const [isAnonymous, setIsAnonymous] = useState(false);
 	const [attachments, setAttachments] = useState<any[]>([]);
 	const [showPicker, setShowPicker] = useState(false);
+	const textareaRef = useRef<HTMLTextAreaElement>(null);
+	const [mentionState, setMentionState] = useState<{
+		open: boolean;
+		anchor: number; // index of '@' in body
+		query: string;
+		highlight: number;
+	}>({ open: false, anchor: -1, query: '', highlight: 0 });
+
+	const allMembers = members || [];
+	const filteredMentions = mentionState.open
+		? allMembers
+				.filter((m) =>
+					m.fullName.toLowerCase().includes(mentionState.query.toLowerCase()),
+				)
+				.slice(0, 8)
+		: [];
+
+	function detectMention(value: string, caret: number) {
+		// Find '@' immediately before caret with no whitespace between
+		let i = caret - 1;
+		while (i >= 0) {
+			const c = value[i];
+			if (c === '@') {
+				// Must be at start of body or preceded by whitespace
+				if (i === 0 || /\s/.test(value[i - 1])) {
+					const query = value.slice(i + 1, caret);
+					// Stop if query already contains a space or newline
+					if (/\s/.test(query)) return null;
+					return { anchor: i, query };
+				}
+				return null;
+			}
+			if (/\s/.test(c)) return null;
+			i--;
+		}
+		return null;
+	}
+
+	function handleBodyChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
+		const value = e.target.value;
+		setBody(value);
+		// Throttle typing pings to ~once per 3s; the parent debounces further
+		// at the network layer if needed.
+		onTyping?.();
+		const caret = e.target.selectionStart ?? value.length;
+		const detected = detectMention(value, caret);
+		if (detected) {
+			setMentionState({
+				open: true,
+				anchor: detected.anchor,
+				query: detected.query,
+				highlight: 0,
+			});
+		} else if (mentionState.open) {
+			setMentionState((s) => ({ ...s, open: false }));
+		}
+	}
+
+	function insertMention(member: MentionMember) {
+		if (mentionState.anchor < 0) return;
+		const before = body.slice(0, mentionState.anchor);
+		const afterStart = mentionState.anchor + 1 + mentionState.query.length;
+		const after = body.slice(afterStart);
+		const token = `@[${member.fullName}](${member.id}) `;
+		const newBody = before + token + after;
+		setBody(newBody);
+		setMentionState({ open: false, anchor: -1, query: '', highlight: 0 });
+		// Move caret to end of inserted token
+		setTimeout(() => {
+			const pos = (before + token).length;
+			textareaRef.current?.focus();
+			textareaRef.current?.setSelectionRange(pos, pos);
+		}, 0);
+	}
 
 	function handleSubmit(e?: React.FormEvent) {
 		if (e) e.preventDefault();
 		if (!body.trim() && attachments.length === 0) return;
-		onSend({ body, isAnonymous, attachments });
+		onSend({
+			body,
+			isAnonymous,
+			attachments,
+			replyToMessageId: replyingTo?.id ?? null,
+		});
 		setBody('');
 		setAttachments([]);
 		setIsAnonymous(false);
+		onCancelReply?.();
 	}
 
 	function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
+		// Mention picker navigation takes precedence
+		if (mentionState.open && filteredMentions.length > 0) {
+			if (e.key === 'ArrowDown') {
+				e.preventDefault();
+				setMentionState((s) => ({
+					...s,
+					highlight: (s.highlight + 1) % filteredMentions.length,
+				}));
+				return;
+			}
+			if (e.key === 'ArrowUp') {
+				e.preventDefault();
+				setMentionState((s) => ({
+					...s,
+					highlight:
+						(s.highlight - 1 + filteredMentions.length) % filteredMentions.length,
+				}));
+				return;
+			}
+			if (e.key === 'Enter' || e.key === 'Tab') {
+				e.preventDefault();
+				insertMention(filteredMentions[mentionState.highlight]);
+				return;
+			}
+			if (e.key === 'Escape') {
+				e.preventDefault();
+				setMentionState((s) => ({ ...s, open: false }));
+				return;
+			}
+		}
 		// Enter sends, Shift+Enter inserts newline
 		if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
 			e.preventDefault();
@@ -38,14 +168,67 @@ export function MessageComposer({
 				ⓘ Aucun message n&apos;est anonyme — toutes les communications sont
 				enregistrées pour modération.
 			</div>
-			<textarea
-				value={body}
-				onChange={(e) => setBody(e.target.value)}
-				onKeyDown={handleKeyDown}
-				placeholder="Transmettre... (Entrée = envoyer · Maj+Entrée = retour ligne · markdown: **gras** *italique* `code` &gt; quote)"
-				disabled={disabled}
-				maxLength={4000}
-			/>
+			{replyingTo && (
+				<div className="comms-composer-reply">
+					<div className="comms-composer-reply-text">
+						<span className="comms-composer-reply-name">
+							↩ Réponse à{' '}
+							{replyingTo.isAnonymous
+								? '[ANONYME]'
+								: replyingTo.senderCharacter?.fullName || '?'}
+						</span>
+						<span className="comms-composer-reply-snippet">
+							{(replyingTo.body || '').slice(0, 120)}
+						</span>
+					</div>
+					<button
+						type="button"
+						className="comms-message-action"
+						onClick={onCancelReply}
+						title="Annuler la réponse"
+					>
+						✕
+					</button>
+				</div>
+			)}
+			<div style={{ position: 'relative' }}>
+				<textarea
+					ref={textareaRef}
+					value={body}
+					onChange={handleBodyChange}
+					onKeyDown={handleKeyDown}
+					placeholder="Transmettre... (Entrée = envoyer · Maj+Entrée = retour ligne · @ pour mentionner · **gras** *italique* `code` > quote)"
+					disabled={disabled}
+					maxLength={4000}
+				/>
+				{mentionState.open && filteredMentions.length > 0 && (
+					<div className="comms-mention-picker">
+						{filteredMentions.map((m, idx) => (
+							<button
+								key={m.id}
+								type="button"
+								className={`comms-mention-picker-item${idx === mentionState.highlight ? ' active' : ''}`}
+								onMouseDown={(e) => {
+									e.preventDefault();
+									insertMention(m);
+								}}
+								onMouseEnter={() =>
+									setMentionState((s) => ({ ...s, highlight: idx }))
+								}
+							>
+								<span className="comms-mention-picker-avatar">
+									{m.avatarUrl ? (
+										<img src={m.avatarUrl} alt="" />
+									) : (
+										m.fullName.charAt(0)
+									)}
+								</span>
+								<span>{m.fullName}</span>
+							</button>
+						))}
+					</div>
+				)}
+			</div>
 			{attachments.length > 0 && (
 				<div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
 					{attachments.map((a, idx) => (

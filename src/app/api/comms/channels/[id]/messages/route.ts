@@ -7,6 +7,8 @@ import {
 	checkRateLimit,
 	COMMS_LIMITS,
 } from '@/lib/comms';
+import { isOnline } from '@/lib/comms-presence';
+import { sendDiscordDM } from '@/lib/moderation';
 
 export async function GET(
 	request: NextRequest,
@@ -344,6 +346,37 @@ export async function POST(
 		id: channelId,
 		data: { lastMessageAt: new Date().toISOString() } as any,
 	});
+
+	// Fire-and-forget Discord DM notification for offline mentioned characters.
+	// We only DM characters that are not currently active on /comms (per the
+	// in-memory presence store) and that we have a discordId for.
+	if (mentionIds.length > 0) {
+		void (async () => {
+			try {
+				const offline = mentionIds.filter((id) => !isOnline(id));
+				if (offline.length === 0) return;
+				const result = await payload.find({
+					collection: 'characters',
+					where: { id: { in: offline } },
+					limit: offline.length,
+				});
+				const senderName = isAnonymous
+					? '[ANONYME]'
+					: eligibility.character.fullName;
+				const channelLabel = (channel as any).name || `#${channelId}`;
+				const snippet = (text || '').slice(0, 200);
+				for (const c of result.docs as any[]) {
+					if (!c.discordId) continue;
+					await sendDiscordDM(
+						c.discordId,
+						`📨 **Mention dans /comms** — ${senderName} vous a mentionné dans **${channelLabel}**\n\n> ${snippet}\n\nhttps://lif-arma.com/roleplay/comms`,
+					).catch(() => {});
+				}
+			} catch (err) {
+				console.error('Comms mention notify failed:', err);
+			}
+		})();
+	}
 
 	return NextResponse.json({ id: created.id });
 }

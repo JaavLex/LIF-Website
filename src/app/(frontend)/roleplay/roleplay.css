@@ -36,6 +36,47 @@
   max-width: calc(100vw - 2rem);
 }
 
+/* Toggleable drawer behavior — hides player off the right edge by default,
+   shows a peek on hover, fully deploys on click. */
+.roleplay-audio-drawer {
+  transform: translateX(calc(100% + 1rem));
+  transition: transform 0.25s ease-out;
+}
+
+.roleplay-audio-drawer.open {
+  transform: translateX(0);
+}
+
+.roleplay-audio-drawer-tab {
+  position: fixed;
+  right: 0;
+  bottom: 1.4rem;
+  z-index: 1002;
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-right: none;
+  color: var(--primary);
+  font-family: inherit;
+  font-size: 0.9rem;
+  padding: 0.5rem 0.4rem;
+  cursor: pointer;
+  transition: background 0.15s, padding 0.15s;
+}
+
+.roleplay-audio-drawer-tab:hover {
+  background: rgba(80, 180, 80, 0.12);
+}
+
+/* Hover-peek: when hovering the tab, slide the drawer halfway in */
+.roleplay-audio-drawer-tab:hover + .roleplay-audio-drawer:not(.open) {
+  transform: translateX(50%);
+}
+
+.roleplay-audio-drawer-tab.open {
+  /* Push tab slightly left so it sits flush against the open drawer */
+  right: calc(1rem + 0px);
+}
+
 .audio-track-info {
   display: flex;
   align-items: center;

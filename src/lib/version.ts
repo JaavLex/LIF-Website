@@ -6,9 +6,23 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.5.1',
+  version: '1.6.0',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.6.0',
+      date: '2026-04-07',
+      changes: [
+        'COMMS — répondre à un message : prévisualisation citée dans le composeur, clic pour défiler vers l\'original',
+        'COMMS — sélecteur de mentions @ : auto-complétion des membres du canal au clavier',
+        'COMMS — indicateur « X est en train d\'écrire… » en temps réel',
+        'COMMS — présence en ligne : pastille verte à côté des membres actifs',
+        'COMMS — toasts de notification pour nouveaux messages dans les autres canaux',
+        'COMMS — DM Discord automatique aux membres mentionnés hors-ligne',
+        'COMMS — panneau de modération étendu : visualisation des pièces jointes média et liens détectés',
+        'ROLEPLAY — tiroir audio rétractable (bouton ↗ pour ouvrir/fermer le lecteur)',
+      ],
+    },
     {
       version: '1.5.1',
       date: '2026-04-07',

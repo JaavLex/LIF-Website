@@ -38,6 +38,8 @@ function formatTime(seconds: number): string {
 	return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
+const DRAWER_OPEN_KEY = 'lif-roleplay-music-drawer-open';
+
 function RoleplayAudio({ enabled }: { enabled: boolean }) {
 	const audioRef = useRef<HTMLAudioElement | null>(null);
 	const [disabled, setDisabled] = useState(false);
@@ -47,12 +49,14 @@ function RoleplayAudio({ enabled }: { enabled: boolean }) {
 	const [currentTime, setCurrentTime] = useState(0);
 	const [duration, setDuration] = useState(0);
 	const [hovering, setHovering] = useState(false);
+	const [drawerOpen, setDrawerOpen] = useState(false);
 
 	const currentTrack = PLAYLIST[order[currentIndex]];
 
 	useEffect(() => {
 		const storedDisabled = localStorage.getItem(MUSIC_DISABLED_KEY);
 		const storedVolume = localStorage.getItem(MUSIC_VOLUME_KEY);
+		const storedDrawer = localStorage.getItem(DRAWER_OPEN_KEY);
 
 		if (storedDisabled === '1') {
 			setDisabled(true);
@@ -64,7 +68,15 @@ function RoleplayAudio({ enabled }: { enabled: boolean }) {
 				setVolume(Math.min(1, Math.max(0, parsedVolume)));
 			}
 		}
+
+		if (storedDrawer === '1') {
+			setDrawerOpen(true);
+		}
 	}, []);
+
+	useEffect(() => {
+		localStorage.setItem(DRAWER_OPEN_KEY, drawerOpen ? '1' : '0');
+	}, [drawerOpen]);
 
 	useEffect(() => {
 		if (!audioRef.current) return;
@@ -207,8 +219,17 @@ function RoleplayAudio({ enabled }: { enabled: boolean }) {
 	return (
 		<>
 			<audio ref={audioRef} src={currentTrack.src} preload="auto" />
+			<button
+				type="button"
+				className={`roleplay-audio-drawer-tab${drawerOpen ? ' open' : ''}`}
+				onClick={() => setDrawerOpen((v) => !v)}
+				title={drawerOpen ? 'Masquer le lecteur' : 'Afficher le lecteur'}
+				aria-label="Toggle music player"
+			>
+				{drawerOpen ? '▶' : '◀'}
+			</button>
 			<div
-				className="roleplay-audio-controls"
+				className={`roleplay-audio-controls roleplay-audio-drawer${drawerOpen ? ' open' : ''}`}
 				data-tutorial="audio-controls"
 				onMouseEnter={() => setHovering(true)}
 				onMouseLeave={() => setHovering(false)}

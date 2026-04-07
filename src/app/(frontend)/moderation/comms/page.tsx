@@ -13,6 +13,25 @@ interface ModChannel {
 	createdAt: string;
 }
 
+interface ModAttachment {
+	messageId: number;
+	channelId: number;
+	channelName?: string;
+	createdAt: string;
+	senderName?: string;
+	kind: string;
+	meta: any;
+}
+
+interface ModLink {
+	messageId: number;
+	channelId: number;
+	channelName?: string;
+	createdAt: string;
+	senderName?: string;
+	url: string;
+}
+
 interface ModMessage {
 	id: number;
 	body: string;
@@ -45,6 +64,28 @@ export default function ModerationCommsPage() {
 	const [dateFrom, setDateFrom] = useState('');
 	const [dateTo, setDateTo] = useState('');
 	const [error, setError] = useState('');
+	const [showAttachmentsModal, setShowAttachmentsModal] = useState(false);
+	const [recentAttachments, setRecentAttachments] = useState<ModAttachment[]>([]);
+	const [recentLinks, setRecentLinks] = useState<ModLink[]>([]);
+	const [attachmentsLoading, setAttachmentsLoading] = useState(false);
+
+	const loadAttachments = useCallback(async () => {
+		setAttachmentsLoading(true);
+		try {
+			const res = await fetch('/api/moderation/comms/attachments?limit=300');
+			if (!res.ok) {
+				const d = await res.json().catch(() => ({}));
+				throw new Error(d.error || `Erreur ${res.status}`);
+			}
+			const data = await res.json();
+			setRecentAttachments(data.attachments || []);
+			setRecentLinks(data.links || []);
+		} catch (e: any) {
+			setError(e.message);
+		} finally {
+			setAttachmentsLoading(false);
+		}
+	}, []);
 
 	const loadChannels = useCallback(async () => {
 		try {
@@ -128,6 +169,15 @@ export default function ModerationCommsPage() {
 						<span className="mod-header-title">⚖️ Modération COMMS</span>
 					</div>
 					<div className="mod-header-right">
+						<button
+							className="mod-header-btn"
+							onClick={() => {
+								setShowAttachmentsModal(true);
+								loadAttachments();
+							}}
+						>
+							📎 Pièces jointes & liens
+						</button>
 						<Link href="/moderation" className="mod-header-btn">
 							← Modération
 						</Link>
@@ -362,6 +412,161 @@ export default function ModerationCommsPage() {
 					</div>
 				</div>
 			</div>
+
+			{showAttachmentsModal && (
+				<div
+					className="comms-modal-backdrop"
+					onClick={() => setShowAttachmentsModal(false)}
+					style={{
+						position: 'fixed',
+						inset: 0,
+						background: 'rgba(0,0,0,0.85)',
+						zIndex: 1000,
+						display: 'flex',
+						alignItems: 'center',
+						justifyContent: 'center',
+						padding: '1rem',
+					}}
+				>
+					<div
+						onClick={(e) => e.stopPropagation()}
+						style={{
+							background: 'var(--background)',
+							border: '1px solid var(--primary)',
+							maxWidth: '900px',
+							width: '100%',
+							maxHeight: '90vh',
+							overflowY: 'auto',
+							padding: '1.5rem',
+						}}
+					>
+						<div
+							style={{
+								display: 'flex',
+								justifyContent: 'space-between',
+								alignItems: 'center',
+								marginBottom: '0.75rem',
+							}}
+						>
+							<h2 style={{ color: 'var(--primary)', margin: 0 }}>
+								Pièces jointes & liens récents
+							</h2>
+							<button
+								className="mod-btn"
+								onClick={() => setShowAttachmentsModal(false)}
+							>
+								✕
+							</button>
+						</div>
+						{attachmentsLoading ? (
+							<div style={{ color: 'var(--muted)' }}>Chargement…</div>
+						) : (
+							<>
+								<h3 style={{ color: 'var(--primary)', fontSize: '0.9rem' }}>
+									Médias ({recentAttachments.filter((a) => a.kind === 'media').length})
+								</h3>
+								<div
+									style={{
+										display: 'grid',
+										gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
+										gap: '0.5rem',
+										marginBottom: '1rem',
+									}}
+								>
+									{recentAttachments
+										.filter((a) => a.kind === 'media')
+										.map((a, idx) => {
+											const mime = a.meta?.mimeType || '';
+											const url = a.meta?.url || '';
+											return (
+												<div
+													key={`m${idx}`}
+													style={{
+														border: '1px solid var(--primary)',
+														padding: '0.4rem',
+														fontSize: '0.7rem',
+														background: 'rgba(0,0,0,0.4)',
+													}}
+												>
+													{mime.startsWith('image/') ? (
+														<a href={url} target="_blank" rel="noopener noreferrer">
+															<img
+																src={url}
+																alt=""
+																style={{ width: '100%', height: 100, objectFit: 'cover' }}
+															/>
+														</a>
+													) : (
+														<a
+															href={url}
+															target="_blank"
+															rel="noopener noreferrer"
+															style={{ color: 'var(--primary)' }}
+														>
+															{a.meta?.filename || 'Fichier'}
+														</a>
+													)}
+													<div style={{ color: 'var(--muted)', marginTop: '0.25rem' }}>
+														{a.senderName || '?'} · {a.channelName || `#${a.channelId}`}
+													</div>
+													<div style={{ color: 'var(--muted)' }}>
+														{new Date(a.createdAt).toLocaleString('fr-FR')}
+													</div>
+												</div>
+											);
+										})}
+									{recentAttachments.filter((a) => a.kind === 'media').length === 0 && (
+										<div style={{ color: 'var(--muted)', gridColumn: '1/-1' }}>
+											Aucun média
+										</div>
+									)}
+								</div>
+
+								<h3 style={{ color: 'var(--primary)', fontSize: '0.9rem' }}>
+									Liens détectés ({recentLinks.length})
+								</h3>
+								<div
+									style={{
+										display: 'flex',
+										flexDirection: 'column',
+										gap: '0.3rem',
+										fontSize: '0.75rem',
+									}}
+								>
+									{recentLinks.map((l, idx) => (
+										<div
+											key={`l${idx}`}
+											style={{
+												borderBottom: '1px solid rgba(255,255,255,0.05)',
+												padding: '0.3rem 0',
+											}}
+										>
+											<a
+												href={l.url}
+												target="_blank"
+												rel="noopener noreferrer"
+												style={{
+													color: 'var(--primary)',
+													wordBreak: 'break-all',
+												}}
+											>
+												{l.url}
+											</a>
+											<div style={{ color: 'var(--muted)', fontSize: '0.7rem' }}>
+												{l.senderName || '?'} · {l.channelName || `#${l.channelId}`} ·{' '}
+												{new Date(l.createdAt).toLocaleString('fr-FR')}
+											</div>
+										</div>
+									))}
+									{recentLinks.length === 0 && (
+										<div style={{ color: 'var(--muted)' }}>Aucun lien détecté</div>
+									)}
+								</div>
+							</>
+						)}
+					</div>
+				</div>
+			)}
 		</div>
 	);
 }

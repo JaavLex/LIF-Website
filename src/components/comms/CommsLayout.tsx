@@ -73,6 +73,18 @@ export function CommsLayout({ character }: { character: ActiveCharacter }) {
 	const [profileCharacterId, setProfileCharacterId] = useState<number | null>(null);
 	const [previewIntelId, setPreviewIntelId] = useState<number | null>(null);
 	const [mobileShowMain, setMobileShowMain] = useState(false);
+	const [replyingTo, setReplyingTo] = useState<CommsMessage | null>(null);
+	const [channelMembers, setChannelMembers] = useState<
+		Array<{ id: number; fullName: string; avatarUrl: string | null }>
+	>([]);
+	const [typingUsers, setTypingUsers] = useState<Array<{ id: number; fullName: string }>>([]);
+	const lastTypingPingRef = useRef<number>(0);
+	const [onlineMemberIds, setOnlineMemberIds] = useState<number[]>([]);
+	const [toasts, setToasts] = useState<Array<{ id: number; channelId: number; channelName: string; snippet: string }>>([]);
+	// Tracks the last seen lastMessageAt per channel so we only toast on advances
+	const seenLastMessageAtRef = useRef<Map<number, string>>(new Map());
+	const initializedSeenRef = useRef(false);
+	const toastIdRef = useRef(0);
 	const pollingRef = useRef<NodeJS.Timeout | null>(null);
 
 	const loadChannels = useCallback(async () => {
@@ -80,10 +92,40 @@ export function CommsLayout({ character }: { character: ActiveCharacter }) {
 			const res = await fetch('/api/comms/channels');
 			if (!res.ok) return;
 			const data = await res.json();
-			setChannels(data.channels || []);
-			if (!activeId && data.channels?.length) {
-				setActiveId(data.channels[0].id);
+			const newChannels: CommsChannel[] = data.channels || [];
+			setChannels(newChannels);
+			if (!activeId && newChannels.length) {
+				setActiveId(newChannels[0].id);
 			}
+
+			// Detect channels that advanced since last poll → toast (skip active
+			// channel and skip the very first load).
+			const seen = seenLastMessageAtRef.current;
+			if (initializedSeenRef.current) {
+				for (const ch of newChannels) {
+					if (!ch.lastMessageAt) continue;
+					const prev = seen.get(ch.id);
+					if (prev && ch.lastMessageAt > prev && ch.id !== activeId) {
+						const toastId = ++toastIdRef.current;
+						setToasts((t) => [
+							...t,
+							{
+								id: toastId,
+								channelId: ch.id,
+								channelName: ch.name,
+								snippet: ch.lastMessagePreview || '',
+							},
+						]);
+						setTimeout(() => {
+							setToasts((t) => t.filter((x) => x.id !== toastId));
+						}, 6000);
+					}
+				}
+			}
+			for (const ch of newChannels) {
+				if (ch.lastMessageAt) seen.set(ch.id, ch.lastMessageAt);
+			}
+			initializedSeenRef.current = true;
 		} catch {}
 	}, [activeId]);
 
@@ -95,6 +137,26 @@ export function CommsLayout({ character }: { character: ActiveCharacter }) {
 			setMessages(data.messages || []);
 		} catch {}
 	}, []);
+
+	const loadTyping = useCallback(async (channelId: number) => {
+		try {
+			const res = await fetch(`/api/comms/channels/${channelId}/typing`);
+			if (!res.ok) return;
+			const data = await res.json();
+			setTypingUsers(data.typing || []);
+		} catch {}
+	}, []);
+
+	const pingTyping = useCallback(() => {
+		if (!activeId) return;
+		const now = Date.now();
+		// Throttle to one POST per 3s while user is actively typing
+		if (now - lastTypingPingRef.current < 3000) return;
+		lastTypingPingRef.current = now;
+		void fetch(`/api/comms/channels/${activeId}/typing`, { method: 'POST' }).catch(
+			() => {},
+		);
+	}, [activeId]);
 
 	const checkEligibility = useCallback(async () => {
 		try {
@@ -111,25 +173,71 @@ export function CommsLayout({ character }: { character: ActiveCharacter }) {
 		loadChannels().then(() => setLoading(false));
 	}, [checkEligibility, loadChannels]);
 
+	// Presence heartbeat: ping every 30s while page is mounted
+	useEffect(() => {
+		const ping = () => {
+			void fetch('/api/comms/presence', { method: 'POST' }).catch(() => {});
+		};
+		ping();
+		const interval = setInterval(ping, 30_000);
+		return () => clearInterval(interval);
+	}, []);
+
+	// Fetch online state for current channel members
+	useEffect(() => {
+		const ids = channelMembers.map((m) => m.id);
+		if (ids.length === 0) {
+			setOnlineMemberIds([]);
+			return;
+		}
+		const fetchOnline = () => {
+			void fetch(`/api/comms/presence?ids=${ids.join(',')}`)
+				.then((r) => (r.ok ? r.json() : { online: [] }))
+				.then((d) => setOnlineMemberIds(d.online || []))
+				.catch(() => {});
+		};
+		fetchOnline();
+		const interval = setInterval(fetchOnline, 15_000);
+		return () => clearInterval(interval);
+	}, [channelMembers]);
+
 	useEffect(() => {
 		if (!activeId) return;
+		setReplyingTo(null);
+		// Load channel members for the mention picker (one-shot per channel switch)
+		fetch(`/api/comms/channels/${activeId}/members`)
+			.then((r) => (r.ok ? r.json() : { members: [] }))
+			.then((d) =>
+				setChannelMembers(
+					(d.members || []).map((m: any) => ({
+						id: m.id,
+						fullName: m.fullName,
+						avatarUrl: m.avatarUrl ?? null,
+					})),
+				),
+			)
+			.catch(() => setChannelMembers([]));
 		loadMessages(activeId);
+		loadTyping(activeId);
+		setTypingUsers([]);
 		// Polling
 		const intervalMs = document.hidden ? 30_000 : 3_000;
 		if (pollingRef.current) clearInterval(pollingRef.current);
 		pollingRef.current = setInterval(() => {
 			loadMessages(activeId);
 			loadChannels();
+			loadTyping(activeId);
 		}, intervalMs);
 		return () => {
 			if (pollingRef.current) clearInterval(pollingRef.current);
 		};
-	}, [activeId, loadMessages, loadChannels]);
+	}, [activeId, loadMessages, loadChannels, loadTyping]);
 
 	async function handleSend(payload: {
 		body: string;
 		isAnonymous: boolean;
 		attachments: any[];
+		replyToMessageId?: number | null;
 	}) {
 		if (!activeId) return;
 		const res = await fetch(`/api/comms/channels/${activeId}/messages`, {
@@ -329,11 +437,25 @@ export function CommsLayout({ character }: { character: ActiveCharacter }) {
 								onEdit={handleEdit}
 								onOpenCharacter={(id) => setProfileCharacterId(id)}
 								onOpenIntel={(id) => setPreviewIntelId(id)}
+								onReply={(m) => setReplyingTo(m)}
 							/>
+							{typingUsers.length > 0 && (
+								<div className="comms-typing-indicator">
+									{typingUsers.length === 1
+										? `${typingUsers[0].fullName} est en train d'écrire…`
+										: typingUsers.length === 2
+											? `${typingUsers[0].fullName} et ${typingUsers[1].fullName} sont en train d'écrire…`
+											: `${typingUsers.length} personnes sont en train d'écrire…`}
+								</div>
+							)}
 							<MessageComposer
 								key={activeChannel.id}
 								onSend={handleSend}
 								disabled={disclaimerAccepted === false}
+								replyingTo={replyingTo}
+								onCancelReply={() => setReplyingTo(null)}
+								members={channelMembers}
+								onTyping={pingTyping}
 							/>
 						</>
 					) : (
@@ -374,6 +496,7 @@ export function CommsLayout({ character }: { character: ActiveCharacter }) {
 						setShowMembers(false);
 						setProfileCharacterId(id);
 					}}
+					onlineIds={onlineMemberIds}
 				/>
 			)}
 
@@ -389,6 +512,27 @@ export function CommsLayout({ character }: { character: ActiveCharacter }) {
 					intelId={previewIntelId}
 					onClose={() => setPreviewIntelId(null)}
 				/>
+			)}
+
+			{toasts.length > 0 && (
+				<div className="comms-toast-stack">
+					{toasts.map((t) => (
+						<button
+							key={t.id}
+							type="button"
+							className="comms-toast"
+							onClick={() => {
+								setActiveId(t.channelId);
+								setToasts((arr) => arr.filter((x) => x.id !== t.id));
+							}}
+						>
+							<div className="comms-toast-channel">📨 {t.channelName}</div>
+							{t.snippet && (
+								<div className="comms-toast-snippet">{t.snippet}</div>
+							)}
+						</button>
+					))}
+				</div>
 			)}
 		</div>
 	);
