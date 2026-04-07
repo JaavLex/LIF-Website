@@ -6,9 +6,26 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.6.28',
+  version: '1.6.29',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.6.29',
+      date: '2026-04-07',
+      changes: [
+        'COMMS — La popover d\'aide raccourcis & markdown ouverte depuis le bouton `?` du composer s\'ouvrait vers le bas et débordait hors écran avec son contenu sur une seule ligne en wrap chaotique. Repositionnée au-dessus du textarea (`bottom: calc(100% + 8px)` au lieu de `top: 42px`), largeur clampée `min(280px, 100vw - 1.5rem)`, scroll vertical avec `max-height: min(60vh, 360px)`, petit triangle pointant vers le bouton.',
+        'COMMS — Refonte du contenu : header avec titre `Raccourcis` + bouton fermeture, deux listes `<dl>` séparées (raccourcis clavier puis markdown), chaque ligne en grid 2 colonnes (`dt`/`dd`) qui ne wrap plus jamais. Animation slide-in 4px depuis le bas.',
+        'LORE — Refonte complète de `/roleplay/lore` avec une nouvelle « fenêtre archive » dédiée (`.lore-window`) — palette ambre #c9a040 (cohérente avec le bouton LORE), fond #08070a, grille subtile, vignette radiale ambrée, barre verticale tournée et bandeau supérieur avec onglet `AR-001 // ARCHIVES`.',
+        'LORE — Nouveau masthead éditorial : eyebrow `Dossier d\'archives — Volume I`, titre tri-ligne géant en stencil Rajdhani avec esperluette `&` italique ambrée et meta `X sections // Y entrées chronologiques`.',
+        'LORE — Sections converties en grid 2 colonnes : marqueur de chapitre sticky à gauche (cadre bordé avec glyphe `§` italique géant + numéro `01`/`02`/etc en monospace) et corps à droite avec titre stencil sous-ligné par une barre lumineuse 64px.',
+        'LORE — Texte enrichi : `lore-text` en Source Sans 3 1rem ligne 1.8 avec drop-cap italique ambré 3.6rem sur le premier paragraphe, blockquote barré ambre, liens soulignés ambre, listes à marqueurs colorés.',
+        'LORE — Bannière redessinée en figure encadrée avec corner brackets aux 4 coins, gradient overlay bas, scale 1.02 au hover et caption courier-monospace sous-titrée par une barre 18px.',
+        'LORE — Galerie en grid auto-fill 220px : chaque image dans un cadre `aspect-ratio: 4/3` avec corner brackets TL/BR, scale 1.05 + translateY -2px + halo ambré au hover, caption courier en dessous.',
+        'LORE — Nouvelle `lore-timeline` (chronologie) en 3 colonnes : timbre date avec bandeau supérieur ambre + année + jour géant + mois, rail vertical avec nœud losange (rotate 45°), carte avec barre gauche ambre + scanlines + index `№ 001`.',
+        'LORE — État vide redesigné : grand glyphe `§` italique ambré + titre stencil `PAGES BLANCHES` / `ARCHIVES VERROUILLÉES`. Animation cascade : window fade 0.6s puis masthead slide 0.7s puis sections individuelles.',
+        'LORE — Suppression des références à l\'ancienne classe `.timeline` (cassée depuis v1.6.28 quand elle a été remplacée par `.char-timeline` côté personnage).',
+      ],
+    },
     {
       version: '1.6.28',
       date: '2026-04-07',

@@ -1070,45 +1070,153 @@
 
 .comms-composer-hints {
 	position: absolute;
-	top: 42px;
-	right: 8px;
+	bottom: calc(100% + 8px);
+	right: 0;
+	left: auto;
 	background: var(--cc-panel-hi);
 	backdrop-filter: var(--cc-backdrop-blur);
 	-webkit-backdrop-filter: var(--cc-backdrop-blur);
 	border: 1px solid var(--cc-matrix-dim);
-	padding: 0.6rem 0.75rem;
+	border-left: 2px solid var(--cc-matrix);
+	padding: 0.55rem 0.7rem 0.65rem;
 	font-size: 0.74rem;
 	color: var(--cc-text);
-	z-index: 4;
+	z-index: 6;
 	box-shadow: var(--cc-shadow-lg);
-	min-width: 240px;
-	max-width: calc(100vw - 2rem);
+	width: min(280px, calc(100vw - 1.5rem));
+	max-height: min(60vh, 360px);
+	overflow-y: auto;
+	animation: commsHintsIn 0.18s ease-out;
+}
+
+@keyframes commsHintsIn {
+	from {
+		opacity: 0;
+		transform: translateY(4px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+.comms-composer-hints::after {
+	content: '';
+	position: absolute;
+	bottom: -6px;
+	right: 12px;
+	width: 10px;
+	height: 10px;
+	background: var(--cc-panel-hi);
+	border-right: 1px solid var(--cc-matrix-dim);
+	border-bottom: 1px solid var(--cc-matrix-dim);
+	transform: rotate(45deg);
+}
+
+.comms-composer-hints-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.5rem;
+	margin-bottom: 0.4rem;
+	padding-bottom: 0.35rem;
+	border-bottom: 1px dashed var(--cc-line);
+	font-family: var(--font-heading, 'Rajdhani', sans-serif);
+	font-size: 0.7rem;
+	font-weight: 700;
+	letter-spacing: 2px;
+	text-transform: uppercase;
+	color: var(--cc-matrix);
+}
+
+.comms-composer-hints-close {
+	background: transparent;
+	border: 1px solid transparent;
+	color: var(--cc-text);
+	cursor: pointer;
+	padding: 2px;
+	display: flex;
+	align-items: center;
+	transition: color 0.15s, border-color 0.15s;
+}
+
+.comms-composer-hints-close:hover {
+	color: var(--cc-matrix);
+	border-color: var(--cc-matrix-dim);
+}
+
+.comms-composer-hints-list {
+	margin: 0;
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 0.18rem;
 }
 
 .comms-composer-hints-row {
-	display: flex;
+	display: grid;
+	grid-template-columns: minmax(0, auto) minmax(0, 1fr);
 	align-items: center;
-	gap: 0.35rem;
-	padding: 0.18rem 0;
+	gap: 0.55rem;
+	padding: 0.12rem 0;
+	margin: 0;
+}
+
+.comms-composer-hints-row dt {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.2rem;
+	margin: 0;
+	min-width: 0;
 	flex-wrap: wrap;
+}
+
+.comms-composer-hints-row dd {
+	margin: 0;
+	color: var(--cc-text);
+	font-size: 0.72rem;
+	letter-spacing: 0.02em;
+	min-width: 0;
+}
+
+.comms-composer-hints-divider {
+	height: 1px;
+	margin: 0.55rem 0 0.35rem;
+	background: linear-gradient(90deg, var(--cc-matrix-dim), transparent);
+}
+
+.comms-composer-hints-mdtitle {
+	font-family: var(--font-heading, 'Rajdhani', sans-serif);
+	font-size: 0.65rem;
+	font-weight: 700;
+	letter-spacing: 2px;
+	text-transform: uppercase;
+	color: var(--cc-text);
+	opacity: 0.7;
+	margin-bottom: 0.3rem;
 }
 
 .comms-composer-hints kbd {
 	background: rgba(0, 0, 0, 0.55);
 	border: 1px solid var(--cc-matrix-dim);
 	color: var(--cc-matrix);
-	padding: 0.05rem 0.4rem;
-	font-family: var(--font-mono, monospace);
-	font-size: 0.7rem;
+	padding: 0.08rem 0.4rem;
+	font-family: var(--font-mono, 'Courier New', monospace);
+	font-size: 0.68rem;
 	border-radius: 2px;
+	white-space: nowrap;
+	line-height: 1.2;
 }
 
 .comms-composer-hints code {
 	background: rgba(0, 0, 0, 0.55);
 	border: 1px solid var(--cc-line);
-	padding: 0 0.35rem;
+	padding: 0.05rem 0.4rem;
 	color: var(--cc-matrix);
-	font-size: 0.7rem;
+	font-size: 0.68rem;
+	font-family: var(--font-mono, 'Courier New', monospace);
+	white-space: nowrap;
+	line-height: 1.2;
 }
 
 /* === Composer reply ribbon ============================================== */

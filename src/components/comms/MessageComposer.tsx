@@ -233,19 +233,67 @@ export function MessageComposer({
 				</button>
 				{showHints && (
 					<div className="comms-composer-hints" role="dialog">
-						<div className="comms-composer-hints-row">
-							<kbd>Entrée</kbd> envoyer
+						<div className="comms-composer-hints-header">
+							<span>Raccourcis</span>
+							<button
+								type="button"
+								className="comms-composer-hints-close"
+								onClick={() => setShowHints(false)}
+								aria-label="Fermer l'aide"
+							>
+								<X size={12} />
+							</button>
 						</div>
-						<div className="comms-composer-hints-row">
-							<kbd>Maj</kbd>+<kbd>Entrée</kbd> retour à la ligne
-						</div>
-						<div className="comms-composer-hints-row">
-							<kbd>@</kbd> mentionner un membre
-						</div>
-						<div className="comms-composer-hints-row">
-							<code>**gras**</code> · <code>*italique*</code> ·{' '}
-							<code>`code`</code> · <code>&gt; citation</code>
-						</div>
+						<dl className="comms-composer-hints-list">
+							<div className="comms-composer-hints-row">
+								<dt>
+									<kbd>Entrée</kbd>
+								</dt>
+								<dd>envoyer</dd>
+							</div>
+							<div className="comms-composer-hints-row">
+								<dt>
+									<kbd>Maj</kbd>
+									<span aria-hidden>+</span>
+									<kbd>Entrée</kbd>
+								</dt>
+								<dd>nouvelle ligne</dd>
+							</div>
+							<div className="comms-composer-hints-row">
+								<dt>
+									<kbd>@</kbd>
+								</dt>
+								<dd>mentionner</dd>
+							</div>
+						</dl>
+						<div className="comms-composer-hints-divider" />
+						<div className="comms-composer-hints-mdtitle">Markdown</div>
+						<dl className="comms-composer-hints-list">
+							<div className="comms-composer-hints-row">
+								<dt>
+									<code>**texte**</code>
+								</dt>
+								<dd>gras</dd>
+							</div>
+							<div className="comms-composer-hints-row">
+								<dt>
+									<code>*texte*</code>
+								</dt>
+								<dd>italique</dd>
+							</div>
+							<div className="comms-composer-hints-row">
+								<dt>
+									<code>`code`</code>
+								</dt>
+								<dd>code</dd>
+							</div>
+							<div className="comms-composer-hints-row">
+								<dt>
+									<code>&gt; texte</code>
+								</dt>
+								<dd>citation</dd>
+							</div>
+						</dl>
 					</div>
 				)}
 				{mentionState.open && filteredMentions.length > 0 && (
