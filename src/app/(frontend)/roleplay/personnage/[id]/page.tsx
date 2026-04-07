@@ -148,38 +148,124 @@ export default async function CharacterPage({
 				</div>
 			</div>
 
-			<div className="terminal-panel">
-				<div className="char-detail-header">
-					<h1 className="char-detail-title">
-						{character.isMainCharacter && (
-							<span className="main-character-badge" title="Personnage principal">
-								★
+			<div
+				className={`terminal-panel char-dossier ${character.isTarget ? 'char-dossier--target' : ''} ${character.isMainCharacter ? 'char-dossier--main' : ''}`}
+				style={
+					{
+						['--org-color' as any]:
+							(character.isTarget
+								? targetFactionObj?.color
+								: unit?.color || factionObj?.color) || 'var(--primary)',
+					} as React.CSSProperties
+				}
+			>
+				<div className="char-dossier-hero">
+					<div className="char-dossier-hero-stripe" />
+					<div className="char-dossier-hero-body">
+						<div className="char-dossier-hero-meta">
+							<span className="char-dossier-hero-tag">
+								{character.isTarget ? 'CIBLE' : 'PERSONNEL'}
 							</span>
-						)}
-						{rankIcon?.url && (
-							<Image
-								src={rankIcon!.url}
-								alt={rank!.name}
-								width={32}
-								height={32}
-								unoptimized
-							/>
-						)}
-						{rank && <>{rank.abbreviation || rank.name} </>}
-						{character.fullName}
-					</h1>
+							<span className="char-dossier-hero-divider" />
+							<span className="char-dossier-hero-id">
+								{character.militaryId || '— — —'}
+							</span>
+							{character.callsign && (
+								<>
+									<span className="char-dossier-hero-divider" />
+									<span className="char-dossier-hero-callsign">
+										« {character.callsign} »
+									</span>
+								</>
+							)}
+						</div>
+						<h1 className="char-dossier-hero-title">
+							{character.isMainCharacter && (
+								<span
+									className="char-dossier-hero-star"
+									title="Personnage principal"
+								>
+									★
+								</span>
+							)}
+							{rankIcon?.url && (
+								<Image
+									src={rankIcon.url}
+									alt={rank!.name}
+									width={40}
+									height={40}
+									className="char-dossier-hero-rank"
+									unoptimized
+								/>
+							)}
+							{rank && (
+								<span className="char-dossier-hero-rank-abbr">
+									{rank.abbreviation || rank.name}
+								</span>
+							)}
+							<span className="char-dossier-hero-name">{character.fullName}</span>
+						</h1>
+						<div className="char-dossier-hero-sub">
+							{unit && (
+								<span
+									className="char-dossier-hero-chip"
+									style={{
+										['--chip-color' as any]: unit.color || 'var(--primary)',
+									}}
+								>
+									{unitInsignia?.url && (
+										<Image
+											src={unitInsignia.url}
+											alt={unit.name}
+											width={16}
+											height={16}
+											unoptimized
+										/>
+									)}
+									{unit.name}
+								</span>
+							)}
+							{factionObj && (
+								<span
+									className="char-dossier-hero-chip"
+									style={{
+										['--chip-color' as any]: factionObj.color || 'var(--primary)',
+									}}
+								>
+									{factionObj.logo &&
+										typeof factionObj.logo === 'object' &&
+										(factionObj.logo as Media).url && (
+											<Image
+												src={(factionObj.logo as Media).url!}
+												alt={factionObj.name}
+												width={16}
+												height={16}
+												style={{ objectFit: 'contain' }}
+												unoptimized
+											/>
+										)}
+									{factionObj.name}
+								</span>
+							)}
+							<span
+								className={`char-dossier-hero-status char-dossier-hero-status--${character.status}`}
+							>
+								<span className="char-dossier-hero-status-dot" />
+								{STATUS_LABELS[character.status] || character.status}
+							</span>
+						</div>
+					</div>
+					<span className="char-dossier-hero-corner tl" aria-hidden />
+					<span className="char-dossier-hero-corner tr" aria-hidden />
+					<span className="char-dossier-hero-corner bl" aria-hidden />
+					<span className="char-dossier-hero-corner br" aria-hidden />
 					{(canEdit || canDelete) && (
-						<div className="char-detail-actions">
+						<div className="char-dossier-hero-actions">
 							{isOwner && <SyncRankButton characterId={character.id} />}
 							{canEdit && (
 								<Link
 									href={`/roleplay/personnage/${character.id}/modifier`}
 									className="session-btn"
-									style={{
-										padding: '0.5rem 1rem',
-										fontSize: '0.85rem',
-										whiteSpace: 'nowrap',
-									}}
 								>
 									Modifier
 								</Link>
@@ -187,7 +273,10 @@ export default async function CharacterPage({
 							{canDelete && (
 								<DeleteCharacterButton
 									characterId={character.id}
-									characterName={character.fullName || `${character.firstName} ${character.lastName}`}
+									characterName={
+										character.fullName ||
+										`${character.firstName} ${character.lastName}`
+									}
 								/>
 							)}
 						</div>

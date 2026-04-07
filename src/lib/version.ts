@@ -6,9 +6,22 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.6.15',
+  version: '1.6.16',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.6.16',
+      date: '2026-04-07',
+      changes: [
+        'PERSONNEL — Refonte des cartes en style « org-card » (mêmes codes visuels que Organisations & Unités)',
+        'PERSONNEL — Nom complet affiché en titre principal (callsign déjà intégré, plus de doublon)',
+        'PERSONNEL — Bande gauche colorée par statut, méta compacte GRADE · UNITÉ · FACTION, flèche qui glisse au hover',
+        'PERSONNEL — Avatar avec coins HUD, étoile dorée pour personnage principal, ruban menace pour cibles',
+        'RENSEIGNEMENTS — Refonte complète : cartes « intel-card » expandables avec bande colorée par classification',
+        'RENSEIGNEMENTS — Icône de rapport encadrée HUD, titre Rajdhani en couleur, méta date · auteur · coordonnées',
+        'RENSEIGNEMENTS — Tags type/statut, chevron rotatif, panneau étendu avec séparateur en pointillés colorés',
+      ],
+    },
     {
       version: '1.6.15',
       date: '2026-04-07',

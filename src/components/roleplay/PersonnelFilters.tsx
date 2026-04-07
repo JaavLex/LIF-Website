@@ -354,7 +354,7 @@ export function PersonnelFilters({
 									{rankGroup.characters.length}
 								</span>
 							</div>
-							<div className="personnel-grid">
+							<div className="char-grid">
 								{rankGroup.characters.map(character => {
 									const rank =
 										typeof character.rank === 'object' && character.rank
@@ -364,149 +364,113 @@ export function PersonnelFilters({
 										typeof character.unit === 'object' && character.unit
 											? character.unit
 											: null;
-									const factionObj = factions?.find(
-										f =>
-											f.name ===
-											(character.isTarget
-												? character.targetFaction
-												: character.faction),
-									);
 									const factionName = character.isTarget
 										? character.targetFaction
 										: character.faction;
-									const primaryLabel =
-										character.callsign ||
-										rank?.abbreviation ||
-										character.fullName;
 									return (
 										<Link
 											key={character.id}
 											href={`/roleplay/personnage/${character.id}`}
-											className={`personnel-card personnel-card--dossier status-${character.status}${activeTab === 'targets' ? ' target-card' : ''}${character.isMainCharacter ? ' is-main' : ''}`}
+											className={`char-card status-${character.status}${character.isTarget ? ' is-target' : ''}${character.isMainCharacter ? ' is-main' : ''}`}
 											data-status={character.status}
 											data-classification={character.classification}
 										>
-											<span className="personnel-card-stripe" aria-hidden />
 											{character.isTarget && character.threatLevel && (
 												<span
-													className={`personnel-card-threat threat-${character.threatLevel}`}
+													className={`char-card-threat threat-${character.threatLevel}`}
 													title={`Menace: ${THREAT_LABELS[character.threatLevel] || character.threatLevel}`}
 												>
 													{THREAT_LABELS[character.threatLevel] ||
 														character.threatLevel}
 												</span>
 											)}
-											<div className="personnel-card-top">
-												<div className="personnel-card-avatar">
-													{character.avatar?.url ? (
-														<Image
-															src={character.avatar.url}
-															alt={character.fullName}
-															width={56}
-															height={56}
-															unoptimized
-														/>
-													) : (
-														<span className="personnel-card-avatar-initials">
-															{character.firstName?.[0]}
-															{character.lastName?.[0]}
+											<div className="char-card-avatar">
+												{character.avatar?.url ? (
+													<Image
+														src={character.avatar.url}
+														alt={character.fullName}
+														width={50}
+														height={50}
+														unoptimized
+													/>
+												) : (
+													<span className="char-card-avatar-initials">
+														{character.firstName?.[0]}
+														{character.lastName?.[0]}
+													</span>
+												)}
+											</div>
+											<div className="char-card-body">
+												<div className="char-card-name-row">
+													<span className="char-card-name">
+														{character.fullName}
+													</span>
+													{character.isMainCharacter && (
+														<span
+															className="char-card-main-star"
+															title="Personnage principal"
+														>
+															★
 														</span>
 													)}
 												</div>
-												<div className="personnel-card-ident">
-													<div className="personnel-card-callsign-row">
+												<div className="char-card-meta">
+													<span className="char-card-meta-rank">
 														{rank?.icon?.url && (
 															<Image
-																className="personnel-card-rank-icon"
 																src={rank.icon.url}
 																alt={rank.name}
 																title={rank.name}
-																width={16}
-																height={16}
+																width={14}
+																height={14}
 																unoptimized
 															/>
 														)}
-														<span className="personnel-card-callsign">
-															{primaryLabel}
+														<span>
+															{rank?.abbreviation || rank?.name || 'SANS GRADE'}
 														</span>
-														{character.isMainCharacter && (
-															<span
-																className="personnel-card-main-star"
-																title="Personnage principal"
-															>
-																★
+													</span>
+													{unit && (
+														<>
+															<span className="char-card-meta-sep">·</span>
+															<span>{unit.name}</span>
+														</>
+													)}
+													{factionName && (
+														<>
+															<span className="char-card-meta-sep">·</span>
+															<span className="char-card-meta-faction">
+																{factionName}
 															</span>
-														)}
-													</div>
-													<div className="personnel-card-fullname">
-														{character.fullName}
-													</div>
+														</>
+													)}
 												</div>
 											</div>
-
-											<div className="personnel-card-chips">
-												{unit && (
-													<span className="personnel-chip personnel-chip--unit">
-														{unit.insignia?.url && (
-															<Image
-																src={unit.insignia.url}
-																alt={unit.name}
-																width={14}
-																height={14}
-																unoptimized
-															/>
-														)}
-														<span>{unit.name}</span>
-													</span>
-												)}
-												{factionName && (
+											<div className="char-card-end">
+												<div className="char-card-tags">
 													<span
-														className="personnel-chip personnel-chip--faction"
-														style={
-															factionObj?.color
-																? {
-																		borderColor: factionObj.color,
-																		color: factionObj.color,
-																	}
-																: undefined
-														}
-													>
-														{factionObj?.logo?.url && (
-															<Image
-																src={factionObj.logo.url}
-																alt={factionName}
-																width={14}
-																height={14}
-																style={{ objectFit: 'contain' }}
-																unoptimized
-															/>
-														)}
-														<span>{factionName}</span>
-													</span>
-												)}
-											</div>
-
-											<div className="personnel-card-bottom">
-												<span className="personnel-card-id">
-													{character.militaryId || '—'}
-												</span>
-												<div className="personnel-card-tags">
-													<span
-														className={`personnel-card-status-dot status-${character.status}`}
-														title={
-															STATUS_LABELS[character.status] || character.status
-														}
-													>
-														<span className="dot" />
-														{STATUS_LABELS[character.status] || character.status}
-													</span>
-													<span
-														className={`personnel-card-class class-${character.classification}`}
+														className={`char-card-class class-${character.classification}`}
 														title={character.classification}
 													>
 														{character.classification?.charAt(0).toUpperCase()}
 													</span>
+													<span
+														className="char-card-status-dot"
+														title={
+															STATUS_LABELS[character.status] || character.status
+														}
+														aria-hidden
+													/>
 												</div>
+												<span
+													className="char-card-id"
+													title={character.militaryId || ''}
+												>
+													{character.militaryId || '—'}
+												</span>
+												<span className="char-card-arrow" aria-hidden>
+													›
+												</span>
 											</div>
 										</Link>
 									);

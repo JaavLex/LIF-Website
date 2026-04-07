@@ -3,6 +3,19 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import {
+	FileText,
+	Edit2,
+	Trash2,
+	ChevronDown,
+	Plus,
+	X,
+	MapPin,
+	Crosshair,
+	Flag,
+	UserCircle2,
+	Loader2,
+} from 'lucide-react';
 import { RichTextRenderer } from './RichTextRenderer';
 import { INTELLIGENCE_TYPE_LABELS, textToLexical } from '@/lib/constants';
 
@@ -300,19 +313,11 @@ export function IntelligenceList({
 	};
 
 	return (
-		<div>
+		<div className="intel-list">
 			{/* Filters */}
-			<div
-				style={{
-					display: 'flex',
-					gap: '1rem',
-					marginBottom: '1.5rem',
-					flexWrap: 'wrap',
-					alignItems: 'flex-end',
-				}}
-			>
-				<div>
-					<label style={labelStyle}>Type</label>
+			<div className="intel-filters">
+				<div className="intel-filter-group">
+					<label className="intel-filter-label">Type</label>
 					<select
 						value={filterType}
 						onChange={e => setFilterType(e.target.value)}
@@ -327,8 +332,8 @@ export function IntelligenceList({
 					</select>
 				</div>
 				{isAdmin && (
-					<div>
-						<label style={labelStyle}>Statut</label>
+					<div className="intel-filter-group">
+						<label className="intel-filter-label">Statut</label>
 						<select
 							value={filterStatus}
 							onChange={e => setFilterStatus(e.target.value)}
@@ -343,19 +348,27 @@ export function IntelligenceList({
 						</select>
 					</div>
 				)}
-				<div style={{ marginLeft: 'auto' }}>
-					<span style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>
-						{filtered.length} rapport{filtered.length !== 1 ? 's' : ''}
+				<div className="intel-filters-count">
+					<span className="intel-filters-count-num">{filtered.length}</span>
+					<span className="intel-filters-count-label">
+						rapport{filtered.length !== 1 ? 's' : ''}
 					</span>
 				</div>
 				{hasIntelRole && (
 					<button
 						type="button"
 						onClick={() => setShowForm(!showForm)}
-						className="session-btn"
-						style={{ padding: '0.5rem 1rem', fontSize: '0.85rem' }}
+						className="intel-new-btn"
 					>
-						{showForm ? 'Annuler' : '+ Nouveau rapport'}
+						{showForm ? (
+							<>
+								<X size={14} /> Annuler
+							</>
+						) : (
+							<>
+								<Plus size={14} /> Nouveau rapport
+							</>
+						)}
 					</button>
 				)}
 			</div>
@@ -668,140 +681,92 @@ export function IntelligenceList({
 			{filtered.length === 0 ? (
 				<div className="empty-state-inline">Aucun rapport de renseignement.</div>
 			) : (
-				<div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-					{filtered.map(report => (
+				<div className="intel-list-grid">
+					{filtered.map(report => {
+						const isExpanded = expanded === report.id;
+						return (
 						<div
 							key={report.id}
-							className="intel-report"
-							style={{
-								border: '1px solid var(--border)',
-								padding: '1rem',
-								background: 'var(--bg-secondary)',
-								cursor: 'pointer',
-							}}
+							className={`intel-card${isExpanded ? ' is-expanded' : ''}`}
+							data-classification={report.classification}
 							onClick={() => setExpanded(expanded === report.id ? null : report.id)}
 						>
-							<div
-								style={{
-									display: 'flex',
-									justifyContent: 'space-between',
-									alignItems: 'flex-start',
-									gap: '1rem',
-								}}
-							>
-								<div style={{ flex: 1 }}>
-									<div
-										style={{
-											display: 'flex',
-											alignItems: 'center',
-											gap: '0.5rem',
-											flexWrap: 'wrap',
-											marginBottom: '0.35rem',
-										}}
-									>
-										<span
-											className={`classification-badge ${report.classification}`}
-											style={{ fontSize: '0.7rem', padding: '0.1rem 0.4rem' }}
-										>
-											{report.classification}
-										</span>
-										<span
-											style={{
-												fontSize: '0.75rem',
-												padding: '0.1rem 0.5rem',
-												border: '1px solid var(--primary)',
-												color: 'var(--primary)',
-											}}
-										>
-											{TYPE_LABELS[report.type] || report.type}
-										</span>
-										{isAdmin && (
-											<span
-												style={{
-													fontSize: '0.7rem',
-													padding: '0.1rem 0.4rem',
-													border: '1px solid',
-													borderColor:
-														report.status === 'verified'
-															? 'var(--accent)'
-															: report.status === 'false-info'
-																? 'var(--danger)'
-																: 'var(--muted)',
-													color:
-														report.status === 'verified'
-															? 'var(--accent)'
-															: report.status === 'false-info'
-																? 'var(--danger)'
-																: 'var(--muted)',
-												}}
-											>
-												{STATUS_LABELS[report.status] || report.status}
+							<div className="intel-card-main">
+								<div className="intel-card-icon" aria-hidden>
+									<FileText size={20} />
+								</div>
+								<div className="intel-card-body">
+									<div className="intel-card-head">
+										<h3 className="intel-card-title">{report.title}</h3>
+										<div className="intel-card-tags">
+											<span className="intel-card-tag tag-type">
+												{TYPE_LABELS[report.type] || report.type}
 											</span>
-										)}
+											{isAdmin && (
+												<span
+													className={`intel-card-tag tag-status status-${report.status}`}
+												>
+													{STATUS_LABELS[report.status] || report.status}
+												</span>
+											)}
+										</div>
 									</div>
-									<h3 style={{ margin: '0 0 0.25rem 0', fontSize: '1rem' }}>
-										{report.title}
-									</h3>
-									<div style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>
-										{new Date(report.date).toLocaleDateString('fr-FR', {
-											year: 'numeric',
-											month: 'long',
-											day: 'numeric',
-										})}
+									<div className="intel-card-meta">
+										<span>
+											{new Date(report.date).toLocaleDateString('fr-FR', {
+												year: 'numeric',
+												month: 'short',
+												day: 'numeric',
+											})}
+										</span>
 										{report.postedBy && (
 											<>
-												{' '}
-												— Rapporté par{' '}
-												<Link
-													href={`/roleplay/personnage/${report.postedBy.id}`}
-													style={{ color: 'var(--primary)' }}
-													onClick={e => e.stopPropagation()}
+												<span className="intel-card-meta-sep">·</span>
+												<span>
+													par{' '}
+													<Link
+														href={`/roleplay/personnage/${report.postedBy.id}`}
+														onClick={e => e.stopPropagation()}
+													>
+														{report.postedBy.fullName}
+													</Link>
+												</span>
+											</>
+										)}
+										{report.coordinates && (
+											<>
+												<span className="intel-card-meta-sep">·</span>
+												<span
+													style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}
 												>
-													{report.postedBy.fullName}
-												</Link>
+													<MapPin size={11} /> {report.coordinates}
+												</span>
 											</>
 										)}
 									</div>
 								</div>
-								<span
-									style={{
-										color: 'var(--muted)',
-										fontSize: '0.8rem',
-										flexShrink: 0,
-									}}
-								>
-									{expanded === report.id ? '▲' : '▼'}
+								<span className="intel-card-chevron" aria-hidden>
+									<ChevronDown size={18} />
 								</span>
 							</div>
 
-							{expanded === report.id && (
+							{isExpanded && (
 								<div
-									style={{
-										marginTop: '1rem',
-										paddingTop: '1rem',
-										borderTop: '1px solid var(--border)',
-									}}
+									className="intel-card-expanded"
+									onClick={e => e.stopPropagation()}
 								>
-									<div
-										className="character-section-content"
-										style={{ marginBottom: '1rem' }}
-									>
+									<div className="character-section-content">
 										<RichTextRenderer content={report.description} />
 									</div>
 
-									{report.coordinates && (
-										<div style={{ fontSize: '0.85rem', marginBottom: '0.5rem' }}>
-											<strong>Coordonnées:</strong> {report.coordinates}
-										</div>
-									)}
-
 									{report.linkedTarget && (
-										<div style={{ fontSize: '0.85rem', marginBottom: '0.5rem' }}>
-											<strong>Cible liée:</strong>{' '}
+										<div className="intel-card-detail-row">
+											<strong>
+												<Crosshair size={12} /> Cible liée
+											</strong>
 											<Link
 												href={`/roleplay/personnage/${report.linkedTarget.id}`}
 												style={{ color: 'var(--danger)' }}
-												onClick={e => e.stopPropagation()}
 											>
 												{report.linkedTarget.fullName}
 											</Link>
@@ -809,37 +774,27 @@ export function IntelligenceList({
 									)}
 
 									{report.linkedFaction && (
-										<div style={{ fontSize: '0.85rem', marginBottom: '0.5rem' }}>
-											<strong>Faction liée:</strong> {report.linkedFaction.name}
+										<div className="intel-card-detail-row">
+											<strong>
+												<Flag size={12} /> Faction liée
+											</strong>
+											<span>{report.linkedFaction.name}</span>
 										</div>
 									)}
 
 									{report.media && report.media.length > 0 && (
-										<div
-											style={{
-												display: 'flex',
-												gap: '0.5rem',
-												flexWrap: 'wrap',
-												marginTop: '0.75rem',
-											}}
-										>
+										<div className="intel-card-media">
 											{report.media.map(
 												(m, i) =>
 													m.file?.url && (
-														<div
-															key={i}
-															style={{
-																border: '1px solid var(--border)',
-																padding: '0.25rem',
-															}}
-														>
+														<div key={i} className="intel-card-media-item">
 															{m.file.mimeType?.startsWith('image/') ? (
 																<Image
 																	src={m.file.url}
 																	alt={m.caption || ''}
 																	width={200}
 																	height={150}
-																	style={{ objectFit: 'cover', cursor: 'pointer' }}
+																	style={{ objectFit: 'cover' }}
 																	unoptimized
 																	onClick={e => {
 																		e.stopPropagation();
@@ -855,19 +810,12 @@ export function IntelligenceList({
 																		color: 'var(--primary)',
 																		fontSize: '0.85rem',
 																	}}
-																	onClick={e => e.stopPropagation()}
 																>
 																	{m.caption || 'Fichier'}
 																</a>
 															)}
 															{m.caption && (
-																<div
-																	style={{
-																		fontSize: '0.75rem',
-																		color: 'var(--muted)',
-																		textAlign: 'center',
-																	}}
-																>
+																<div className="intel-card-media-caption">
 																	{m.caption}
 																</div>
 															)}
@@ -878,14 +826,7 @@ export function IntelligenceList({
 									)}
 
 									{/* Action buttons */}
-									<div
-										style={{
-											marginTop: '0.75rem',
-											display: 'flex',
-											gap: '0.5rem',
-											flexWrap: 'wrap',
-										}}
-									>
+									<div className="intel-card-actions">
 										<Link
 											href={`/roleplay/renseignement/${report.id}`}
 											className="session-btn"
@@ -1356,7 +1297,8 @@ export function IntelligenceList({
 								</div>
 							)}
 						</div>
-					))}
+						);
+					})}
 				</div>
 			)}
 			{/* Image Modal */}
