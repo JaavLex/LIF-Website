@@ -6,9 +6,17 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.6.34',
+  version: '1.6.35',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.6.35',
+      date: '2026-04-08',
+      changes: [
+        'PAYLOAD — Les champs `selectorTagline`, `selectorPitch` et `selectorTraits` (texte par unité affiché sur la carte du sélecteur de création de personnage) étaient cachés dans un collapsible peu visible et restaient vides pour Cerberus / Specter, ce qui forçait le fallback « Affectation au sein de la Légion… Service actif ». Les trois champs sont maintenant remontés au niveau racine de la collection Units, préfixés « 🟢 SÉLECTEUR — » dans leur label, avec une description claire qui explique exactement où le texte apparaît. Plus de collapsible.',
+        'INFRA — Hotfix DB dev : les migrations 150000/160000/170000/180000 n\'avaient jamais été enregistrées dans `payload_migrations`, donc la 180000 n\'avait pas tourné lors du déploiement v1.6.34. Les 15 colonnes du global `roleplay` ont été appliquées directement via psql et les 4 migrations marquées comme exécutées. Aucune autre régression.',
+      ],
+    },
     {
       version: '1.6.34',
       date: '2026-04-07',
