@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import { VERSION_INFO } from '@/lib/version';
 
 const STORAGE_KEY = 'lif-splash-seen.v1';
@@ -28,7 +29,23 @@ const LINES: Array<{ delay: number; tag: string; text: string }> = [
 
 const TOTAL_DURATION = 3400; // ms — slightly after the last line
 
+// The terminal boot splash is part of the in-universe "secure terminal"
+// experience and should only appear on the terminal-themed sections of
+// the site (/roleplay and /comms). Marketing/public pages keep their
+// normal presentation.
+const TERMINAL_PATH_PREFIXES = ['/roleplay', '/comms'];
+
+function isTerminalPath(pathname: string | null): boolean {
+	if (!pathname) return false;
+	return TERMINAL_PATH_PREFIXES.some(
+		prefix => pathname === prefix || pathname.startsWith(prefix + '/'),
+	);
+}
+
 export function SplashScreen() {
+	const pathname = usePathname();
+	const onTerminalRoute = isTerminalPath(pathname);
+
 	// IMPORTANT: default `visible: true` so the splash covers the page from
 	// the very first paint. If we used `false` + useEffect, the page would
 	// render first and the splash would pop on top after hydration — making
@@ -38,6 +55,10 @@ export function SplashScreen() {
 	const [closing, setClosing] = useState(false);
 
 	useEffect(() => {
+		// Only consume the "seen" flag when we're actually going to show the
+		// splash — otherwise visiting a non-terminal page first would silently
+		// mark the flag and suppress the splash on the next terminal visit.
+		if (!onTerminalRoute) return;
 		try {
 			const seen = sessionStorage.getItem(STORAGE_KEY);
 			if (seen) {
@@ -49,7 +70,7 @@ export function SplashScreen() {
 		} catch {
 			// Storage blocked — just show the splash normally.
 		}
-	}, []);
+	}, [onTerminalRoute]);
 
 	// Auto-dismiss after the boot sequence finishes
 	useEffect(() => {
@@ -74,7 +95,7 @@ export function SplashScreen() {
 		setTimeout(() => setVisible(false), 320);
 	}
 
-	if (!visible) return null;
+	if (!visible || !onTerminalRoute) return null;
 
 	return (
 		<div

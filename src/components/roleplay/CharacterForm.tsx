@@ -123,7 +123,9 @@ export function CharacterForm({
 	})();
 
 	useEffect(() => {
-		fetch('/api/auth/me')
+		// Refresh Discord roles from the guild so rank auto-detection reflects
+		// the user's *current* Discord rank, not the snapshot taken at login.
+		fetch('/api/auth/me?refresh=1')
 			.then(res => (res.ok ? res.json() : null))
 			.then(data => {
 				if (data?.authenticated) setUser(data.user);

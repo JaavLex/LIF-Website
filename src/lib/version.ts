@@ -6,9 +6,23 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.6.36',
+  version: '1.6.38',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.6.38',
+      date: '2026-04-08',
+      changes: [
+        'UI — Le splash screen « terminal sécurisé » (séquence de boot en ASCII vert) ne s\'affiche plus que sur les sections in-universe `/roleplay` et `/comms`. Les pages marketing/publiques (accueil, factions, etc.) redeviennent silencieuses au premier chargement. Le flag `sessionStorage` n\'est posé que quand le splash est réellement affiché, pour qu\'une première visite sur une page publique ne supprime pas le splash lors du premier passage ensuite sur /roleplay ou /comms.',
+      ],
+    },
+    {
+      version: '1.6.37',
+      date: '2026-04-08',
+      changes: [
+        'ROLEPLAY — La détection automatique du grade sur la fiche personnage (édition et création) affichait un grade périmé car les rôles Discord étaient figés dans le cookie de session (JWT signé) au moment de la connexion, avec un TTL de 7 jours, sans jamais être rafraîchis. Quand un joueur changeait de rang côté Discord, le site continuait à afficher l\'ancien grade jusqu\'à une déconnexion/reconnexion. Fix : `/api/auth/me` accepte maintenant `?refresh=1`, qui re-fetch le guild member via le bot Discord, met à jour `user.discordRoles` côté Payload, re-signe le cookie de session avec les rôles frais et les renvoie au client. `CharacterForm` appelle cette URL au montage, donc toute ouverture de la fiche (création ou édition) force un rafraîchissement. Les endpoints de sauvegarde lisent ensuite les rôles frais depuis le cookie, garantissant que le grade détecté stocké correspond bien au rang Discord courant.',
+      ],
+    },
     {
       version: '1.6.36',
       date: '2026-04-08',
