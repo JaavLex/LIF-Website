@@ -106,20 +106,49 @@ export default async function CharacterPage({
 	const canEdit = isOwner || isAdmin;
 	const canDelete = isAdmin && adminPermissions?.level === 'full';
 
-	return (
-		<div className="terminal-container">
-			<Link href="/roleplay" className="retour-link">
-				← Retour à la base de données
-			</Link>
+	const orgColor =
+		(character.isTarget
+			? targetFactionObj?.color
+			: unit?.color || factionObj?.color) || 'var(--primary)';
 
-			{/* Admin indicator */}
-			{isAdmin && adminPermissions && (
-				<div className="admin-indicator">
-					<span className="admin-indicator-dot" />
-					<span>MODE ADMIN</span>
-					<span className="admin-role-name">{adminPermissions.roleName}</span>
+	return (
+		<div
+			className={`char-window ${character.isTarget ? 'char-window--target' : ''} ${character.isMainCharacter ? 'char-window--main' : ''}`}
+			style={{ ['--org-color' as any]: orgColor } as React.CSSProperties}
+		>
+			<div className="char-window-grid-bg" aria-hidden />
+			<div className="char-window-vignette" aria-hidden />
+			<span className="char-window-rail" aria-hidden>
+				{character.isTarget ? 'FICHE CIBLE' : 'DOSSIER PERSONNEL'} //{' '}
+				{character.militaryId || 'CLASSIFIÉ'}
+			</span>
+
+			<div className="char-window-topbar">
+				<Link href="/roleplay" className="char-window-back">
+					<span aria-hidden>←</span>
+					<span>Retour</span>
+				</Link>
+				<div className="char-window-tab">
+					<span className="char-window-tab-num">
+						{character.isTarget ? 'FT-' : 'DP-'}
+						{(character.militaryId || '0000').toString().padStart(4, '0')}
+					</span>
+					<span className="char-window-tab-label">
+						{character.isTarget ? 'FICHE CIBLE' : 'DOSSIER PERSONNEL'}
+					</span>
 				</div>
-			)}
+				<div className="char-window-topbar-right">
+					{isAdmin && adminPermissions && (
+						<span className="char-window-admin-pill" title={adminPermissions.roleName}>
+							<span className="char-window-admin-dot" />
+							ADMIN
+						</span>
+					)}
+					<span className={`classification-badge ${character.classification}`}>
+						{character.classification}
+					</span>
+				</div>
+			</div>
 
 			{/* Archived banner */}
 			{character.isArchived && (
@@ -129,35 +158,8 @@ export default async function CharacterPage({
 				</div>
 			)}
 
-			<div className="terminal-header">
-				<div className="terminal-header-left">
-					<div className="terminal-header-dots">
-						<span className="terminal-dot green" />
-						<span className="terminal-dot yellow" />
-						<span className="terminal-dot red" />
-					</div>
-					<span className="terminal-title">
-						{character.isTarget ? 'FICHE CIBLE' : 'DOSSIER PERSONNEL'} —{' '}
-						{character.militaryId || 'N/A'}
-					</span>
-				</div>
-				<div className="terminal-header-right">
-					<span className={`classification-badge ${character.classification}`}>
-						{character.classification}
-					</span>
-				</div>
-			</div>
-
 			<div
-				className={`terminal-panel char-dossier ${character.isTarget ? 'char-dossier--target' : ''} ${character.isMainCharacter ? 'char-dossier--main' : ''}`}
-				style={
-					{
-						['--org-color' as any]:
-							(character.isTarget
-								? targetFactionObj?.color
-								: unit?.color || factionObj?.color) || 'var(--primary)',
-					} as React.CSSProperties
-				}
+				className={`char-dossier ${character.isTarget ? 'char-dossier--target' : ''} ${character.isMainCharacter ? 'char-dossier--main' : ''}`}
 			>
 				<div className="char-dossier-hero">
 					<div className="char-dossier-hero-photo">

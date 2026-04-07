@@ -5,6 +5,7 @@ import './moderation.css';
 import UsersTab from '@/components/moderation/UsersTab';
 import CasesTab from '@/components/moderation/CasesTab';
 import TranscriptsTab from '@/components/moderation/TranscriptsTab';
+import CommsTab from '@/components/moderation/CommsTab';
 import type { SessionUser, ModerationUser } from '@/components/moderation/types';
 
 export default function ModerationPage() {
@@ -26,7 +27,9 @@ export default function ModerationPage() {
 	const [error, setError] = useState('');
 
 	// Tab state
-	const [tab, setTab] = useState<'users' | 'cases' | 'transcripts'>('users');
+	const [tab, setTab] = useState<
+		'users' | 'cases' | 'transcripts' | 'comms'
+	>('users');
 
 	useEffect(() => {
 		checkAuth();
@@ -165,9 +168,6 @@ export default function ModerationPage() {
 								</a>
 							</div>
 						)}
-						<a href="/moderation/comms" className="mod-header-btn">
-							COMMS
-						</a>
 						<a href="/roleplay" className="mod-header-btn">
 							← Roleplay
 						</a>
@@ -195,6 +195,12 @@ export default function ModerationPage() {
 							onClick={() => setTab('transcripts')}
 						>
 							Transcripts
+						</button>
+						<button
+							className={`mod-tab${tab === 'comms' ? ' active' : ''}`}
+							onClick={() => setTab('comms')}
+						>
+							Comms
 						</button>
 					</div>
 
@@ -226,6 +232,10 @@ export default function ModerationPage() {
 
 					{tab === 'transcripts' && (
 						<TranscriptsTab authorized={authorized} onError={setError} />
+					)}
+
+					{tab === 'comms' && (
+						<CommsTab authorized={authorized} onError={setError} />
 					)}
 				</div>
 			</div>

@@ -6,9 +6,21 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.6.27',
+  version: '1.6.28',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.6.28',
+      date: '2026-04-07',
+      changes: [
+        'MODÉRATION — La page COMMS de modération devient un onglet `Comms` à part entière dans `/moderation` (au même niveau que Utilisateurs / Dossiers / Transcripts) au lieu d\'être une page séparée. La route `/moderation/comms` est désormais une simple redirection vers `/moderation`.',
+        'MODÉRATION — Nouveau composant `CommsTab` extrait du fichier monolithique inline-style : sidebar canaux à gauche, zone messages à droite, modal pièces jointes & liens, le tout stylisé via classes CSS propres `.mod-comms-*` (sidebar avec barre verte gauche, channels en cartes, messages avec bordure gauche couleur, état supprimé barré rouge).',
+        'PERSONNAGE — Nouvelle « fenêtre dossier » sur la page personnage : remplacement du wrapper générique `terminal-container` par `.char-window` dédié — fond #060706 plein écran, grille 56px, vignette radiale colorée par faction, barre verticale tournée à -90° avec libellé `DOSSIER PERSONNEL // [matricule]`, et nouveau bandeau supérieur avec onglet de fichier en clip-path triangulaire (numéro `DP-####` ou `FT-####` en stencil Rajdhani + label monospace).',
+        'PERSONNAGE — Ancien indicateur Mode Admin déplacé dans le bandeau supérieur sous forme de pill `ADMIN` ambré pulsant ; classification badge intégré à droite ; bouton retour redessiné en style courier monospace avec slide-left au hover.',
+        'TIMELINE — Refonte complète de `CharacterTimeline` : grid 3 colonnes (timbre date / rail vertical avec nœud / carte). Le timbre est une carte « punched-card » avec jour géant en stencil + mois 3-lettres + année et bandes pointillées top/bottom. Le rail a une ligne dégradée verticale et un nœud carré 26px avec glyph spécifique au type (↑ promotion, ✚ blessure, ★ médaille, ◆ mission, ! disciplinaire, ⇄ mutation, ◎ formation, · autre).',
+        'TIMELINE — Couleurs tonales par type : `tone-accent` ambre pour promotion, `tone-danger` rouge pour blessure/disciplinaire, `tone-gold` or pour médaille, `tone-primary` vert pour le reste. Cartes avec barre gauche colorée, scanlines verticales, badge de type stencil, numéro `№ 001` à droite et bouton suppression admin discret.',
+      ],
+    },
     {
       version: '1.6.27',
       date: '2026-04-07',
