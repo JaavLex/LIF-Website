@@ -4,6 +4,17 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import {
+	Volume2,
+	VolumeX,
+	X,
+	ArrowLeft,
+	Users,
+	LogOut,
+	MessageSquare,
+	MessageCirclePlus,
+	UsersRound,
+} from 'lucide-react';
+import {
 	playNotification,
 	playRadioPing,
 	isCommsMuted,
@@ -478,12 +489,13 @@ export function CommsLayout({ character }: { character: ActiveCharacter }) {
 				<div className="comms-profile-bar-spacer" />
 				<button
 					type="button"
-					className="comms-icon-btn"
+					className="comms-icon-btn comms-icon-btn-with-icon"
 					onClick={toggleMuted}
 					title={muted ? 'Réactiver les sons' : 'Couper les sons'}
 					aria-pressed={muted}
 				>
-					{muted ? '🔇 Sons' : '🔊 Sons'}
+					{muted ? <VolumeX size={14} /> : <Volume2 size={14} />}
+					<span>Sons</span>
 				</button>
 			</div>
 
@@ -500,7 +512,7 @@ export function CommsLayout({ character }: { character: ActiveCharacter }) {
 						onClick={closeBanner}
 						aria-label="Fermer"
 					>
-						✕
+						<X size={14} />
 					</button>
 				</div>
 			)}
@@ -511,18 +523,20 @@ export function CommsLayout({ character }: { character: ActiveCharacter }) {
 						<h3>CANAUX</h3>
 						<div className="comms-sidebar-actions">
 							<button
-								className="comms-icon-btn"
+								className="comms-icon-btn comms-icon-btn-square"
 								onClick={() => setShowNewDm(true)}
-								title="Nouveau DM"
+								title="Nouveau message direct"
+								aria-label="Nouveau message direct"
 							>
-								+ DM
+								<MessageCirclePlus size={16} />
 							</button>
 							<button
-								className="comms-icon-btn"
+								className="comms-icon-btn comms-icon-btn-square"
 								onClick={() => setShowNewGroup(true)}
 								title="Nouveau groupe"
+								aria-label="Nouveau groupe"
 							>
-								+ GRP
+								<UsersRound size={16} />
 							</button>
 						</div>
 					</div>
@@ -545,8 +559,9 @@ export function CommsLayout({ character }: { character: ActiveCharacter }) {
 									<button
 										className="comms-icon-btn comms-mobile-back"
 										onClick={() => setMobileShowMain(false)}
+										aria-label="Retour"
 									>
-										←
+										<ArrowLeft size={14} />
 									</button>
 									<h2>{activeChannel.name}</h2>
 								</div>
@@ -557,16 +572,17 @@ export function CommsLayout({ character }: { character: ActiveCharacter }) {
 									<span>{activeChannel.type.toUpperCase()}</span>
 									<button
 										type="button"
-										className="comms-icon-btn"
+										className="comms-icon-btn comms-icon-btn-with-icon"
 										onClick={() => setShowMembers(true)}
 									>
-										👥 {activeChannel.memberCount} membres
+										<Users size={14} />
+										<span>{activeChannel.memberCount} membres</span>
 									</button>
 									{(activeChannel.type === 'group' ||
 										activeChannel.type === 'dm') && (
 										<button
 											type="button"
-											className="comms-icon-btn"
+											className="comms-icon-btn comms-icon-btn-with-icon"
 											onClick={() => handleLeaveOrClose(activeChannel)}
 											title={
 												activeChannel.type === 'group'
@@ -574,7 +590,17 @@ export function CommsLayout({ character }: { character: ActiveCharacter }) {
 													: 'Fermer la conversation'
 											}
 										>
-											{activeChannel.type === 'group' ? '🚪 Quitter' : '✕ Fermer'}
+											{activeChannel.type === 'group' ? (
+												<>
+													<LogOut size={14} />
+													<span>Quitter</span>
+												</>
+											) : (
+												<>
+													<X size={14} />
+													<span>Fermer</span>
+												</>
+											)}
 										</button>
 									)}
 								</div>
@@ -682,7 +708,10 @@ export function CommsLayout({ character }: { character: ActiveCharacter }) {
 								setToasts((arr) => arr.filter((x) => x.id !== t.id));
 							}}
 						>
-							<div className="comms-toast-channel">📨 {t.channelName}</div>
+							<div className="comms-toast-channel">
+								<MessageSquare size={14} />
+								<span>{t.channelName}</span>
+							</div>
 							{t.snippet && (
 								<div className="comms-toast-snippet">{t.snippet}</div>
 							)}

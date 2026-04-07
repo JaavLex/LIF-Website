@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { X, ArrowRight } from 'lucide-react';
 import { lexicalToText } from '@/lib/constants';
 
 interface Intel {
@@ -87,9 +88,10 @@ export function IntelPreviewModal({
 					<button
 						className="comms-modal-btn"
 						onClick={onClose}
-						style={{ padding: '0.25rem 0.6rem' }}
+						aria-label="Fermer"
+						style={{ padding: '0.25rem 0.6rem', display: 'flex', alignItems: 'center' }}
 					>
-						✕
+						<X size={14} />
 					</button>
 				</div>
 
@@ -221,9 +223,15 @@ export function IntelPreviewModal({
 							<Link
 								href={`/roleplay/renseignement/${intelId}`}
 								className="comms-modal-btn primary"
-								style={{ textDecoration: 'none' }}
+								style={{
+									textDecoration: 'none',
+									display: 'inline-flex',
+									alignItems: 'center',
+									gap: '0.4rem',
+								}}
 							>
-								VOIR LE RENSEIGNEMENT →
+								<span>VOIR LE RENSEIGNEMENT</span>
+								<ArrowRight size={14} />
 							</Link>
 						</div>
 					</>

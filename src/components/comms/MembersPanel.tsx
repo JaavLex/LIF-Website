@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { X, UserMinus } from 'lucide-react';
 
 interface Member {
 	id: number;
@@ -109,9 +110,10 @@ export function MembersPanel({
 					<button
 						className="comms-modal-btn"
 						onClick={onClose}
-						style={{ padding: '0.25rem 0.6rem' }}
+						aria-label="Fermer"
+						style={{ padding: '0.25rem 0.6rem', display: 'flex', alignItems: 'center' }}
 					>
-						✕
+						<X size={14} />
 					</button>
 				</div>
 				{loading ? (
@@ -226,10 +228,23 @@ export function MembersPanel({
 										className="comms-modal-btn"
 										onClick={() => handleKick(m.id, m.fullName)}
 										disabled={busyId === m.id}
-										style={{ padding: '0.25rem 0.6rem', fontSize: '0.75rem' }}
+										style={{
+											padding: '0.25rem 0.6rem',
+											fontSize: '0.75rem',
+											display: 'flex',
+											alignItems: 'center',
+											gap: '0.3rem',
+										}}
 										title="Retirer du groupe"
 									>
-										{busyId === m.id ? '…' : '✕ Retirer'}
+										{busyId === m.id ? (
+											'…'
+										) : (
+											<>
+												<UserMinus size={12} />
+												<span>Retirer</span>
+											</>
+										)}
 									</button>
 								)}
 							</div>

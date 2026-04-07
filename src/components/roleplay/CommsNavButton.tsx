@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
+import { Radio } from 'lucide-react';
 
 interface ChannelLite {
 	id: number;
@@ -117,9 +118,13 @@ export function CommsNavButton() {
 				padding: '0.6rem 1.2rem',
 				fontSize: '0.85rem',
 				position: 'relative',
+				display: 'inline-flex',
+				alignItems: 'center',
+				gap: '0.5rem',
 			}}
 		>
-			📡 COMMS
+			<Radio size={16} />
+			<span>COMMS</span>
 			{total > 0 && (
 				<span
 					aria-label={`${total} mention${total > 1 ? 's' : ''} non lue${total > 1 ? 's' : ''}`}

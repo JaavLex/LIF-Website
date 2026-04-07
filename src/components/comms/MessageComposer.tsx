@@ -1,6 +1,14 @@
 'use client';
 
 import { useRef, useState } from 'react';
+import {
+	Info,
+	X,
+	Reply,
+	HelpCircle,
+	Paperclip,
+	Send,
+} from 'lucide-react';
 import { AttachmentPicker } from './AttachmentPickers';
 import type { CommsMessage } from './CommsLayout';
 
@@ -170,17 +178,23 @@ export function MessageComposer({
 	return (
 		<form className="comms-composer" onSubmit={handleSubmit}>
 			<div className="comms-composer-disclaimer">
-				ⓘ Aucun message n&apos;est anonyme — toutes les communications sont
-				enregistrées pour modération.
+				<Info size={12} style={{ flexShrink: 0 }} />
+				<span>
+					Aucun message n&apos;est anonyme — toutes les communications sont
+					enregistrées pour modération.
+				</span>
 			</div>
 			{replyingTo && (
 				<div className="comms-composer-reply">
 					<div className="comms-composer-reply-text">
 						<span className="comms-composer-reply-name">
-							↩ Réponse à{' '}
-							{replyingTo.isAnonymous
-								? '[ANONYME]'
-								: replyingTo.senderCharacter?.fullName || '?'}
+							<Reply size={12} />
+							<span>
+								Réponse à{' '}
+								{replyingTo.isAnonymous
+									? '[ANONYME]'
+									: replyingTo.senderCharacter?.fullName || '?'}
+							</span>
 						</span>
 						<span className="comms-composer-reply-snippet">
 							{(replyingTo.body || '').slice(0, 120)}
@@ -191,8 +205,9 @@ export function MessageComposer({
 						className="comms-message-action"
 						onClick={onCancelReply}
 						title="Annuler la réponse"
+						aria-label="Annuler la réponse"
 					>
-						✕
+						<X size={12} />
 					</button>
 				</div>
 			)}
@@ -214,7 +229,7 @@ export function MessageComposer({
 					aria-label="Aide formatage"
 					aria-expanded={showHints}
 				>
-					?
+					<HelpCircle size={14} />
 				</button>
 				{showHints && (
 					<div className="comms-composer-hints" role="dialog">
@@ -281,14 +296,17 @@ export function MessageComposer({
 							<button
 								type="button"
 								onClick={() => setAttachments(attachments.filter((_, i) => i !== idx))}
+								aria-label="Retirer la pièce jointe"
 								style={{
 									background: 'transparent',
 									border: 'none',
 									color: 'var(--danger)',
 									cursor: 'pointer',
+									display: 'flex',
+									alignItems: 'center',
 								}}
 							>
-								✕
+								<X size={12} />
 							</button>
 						</div>
 					))}
@@ -297,11 +315,12 @@ export function MessageComposer({
 			<div className="comms-composer-row">
 				<button
 					type="button"
-					className="comms-icon-btn"
+					className="comms-icon-btn comms-icon-btn-with-icon"
 					onClick={() => setShowPicker(true)}
 					disabled={disabled}
 				>
-					+ Pièce jointe
+					<Paperclip size={14} />
+					<span>Pièce jointe</span>
 				</button>
 				<label>
 					<input
@@ -314,10 +333,11 @@ export function MessageComposer({
 				</label>
 				<button
 					type="submit"
-					className="comms-send-btn"
+					className="comms-send-btn comms-icon-btn-with-icon"
 					disabled={disabled || (!body.trim() && attachments.length === 0)}
 				>
-					TRANSMETTRE
+					<Send size={14} />
+					<span>TRANSMETTRE</span>
 				</button>
 			</div>
 			{showPicker && (

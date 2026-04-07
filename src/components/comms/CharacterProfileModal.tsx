@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { X, ArrowRight } from 'lucide-react';
 
 interface CharProfile {
 	id: number;
@@ -97,9 +98,10 @@ export function CharacterProfileModal({
 					<button
 						className="comms-modal-btn"
 						onClick={onClose}
-						style={{ padding: '0.25rem 0.6rem' }}
+						aria-label="Fermer"
+						style={{ padding: '0.25rem 0.6rem', display: 'flex', alignItems: 'center' }}
 					>
-						✕
+						<X size={14} />
 					</button>
 				</div>
 
@@ -304,9 +306,15 @@ export function CharacterProfileModal({
 							<Link
 								href={`/roleplay/personnage/${characterId}`}
 								className="comms-modal-btn primary"
-								style={{ textDecoration: 'none' }}
+								style={{
+									textDecoration: 'none',
+									display: 'inline-flex',
+									alignItems: 'center',
+									gap: '0.4rem',
+								}}
 							>
-								VOIR LA FICHE COMPLÈTE →
+								<span>VOIR LA FICHE COMPLÈTE</span>
+								<ArrowRight size={14} />
 							</Link>
 						</div>
 					</>

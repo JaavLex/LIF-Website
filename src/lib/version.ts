@@ -6,9 +6,19 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.6.8',
+  version: '1.6.9',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.6.9',
+      date: '2026-04-07',
+      changes: [
+        'COMMS — tous les emojis remplacés par des icônes Lucide (Volume2/VolumeX, X, Users, LogOut, MessageSquare, Reply, Info, HelpCircle, Paperclip, Send, ArrowLeft/ArrowRight, etc.)',
+        'COMMS — boutons « + DM » et « + GRP » remplacés par des icônes (MessageCirclePlus, UsersRound)',
+        'COMMS — bouton 📡 COMMS sur /roleplay → icône Radio',
+        'COMMS — pièces jointes (FICHE/RENS) avec icônes FileText/Newspaper',
+      ],
+    },
     {
       version: '1.6.8',
       date: '2026-04-07',

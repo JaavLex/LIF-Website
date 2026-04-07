@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
+import { MessageSquare } from 'lucide-react';
 import { playNotification, playRadioPing } from '@/lib/comms-sounds';
 
 interface Toast {
@@ -114,7 +115,10 @@ export function GlobalCommsNotifier() {
 						setToasts((arr) => arr.filter((x) => x.id !== t.id));
 					}}
 				>
-					<div className="comms-toast-channel">📨 {t.channelName}</div>
+					<div className="comms-toast-channel">
+						<MessageSquare size={14} />
+						<span>{t.channelName}</span>
+					</div>
 					{t.snippet && <div className="comms-toast-snippet">{t.snippet}</div>}
 				</button>
 			))}

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { X, Check } from 'lucide-react';
 
 interface CharResult {
 	id: number;
@@ -114,14 +115,17 @@ export function NewGroupModal({
 								<button
 									type="button"
 									onClick={() => toggle(s)}
+									aria-label={`Retirer ${s.fullName}`}
 									style={{
 										background: 'transparent',
 										border: 'none',
 										color: 'var(--danger)',
 										cursor: 'pointer',
+										display: 'flex',
+										alignItems: 'center',
 									}}
 								>
-									✕
+									<X size={11} />
 								</button>
 							</span>
 						))}
@@ -147,16 +151,21 @@ export function NewGroupModal({
 									borderBottom: '1px solid rgba(255,255,255,0.05)',
 									fontSize: '0.85rem',
 									background: isSelected ? 'rgba(0,255,170,0.1)' : 'transparent',
+									display: 'flex',
+									alignItems: 'center',
+									gap: '0.4rem',
 								}}
 							>
-								{isSelected ? '✓ ' : ''}
-								{c.rankName ? `${c.rankName} ` : ''}
-								{c.fullName}
-								{c.faction && (
-									<span style={{ color: 'var(--muted)', marginLeft: '0.5rem', fontSize: '0.7rem' }}>
-										· {c.faction}
-									</span>
-								)}
+								{isSelected && <Check size={12} style={{ color: 'var(--primary)' }} />}
+								<span>
+									{c.rankName ? `${c.rankName} ` : ''}
+									{c.fullName}
+									{c.faction && (
+										<span style={{ color: 'var(--muted)', marginLeft: '0.5rem', fontSize: '0.7rem' }}>
+											· {c.faction}
+										</span>
+									)}
+								</span>
 							</div>
 						);
 					})}

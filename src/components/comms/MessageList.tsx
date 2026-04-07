@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { Reply, ArrowRight, FileText, Newspaper } from 'lucide-react';
 import { SafeMarkdown } from '@/lib/safe-markdown';
 import type { CommsMessage } from './CommsLayout';
 import { AnonymousAvatar } from './AnonymousAvatar';
@@ -85,7 +86,8 @@ export function MessageList({
 									title="Aller au message d'origine"
 								>
 									<span className="comms-message-reply-preview-name">
-										↩ {m.replyTo.senderName}
+										<Reply size={11} />
+										<span>{m.replyTo.senderName}</span>
 									</span>
 									<span>{m.replyTo.snippet}</span>
 								</div>
@@ -131,11 +133,12 @@ export function MessageList({
 								<div className="comms-message-actions">
 									{onReply && !isEditing && (
 										<button
-											className="comms-message-action"
+											className="comms-message-action comms-icon-btn-with-icon"
 											onClick={() => onReply(m)}
 											title="Répondre"
 										>
-											↩ Répondre
+											<Reply size={11} />
+											<span>Répondre</span>
 										</button>
 									)}
 									{m.isOwn && !isEditing && (
@@ -233,6 +236,7 @@ function AttachmentCard({
 				className="comms-attachment comms-attachment-button"
 				onClick={() => onOpenCharacter(att.refId)}
 			>
+				<FileText size={14} style={{ color: 'var(--primary)', flexShrink: 0 }} />
 				<span style={{ color: 'var(--primary)' }}>FICHE</span>
 				<span style={{ color: 'var(--text)' }}>
 					{att.meta?.fullName || `Personnage #${att.refId}`}
@@ -240,8 +244,17 @@ function AttachmentCard({
 				{att.meta?.rankName && (
 					<span style={{ color: 'var(--muted)' }}>· {att.meta.rankName}</span>
 				)}
-				<span style={{ color: 'var(--muted)', marginLeft: 'auto', fontSize: '0.7rem' }}>
-					Ouvrir →
+				<span
+					style={{
+						color: 'var(--muted)',
+						marginLeft: 'auto',
+						fontSize: '0.7rem',
+						display: 'flex',
+						alignItems: 'center',
+						gap: '0.2rem',
+					}}
+				>
+					Ouvrir <ArrowRight size={11} />
 				</span>
 			</button>
 		);
@@ -253,12 +266,22 @@ function AttachmentCard({
 				className="comms-attachment comms-attachment-button"
 				onClick={() => onOpenIntel(att.refId)}
 			>
+				<Newspaper size={14} style={{ color: 'var(--primary)', flexShrink: 0 }} />
 				<span style={{ color: 'var(--primary)' }}>RENS</span>
 				<span style={{ color: 'var(--text)' }}>
 					{att.meta?.title || `Renseignement #${att.refId}`}
 				</span>
-				<span style={{ color: 'var(--muted)', marginLeft: 'auto', fontSize: '0.7rem' }}>
-					Ouvrir →
+				<span
+					style={{
+						color: 'var(--muted)',
+						marginLeft: 'auto',
+						fontSize: '0.7rem',
+						display: 'flex',
+						alignItems: 'center',
+						gap: '0.2rem',
+					}}
+				>
+					Ouvrir <ArrowRight size={11} />
 				</span>
 			</button>
 		);

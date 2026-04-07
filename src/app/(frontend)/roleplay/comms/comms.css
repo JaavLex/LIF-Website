@@ -667,6 +667,9 @@
 	color: var(--primary);
 	font-weight: bold;
 	margin-right: 0.4rem;
+	display: inline-flex;
+	align-items: center;
+	gap: 0.25rem;
 }
 
 .comms-attachments {
@@ -748,6 +751,9 @@
 	font-weight: bold;
 	color: var(--primary);
 	letter-spacing: 0.5px;
+	display: flex;
+	align-items: center;
+	gap: 0.4rem;
 }
 
 .comms-toast-snippet {
@@ -853,6 +859,9 @@
 .comms-composer-reply-name {
 	color: var(--primary);
 	font-weight: bold;
+	display: inline-flex;
+	align-items: center;
+	gap: 0.3rem;
 }
 
 .comms-composer-reply-snippet {
@@ -866,6 +875,24 @@
 	font-size: 0.7rem;
 	color: var(--muted);
 	font-style: italic;
+	display: flex;
+	align-items: center;
+	gap: 0.35rem;
+}
+
+/* Generic helper to align an inline icon with its text label inside any
+   .comms-icon-btn or .comms-modal-btn / .comms-message-action. */
+.comms-icon-btn-with-icon {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.35rem;
+}
+
+.comms-icon-btn-square {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0.25rem 0.4rem;
 }
 
 .comms-composer textarea {
