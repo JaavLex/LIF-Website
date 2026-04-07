@@ -6,9 +6,24 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.6.24',
+  version: '1.6.25',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.6.25',
+      date: '2026-04-07',
+      changes: [
+        'TUTORIEL — Refonte visuelle complète de la carte de briefing : layout asymétrique avec numéro d\'étape géant en stencil Rajdhani (X/Y), titre tri-ligne avec barre verte lumineuse, eyebrow «BRIEFING // OPÉRATEUR» et bordure gauche 4px verte tactique.',
+        'TUTORIEL — Background card en gradient noir layered, scanline animée qui balaye le haut, grain subtil, bordure top 2px verte + glow box-shadow, animation d\'entrée slide+scale (cubic-bezier).',
+        'TUTORIEL — Crochets HUD sur les coins du header (bracket markers verts).',
+        'TUTORIEL — Spotlight redessinné : 8 segments bracket aux 4 coins de la cible (28px chacun) avec drop-shadow vert et pulse animé, contour interne dashed, transition cubic-bezier sur déplacement de step à step.',
+        'TUTORIEL — Backdrop avec scanlines + crochets crosshair aux 4 coins du viewport pour ambiance opérationnelle.',
+        'TUTORIEL — Progression remplacée : barre segmentée pleine largeur (segments fins horizontaux qui s\'allument verts au passage) au lieu des dots ronds.',
+        'TUTORIEL — Boutons redessinnés : SKIP en texte underline minimal, PRÉCÉDENT en ghost border, SUIVANT en plein vert avec flèche → qui glisse au hover.',
+        'TUTORIEL — Stamp «// CLASSIFIED // EYES ONLY» en monospace dans le coin inférieur droit de la carte.',
+        'TUTORIEL — First-letter du body en stencil vert pour rappeler l\'aesthetic editorial.',
+      ],
+    },
     {
       version: '1.6.24',
       date: '2026-04-07',
