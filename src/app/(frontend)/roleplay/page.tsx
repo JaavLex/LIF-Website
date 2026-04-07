@@ -2,6 +2,7 @@ import { getPayloadClient } from '@/lib/payload';
 import { serialize } from '@/lib/constants';
 import Link from 'next/link';
 import Image from 'next/image';
+import { BookOpen, Scale } from 'lucide-react';
 import { cookies } from 'next/headers';
 import { PersonnelFilters } from '@/components/roleplay/PersonnelFilters';
 import { SessionBar } from '@/components/roleplay/SessionBar';
@@ -214,37 +215,40 @@ export default async function RoleplayPage({
 				</div>
 			</div>
 
-			{/* Navigation */}
-			<div
-				data-tutorial="navigation"
-				style={{
-					display: 'flex',
-					gap: '1rem',
-					marginBottom: '1.5rem',
-					flexWrap: 'wrap',
-					justifyContent: 'center',
-				}}
-			>
+			{/* Navigation — tactical command-deck access cluster */}
+			<nav className="rp-nav-cluster" data-tutorial="navigation" aria-label="Navigation principale">
 				{(showLore || showTimeline) && (
-					<Link
-						href="/roleplay/lore"
-						className="session-btn"
-						style={{ padding: '0.6rem 1.2rem', fontSize: '0.85rem' }}
-					>
-						Lore & Chronologie
+					<Link href="/roleplay/lore" className="rp-nav-btn rp-nav-btn--lore">
+						<span className="rp-nav-btn__bar" aria-hidden="true" />
+						<span className="rp-nav-btn__icon" aria-hidden="true">
+							<BookOpen size={18} strokeWidth={2.2} />
+						</span>
+						<span className="rp-nav-btn__text">
+							<span className="rp-nav-btn__code">CMD-01 // ARCHIVES</span>
+							<span className="rp-nav-btn__label">Lore & Chronologie</span>
+						</span>
+						<span className="rp-nav-btn__arrow" aria-hidden="true">
+							→
+						</span>
 					</Link>
 				)}
 				<CommsNavButton />
 				{isAdmin && (
-					<Link
-						href="/moderation"
-						className="session-btn"
-						style={{ padding: '0.6rem 1.2rem', fontSize: '0.85rem' }}
-					>
-						⚖️ Modération
+					<Link href="/moderation" className="rp-nav-btn rp-nav-btn--mod">
+						<span className="rp-nav-btn__bar" aria-hidden="true" />
+						<span className="rp-nav-btn__icon" aria-hidden="true">
+							<Scale size={18} strokeWidth={2.2} />
+						</span>
+						<span className="rp-nav-btn__text">
+							<span className="rp-nav-btn__code">CMD-03 // CONTRÔLE</span>
+							<span className="rp-nav-btn__label">Modération</span>
+						</span>
+						<span className="rp-nav-btn__arrow" aria-hidden="true">
+							→
+						</span>
 					</Link>
 				)}
-			</div>
+			</nav>
 
 			<div data-tutorial="session-bar">
 				<SessionBar canCreateCharacter={canCreateCharacter} />

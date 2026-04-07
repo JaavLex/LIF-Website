@@ -1585,11 +1585,13 @@
 	}
 	.comms-profile-bar-spacer { display: none; }
 
-	/* Sons mute button: icon-only on mobile, still tappable */
-	.comms-profile-mute-btn span {
+	/* Sons mute + help buttons: icon-only on mobile, still tappable */
+	.comms-profile-mute-btn span,
+	.comms-profile-help-btn span {
 		display: none;
 	}
-	.comms-profile-mute-btn {
+	.comms-profile-mute-btn,
+	.comms-profile-help-btn {
 		padding: 0.45rem;
 		min-width: 38px;
 		min-height: 38px;

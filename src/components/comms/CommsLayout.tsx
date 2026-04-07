@@ -31,6 +31,8 @@ import { NewGroupModal } from './NewGroupModal';
 import { MembersPanel } from './MembersPanel';
 import { CharacterProfileModal } from './CharacterProfileModal';
 import { IntelPreviewModal } from './IntelPreviewModal';
+import { CommsTutorial } from './CommsTutorial';
+import { HelpCircle } from 'lucide-react';
 
 export interface CommsChannelDisplayMember {
 	id: number;
@@ -439,7 +441,7 @@ export function CommsLayout({ character }: { character: ActiveCharacter }) {
 				</Link>
 			</div>
 
-			<div className="comms-profile-bar">
+			<div className="comms-profile-bar" data-tutorial-comms="profile-bar">
 				<div className="comms-profile-bar-avatar">
 					{character.avatarUrl ? (
 						<img src={character.avatarUrl} alt={character.fullName} />
@@ -491,7 +493,18 @@ export function CommsLayout({ character }: { character: ActiveCharacter }) {
 				<div className="comms-profile-bar-spacer" />
 				<button
 					type="button"
+					className="comms-icon-btn comms-icon-btn-with-icon comms-profile-help-btn"
+					onClick={() => window.dispatchEvent(new Event('open-comms-tutorial'))}
+					title="Relancer le tutoriel COMMS"
+					aria-label="Relancer le tutoriel COMMS"
+				>
+					<HelpCircle size={14} />
+					<span>Aide</span>
+				</button>
+				<button
+					type="button"
 					className="comms-icon-btn comms-icon-btn-with-icon comms-profile-mute-btn"
+					data-tutorial-comms="mute"
 					onClick={toggleMuted}
 					title={muted ? 'Réactiver les sons' : 'Couper les sons'}
 					aria-pressed={muted}
@@ -520,12 +533,13 @@ export function CommsLayout({ character }: { character: ActiveCharacter }) {
 			)}
 
 			<div className={`comms-layout comms-mobile${mobileShowMain ? ' active' : ''}`}>
-				<aside className="comms-sidebar">
+				<aside className="comms-sidebar" data-tutorial-comms="sidebar">
 					<div className="comms-sidebar-header">
 						<h3>CANAUX</h3>
 						<div className="comms-sidebar-actions">
 							<button
 								className="comms-icon-btn comms-icon-btn-square"
+								data-tutorial-comms="new-dm"
 								onClick={() => setShowNewDm(true)}
 								title="Nouveau message direct"
 								aria-label="Nouveau message direct"
@@ -534,6 +548,7 @@ export function CommsLayout({ character }: { character: ActiveCharacter }) {
 							</button>
 							<button
 								className="comms-icon-btn comms-icon-btn-square"
+								data-tutorial-comms="new-group"
 								onClick={() => setShowNewGroup(true)}
 								title="Nouveau groupe"
 								aria-label="Nouveau groupe"
@@ -553,7 +568,7 @@ export function CommsLayout({ character }: { character: ActiveCharacter }) {
 					/>
 				</aside>
 
-				<main className="comms-main">
+				<main className="comms-main" data-tutorial-comms="messages">
 					{activeChannel ? (
 						<>
 							<div className="comms-main-header">
@@ -575,6 +590,7 @@ export function CommsLayout({ character }: { character: ActiveCharacter }) {
 									<button
 										type="button"
 										className="comms-icon-btn comms-icon-btn-with-icon comms-header-members-btn"
+										data-tutorial-comms="members-btn"
 										onClick={() => setShowMembers(true)}
 									>
 										<Users size={14} />
@@ -625,16 +641,18 @@ export function CommsLayout({ character }: { character: ActiveCharacter }) {
 											: `${typingUsers.length} personnes sont en train d'écrire…`}
 								</div>
 							)}
-							<MessageComposer
-								key={activeChannel.id}
-								onSend={handleSend}
-								disabled={disclaimerAccepted === false}
-								replyingTo={replyingTo}
-								onCancelReply={() => setReplyingTo(null)}
-								members={channelMembers}
-								onTyping={pingTyping}
-								viewerId={character.id}
-							/>
+							<div data-tutorial-comms="composer">
+								<MessageComposer
+									key={activeChannel.id}
+									onSend={handleSend}
+									disabled={disclaimerAccepted === false}
+									replyingTo={replyingTo}
+									onCancelReply={() => setReplyingTo(null)}
+									members={channelMembers}
+									onTyping={pingTyping}
+									viewerId={character.id}
+								/>
+							</div>
 						</>
 					) : (
 						<div className="comms-empty">Sélectionnez un canal</div>
@@ -643,7 +661,11 @@ export function CommsLayout({ character }: { character: ActiveCharacter }) {
 			</div>
 
 			{/* Mobile bottom tab bar (only renders on mobile via CSS). */}
-			<nav className="comms-mobile-tabs" aria-label="Navigation comms">
+			<nav
+				className="comms-mobile-tabs"
+				data-tutorial-comms="mobile-tabs"
+				aria-label="Navigation comms"
+			>
 				<button
 					type="button"
 					className={`comms-mobile-tab${!mobileShowMain ? ' active' : ''}`}
@@ -736,6 +758,8 @@ export function CommsLayout({ character }: { character: ActiveCharacter }) {
 					onClose={() => setPreviewIntelId(null)}
 				/>
 			)}
+
+			<CommsTutorial />
 
 			{toasts.length > 0 && (
 				<div className="comms-toast-stack">

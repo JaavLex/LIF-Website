@@ -113,44 +113,25 @@ export function CommsNavButton() {
 	return (
 		<Link
 			href="/roleplay/comms"
-			className="session-btn"
+			className="rp-nav-btn rp-nav-btn--comms"
 			data-tutorial="comms-button"
-			style={{
-				padding: '0.6rem 1.2rem',
-				fontSize: '0.85rem',
-				position: 'relative',
-				display: 'inline-flex',
-				alignItems: 'center',
-				gap: '0.5rem',
-			}}
 		>
-			<Radio size={16} />
-			<span>COMMS</span>
+			<span className="rp-nav-btn__bar" aria-hidden="true" />
+			<span className="rp-nav-btn__icon" aria-hidden="true">
+				<Radio size={18} strokeWidth={2.2} />
+			</span>
+			<span className="rp-nav-btn__text">
+				<span className="rp-nav-btn__code">CMD-02 // CANAL</span>
+				<span className="rp-nav-btn__label">COMMS</span>
+			</span>
+			<span className="rp-nav-btn__arrow" aria-hidden="true">
+				→
+			</span>
 			{total > 0 && (
 				<span
+					className="rp-nav-btn__badge"
 					aria-label={`${total} mention${total > 1 ? 's' : ''} non lue${total > 1 ? 's' : ''}`}
 					title={`${total} mention${total > 1 ? 's' : ''} non lue${total > 1 ? 's' : ''}`}
-					style={{
-						position: 'absolute',
-						top: -6,
-						right: -6,
-						minWidth: 22,
-						height: 22,
-						padding: '0 6px',
-						borderRadius: 11,
-						background: 'linear-gradient(180deg, #d93030 0%, #8a0000 100%)',
-						color: '#fff',
-						fontSize: '0.7rem',
-						fontWeight: 700,
-						letterSpacing: '0.5px',
-						display: 'flex',
-						alignItems: 'center',
-						justifyContent: 'center',
-						border: '1px solid #ffb4b4',
-						boxShadow:
-							'0 0 6px rgba(255, 60, 60, 0.7), inset 0 1px 0 rgba(255,255,255,0.25)',
-						pointerEvents: 'none',
-					}}
 				>
 					@{total}
 				</span>

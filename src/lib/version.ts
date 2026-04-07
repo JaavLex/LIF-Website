@@ -6,9 +6,21 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.6.26',
+  version: '1.6.27',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.6.27',
+      date: '2026-04-07',
+      changes: [
+        'NAV — Refonte des boutons LORE / COMMS / MODÉRATION en cluster « tactical command-deck » : chaque carte a sa couleur signature (LORE ambre #c9a040, COMMS vert primaire, MODÉRATION rouge danger), une barre verticale lumineuse à gauche qui s\'élargit au hover, des crochets HUD aux coins, un glyph d\'icône Lucide en cellule contour, un code monospace `CMD-XX // [SECTION]` au-dessus du label en stencil Rajdhani, et une flèche `→` qui glisse au hover.',
+        'NAV — Effet d\'élévation au hover (translateY -2px + box-shadow coloré + radial wash interne) et badge `@N` rouge pulsant repositionné en coin pour COMMS.',
+        'NAV — Layout responsive : en mobile, les cartes s\'étendent en pleine largeur et empilent verticalement avec icônes et labels réduits.',
+        'COMMS TUTORIAL — Nouveau briefing interactif dédié à `/roleplay/comms` (11 étapes) qui présente : votre opérateur actif, la liste des canaux, les boutons Nouveau DM / Nouveau groupe, le fil de messages, le composer avec mentions @, le panneau des membres, le mute audio et la nav mobile.',
+        'COMMS TUTORIAL — Auto-déclenché à la première visite (clé `lif-comms-tutorial-seen.v1`) et relançable via le nouveau bouton « Aide » (icône HelpCircle) ajouté dans la profile bar.',
+        'TUTORIAL ARCHITECTURE — Extraction du logique de positionnement dans un hook partagé `useTutorialPositioning` réutilisé par RoleplayTutorial et CommsTutorial. Extraction des styles tutorial dans un fichier CSS partagé `tutorial-overlay.css` importé par les deux composants — élimine ~720 lignes de duplication.',
+      ],
+    },
     {
       version: '1.6.26',
       date: '2026-04-07',
