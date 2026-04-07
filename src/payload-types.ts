@@ -597,6 +597,7 @@ export interface Faction {
   name: string;
   slug: string;
   type?: ('allied' | 'neutral' | 'hostile') | null;
+  isMainFaction?: boolean | null;
   description?: {
     root: {
       type: string;

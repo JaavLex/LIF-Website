@@ -45,6 +45,17 @@ export const Factions: CollectionConfig = {
 			},
 		},
 		{
+			name: 'isMainFaction',
+			label: 'Faction principale',
+			type: 'checkbox',
+			defaultValue: false,
+			admin: {
+				position: 'sidebar',
+				description:
+					'Marque cette faction comme la faction principale (LIF). Affichée en vedette sur la page roleplay.',
+			},
+		},
+		{
 			name: 'description',
 			label: 'Description',
 			type: 'richText',

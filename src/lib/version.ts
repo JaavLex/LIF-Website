@@ -6,9 +6,20 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.6.14',
+  version: '1.6.15',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.6.15',
+      date: '2026-04-07',
+      changes: [
+        'FACTIONS — Refonte complète de la section Organisations & Unités',
+        'FACTIONS — Nouveau champ « Faction principale » (défaut = LIF) avec carte vedette « hero » pleine largeur (coins HUD, badge pulsant, mot-mark LIF en watermark)',
+        'FACTIONS — Tri par alignement : ALLIÉES (vert) → NEUTRES (ambre) → HOSTILES (rouge) avec en-têtes distinctifs (marqueur losange, ligne dégradée, compteur)',
+        'FACTIONS — Cartes redesignées : logo encadré, nom Rajdhani en couleur de faction, méta courte, flèche qui glisse au hover, bordure gauche épaisse',
+        'UNITÉS — Sous-regroupées par faction parente (unités de la faction principale en premier)',
+      ],
+    },
     {
       version: '1.6.14',
       date: '2026-04-07',

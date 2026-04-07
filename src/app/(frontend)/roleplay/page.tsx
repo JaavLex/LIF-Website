@@ -312,117 +312,265 @@ export default async function RoleplayPage({
 			</div>
 
 			{/* Factions & Units section for all users */}
-			{(factions.docs.length > 0 || units.docs.length > 0) && (
-				<>
-					<div className="terminal-header" style={{ marginTop: '2rem' }}>
-						<div className="terminal-header-left">
-							<div className="terminal-header-dots">
-								<span className="terminal-dot green" />
-								<span className="terminal-dot yellow" />
-								<span className="terminal-dot red" />
+			{(factions.docs.length > 0 || units.docs.length > 0) && (() => {
+				// Split factions: main → allied → neutral → hostile, alpha-sorted within each
+				const sortedFactions = [...factions.docs].sort((a, b) => a.name.localeCompare(b.name));
+				const mainFaction = sortedFactions.find((f) => (f as any).isMainFaction) || null;
+				const alliedFactions = sortedFactions.filter(
+					(f) => f.type === 'allied' && !(f as any).isMainFaction,
+				);
+				const neutralFactions = sortedFactions.filter(
+					(f) => f.type === 'neutral' && !(f as any).isMainFaction,
+				);
+				const hostileFactions = sortedFactions.filter(
+					(f) => f.type === 'hostile' && !(f as any).isMainFaction,
+				);
+
+				// Group units by parent faction name
+				const unitsByFaction = new Map<string, typeof units.docs>();
+				for (const u of units.docs) {
+					const parentName =
+						u.parentFaction && typeof u.parentFaction === 'object'
+							? u.parentFaction.name
+							: 'Indépendantes';
+					if (!unitsByFaction.has(parentName)) unitsByFaction.set(parentName, []);
+					unitsByFaction.get(parentName)!.push(u);
+				}
+				const sortedUnitGroups = Array.from(unitsByFaction.entries()).sort(
+					([a], [b]) => {
+						// Main faction's units first, then allied, then others
+						if (mainFaction && a === mainFaction.name) return -1;
+						if (mainFaction && b === mainFaction.name) return 1;
+						return a.localeCompare(b);
+					},
+				);
+
+				const renderFactionCard = (faction: Faction) => {
+					const logo = typeof faction.logo === 'object' ? faction.logo : null;
+					const color = faction.color || 'var(--border)';
+					return (
+						<Link
+							key={faction.id}
+							href={`/roleplay/faction/${faction.slug}`}
+							className={`org-card org-card--faction type-${faction.type || 'neutral'}`}
+							style={{ ['--org-color' as any]: color }}
+						>
+							<div className="org-card-logo">
+								{logo?.url ? (
+									<Image
+										src={logo.url}
+										alt={faction.name}
+										width={44}
+										height={44}
+										style={{ objectFit: 'contain' }}
+										unoptimized
+									/>
+								) : (
+									<span className="org-card-logo-placeholder">
+										{faction.name.charAt(0)}
+									</span>
+								)}
 							</div>
-							<span className="terminal-title">ORGANISATIONS & UNITÉS</span>
-						</div>
-						<div className="terminal-header-right">
-							{factions.docs.length} faction{factions.docs.length !== 1 ? 's' : ''} |{' '}
-							{units.docs.length} unité{units.docs.length !== 1 ? 's' : ''}
-						</div>
-					</div>
-					<div className="terminal-panel" style={{ marginBottom: '1.5rem' }}>
-						{factions.docs.length > 0 && (
-							<div style={{ marginBottom: '1.5rem' }}>
-								<h2 style={{ fontSize: '1.1rem', marginBottom: '0.75rem' }}>
-									FACTIONS
-								</h2>
-								<div className="orgs-grid">
-									{factions.docs.map((faction) => {
-										const logo = typeof faction.logo === 'object' ? faction.logo : null;
-										return (
-										<Link
-											key={faction.id}
-											href={`/roleplay/faction/${faction.slug}`}
-											className="org-card"
-											style={{ borderColor: faction.color || 'var(--border)' }}
-										>
-											{logo?.url && (
-												<Image
-													src={logo.url}
-													alt={faction.name}
-													width={36}
-													height={36}
-													style={{ objectFit: 'contain' }}
-													unoptimized
-												/>
-											)}
-											<div>
-												<div
-													className="org-card-name"
-													style={{ color: faction.color || 'var(--text)' }}
-												>
-													{faction.name}
-												</div>
-												<div className="org-card-type">
-													{faction.type === 'allied'
-														? 'Alliée'
-														: faction.type === 'hostile'
-															? 'Hostile'
-															: 'Neutre'}
-												</div>
-											</div>
-										</Link>
-										);
-									})}
+							<div className="org-card-body">
+								<div className="org-card-name">{faction.name}</div>
+								<div className="org-card-meta">
+									{faction.type === 'allied'
+										? 'ALLIÉE'
+										: faction.type === 'hostile'
+											? 'HOSTILE'
+											: 'NEUTRE'}
 								</div>
 							</div>
-						)}
-						{units.docs.length > 0 && (
-							<div>
-								<h2 style={{ fontSize: '1.1rem', marginBottom: '0.75rem' }}>
-									UNITÉS
-								</h2>
-								<div className="orgs-grid">
-									{units.docs.map((unit) => {
-										const insignia = typeof unit.insignia === 'object' ? unit.insignia : null;
-										return (
-										<Link
-											key={unit.id}
-											href={`/roleplay/unite/${unit.slug}`}
-											className="org-card"
-											style={{ borderColor: unit.color || 'var(--border)' }}
-										>
-											{insignia?.url && (
-												<Image
-													src={insignia.url}
-													alt={unit.name}
-													width={36}
-													height={36}
-													style={{ objectFit: 'contain' }}
-													unoptimized
-												/>
-											)}
-											<div>
-												<div
-													className="org-card-name"
-													style={{ color: unit.color || 'var(--text)' }}
-												>
-													{unit.name}
-												</div>
-												{unit.parentFaction &&
-													typeof unit.parentFaction === 'object' && (
-														<div className="org-card-type">
-															{unit.parentFaction.name}
-														</div>
-													)}
-											</div>
-										</Link>
-										);
-									})}
-								</div>
+							<span className="org-card-arrow" aria-hidden>
+								›
+							</span>
+						</Link>
+					);
+				};
+
+				const FactionGroup = ({
+					label,
+					type,
+					list,
+				}: {
+					label: string;
+					type: 'allied' | 'neutral' | 'hostile';
+					list: Faction[];
+				}) => {
+					if (list.length === 0) return null;
+					return (
+						<div className={`faction-group faction-group--${type}`}>
+							<div className="faction-group-header">
+								<span className="faction-group-marker" aria-hidden />
+								<span className="faction-group-label">{label}</span>
+								<span className="faction-group-line" />
+								<span className="faction-group-count">{list.length}</span>
 							</div>
-						)}
-					</div>
-				</>
-			)}
+							<div className="orgs-grid">{list.map(renderFactionCard)}</div>
+						</div>
+					);
+				};
+
+				return (
+					<>
+						<div className="terminal-header" style={{ marginTop: '2rem' }}>
+							<div className="terminal-header-left">
+								<div className="terminal-header-dots">
+									<span className="terminal-dot green" />
+									<span className="terminal-dot yellow" />
+									<span className="terminal-dot red" />
+								</div>
+								<span className="terminal-title">ORGANISATIONS & UNITÉS</span>
+							</div>
+							<div className="terminal-header-right">
+								{factions.docs.length} faction{factions.docs.length !== 1 ? 's' : ''} |{' '}
+								{units.docs.length} unité{units.docs.length !== 1 ? 's' : ''}
+							</div>
+						</div>
+						<div className="terminal-panel factions-panel">
+							{/* Featured main faction */}
+							{mainFaction && (() => {
+								const logo =
+									typeof mainFaction.logo === 'object' ? mainFaction.logo : null;
+								const color = mainFaction.color || 'var(--primary)';
+								return (
+									<Link
+										href={`/roleplay/faction/${mainFaction.slug}`}
+										className="main-faction-hero"
+										style={{ ['--org-color' as any]: color }}
+									>
+										<span className="main-faction-hero-badge">
+											<span className="main-faction-hero-badge-dot" />
+											FACTION PRINCIPALE
+										</span>
+										<div className="main-faction-hero-inner">
+											<div className="main-faction-hero-logo">
+												{logo?.url ? (
+													<Image
+														src={logo.url}
+														alt={mainFaction.name}
+														width={96}
+														height={96}
+														style={{ objectFit: 'contain' }}
+														unoptimized
+													/>
+												) : (
+													<span>{mainFaction.name.charAt(0)}</span>
+												)}
+											</div>
+											<div className="main-faction-hero-body">
+												<div className="main-faction-hero-name">
+													{mainFaction.name}
+												</div>
+												<div className="main-faction-hero-sub">
+													{mainFaction.type === 'allied'
+														? 'ALLIÉE · COMMANDEMENT LIF'
+														: mainFaction.type === 'hostile'
+															? 'HOSTILE'
+															: 'COMMANDEMENT LIF'}
+												</div>
+												<div className="main-faction-hero-cta">
+													Ouvrir le dossier <span aria-hidden>→</span>
+												</div>
+											</div>
+										</div>
+										<span className="main-faction-hero-corner tl" aria-hidden />
+										<span className="main-faction-hero-corner tr" aria-hidden />
+										<span className="main-faction-hero-corner bl" aria-hidden />
+										<span className="main-faction-hero-corner br" aria-hidden />
+									</Link>
+								);
+							})()}
+
+							{/* Factions sorted by alignment */}
+							{factions.docs.length > 0 && (
+								<div className="factions-groups">
+									<FactionGroup
+										label="ALLIÉES"
+										type="allied"
+										list={alliedFactions as unknown as Faction[]}
+									/>
+									<FactionGroup
+										label="NEUTRES"
+										type="neutral"
+										list={neutralFactions as unknown as Faction[]}
+									/>
+									<FactionGroup
+										label="HOSTILES"
+										type="hostile"
+										list={hostileFactions as unknown as Faction[]}
+									/>
+								</div>
+							)}
+
+							{/* Units grouped by parent faction */}
+							{units.docs.length > 0 && (
+								<div className="units-section">
+									<div className="faction-group-header units-main-header">
+										<span className="faction-group-marker" aria-hidden />
+										<span className="faction-group-label">UNITÉS</span>
+										<span className="faction-group-line" />
+										<span className="faction-group-count">
+											{units.docs.length}
+										</span>
+									</div>
+									{sortedUnitGroups.map(([parentName, unitList]) => (
+										<div key={parentName} className="unit-sub-group">
+											<div className="unit-sub-group-header">
+												<span className="unit-sub-group-tick" />
+												<span>{parentName}</span>
+												<span className="unit-sub-group-count">
+													{unitList.length}
+												</span>
+											</div>
+											<div className="orgs-grid">
+												{unitList.map((unit) => {
+													const insignia =
+														typeof unit.insignia === 'object' ? unit.insignia : null;
+													return (
+														<Link
+															key={unit.id}
+															href={`/roleplay/unite/${unit.slug}`}
+															className="org-card org-card--unit"
+															style={{
+																['--org-color' as any]: unit.color || 'var(--border)',
+															}}
+														>
+															<div className="org-card-logo">
+																{insignia?.url ? (
+																	<Image
+																		src={insignia.url}
+																		alt={unit.name}
+																		width={40}
+																		height={40}
+																		style={{ objectFit: 'contain' }}
+																		unoptimized
+																	/>
+																) : (
+																	<span className="org-card-logo-placeholder">
+																		{unit.name.charAt(0)}
+																	</span>
+																)}
+															</div>
+															<div className="org-card-body">
+																<div className="org-card-name">{unit.name}</div>
+																<div className="org-card-meta">UNITÉ</div>
+															</div>
+															<span className="org-card-arrow" aria-hidden>
+																›
+															</span>
+														</Link>
+													);
+												})}
+											</div>
+										</div>
+									))}
+								</div>
+							)}
+						</div>
+					</>
+				);
+			})()}
 
 			{/* Intelligence section */}
 			<div
