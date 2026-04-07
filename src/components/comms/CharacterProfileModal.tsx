@@ -13,6 +13,7 @@ interface CharProfile {
 	rank?: any;
 	unit?: any;
 	faction?: string | null;
+	factionLogoUrl?: string | null;
 	status?: string;
 	classification?: string | null;
 	dateOfBirth?: string | null;
@@ -64,7 +65,16 @@ export function CharacterProfileModal({
 		data?.fullName || `${data?.firstName || ''} ${data?.lastName || ''}`.trim();
 	const avatarUrl = typeof data?.avatar === 'object' ? data?.avatar?.url : null;
 	const rankName = typeof data?.rank === 'object' ? data?.rank?.name : null;
+	const rankIconUrl =
+		typeof data?.rank === 'object' && typeof data?.rank?.icon === 'object'
+			? data.rank.icon?.url || null
+			: null;
 	const unitName = typeof data?.unit === 'object' ? data?.unit?.name : null;
+	const unitInsigniaUrl =
+		typeof data?.unit === 'object' && typeof data?.unit?.insignia === 'object'
+			? data.unit.insignia?.url || null
+			: null;
+	const factionLogoUrl = data?.factionLogoUrl || null;
 
 	return (
 		<div className="comms-modal-backdrop" onClick={onClose}>
@@ -139,10 +149,29 @@ export function CharacterProfileModal({
 										color: 'var(--primary)',
 										fontSize: '1.1rem',
 										fontWeight: 'bold',
+										display: 'flex',
+										alignItems: 'center',
+										gap: '0.4rem',
+										flexWrap: 'wrap',
 									}}
 								>
-									{rankName ? `${rankName} ` : ''}
-									{fullName}
+									{rankIconUrl && (
+										<img
+											src={rankIconUrl}
+											alt={rankName || ''}
+											title={rankName || ''}
+											style={{
+												height: 22,
+												width: 22,
+												objectFit: 'contain',
+												padding: 1,
+												background: 'rgba(0,0,0,0.5)',
+												border: '1px solid var(--primary)',
+												borderRadius: 2,
+											}}
+										/>
+									)}
+									<span>{fullName}</span>
 								</div>
 								{data.callsign && (
 									<div style={{ color: 'var(--muted)', fontSize: '0.85rem' }}>
@@ -173,10 +202,63 @@ export function CharacterProfileModal({
 								fontSize: '0.8rem',
 							}}
 						>
+							<dt style={{ color: 'var(--muted)' }}>Grade</dt>
+							<dd
+								style={{
+									margin: 0,
+									color: 'var(--text)',
+									display: 'flex',
+									alignItems: 'center',
+									gap: '0.4rem',
+								}}
+							>
+								{rankIconUrl && (
+									<img
+										src={rankIconUrl}
+										alt=""
+										style={{ height: 16, width: 16, objectFit: 'contain' }}
+									/>
+								)}
+								{rankName || '—'}
+							</dd>
 							<dt style={{ color: 'var(--muted)' }}>Faction</dt>
-							<dd style={{ margin: 0, color: 'var(--text)' }}>{data.faction || '—'}</dd>
+							<dd
+								style={{
+									margin: 0,
+									color: 'var(--text)',
+									display: 'flex',
+									alignItems: 'center',
+									gap: '0.4rem',
+								}}
+							>
+								{factionLogoUrl && (
+									<img
+										src={factionLogoUrl}
+										alt=""
+										style={{ height: 16, width: 16, objectFit: 'contain' }}
+									/>
+								)}
+								{data.faction || '—'}
+							</dd>
 							<dt style={{ color: 'var(--muted)' }}>Unité</dt>
-							<dd style={{ margin: 0, color: 'var(--text)' }}>{unitName || '—'}</dd>
+							<dd
+								style={{
+									margin: 0,
+									color: 'var(--text)',
+									display: 'flex',
+									alignItems: 'center',
+									gap: '0.4rem',
+								}}
+							>
+								{unitInsigniaUrl && (
+									<img
+										src={unitInsigniaUrl}
+										alt=""
+										style={{ height: 16, width: 16, objectFit: 'contain' }}
+									/>
+								)}
+								{unitName || '—'}
+							</dd>
 							<dt style={{ color: 'var(--muted)' }}>Statut</dt>
 							<dd style={{ margin: 0, color: 'var(--text)' }}>{data.status || '—'}</dd>
 							{data.dateOfBirth && (

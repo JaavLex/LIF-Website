@@ -6,9 +6,18 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.6.2',
+  version: '1.6.3',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.6.3',
+      date: '2026-04-07',
+      changes: [
+        'COMMS — modal personnage : affiche grade (icône), faction (logo) et unité (insigne) avec leurs visuels',
+        'COMMS — endpoint personnage enrichi avec factionLogoUrl (résolu par nom)',
+        'COMMS — notifications globales : intervalle réduit à 12s + cache: no-store pour fiabilité',
+      ],
+    },
     {
       version: '1.6.2',
       date: '2026-04-07',

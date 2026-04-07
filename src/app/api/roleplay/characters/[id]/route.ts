@@ -257,12 +257,29 @@ export async function GET(
 
 	try {
 		const payload = await getPayloadClient();
-		const doc = await payload.findByID({
+		const doc = (await payload.findByID({
 			collection: 'characters',
 			id: characterId,
 			depth: 2,
-		});
-		return NextResponse.json(doc);
+		})) as any;
+
+		// Resolve the faction logo by name (faction is stored as text on the
+		// character; the Factions collection holds the upload).
+		let factionLogoUrl: string | null = null;
+		if (doc.faction) {
+			const factionResult = await payload.find({
+				collection: 'factions',
+				where: { name: { equals: doc.faction } },
+				limit: 1,
+				depth: 1,
+			});
+			const f = factionResult.docs[0] as any;
+			if (f && typeof f.logo === 'object') {
+				factionLogoUrl = f.logo?.url || null;
+			}
+		}
+
+		return NextResponse.json({ ...doc, factionLogoUrl });
 	} catch {
 		return NextResponse.json({ message: 'Non trouvé' }, { status: 404 });
 	}

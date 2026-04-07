@@ -42,7 +42,10 @@ export function GlobalCommsNotifier() {
 
 		const poll = async () => {
 			try {
-				const res = await fetch('/api/comms/channels');
+				const res = await fetch('/api/comms/channels', {
+					cache: 'no-store',
+					headers: { 'cache-control': 'no-cache' },
+				});
 				if (!res.ok) {
 					if (res.status === 401 || res.status === 403) {
 						enabledRef.current = false;
@@ -83,7 +86,7 @@ export function GlobalCommsNotifier() {
 		};
 
 		poll();
-		const interval = setInterval(poll, 30_000);
+		const interval = setInterval(poll, 12_000);
 		return () => {
 			cancelled = true;
 			clearInterval(interval);
