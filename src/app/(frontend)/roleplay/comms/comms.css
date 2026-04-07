@@ -411,6 +411,72 @@
 	border-color: rgba(255, 100, 100, 0.4);
 }
 
+.comms-composer-hint-btn {
+	position: absolute;
+	top: 6px;
+	right: 6px;
+	width: 22px;
+	height: 22px;
+	border-radius: 50%;
+	border: 1px solid var(--primary);
+	background: rgba(0, 0, 0, 0.6);
+	color: var(--primary);
+	font-family: inherit;
+	font-size: 0.75rem;
+	font-weight: 700;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0;
+	z-index: 3;
+}
+
+.comms-composer-hint-btn:hover {
+	background: var(--primary);
+	color: var(--background);
+}
+
+.comms-composer-hints {
+	position: absolute;
+	top: 32px;
+	right: 6px;
+	background: rgba(0, 0, 0, 0.92);
+	border: 1px solid var(--primary);
+	padding: 0.5rem 0.7rem;
+	font-size: 0.72rem;
+	color: var(--text);
+	z-index: 4;
+	box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6);
+	min-width: 220px;
+}
+
+.comms-composer-hints-row {
+	display: flex;
+	align-items: center;
+	gap: 0.3rem;
+	padding: 0.15rem 0;
+	flex-wrap: wrap;
+}
+
+.comms-composer-hints kbd {
+	background: rgba(0, 0, 0, 0.6);
+	border: 1px solid var(--primary);
+	color: var(--primary);
+	padding: 0 0.35rem;
+	font-family: inherit;
+	font-size: 0.7rem;
+	border-radius: 2px;
+}
+
+.comms-composer-hints code {
+	background: rgba(0, 0, 0, 0.5);
+	border: 1px solid rgba(255,255,255,0.1);
+	padding: 0 0.3rem;
+	color: var(--primary);
+	font-size: 0.7rem;
+}
+
 .comms-message-avatar {
 	width: 36px;
 	height: 36px;

@@ -17,6 +17,7 @@ export function MessageComposer({
 	onCancelReply,
 	members,
 	onTyping,
+	viewerId,
 }: {
 	onSend: (payload: {
 		body: string;
@@ -29,11 +30,13 @@ export function MessageComposer({
 	onCancelReply?: () => void;
 	members?: MentionMember[];
 	onTyping?: () => void;
+	viewerId?: number;
 }) {
 	const [body, setBody] = useState('');
 	const [isAnonymous, setIsAnonymous] = useState(false);
 	const [attachments, setAttachments] = useState<any[]>([]);
 	const [showPicker, setShowPicker] = useState(false);
+	const [showHints, setShowHints] = useState(false);
 	const textareaRef = useRef<HTMLTextAreaElement>(null);
 	const [mentionState, setMentionState] = useState<{
 		open: boolean;
@@ -42,7 +45,9 @@ export function MessageComposer({
 		highlight: number;
 	}>({ open: false, anchor: -1, query: '', highlight: 0 });
 
-	const allMembers = members || [];
+	// Exclude self from the mention picker — pinging yourself is pointless and
+	// would just create a self-notification loop.
+	const allMembers = (members || []).filter((m) => m.id !== viewerId);
 	const filteredMentions = mentionState.open
 		? allMembers
 				.filter((m) =>
@@ -197,10 +202,37 @@ export function MessageComposer({
 					value={body}
 					onChange={handleBodyChange}
 					onKeyDown={handleKeyDown}
-					placeholder="Transmettre... (Entrée = envoyer · Maj+Entrée = retour ligne · @ pour mentionner · **gras** *italique* `code` > quote)"
+					placeholder="Transmettre…"
 					disabled={disabled}
 					maxLength={4000}
 				/>
+				<button
+					type="button"
+					className="comms-composer-hint-btn"
+					onClick={() => setShowHints((v) => !v)}
+					title="Aide formatage"
+					aria-label="Aide formatage"
+					aria-expanded={showHints}
+				>
+					?
+				</button>
+				{showHints && (
+					<div className="comms-composer-hints" role="dialog">
+						<div className="comms-composer-hints-row">
+							<kbd>Entrée</kbd> envoyer
+						</div>
+						<div className="comms-composer-hints-row">
+							<kbd>Maj</kbd>+<kbd>Entrée</kbd> retour à la ligne
+						</div>
+						<div className="comms-composer-hints-row">
+							<kbd>@</kbd> mentionner un membre
+						</div>
+						<div className="comms-composer-hints-row">
+							<code>**gras**</code> · <code>*italique*</code> ·{' '}
+							<code>`code`</code> · <code>&gt; citation</code>
+						</div>
+					</div>
+				)}
 				{mentionState.open && filteredMentions.length > 0 && (
 					<div className="comms-mention-picker">
 						{filteredMentions.map((m, idx) => (

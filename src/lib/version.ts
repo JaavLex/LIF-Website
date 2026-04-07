@@ -6,9 +6,18 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.6.6',
+  version: '1.6.7',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.6.7',
+      date: '2026-04-07',
+      changes: [
+        'COMMS — impossible de se mentionner soi-même (filtré du sélecteur @)',
+        'COMMS — placeholder du composeur épuré, bouton « ? » qui ouvre une bulle d\'aide formatage',
+        'COMMS — sons retravaillés style radio militaire : double bip terminal pour les messages, séquence squelch + statique + chirp deux-tons pour les mentions (plus fort, plus marqué)',
+      ],
+    },
     {
       version: '1.6.6',
       date: '2026-04-07',

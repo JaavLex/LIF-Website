@@ -605,6 +605,7 @@ export function CommsLayout({ character }: { character: ActiveCharacter }) {
 								onCancelReply={() => setReplyingTo(null)}
 								members={channelMembers}
 								onTyping={pingTyping}
+								viewerId={character.id}
 							/>
 						</>
 					) : (
