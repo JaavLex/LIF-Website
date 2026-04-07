@@ -37,9 +37,11 @@ export function AnonymousAvatar({ size = 36 }: { size?: number }) {
 				/>
 				{/* Inner shadow face cavity */}
 				<ellipse cx="18" cy="20" rx="8" ry="9" fill="#000" />
-				{/* Single glowing eye */}
-				<circle cx="18" cy="19" r="1.6" fill="#ff2a2a" />
-				<circle cx="18" cy="19" r="3.2" fill="#ff2a2a" opacity="0.25" />
+				{/* Two glowing red eyes under the hood */}
+				<circle cx="14.5" cy="19" r="1.5" fill="#ff2a2a" />
+				<circle cx="14.5" cy="19" r="2.8" fill="#ff2a2a" opacity="0.25" />
+				<circle cx="21.5" cy="19" r="1.5" fill="#ff2a2a" />
+				<circle cx="21.5" cy="19" r="2.8" fill="#ff2a2a" opacity="0.25" />
 			</svg>
 		</div>
 	);

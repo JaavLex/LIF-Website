@@ -18,6 +18,7 @@ export function MessageList({
 	onOpenCharacter,
 	onOpenIntel,
 	onReply,
+	viewerId,
 }: {
 	messages: CommsMessage[];
 	onDelete: (id: number) => void;
@@ -25,6 +26,7 @@ export function MessageList({
 	onOpenCharacter: (id: number) => void;
 	onOpenIntel: (id: number) => void;
 	onReply?: (message: CommsMessage) => void;
+	viewerId?: number;
 }) {
 	const scrollRef = useRef<HTMLDivElement>(null);
 	const [editingId, setEditingId] = useState<number | null>(null);
@@ -52,12 +54,16 @@ export function MessageList({
 							.join('')
 					: '?';
 				const isEditing = editingId === m.id;
+				const mentionsViewer =
+					viewerId != null &&
+					Array.isArray(m.mentions) &&
+					m.mentions.some((x) => x.id === viewerId);
 
 				return (
 					<div
 						key={m.id}
 						id={`comms-msg-${m.id}`}
-						className={`comms-message${m.isOwn ? ' own' : ''}${m.isAnonymous ? ' anonymous' : ''}`}
+						className={`comms-message${m.isOwn ? ' own' : ''}${m.isAnonymous ? ' anonymous' : ''}${mentionsViewer ? ' mentions-me' : ''}`}
 					>
 						<div className="comms-message-avatar">
 							{m.isAnonymous ? (

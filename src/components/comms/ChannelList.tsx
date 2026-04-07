@@ -15,10 +15,12 @@ export function ChannelList({
 	channels,
 	activeId,
 	onSelect,
+	mentionCounts,
 }: {
 	channels: CommsChannel[];
 	activeId: number | null;
 	onSelect: (id: number) => void;
+	mentionCounts?: Record<number, number>;
 }) {
 	const grouped: Record<string, CommsChannel[]> = {};
 	for (const ch of channels) {
@@ -34,13 +36,24 @@ export function ChannelList({
 				return (
 					<div key={type} className="comms-channel-section">
 						<div className="comms-channel-section-title">{TYPE_LABELS[type]}</div>
-						{list.map((ch) => (
+						{list.map((ch) => {
+							const mentionCount = mentionCounts?.[ch.id] || 0;
+							return (
 							<div
 								key={ch.id}
-								className={`comms-channel-item${activeId === ch.id ? ' active' : ''}`}
+								className={`comms-channel-item${activeId === ch.id ? ' active' : ''}${mentionCount > 0 ? ' has-mentions' : ''}`}
 								onClick={() => onSelect(ch.id)}
 							>
 								<ChannelIcon channel={ch} />
+								{mentionCount > 0 && (
+									<div
+										className="comms-channel-mention-badge"
+										aria-label={`${mentionCount} mention${mentionCount > 1 ? 's' : ''} non lue${mentionCount > 1 ? 's' : ''}`}
+										title={`${mentionCount} mention${mentionCount > 1 ? 's' : ''} non lue${mentionCount > 1 ? 's' : ''}`}
+									>
+										@{mentionCount}
+									</div>
+								)}
 								<div className="comms-channel-body">
 									<div className="comms-channel-name">{ch.name}</div>
 									<div className="comms-channel-meta">
@@ -54,7 +67,8 @@ export function ChannelList({
 									)}
 								</div>
 							</div>
-						))}
+							);
+						})}
 					</div>
 				);
 			})}

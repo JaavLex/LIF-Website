@@ -96,6 +96,7 @@ export function CommsLayout({ character }: { character: ActiveCharacter }) {
 	const lastTypingPingRef = useRef<number>(0);
 	const [onlineMemberIds, setOnlineMemberIds] = useState<number[]>([]);
 	const [toasts, setToasts] = useState<Array<{ id: number; channelId: number; channelName: string; snippet: string }>>([]);
+	const [mentionCounts, setMentionCounts] = useState<Record<number, number>>({});
 	// Tracks the last seen lastMessageAt per channel so we only toast on advances
 	const seenLastMessageAtRef = useRef<Map<number, string>>(new Map());
 	const initializedSeenRef = useRef(false);
@@ -140,8 +141,15 @@ export function CommsLayout({ character }: { character: ActiveCharacter }) {
 							setTimeout(() => {
 								setToasts((t) => t.filter((x) => x.id !== toastId));
 							}, 6000);
-							if (mention) playRadioPing();
-							else playNotification();
+							if (mention) {
+								playRadioPing();
+								setMentionCounts((c) => ({
+									...c,
+									[ch.id]: (c[ch.id] || 0) + 1,
+								}));
+							} else {
+								playNotification();
+							}
 						} else if (mention) {
 							// Active channel but mentions us → still play radio ping
 							playRadioPing();
@@ -258,6 +266,13 @@ export function CommsLayout({ character }: { character: ActiveCharacter }) {
 	useEffect(() => {
 		if (!activeId) return;
 		setReplyingTo(null);
+		// Opening a channel clears its unread mention badge
+		setMentionCounts((c) => {
+			if (!c[activeId]) return c;
+			const next = { ...c };
+			delete next[activeId];
+			return next;
+		});
 		// Load channel members for the mention picker (one-shot per channel switch)
 		fetch(`/api/comms/channels/${activeId}/members`)
 			.then((r) => (r.ok ? r.json() : { members: [] }))
@@ -479,6 +494,7 @@ export function CommsLayout({ character }: { character: ActiveCharacter }) {
 					<ChannelList
 						channels={channels}
 						activeId={activeId}
+						mentionCounts={mentionCounts}
 						onSelect={(id) => {
 							setActiveId(id);
 							setMobileShowMain(true);
@@ -535,6 +551,7 @@ export function CommsLayout({ character }: { character: ActiveCharacter }) {
 								onOpenCharacter={(id) => setProfileCharacterId(id)}
 								onOpenIntel={(id) => setPreviewIntelId(id)}
 								onReply={(m) => setReplyingTo(m)}
+								viewerId={character.id}
 							/>
 							{typingUsers.length > 0 && (
 								<div className="comms-typing-indicator">

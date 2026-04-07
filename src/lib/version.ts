@@ -6,9 +6,18 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.6.4',
+  version: '1.6.5',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.6.5',
+      date: '2026-04-07',
+      changes: [
+        'COMMS — avatar anonyme : deux yeux rouges sous la capuche (au lieu d\'un seul)',
+        'COMMS — messages qui vous mentionnent : surlignés (fond ambré + barre dorée à gauche)',
+        'COMMS — badge de mentions non lues (@N) sur les canaux non ouverts, disparaît à l\'ouverture',
+      ],
+    },
     {
       version: '1.6.4',
       date: '2026-04-07',

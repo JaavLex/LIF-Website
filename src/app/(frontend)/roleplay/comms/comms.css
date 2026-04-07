@@ -366,6 +366,47 @@
 	background: rgba(180, 80, 80, 0.05);
 }
 
+.comms-message.mentions-me {
+	background: rgba(255, 200, 80, 0.10);
+	border-color: rgba(255, 200, 80, 0.55);
+	box-shadow: inset 3px 0 0 rgba(255, 200, 80, 0.85);
+}
+
+.comms-message.mentions-me:hover {
+	background: rgba(255, 200, 80, 0.14);
+	border-color: rgba(255, 200, 80, 0.7);
+}
+
+.comms-channel-item {
+	position: relative;
+}
+
+.comms-channel-mention-badge {
+	position: absolute;
+	top: 4px;
+	right: 4px;
+	min-width: 22px;
+	height: 22px;
+	padding: 0 6px;
+	border-radius: 11px;
+	background: linear-gradient(180deg, #d93030 0%, #8a0000 100%);
+	color: #fff;
+	font-size: 0.7rem;
+	font-weight: 700;
+	letter-spacing: 0.5px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border: 1px solid #ffb4b4;
+	box-shadow: 0 0 6px rgba(255, 60, 60, 0.7), inset 0 1px 0 rgba(255,255,255,0.25);
+	pointer-events: none;
+	z-index: 2;
+}
+
+.comms-channel-item.has-mentions {
+	border-color: rgba(255, 100, 100, 0.4);
+}
+
 .comms-message-avatar {
 	width: 36px;
 	height: 36px;
