@@ -30,6 +30,12 @@ export default async function NewCharacterPage({
 	const adminPermissions = await checkAdminPermissions(session);
 	const isAdmin = adminPermissions.isAdmin;
 
+	// Load the roleplay global once — used both for operator-role checking
+	// below AND for the editable unit-selector page text further down.
+	const roleplayConfig = (await payload
+		.findGlobal({ slug: 'roleplay' })
+		.catch(() => null)) as Roleplay | null;
+
 	if (!isAdmin) {
 		const user = await payload.find({
 			collection: 'users',
@@ -39,9 +45,6 @@ export default async function NewCharacterPage({
 		const userData = user.docs[0];
 		if (!userData?.isGuildMember) redirect('/roleplay');
 
-		const roleplayConfig = (await payload
-			.findGlobal({ slug: 'roleplay' })
-			.catch(() => null)) as Roleplay | null;
 		const operatorRoleId = roleplayConfig?.operatorRoleId;
 		if (operatorRoleId && !session.roles?.includes(operatorRoleId))
 			redirect('/roleplay');
@@ -131,6 +134,16 @@ export default async function NewCharacterPage({
 				<UnitSelector
 					units={serialize(playerUnits) as any}
 					mainFactionName={mainFactionName}
+					config={{
+						eyebrow: (roleplayConfig as any)?.unitSelectorEyebrow,
+						titleLine1: (roleplayConfig as any)?.unitSelectorTitleLine1,
+						titleLine2: (roleplayConfig as any)?.unitSelectorTitleLine2,
+						titleLine3: (roleplayConfig as any)?.unitSelectorTitleLine3,
+						brief: (roleplayConfig as any)?.unitSelectorBrief,
+						warning: (roleplayConfig as any)?.unitSelectorWarning,
+						footer: (roleplayConfig as any)?.unitSelectorFooter,
+						railLabel: (roleplayConfig as any)?.unitSelectorRailLabel,
+					}}
 				/>
 			</div>
 		);

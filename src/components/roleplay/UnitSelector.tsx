@@ -40,15 +40,44 @@ function readUnitLore(unit: Unit) {
 	};
 }
 
+interface UnitSelectorConfig {
+	eyebrow?: string | null;
+	titleLine1?: string | null;
+	titleLine2?: string | null;
+	titleLine3?: string | null;
+	brief?: string | null;
+	warning?: string | null;
+	footer?: string | null;
+	railLabel?: string | null;
+}
+
 export function UnitSelector({
 	units,
 	mainFactionName,
+	config,
 }: {
 	units: Unit[];
 	mainFactionName?: string | null;
+	config?: UnitSelectorConfig;
 }) {
 	// Order: alphabetical (admin sets which units exist via Payload)
 	const sorted = [...units].sort((a, b) => a.name.localeCompare(b.name));
+
+	const factionName = mainFactionName || 'Légion';
+	const cfg = {
+		eyebrow: config?.eyebrow || "SECTION 01 — CHOIX D'UNITÉ",
+		titleLine1: config?.titleLine1 || 'CHOISISSEZ',
+		titleLine2: config?.titleLine2 || 'VOTRE',
+		titleLine3: config?.titleLine3 || 'ALLÉGEANCE.',
+		// Substitute « Légion » with the actual main faction name in the brief
+		brief: (
+			config?.brief ||
+			"Toute mobilisation au sein de la Légion commence par une affectation. Le choix que vous ferez ici ne pourra plus être modifié par vous-même : seul le commandement peut réaffecter un opérateur entre unités."
+		).replace(/\bLégion\b/g, factionName),
+		warning: config?.warning || 'DÉCISION DÉFINITIVE — LISEZ AVANT DE SIGNER',
+		footer: config?.footer || 'SIGNÉ // COMMANDEMENT',
+		railLabel: config?.railLabel || 'DOSSIER ENRÔLEMENT',
+	};
 
 	return (
 		<div className="enrol-shell">
@@ -57,7 +86,7 @@ export function UnitSelector({
 
 			{/* Vertical rotated label running down the left margin */}
 			<div className="enrol-rail" aria-hidden>
-				<span>DOSSIER ENRÔLEMENT // {mainFactionName || 'LIF'} // 2026</span>
+				<span>{cfg.railLabel} // {mainFactionName || 'LIF'} // 2026</span>
 			</div>
 
 			{/* Asymmetric header: giant 01 number left, briefing copy right */}
@@ -70,22 +99,17 @@ export function UnitSelector({
 				<div className="enrol-brief">
 					<div className="enrol-brief-tag">
 						<span className="enrol-brief-dot" />
-						SECTION 01 — CHOIX D&apos;UNITÉ
+						{cfg.eyebrow}
 					</div>
 					<h1 className="enrol-brief-title">
-						<span className="enrol-brief-line-1">CHOISISSEZ</span>
-						<span className="enrol-brief-line-2">VOTRE</span>
-						<span className="enrol-brief-line-3">ALLÉGEANCE.</span>
+						<span className="enrol-brief-line-1">{cfg.titleLine1}</span>
+						<span className="enrol-brief-line-2">{cfg.titleLine2}</span>
+						<span className="enrol-brief-line-3">{cfg.titleLine3}</span>
 					</h1>
-					<p className="enrol-brief-body">
-						Toute mobilisation au sein de la {mainFactionName || 'Légion'} commence
-						par une affectation. Le choix que vous ferez ici{' '}
-						<em>ne pourra plus être modifié</em> par vous-même : seul le
-						commandement peut réaffecter un opérateur entre unités.
-					</p>
+					<p className="enrol-brief-body">{cfg.brief}</p>
 					<div className="enrol-brief-warn">
 						<Lock size={14} strokeWidth={2.5} />
-						<span>DÉCISION DÉFINITIVE — LISEZ AVANT DE SIGNER</span>
+						<span>{cfg.warning}</span>
 					</div>
 				</div>
 			</header>
@@ -197,7 +221,7 @@ export function UnitSelector({
 
 			{/* Footer signature */}
 			<footer className="enrol-foot">
-				<span>SIGNÉ // COMMANDEMENT {mainFactionName || 'LIF'}</span>
+				<span>{cfg.footer} {mainFactionName || 'LIF'}</span>
 				<span className="enrol-foot-sep" aria-hidden />
 				<span>FORMULAIRE F-01 // ENRÔLEMENT // 2026.04</span>
 			</footer>

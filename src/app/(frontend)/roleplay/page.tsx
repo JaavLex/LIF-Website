@@ -462,7 +462,7 @@ export default async function RoleplayPage({
 									>
 										<span className="main-faction-hero-badge">
 											<span className="main-faction-hero-badge-dot" />
-											FACTION PRINCIPALE
+											{(roleplayConfig as any)?.mainFactionBadge || 'FACTION PRINCIPALE'}
 										</span>
 										<div className="main-faction-hero-inner">
 											<div className="main-faction-hero-logo">
@@ -485,13 +485,13 @@ export default async function RoleplayPage({
 												</div>
 												<div className="main-faction-hero-sub">
 													{mainFaction.type === 'allied'
-														? 'ALLIÉE · COMMANDEMENT LIF'
+														? ((roleplayConfig as any)?.mainFactionSubtitleAllied || 'ALLIÉE · COMMANDEMENT LIF')
 														: mainFaction.type === 'hostile'
-															? 'HOSTILE'
-															: 'COMMANDEMENT LIF'}
+															? ((roleplayConfig as any)?.mainFactionSubtitleHostile || 'HOSTILE')
+															: ((roleplayConfig as any)?.mainFactionSubtitleNeutral || 'COMMANDEMENT LIF')}
 												</div>
 												<div className="main-faction-hero-cta">
-													Ouvrir le dossier <span aria-hidden>→</span>
+													{(roleplayConfig as any)?.mainFactionCta || 'Ouvrir le dossier'} <span aria-hidden>→</span>
 												</div>
 											</div>
 										</div>
@@ -508,7 +508,7 @@ export default async function RoleplayPage({
 								<div className="main-units-strip">
 									<div className="main-units-strip-header">
 										<span className="main-units-strip-marker" aria-hidden />
-										<span className="main-units-strip-label">FER&nbsp;DE&nbsp;LANCE</span>
+										<span className="main-units-strip-label">{(roleplayConfig as any)?.mainUnitsStripLabel || 'FER\u00a0DE\u00a0LANCE'}</span>
 										<span className="main-units-strip-line" />
 										<span className="main-units-strip-count">{mainUnits.length}</span>
 									</div>
@@ -548,7 +548,7 @@ export default async function RoleplayPage({
 													</div>
 													<div className="main-unit-card-body">
 														<div className="main-unit-card-eyebrow">
-															UNITÉ&nbsp;PRINCIPALE
+															{(roleplayConfig as any)?.mainUnitsCardEyebrow || 'UNITÉ\u00a0PRINCIPALE'}
 														</div>
 														<div className="main-unit-card-name">{unit.name}</div>
 														<span className="main-unit-card-rule" aria-hidden />

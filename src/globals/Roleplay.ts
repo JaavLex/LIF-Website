@@ -422,6 +422,134 @@ export const Roleplay: GlobalConfig = {
 					],
 				},
 				{
+					label: 'Sélecteur d\'unité & Hero',
+					description:
+						"Textes affichés sur la page de création de personnage (étape 01 — choix d'unité) et sur la section « Faction principale » de la page roleplay. Ces textes étaient hardcodés avant — ils sont maintenant tous éditables.",
+					fields: [
+						{
+							type: 'collapsible',
+							label: 'Étape 01 — Sélecteur d\'unité (création de personnage)',
+							admin: {
+								initCollapsed: false,
+								description:
+									'Page affichée à l\'utilisateur quand il crée un nouveau personnage et doit choisir son unité.',
+							},
+							fields: [
+								{
+									name: 'unitSelectorEyebrow',
+									label: 'Eyebrow (petit texte au-dessus du titre)',
+									type: 'text',
+									defaultValue: 'SECTION 01 — CHOIX D\'UNITÉ',
+								},
+								{
+									name: 'unitSelectorTitleLine1',
+									label: 'Titre — ligne 1',
+									type: 'text',
+									defaultValue: 'CHOISISSEZ',
+								},
+								{
+									name: 'unitSelectorTitleLine2',
+									label: 'Titre — ligne 2',
+									type: 'text',
+									defaultValue: 'VOTRE',
+								},
+								{
+									name: 'unitSelectorTitleLine3',
+									label: 'Titre — ligne 3 (accent)',
+									type: 'text',
+									defaultValue: 'ALLÉGEANCE.',
+								},
+								{
+									name: 'unitSelectorBrief',
+									label: 'Briefing (paragraphe principal)',
+									type: 'textarea',
+									defaultValue:
+										"Toute mobilisation au sein de la Légion commence par une affectation. Le choix que vous ferez ici ne pourra plus être modifié par vous-même : seul le commandement peut réaffecter un opérateur entre unités.",
+									admin: {
+										description:
+											"Le mot « Légion » sera automatiquement remplacé par le nom de la faction principale si défini.",
+									},
+								},
+								{
+									name: 'unitSelectorWarning',
+									label: 'Avertissement (bandeau verrouillé)',
+									type: 'text',
+									defaultValue: 'DÉCISION DÉFINITIVE — LISEZ AVANT DE SIGNER',
+								},
+								{
+									name: 'unitSelectorFooter',
+									label: 'Texte de signature en bas',
+									type: 'text',
+									defaultValue: 'SIGNÉ // COMMANDEMENT',
+									admin: {
+										description:
+											"Le nom de la faction principale est automatiquement ajouté après ce texte.",
+									},
+								},
+								{
+									name: 'unitSelectorRailLabel',
+									label: 'Texte vertical à gauche (rail)',
+									type: 'text',
+									defaultValue: 'DOSSIER ENRÔLEMENT',
+								},
+							],
+						},
+						{
+							type: 'collapsible',
+							label: 'Hero « Faction principale » (page /roleplay section 02)',
+							admin: {
+								initCollapsed: false,
+								description:
+									'Bandeau hero qui met en vedette la faction marquée comme « principale » et ses unités fer-de-lance.',
+							},
+							fields: [
+								{
+									name: 'mainFactionBadge',
+									label: 'Badge en haut à gauche du hero',
+									type: 'text',
+									defaultValue: 'FACTION PRINCIPALE',
+								},
+								{
+									name: 'mainFactionSubtitleAllied',
+									label: 'Sous-titre si la faction est ALLIÉE',
+									type: 'text',
+									defaultValue: 'ALLIÉE · COMMANDEMENT LIF',
+								},
+								{
+									name: 'mainFactionSubtitleHostile',
+									label: 'Sous-titre si la faction est HOSTILE',
+									type: 'text',
+									defaultValue: 'HOSTILE',
+								},
+								{
+									name: 'mainFactionSubtitleNeutral',
+									label: 'Sous-titre si la faction est NEUTRE',
+									type: 'text',
+									defaultValue: 'COMMANDEMENT LIF',
+								},
+								{
+									name: 'mainFactionCta',
+									label: 'Texte du bouton CTA',
+									type: 'text',
+									defaultValue: 'Ouvrir le dossier',
+								},
+								{
+									name: 'mainUnitsStripLabel',
+									label: 'Titre du bandeau « unités fer-de-lance »',
+									type: 'text',
+									defaultValue: 'FER DE LANCE',
+								},
+								{
+									name: 'mainUnitsCardEyebrow',
+									label: 'Eyebrow sur chaque carte d\'unité fer-de-lance',
+									type: 'text',
+									defaultValue: 'UNITÉ PRINCIPALE',
+								},
+							],
+						},
+					],
+				},
+				{
 					label: 'Modération',
 					fields: [
 						{

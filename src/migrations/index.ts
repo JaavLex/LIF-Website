@@ -7,6 +7,7 @@ import * as migration_20260407_140000_comms_replies_anon_mentions from './202604
 import * as migration_20260407_150000_backfill_callsigns from './20260407_150000_backfill_callsigns';
 import * as migration_20260407_160000_add_main_faction from './20260407_160000_add_main_faction';
 import * as migration_20260407_170000_add_unit_selector_fields from './20260407_170000_add_unit_selector_fields';
+import * as migration_20260407_180000_add_unit_selector_globals from './20260407_180000_add_unit_selector_globals';
 
 export const migrations = [
   {
@@ -53,5 +54,10 @@ export const migrations = [
     up: migration_20260407_170000_add_unit_selector_fields.up,
     down: migration_20260407_170000_add_unit_selector_fields.down,
     name: '20260407_170000_add_unit_selector_fields',
+  },
+  {
+    up: migration_20260407_180000_add_unit_selector_globals.up,
+    down: migration_20260407_180000_add_unit_selector_globals.down,
+    name: '20260407_180000_add_unit_selector_globals',
   },
 ];

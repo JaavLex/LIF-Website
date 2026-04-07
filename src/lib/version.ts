@@ -6,9 +6,19 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.6.33',
+  version: '1.6.34',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.6.34',
+      date: '2026-04-07',
+      changes: [
+        'PAYLOAD — Nouvel onglet « Sélecteur d\'unité & Hero » dans le global Roleplay : tout le texte de la page de choix d\'unité (création de personnage étape 01) est désormais éditable via le panneau Payload — eyebrow, 3 lignes de titre, brief, warning, footer, label rail vertical. Le mot « Légion » dans le brief est automatiquement remplacé par le nom de la faction principale.',
+        'PAYLOAD — Idem pour le hero « Faction principale » sur /roleplay : badge, sous-titre par type (alliée / hostile / neutre), texte du CTA. Et pour la bande « Fer de lance » des unités principales : label de la bande et eyebrow des cartes d\'unité.',
+        'PAYLOAD — Migration `20260407_180000_add_unit_selector_globals` : 15 nouvelles colonnes varchar sur la table `roleplay` avec les valeurs par défaut françaises actuelles, garantissant zéro régression visuelle pour les installations existantes.',
+        'RAPPEL — Les traits, tagline et pitch de chaque unité dans le sélecteur étaient déjà configurables par unité (collection Units : `selectorTagline`, `selectorPitch`, `selectorTraits`).',
+      ],
+    },
     {
       version: '1.6.33',
       date: '2026-04-07',
