@@ -5,6 +5,7 @@ import { DevBanner } from '@/components/DevBanner';
 import { VersionInfo } from '@/components/VersionInfo';
 import { ViewAsUserToggle } from '@/components/ViewAsUserToggle';
 import { GlobalCommsNotifier } from '@/components/comms/GlobalCommsNotifier';
+import { SplashScreen } from '@/components/SplashScreen';
 
 const heading = Rajdhani({
 	subsets: ['latin'],
@@ -37,6 +38,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 	return (
 		<html lang="fr">
 			<body className={`${heading.variable} ${body.variable}`}>
+				<SplashScreen />
 				<DevBanner />
 				<VersionInfo />
 				<ViewAsUserToggle />
