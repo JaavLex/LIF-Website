@@ -6,9 +6,21 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.5.0',
+  version: '1.5.1',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.5.1',
+      date: '2026-04-07',
+      changes: [
+        'COMMS — barre de profil enrichie (avatar + grade + faction + unité avec icônes)',
+        'COMMS — liste des canaux avec icône (logo faction/unité, photo DM, mosaïque membres pour groupes + bulle « +N »)',
+        'COMMS — bulle de message avec icône de grade, prévisualisation de réponse, mentions @ surlignées',
+        'COMMS — DM anonyme : option à la création, recipient ne voit pas l\'identité du sender',
+        'COMMS — fond Matrix visible derrière les panneaux (transparence + flou)',
+        'COMMS — correction du payload d\'API NewDmModal (otherCharacterId → targetCharacterId)',
+      ],
+    },
     {
       version: '1.5.0',
       date: '2026-04-07',

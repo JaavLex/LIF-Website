@@ -1,6 +1,6 @@
 'use client';
 
-import type { CommsChannel } from './CommsLayout';
+import type { CommsChannel, CommsChannelDisplayMember } from './CommsLayout';
 
 const TYPE_LABELS: Record<CommsChannel['type'], string> = {
 	faction: 'Factions',
@@ -40,21 +40,74 @@ export function ChannelList({
 								className={`comms-channel-item${activeId === ch.id ? ' active' : ''}`}
 								onClick={() => onSelect(ch.id)}
 							>
-								<div className="comms-channel-name">{ch.name}</div>
-								<div className="comms-channel-meta">
-									<span>{ch.memberCount} membres</span>
-									{ch.lastMessageAt && (
-										<span>{formatRelative(ch.lastMessageAt)}</span>
+								<ChannelIcon channel={ch} />
+								<div className="comms-channel-body">
+									<div className="comms-channel-name">{ch.name}</div>
+									<div className="comms-channel-meta">
+										<span>{ch.memberCount} membres</span>
+										{ch.lastMessageAt && (
+											<span>{formatRelative(ch.lastMessageAt)}</span>
+										)}
+									</div>
+									{ch.lastMessagePreview && (
+										<div className="comms-channel-preview">{ch.lastMessagePreview}</div>
 									)}
 								</div>
-								{ch.lastMessagePreview && (
-									<div className="comms-channel-preview">{ch.lastMessagePreview}</div>
-								)}
 							</div>
 						))}
 					</div>
 				);
 			})}
+		</div>
+	);
+}
+
+function ChannelIcon({ channel }: { channel: CommsChannel }) {
+	// Group: avatar stack
+	if (channel.type === 'group') {
+		const previews = (channel.displayMembers || []).slice(0, 4);
+		const overflow = Math.max(0, channel.memberCount - 1 - previews.length);
+		// If overflow > 0 we replace the 4th slot with a "+N" bubble
+		const renderSlots: Array<
+			{ kind: 'member'; member: CommsChannelDisplayMember } | { kind: 'overflow'; count: number }
+		> = [];
+		const maxRender = overflow > 0 ? 3 : 4;
+		for (const m of previews.slice(0, maxRender)) {
+			renderSlots.push({ kind: 'member', member: m });
+		}
+		if (overflow > 0) {
+			renderSlots.push({ kind: 'overflow', count: overflow + Math.max(0, previews.length - 3) });
+		}
+		return (
+			<div className="comms-channel-stack" aria-label="Membres du groupe">
+				{renderSlots.map((slot, idx) => (
+					<div key={idx} className={`comms-channel-stack-bubble b${idx}`}>
+						{slot.kind === 'member' ? (
+							slot.member.avatarUrl ? (
+								<img src={slot.member.avatarUrl} alt={slot.member.fullName} />
+							) : (
+								slot.member.fullName.charAt(0)
+							)
+						) : (
+							`+${slot.count}`
+						)}
+					</div>
+				))}
+			</div>
+		);
+	}
+
+	// Single icon (faction logo, unit insignia, DM avatar)
+	const iconUrl = channel.iconUrl || channel.dmOther?.avatarUrl || null;
+	const fallback =
+		channel.type === 'dm'
+			? channel.isAnonForViewer
+				? '?'
+				: (channel.dmOther?.fullName || channel.name || '?').charAt(0)
+			: (channel.name || '?').charAt(0);
+	return (
+		<div className="comms-channel-icon" aria-hidden>
+			{iconUrl ? <img src={iconUrl} alt="" /> : fallback}
 		</div>
 	);
 }

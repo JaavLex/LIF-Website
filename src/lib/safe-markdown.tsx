@@ -50,6 +50,17 @@ function renderInline(text: string): React.ReactNode[] {
 			i += italic[0].length;
 			continue;
 		}
+		// @mention: @[Name](id) — id must be a positive integer
+		const mention = slice.match(/^@\[([^\]]+)\]\((\d+)\)/);
+		if (mention) {
+			out.push(
+				<span key={key++} className="comms-mention" data-character-id={mention[2]}>
+					@{mention[1]}
+				</span>,
+			);
+			i += mention[0].length;
+			continue;
+		}
 		const link = slice.match(/^\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/);
 		if (link) {
 			out.push(

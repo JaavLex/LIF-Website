@@ -13,6 +13,12 @@ import { MembersPanel } from './MembersPanel';
 import { CharacterProfileModal } from './CharacterProfileModal';
 import { IntelPreviewModal } from './IntelPreviewModal';
 
+export interface CommsChannelDisplayMember {
+	id: number;
+	fullName: string;
+	avatarUrl: string | null;
+}
+
 export interface CommsChannel {
 	id: number;
 	name: string;
@@ -24,6 +30,13 @@ export interface CommsChannel {
 	createdByCharacterId?: number | null;
 	lastMessageAt?: string | null;
 	lastMessagePreview?: string | null;
+	iconUrl?: string | null;
+	subtitle?: string | null;
+	displayMembers?: CommsChannelDisplayMember[];
+	dmOther?: CommsChannelDisplayMember | null;
+	anonForCharacterId?: number | null;
+	isAnonForViewer?: boolean;
+	isAnonInitiatedByViewer?: boolean;
 }
 
 export interface CommsMessage {
@@ -37,8 +50,11 @@ export interface CommsMessage {
 		fullName: string;
 		avatarUrl?: string | null;
 		rankName?: string | null;
+		rankIconUrl?: string | null;
 	} | null;
 	senderCharacterId?: number | null;
+	replyTo?: { id: number; snippet: string; senderName: string } | null;
+	mentions?: Array<{ id: number; name: string }>;
 	editedAt?: string | null;
 	createdAt: string;
 	isOwn: boolean;
@@ -168,7 +184,7 @@ export function CommsLayout({ character }: { character: ActiveCharacter }) {
 		<div className="comms-page">
 			<div
 				style={{
-					padding: '0.75rem 1rem 0',
+					padding: '0.75rem 1rem 0.5rem',
 					display: 'flex',
 					gap: '0.75rem',
 					alignItems: 'center',
@@ -177,10 +193,58 @@ export function CommsLayout({ character }: { character: ActiveCharacter }) {
 				<Link href="/roleplay" className="retour-link">
 					← Retour
 				</Link>
-				<span style={{ color: 'var(--muted)', fontSize: '0.8rem' }}>
-					Connecté en tant que <strong>{character.fullName}</strong>
-					{character.faction ? ` — ${character.faction}` : ''}
-				</span>
+			</div>
+
+			<div className="comms-profile-bar">
+				<div className="comms-profile-bar-avatar">
+					{character.avatarUrl ? (
+						<img src={character.avatarUrl} alt={character.fullName} />
+					) : (
+						character.fullName.charAt(0)
+					)}
+				</div>
+				<div className="comms-profile-bar-info">
+					<div className="comms-profile-bar-name">
+						{character.rankIconUrl && (
+							<img
+								className="rank-icon"
+								src={character.rankIconUrl}
+								alt={character.rankName || ''}
+								title={character.rankName || ''}
+							/>
+						)}
+						<span>
+							{character.rankName ? `${character.rankName} ` : ''}
+							{character.fullName}
+						</span>
+					</div>
+					<div className="comms-profile-bar-meta">
+						{character.factionLogoUrl && (
+							<img
+								className="affil-icon"
+								src={character.factionLogoUrl}
+								alt={character.faction || ''}
+								title={character.faction || ''}
+							/>
+						)}
+						{character.faction && <span>{character.faction}</span>}
+						{character.unitName && (
+							<>
+								<span>·</span>
+								{character.unitInsigniaUrl && (
+									<img
+										className="affil-icon"
+										src={character.unitInsigniaUrl}
+										alt={character.unitName}
+										title={character.unitName}
+									/>
+								)}
+								<span>{character.unitName}</span>
+							</>
+						)}
+					</div>
+				</div>
+				<div className="comms-profile-bar-spacer" />
 			</div>
 
 			{!bannerClosed && (

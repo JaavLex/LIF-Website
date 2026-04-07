@@ -13,6 +13,7 @@ export function NewDmModal({
 	const [results, setResults] = useState<any[]>([]);
 	const [error, setError] = useState('');
 	const [creating, setCreating] = useState(false);
+	const [anonymous, setAnonymous] = useState(false);
 
 	useEffect(() => {
 		const t = setTimeout(async () => {
@@ -34,7 +35,7 @@ export function NewDmModal({
 			const res = await fetch('/api/comms/channels/dm', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ otherCharacterId: characterId }),
+				body: JSON.stringify({ targetCharacterId: characterId, anonymous }),
 			});
 			const data = await res.json();
 			if (!res.ok) {
@@ -42,7 +43,7 @@ export function NewDmModal({
 				setCreating(false);
 				return;
 			}
-			onCreated(data.channelId);
+			onCreated(data.id);
 		} catch {
 			setError('Erreur réseau');
 			setCreating(false);
@@ -60,6 +61,24 @@ export function NewDmModal({
 					onChange={(e) => setQ(e.target.value)}
 					autoFocus
 				/>
+				<label
+					style={{
+						display: 'flex',
+						alignItems: 'center',
+						gap: '0.5rem',
+						marginTop: '0.5rem',
+						fontSize: '0.8rem',
+						color: 'var(--text)',
+						cursor: 'pointer',
+					}}
+				>
+					<input
+						type="checkbox"
+						checked={anonymous}
+						onChange={(e) => setAnonymous(e.target.checked)}
+					/>
+					Mode anonyme — votre identité sera masquée pour le destinataire
+				</label>
 				<div style={{ marginTop: '0.5rem', maxHeight: '300px', overflowY: 'auto' }}>
 					{results.map((c) => (
 						<div

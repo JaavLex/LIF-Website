@@ -26,9 +26,12 @@ export interface ActiveCharacter {
 	discordId: string;
 	discordUsername: string;
 	faction?: string | null;
+	factionLogoUrl?: string | null;
 	unitId?: number | null;
 	unitName?: string | null;
+	unitInsigniaUrl?: string | null;
 	rankName?: string | null;
+	rankIconUrl?: string | null;
 	avatarUrl?: string | null;
 }
 
@@ -109,6 +112,19 @@ export async function checkCommsEligibility(
 		return { eligible: false, reason: 'no_active_character' };
 	}
 
+	// Resolve faction logo (faction is a free-text field on character)
+	let factionLogoUrl: string | null = null;
+	if (charDoc.faction) {
+		const factionResult = await payload.find({
+			collection: 'factions',
+			where: { name: { equals: charDoc.faction } },
+			limit: 1,
+			depth: 1,
+		});
+		const f = factionResult.docs[0] as any;
+		if (f && typeof f.logo === 'object') factionLogoUrl = f.logo?.url || null;
+	}
+
 	const character: ActiveCharacter = {
 		id: charDoc.id,
 		fullName: charDoc.fullName || `${charDoc.firstName} ${charDoc.lastName}`,
@@ -118,10 +134,19 @@ export async function checkCommsEligibility(
 		discordId: charDoc.discordId,
 		discordUsername: charDoc.discordUsername,
 		faction: charDoc.faction || null,
+		factionLogoUrl,
 		unitId:
 			typeof charDoc.unit === 'object' ? charDoc.unit?.id : charDoc.unit || null,
 		unitName: typeof charDoc.unit === 'object' ? charDoc.unit?.name : null,
+		unitInsigniaUrl:
+			typeof charDoc.unit === 'object' && typeof charDoc.unit?.insignia === 'object'
+				? charDoc.unit.insignia?.url || null
+				: null,
 		rankName: typeof charDoc.rank === 'object' ? charDoc.rank?.name : null,
+		rankIconUrl:
+			typeof charDoc.rank === 'object' && typeof charDoc.rank?.icon === 'object'
+				? charDoc.rank.icon?.url || null
+				: null,
 		avatarUrl:
 			typeof charDoc.avatar === 'object' ? charDoc.avatar?.url || null : null,
 	};
@@ -408,6 +433,186 @@ export async function listChannelsForCharacter(characterId: number) {
 	return (all.docs as any[]).filter((ch) => {
 		const members: number[] = Array.isArray(ch.members) ? ch.members : [];
 		return members.map(Number).includes(Number(characterId));
+	});
+}
+
+/**
+ * Display-enriched view of a channel.
+ *
+ * Includes everything the client needs to render a channel row + header
+ * without making per-channel lookups: an icon URL, the (sorted) display
+ * member avatars for groups, the "other party" for DMs, and the anonymous
+ * flag indicating whether the viewer is the anon side or the recipient
+ * side.
+ */
+export interface EnrichedChannel {
+	id: number;
+	name: string;
+	type: 'faction' | 'unit' | 'dm' | 'group';
+	factionRef?: string | null;
+	unitRefId?: number | null;
+	memberCount: number;
+	members: number[];
+	createdByCharacterId?: number | null;
+	lastMessageAt?: string | null;
+	lastMessagePreview?: string | null;
+	iconUrl?: string | null;
+	subtitle?: string | null;
+	displayMembers?: Array<{
+		id: number;
+		fullName: string;
+		avatarUrl: string | null;
+	}>;
+	dmOther?: { id: number; fullName: string; avatarUrl: string | null } | null;
+	anonForCharacterId?: number | null;
+	isAnonForViewer: boolean;
+	isAnonInitiatedByViewer: boolean;
+}
+
+/**
+ * Enrich a list of channels with display data: icons, DM other party,
+ * group avatar previews. Batched lookups so this is O(1) DB queries
+ * regardless of channel count.
+ */
+export async function enrichChannelsForDisplay(
+	channels: any[],
+	viewerCharacterId: number,
+	viewerLastMessageMap?: Map<number, any>,
+): Promise<EnrichedChannel[]> {
+	const payload = await getPayloadClient();
+
+	// Collect all referenced IDs
+	const factionRefs = new Set<string>();
+	const unitRefs = new Set<number>();
+	const characterIds = new Set<number>();
+	for (const ch of channels) {
+		if (ch.type === 'faction' && ch.factionRef) factionRefs.add(ch.factionRef);
+		if (ch.type === 'unit' && ch.unitRefId) unitRefs.add(Number(ch.unitRefId));
+		if (Array.isArray(ch.members)) {
+			for (const m of ch.members) characterIds.add(Number(m));
+		}
+	}
+
+	const [factionsResult, unitsResult, charactersResult] = await Promise.all([
+		factionRefs.size > 0
+			? payload.find({
+					collection: 'factions',
+					where: { name: { in: Array.from(factionRefs) } },
+					limit: factionRefs.size,
+					depth: 1,
+				})
+			: Promise.resolve({ docs: [] }),
+		unitRefs.size > 0
+			? payload.find({
+					collection: 'units',
+					where: { id: { in: Array.from(unitRefs) } },
+					limit: unitRefs.size,
+					depth: 1,
+				})
+			: Promise.resolve({ docs: [] }),
+		characterIds.size > 0
+			? payload.find({
+					collection: 'characters',
+					where: { id: { in: Array.from(characterIds) } },
+					limit: characterIds.size,
+					depth: 1,
+				})
+			: Promise.resolve({ docs: [] }),
+	]);
+
+	const factionByName = new Map<string, any>();
+	for (const f of factionsResult.docs as any[]) factionByName.set(f.name, f);
+	const unitById = new Map<number, any>();
+	for (const u of unitsResult.docs as any[]) unitById.set(u.id, u);
+	const charById = new Map<number, any>();
+	for (const c of charactersResult.docs as any[]) charById.set(c.id, c);
+
+	function avatarOf(c: any): string | null {
+		if (!c) return null;
+		return typeof c.avatar === 'object' ? c.avatar?.url || null : null;
+	}
+	function nameOf(c: any): string {
+		if (!c) return '?';
+		return c.fullName || `${c.firstName || ''} ${c.lastName || ''}`.trim() || `#${c.id}`;
+	}
+
+	return channels.map((ch: any): EnrichedChannel => {
+		const members: number[] = Array.isArray(ch.members) ? ch.members.map(Number) : [];
+		const last = viewerLastMessageMap?.get(ch.id) || null;
+
+		let iconUrl: string | null = null;
+		let subtitle: string | null = null;
+		let displayMembers: EnrichedChannel['displayMembers'] = undefined;
+		let dmOther: EnrichedChannel['dmOther'] = null;
+
+		const anonForCharacterId =
+			typeof ch.anonForCharacterId === 'number' ? ch.anonForCharacterId : null;
+		const isAnonInitiatedByViewer = anonForCharacterId === viewerCharacterId;
+		const isAnonForViewer =
+			anonForCharacterId !== null && anonForCharacterId !== viewerCharacterId;
+
+		if (ch.type === 'faction' && ch.factionRef) {
+			const f = factionByName.get(ch.factionRef);
+			iconUrl = typeof f?.logo === 'object' ? f?.logo?.url || null : null;
+			subtitle = f?.type || null;
+		} else if (ch.type === 'unit' && ch.unitRefId) {
+			const u = unitById.get(Number(ch.unitRefId));
+			iconUrl = typeof u?.insignia === 'object' ? u?.insignia?.url || null : null;
+			const parentFac =
+				typeof u?.parentFaction === 'object' ? u?.parentFaction?.name : null;
+			subtitle = parentFac || null;
+		} else if (ch.type === 'dm') {
+			// DM: find the OTHER member
+			const otherId = members.find((m) => m !== viewerCharacterId) ?? null;
+			if (otherId !== null) {
+				const other = charById.get(otherId);
+				if (isAnonForViewer) {
+					// Other side is anonymous to me; mask
+					dmOther = { id: otherId, fullName: '[ANONYME]', avatarUrl: null };
+					iconUrl = null;
+				} else {
+					dmOther = {
+						id: otherId,
+						fullName: nameOf(other),
+						avatarUrl: avatarOf(other),
+					};
+					iconUrl = avatarOf(other);
+				}
+			}
+		} else if (ch.type === 'group') {
+			// Group: top members (excluding viewer first, then viewer)
+			const previewIds = members.filter((m) => m !== viewerCharacterId).slice(0, 4);
+			displayMembers = previewIds.map((id) => {
+				const c = charById.get(id);
+				return { id, fullName: nameOf(c), avatarUrl: avatarOf(c) };
+			});
+		}
+
+		// Build display name: DM uses other person's name (or [ANONYME])
+		let displayName = ch.name as string;
+		if (ch.type === 'dm' && dmOther) {
+			displayName = dmOther.fullName;
+		}
+
+		return {
+			id: ch.id,
+			name: displayName,
+			type: ch.type,
+			factionRef: ch.factionRef,
+			unitRefId: ch.unitRefId,
+			memberCount: members.length,
+			members,
+			createdByCharacterId: ch.createdByCharacterId,
+			lastMessageAt: ch.lastMessageAt,
+			lastMessagePreview: last?.body ? String(last.body).slice(0, 100) : null,
+			iconUrl,
+			subtitle,
+			displayMembers,
+			dmOther,
+			anonForCharacterId,
+			isAnonForViewer,
+			isAnonInitiatedByViewer,
+		};
 	});
 }
 

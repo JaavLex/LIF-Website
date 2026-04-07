@@ -825,6 +825,10 @@ export interface CommsChannel {
     | boolean
     | null;
   createdByCharacterId?: number | null;
+  /**
+   * Pour les DM anonymes : ID du personnage dont l'identité est masquée pour l'autre partie
+   */
+  anonForCharacterId?: number | null;
   lastMessageAt?: string | null;
   updatedAt: string;
   createdAt: string;
@@ -844,6 +848,22 @@ export interface CommsMessage {
    * JSON array of { kind: "character"|"intel"|"media", refId: number, meta?: any }
    */
   attachments?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * ID du message auquel celui-ci répond
+   */
+  replyToMessageId?: number | null;
+  /**
+   * Tableau JSON d'IDs de personnages mentionnés (@ping)
+   */
+  mentions?:
     | {
         [k: string]: unknown;
       }
@@ -1403,6 +1423,7 @@ export interface CommsChannelsSelect<T extends boolean = true> {
   unitRefId?: T;
   members?: T;
   createdByCharacterId?: T;
+  anonForCharacterId?: T;
   lastMessageAt?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -1418,6 +1439,8 @@ export interface CommsMessagesSelect<T extends boolean = true> {
   isAnonymous?: T;
   body?: T;
   attachments?: T;
+  replyToMessageId?: T;
+  mentions?: T;
   editedAt?: T;
   deletedAt?: T;
   deletedBy?: T;

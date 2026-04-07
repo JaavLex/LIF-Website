@@ -78,26 +78,114 @@ export async function GET(
 				fullName: c.fullName,
 				avatarUrl: typeof c.avatar === 'object' ? c.avatar?.url || null : null,
 				rankName: typeof c.rank === 'object' ? c.rank?.name : null,
+				rankIconUrl:
+					typeof c.rank === 'object' && typeof c.rank?.icon === 'object'
+						? c.rank?.icon?.url || null
+						: null,
 			},
 		]),
 	);
 
+	// Anonymous DM logic: if channel.anonForCharacterId is set, force anon for that sender
+	// when viewer is the OTHER party. The anon initiator still sees themselves normally.
+	const anonForId: number | null =
+		channel.anonForCharacterId != null ? Number(channel.anonForCharacterId) : null;
+	const viewerId = eligibility.character.id;
+
+	// Resolve replyTo previews
+	const replyIds = Array.from(
+		new Set(
+			messages.docs
+				.map((m: any) => m.replyToMessageId)
+				.filter((v: any) => v != null),
+		),
+	);
+	const replyMap = new Map<number, { id: number; snippet: string; senderName: string }>();
+	if (replyIds.length) {
+		const replies = await payload.find({
+			collection: 'comms-messages',
+			where: { id: { in: replyIds } },
+			limit: replyIds.length,
+		});
+		const replySenderIds = Array.from(
+			new Set((replies.docs as any[]).map((r) => r.senderCharacterId)),
+		);
+		const replySenders = replySenderIds.length
+			? await payload.find({
+					collection: 'characters',
+					where: { id: { in: replySenderIds } },
+					limit: 200,
+				})
+			: { docs: [] };
+		const replySenderMap = new Map(
+			(replySenders.docs as any[]).map((c) => [c.id, c.fullName]),
+		);
+		for (const r of replies.docs as any[]) {
+			const isAnon =
+				!!r.isAnonymous ||
+				(anonForId != null && Number(r.senderCharacterId) === anonForId && viewerId !== anonForId);
+			replyMap.set(r.id, {
+				id: r.id,
+				snippet: (r.body || '').slice(0, 120),
+				senderName: isAnon
+					? '[ANONYME]'
+					: replySenderMap.get(r.senderCharacterId) || '???',
+			});
+		}
+	}
+
+	// Resolve mentions
+	const mentionIds = new Set<number>();
+	for (const m of messages.docs as any[]) {
+		if (Array.isArray(m.mentions)) {
+			for (const id of m.mentions) {
+				const n = Number(id);
+				if (!isNaN(n)) mentionIds.add(n);
+			}
+		}
+	}
+	const mentionMap = new Map<number, string>();
+	if (mentionIds.size) {
+		const mentioned = await payload.find({
+			collection: 'characters',
+			where: { id: { in: Array.from(mentionIds) } },
+			limit: 200,
+		});
+		for (const c of mentioned.docs as any[]) {
+			mentionMap.set(c.id, c.fullName);
+		}
+	}
+
 	const items = messages.docs
 		.map((m: any) => {
-			const sender = senderMap.get(m.senderCharacterId) || null;
+			const senderId = Number(m.senderCharacterId);
+			const sender = senderMap.get(senderId) || null;
+			const forceAnon =
+				anonForId != null && senderId === anonForId && viewerId !== anonForId;
+			const effectiveAnon = !!m.isAnonymous || forceAnon;
 			return {
 				id: m.id,
 				channelId: m.channelId,
 				body: m.body || '',
 				attachments: m.attachments || [],
-				isAnonymous: !!m.isAnonymous,
-				senderCharacter: m.isAnonymous
-					? { fullName: '[ANONYME]', avatarUrl: null, rankName: null }
+				isAnonymous: effectiveAnon,
+				senderCharacter: effectiveAnon
+					? { fullName: '[ANONYME]', avatarUrl: null, rankName: null, rankIconUrl: null }
 					: sender,
-				senderCharacterId: m.isAnonymous ? null : m.senderCharacterId,
+				senderCharacterId: effectiveAnon ? null : senderId,
+				replyTo: m.replyToMessageId ? replyMap.get(Number(m.replyToMessageId)) || null : null,
+				mentions: Array.isArray(m.mentions)
+					? m.mentions
+							.map((id: any) => {
+								const n = Number(id);
+								const name = mentionMap.get(n);
+								return name ? { id: n, name } : null;
+							})
+							.filter(Boolean)
+					: [],
 				editedAt: m.editedAt,
 				createdAt: m.createdAt,
-				isOwn: m.senderCharacterId === eligibility.character.id,
+				isOwn: senderId === viewerId,
 			};
 		})
 		.reverse(); // ascending order for display
@@ -146,8 +234,42 @@ export async function POST(
 
 	const body = await request.json();
 	const text: string = (body.body || '').toString();
-	const isAnonymous = !!body.isAnonymous;
+	const clientAnon = !!body.isAnonymous;
 	const attachments: any[] = Array.isArray(body.attachments) ? body.attachments : [];
+	const replyToMessageId: number | null =
+		body.replyToMessageId != null && !isNaN(Number(body.replyToMessageId))
+			? Number(body.replyToMessageId)
+			: null;
+
+	// Force anon when channel is an anon DM and sender is the anon initiator
+	const channelAnonForId: number | null =
+		channel.anonForCharacterId != null ? Number(channel.anonForCharacterId) : null;
+	const isAnonymous =
+		clientAnon || (channelAnonForId != null && channelAnonForId === eligibility.character.id);
+
+	// Validate replyToMessageId belongs to same channel
+	if (replyToMessageId != null) {
+		const replied = (await payload
+			.findByID({ collection: 'comms-messages', id: replyToMessageId })
+			.catch(() => null)) as any;
+		if (!replied || Number(replied.channelId) !== channelId) {
+			return NextResponse.json(
+				{ error: 'Réponse invalide' },
+				{ status: 400 },
+			);
+		}
+	}
+
+	// Parse @mentions: format @[Name](id)
+	const mentionIds: number[] = [];
+	const mentionRegex = /@\[[^\]]+\]\((\d+)\)/g;
+	const matches = text.matchAll(mentionRegex);
+	for (const match of matches) {
+		const n = Number(match[1]);
+		if (!isNaN(n) && members.map(Number).includes(n)) {
+			mentionIds.push(n);
+		}
+	}
 
 	if (!text.trim() && attachments.length === 0) {
 		return NextResponse.json({ error: 'Message vide' }, { status: 400 });
@@ -210,6 +332,8 @@ export async function POST(
 			isAnonymous,
 			body: text,
 			attachments,
+			replyToMessageId: replyToMessageId ?? undefined,
+			mentions: mentionIds.length ? mentionIds : undefined,
 			senderIp: ip,
 		} as any,
 	});

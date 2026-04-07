@@ -5,6 +5,7 @@ import {
 	syncAutoChannelsForCharacter,
 	syncAllAutoChannels,
 	listChannelsForCharacter,
+	enrichChannelsForDisplay,
 	COMMS_LIMITS,
 } from '@/lib/comms';
 import { getPayloadClient } from '@/lib/payload';
@@ -23,32 +24,32 @@ export async function GET(request: NextRequest) {
 
 	const channels = await listChannelsForCharacter(eligibility.character.id);
 
-	// For each channel, attach last message and unread count (cheap impl)
+	// Batch fetch last message per channel
 	const payload = await getPayloadClient();
-	const enriched = await Promise.all(
-		channels.map(async (ch: any) => {
-			const lastMsg = await payload.find({
-				collection: 'comms-messages',
-				where: { channelId: { equals: ch.id }, deletedAt: { exists: false } },
-				sort: '-createdAt',
-				limit: 1,
-			});
-			const last = (lastMsg.docs[0] as any) || null;
-			return {
-				id: ch.id,
-				name: ch.name,
-				type: ch.type,
-				factionRef: ch.factionRef,
-				unitRefId: ch.unitRefId,
-				memberCount: Array.isArray(ch.members) ? ch.members.length : 0,
-				members: ch.members || [],
-				createdByCharacterId: ch.createdByCharacterId,
-				lastMessageAt: ch.lastMessageAt,
-				lastMessagePreview: last?.body
-					? String(last.body).slice(0, 100)
-					: null,
-			};
-		}),
+	const lastMessageMap = new Map<number, any>();
+	if (channels.length > 0) {
+		const channelIds = channels.map((c: any) => c.id);
+		const allLast = await payload.find({
+			collection: 'comms-messages',
+			where: {
+				and: [
+					{ channelId: { in: channelIds } },
+					{ deletedAt: { exists: false } },
+				],
+			},
+			sort: '-createdAt',
+			limit: channelIds.length * 5,
+		});
+		for (const m of allLast.docs as any[]) {
+			const cid = Number(m.channelId);
+			if (!lastMessageMap.has(cid)) lastMessageMap.set(cid, m);
+		}
+	}
+
+	const enriched = await enrichChannelsForDisplay(
+		channels,
+		eligibility.character.id,
+		lastMessageMap,
 	);
 
 	return NextResponse.json({

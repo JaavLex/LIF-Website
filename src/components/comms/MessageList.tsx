@@ -16,12 +16,14 @@ export function MessageList({
 	onEdit,
 	onOpenCharacter,
 	onOpenIntel,
+	onReply,
 }: {
 	messages: CommsMessage[];
 	onDelete: (id: number) => void;
 	onEdit: (id: number, body: string) => void;
 	onOpenCharacter: (id: number) => void;
 	onOpenIntel: (id: number) => void;
+	onReply?: (message: CommsMessage) => void;
 }) {
 	const scrollRef = useRef<HTMLDivElement>(null);
 	const [editingId, setEditingId] = useState<number | null>(null);
@@ -53,6 +55,7 @@ export function MessageList({
 				return (
 					<div
 						key={m.id}
+						id={`comms-msg-${m.id}`}
 						className={`comms-message${m.isOwn ? ' own' : ''}${m.isAnonymous ? ' anonymous' : ''}`}
 					>
 						<div className="comms-message-avatar">
@@ -63,6 +66,21 @@ export function MessageList({
 							)}
 						</div>
 						<div className="comms-message-body">
+							{m.replyTo && (
+								<div
+									className="comms-message-reply-preview"
+									onClick={() => {
+										const el = document.getElementById(`comms-msg-${m.replyTo!.id}`);
+										if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+									}}
+									title="Aller au message d'origine"
+								>
+									<span className="comms-message-reply-preview-name">
+										↩ {m.replyTo.senderName}
+									</span>
+									<span>{m.replyTo.snippet}</span>
+								</div>
+							)}
 							<div className="comms-message-header">
 								{!m.isAnonymous && sender?.id ? (
 									<button
@@ -70,6 +88,13 @@ export function MessageList({
 										className="comms-message-sender comms-sender-link"
 										onClick={() => onOpenCharacter(sender.id!)}
 									>
+										{sender.rankIconUrl && (
+											<img
+												className="comms-message-rank-icon"
+												src={sender.rankIconUrl}
+												alt=""
+											/>
+										)}
 										{sender.rankName ? `${sender.rankName} ` : ''}
 										{sender.fullName}
 									</button>
@@ -77,6 +102,13 @@ export function MessageList({
 									<span
 										className={`comms-message-sender${m.isAnonymous ? ' anonymous' : ''}`}
 									>
+										{sender?.rankIconUrl && (
+											<img
+												className="comms-message-rank-icon"
+												src={sender.rankIconUrl}
+												alt=""
+											/>
+										)}
 										{sender?.rankName ? `${sender.rankName} ` : ''}
 										{sender?.fullName || '[INCONNU]'}
 									</span>
@@ -87,25 +119,36 @@ export function MessageList({
 								{m.editedAt && (
 									<span className="comms-message-edited">(modifié)</span>
 								)}
-								{m.isOwn && !isEditing && (
-									<div className="comms-message-actions">
+								<div className="comms-message-actions">
+									{onReply && !isEditing && (
 										<button
 											className="comms-message-action"
-											onClick={() => {
-												setEditingId(m.id);
-												setEditText(m.body);
-											}}
+											onClick={() => onReply(m)}
+											title="Répondre"
 										>
-											Modifier
+											↩ Répondre
 										</button>
-										<button
-											className="comms-message-action"
-											onClick={() => onDelete(m.id)}
-										>
-											Supprimer
-										</button>
-									</div>
-								)}
+									)}
+									{m.isOwn && !isEditing && (
+										<>
+											<button
+												className="comms-message-action"
+												onClick={() => {
+													setEditingId(m.id);
+													setEditText(m.body);
+												}}
+											>
+												Modifier
+											</button>
+											<button
+												className="comms-message-action"
+												onClick={() => onDelete(m.id)}
+											>
+												Supprimer
+											</button>
+										</>
+									)}
+								</div>
 							</div>
 							{isEditing ? (
 								<div>

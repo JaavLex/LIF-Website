@@ -4,11 +4,85 @@
 	display: flex;
 	flex-direction: column;
 	min-height: calc(100vh - 4rem);
-	background: var(--background);
+	/* Transparent so the Matrix canvas (z-index:0) shows through.
+	   Panels below have their own opaque-ish backgrounds for readability. */
+	background: transparent;
 	color: var(--text);
 	font-family: var(--font-mono, 'Courier New', monospace);
 	position: relative;
 	z-index: 1;
+}
+
+.comms-profile-bar {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	padding: 0.5rem 0.75rem;
+	margin: 0 1rem;
+	border: 1px solid var(--primary);
+	background: rgba(0, 0, 0, 0.55);
+	font-size: 0.8rem;
+}
+
+.comms-profile-bar-avatar {
+	width: 42px;
+	height: 42px;
+	border: 1px solid var(--primary);
+	background: rgba(0, 0, 0, 0.5);
+	flex-shrink: 0;
+	overflow: hidden;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--primary);
+	font-size: 0.9rem;
+}
+
+.comms-profile-bar-avatar img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.comms-profile-bar-info {
+	display: flex;
+	flex-direction: column;
+	gap: 0.1rem;
+	min-width: 0;
+}
+
+.comms-profile-bar-name {
+	display: flex;
+	align-items: center;
+	gap: 0.4rem;
+	color: var(--primary);
+	font-weight: bold;
+	letter-spacing: 0.5px;
+}
+
+.comms-profile-bar-name img.rank-icon {
+	height: 16px;
+	width: auto;
+	display: inline-block;
+}
+
+.comms-profile-bar-meta {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	color: var(--muted);
+	font-size: 0.72rem;
+}
+
+.comms-profile-bar-meta img.affil-icon {
+	height: 18px;
+	width: auto;
+	display: inline-block;
+	vertical-align: middle;
+}
+
+.comms-profile-bar-spacer {
+	flex: 1;
 }
 
 .comms-disclaimer-banner {
@@ -53,7 +127,8 @@
 	flex: 1;
 	border: 1px solid var(--primary);
 	margin: 0 1rem 1rem;
-	background: rgba(0, 0, 0, 0.6);
+	background: rgba(0, 0, 0, 0.78);
+	backdrop-filter: blur(2px);
 	min-height: 0;
 }
 
@@ -61,7 +136,7 @@
 	border-right: 1px solid var(--primary);
 	display: flex;
 	flex-direction: column;
-	background: rgba(0, 0, 0, 0.4);
+	background: rgba(0, 0, 0, 0.55);
 	min-height: 0;
 }
 
@@ -124,9 +199,82 @@
 	cursor: pointer;
 	border-left: 2px solid transparent;
 	display: flex;
+	gap: 0.6rem;
+	align-items: center;
+	transition: background 0.1s;
+}
+
+.comms-channel-icon {
+	width: 36px;
+	height: 36px;
+	flex-shrink: 0;
+	border: 1px solid var(--primary);
+	background: rgba(0, 0, 0, 0.45);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--primary);
+	font-size: 0.85rem;
+	overflow: hidden;
+	position: relative;
+}
+
+.comms-channel-icon img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.comms-channel-stack {
+	width: 36px;
+	height: 36px;
+	flex-shrink: 0;
+	position: relative;
+}
+
+.comms-channel-stack-bubble {
+	position: absolute;
+	width: 22px;
+	height: 22px;
+	border: 1px solid var(--primary);
+	background: rgba(0, 0, 0, 0.7);
+	overflow: hidden;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--primary);
+	font-size: 0.65rem;
+}
+
+.comms-channel-stack-bubble img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.comms-channel-stack-bubble.b0 {
+	top: 0;
+	left: 0;
+}
+.comms-channel-stack-bubble.b1 {
+	top: 0;
+	right: 0;
+}
+.comms-channel-stack-bubble.b2 {
+	bottom: 0;
+	left: 0;
+}
+.comms-channel-stack-bubble.b3 {
+	bottom: 0;
+	right: 0;
+}
+
+.comms-channel-body {
+	flex: 1;
+	min-width: 0;
+	display: flex;
 	flex-direction: column;
 	gap: 0.15rem;
-	transition: background 0.1s;
 }
 
 .comms-channel-item:hover {
@@ -364,6 +512,43 @@
 .comms-md-link {
 	color: var(--primary);
 	text-decoration: underline;
+}
+
+.comms-mention {
+	color: var(--primary);
+	background: rgba(80, 180, 80, 0.15);
+	border: 1px solid rgba(80, 180, 80, 0.5);
+	padding: 0 0.25rem;
+	font-weight: bold;
+	border-radius: 2px;
+}
+
+.comms-message-rank-icon {
+	height: 14px;
+	width: auto;
+	display: inline-block;
+	vertical-align: middle;
+	margin-right: 0.25rem;
+}
+
+.comms-message-reply-preview {
+	border-left: 2px solid var(--primary);
+	padding: 0.15rem 0.5rem;
+	margin-bottom: 0.25rem;
+	background: rgba(255, 255, 255, 0.04);
+	font-size: 0.7rem;
+	color: var(--muted);
+	cursor: pointer;
+}
+
+.comms-message-reply-preview:hover {
+	background: rgba(255, 255, 255, 0.08);
+}
+
+.comms-message-reply-preview-name {
+	color: var(--primary);
+	font-weight: bold;
+	margin-right: 0.4rem;
 }
 
 .comms-attachments {
