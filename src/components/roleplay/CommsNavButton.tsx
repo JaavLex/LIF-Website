@@ -114,6 +114,7 @@ export function CommsNavButton() {
 		<Link
 			href="/roleplay/comms"
 			className="session-btn"
+			data-tutorial="comms-button"
 			style={{
 				padding: '0.6rem 1.2rem',
 				fontSize: '0.85rem',

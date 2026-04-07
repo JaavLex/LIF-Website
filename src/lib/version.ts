@@ -6,9 +6,25 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.6.23',
+  version: '1.6.24',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.6.24',
+      date: '2026-04-07',
+      changes: [
+        'FACTION & UNITÉ — Refonte complète des pages dossier (`/roleplay/faction/[slug]` et `/roleplay/unite/[slug]`) en aesthetic « éditorial-brutaliste tactique » : canvas full-black avec grille topographique masquée, vignette colorée par la couleur de la faction/unité, rail vertical rotated en marge.',
+        'FACTION & UNITÉ — Hero asymétrique 3 colonnes : stamp glyph géant (F-id, U-id), titre tri-ligne « FACTION/UNITÉ + nom + classification » avec hiérarchie de couleur, bande de stats (unités, effectifs, fer de lance) en monospace, emblème en cadre HUD avec coins.',
+        'FACTION — Bloc « FER DE LANCE » mettant en avant les unités principales (isMain) avec watermark, stamp, halo couleur, et liens vers la fiche unité. Bloc séparé pour les unités rattachées.',
+        'UNITÉ — Nouveau bloc « PROFIL DOCTRINAL » qui affiche le pitch (italique, border colorée) et les traits (liste monospace) saisis dans Payload, plus un bloc « CHAÎNE DE COMMANDEMENT » en grille de cellules info (faction, commandant, effectifs, statut).',
+        'FACTION & UNITÉ — Section effectifs en grille compacte avec avatars carrés, noms en stencil, rangs en monospace, et hover lift discret.',
+        'TUTORIEL — Nouvelle étape « COMMS — CANAL TACTIQUE » qui met en avant le bouton COMMS (fonctionnalité essentielle) avec explication des canaux et du badge de mentions @vous.',
+        'TUTORIEL — Nouvelle étape « ORGANISATIONS & UNITÉS » qui présente la hiérarchie LIF (faction principale + fer de lance + factions alignées).',
+        'TUTORIEL — Étape « CRÉER UN PERSONNAGE » mise à jour pour mentionner le choix d\'unité Cerberus / Spectre désormais obligatoire et définitif.',
+        'TUTORIEL — Étape admin « PANNEAU D\'ADMINISTRATION » mise à jour pour expliquer les nouveaux champs « Unité principale » et le sélecteur (tagline / pitch / traits).',
+        'TUTORIEL — Bump des clés localStorage `tutorial-seen` → v2 pour que les utilisateurs existants redécouvrent le tutoriel mis à jour (notamment COMMS).',
+      ],
+    },
     {
       version: '1.6.23',
       date: '2026-04-07',

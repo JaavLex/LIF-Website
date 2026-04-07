@@ -431,6 +431,7 @@ export default async function RoleplayPage({
 						number="02"
 						eyebrow="HIÉRARCHIE // COMMANDEMENT"
 						title="Organisations & Unités"
+						tutorial="organisations"
 						meta={
 							<>
 								<span>

@@ -11,8 +11,11 @@ import {
 } from './TutorialDummyForms';
 import { VersionInfo } from '@/components/VersionInfo';
 
-const TUTORIAL_SEEN_KEY = 'lif-roleplay-tutorial-seen';
-const ADMIN_TUTORIAL_SEEN_KEY = 'lif-roleplay-admin-tutorial-seen';
+// v2 — bumped 2026-04-07 when COMMS / Organisations steps were added.
+// Bumping the suffix re-shows the tutorial to existing users so they discover
+// the new sections (especially COMMS, which is essential).
+const TUTORIAL_SEEN_KEY = 'lif-roleplay-tutorial-seen.v2';
+const ADMIN_TUTORIAL_SEEN_KEY = 'lif-roleplay-admin-tutorial-seen.v2';
 
 interface TutorialStep {
 	id: string;
@@ -63,6 +66,14 @@ const USER_STEPS: TutorialStep[] = [
 		position: 'bottom',
 	},
 	{
+		id: 'comms',
+		target: '[data-tutorial="comms-button"]',
+		title: 'COMMS — CANAL TACTIQUE',
+		content:
+			"⚡ FONCTIONNALITÉ ESSENTIELLE. Le bouton COMMS ouvre le HUD tactique de communication : canaux de discussion en jeu, messages de mission, mentions @vous. Une pastille rouge apparaît dès qu'on vous adresse un message — vérifiez-la régulièrement, c'est ainsi que les autres opérateurs vous contactent.",
+		position: 'bottom',
+	},
+	{
 		id: 'personnel',
 		target: '[data-tutorial="personnel-panel"]',
 		title: 'REGISTRE DU PERSONNEL',
@@ -83,9 +94,17 @@ const USER_STEPS: TutorialStep[] = [
 		target: null,
 		title: 'CRÉER UN PERSONNAGE',
 		content:
-			'Cliquez sur « Nouveau Personnage » dans la barre de session. Voici les champs à remplir :',
+			"Cliquez sur « Nouveau Personnage » dans la barre de session. Vous choisirez d'abord votre unité (Cerberus ou Spectre — c'est définitif), puis vous remplirez votre dossier. Voici les champs :",
 		position: 'center',
 		dummyForm: 'character',
+	},
+	{
+		id: 'organisations',
+		target: '[data-tutorial="organisations"]',
+		title: 'ORGANISATIONS & UNITÉS',
+		content:
+			"La hiérarchie de la LIF : faction principale en hero, fer de lance (Cerberus / Spectre) en bandes featured, puis les factions alliées / neutres / hostiles. Cliquez sur n'importe quelle faction ou unité pour ouvrir son dossier complet (description, doctrine, commandement, effectifs).",
+		position: 'top',
 	},
 	{
 		id: 'intelligence',
@@ -117,7 +136,7 @@ const USER_STEPS: TutorialStep[] = [
 		target: null,
 		title: 'BRIEFING TERMINÉ',
 		content:
-			'Vous êtes prêt. Explorez les dossiers, créez votre personnage et contribuez aux renseignements. Relancez ce tutoriel via le bouton en bas à gauche.',
+			"Vous êtes prêt. Explorez les dossiers, créez votre personnage, surveillez vos COMMS et contribuez aux renseignements. Relancez ce tutoriel via le bouton en bas à gauche.",
 		position: 'center',
 	},
 ];
@@ -136,7 +155,7 @@ const ADMIN_STEPS: TutorialStep[] = [
 		target: '[data-tutorial="admin-panel"]',
 		title: "PANNEAU D'ADMINISTRATION",
 		content:
-			'Créez et gérez les Unités (nom, slug, couleur, insigne) et Factions (type, couleur, logo).',
+			"Créez et gérez les Unités (nom, slug, couleur, insigne, drapeau « Unité principale » + tagline / pitch / traits du sélecteur) et les Factions (type, couleur, logo, drapeau « Faction principale »). Les unités principales de la faction principale apparaissent automatiquement sous la bannière FER DE LANCE de la page d'accueil.",
 		position: 'bottom',
 		adminOnly: true,
 	},
