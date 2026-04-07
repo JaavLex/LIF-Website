@@ -491,7 +491,7 @@ export function CommsLayout({ character }: { character: ActiveCharacter }) {
 				<div className="comms-profile-bar-spacer" />
 				<button
 					type="button"
-					className="comms-icon-btn comms-icon-btn-with-icon"
+					className="comms-icon-btn comms-icon-btn-with-icon comms-profile-mute-btn"
 					onClick={toggleMuted}
 					title={muted ? 'Réactiver les sons' : 'Couper les sons'}
 					aria-pressed={muted}
@@ -574,7 +574,7 @@ export function CommsLayout({ character }: { character: ActiveCharacter }) {
 									<span>{activeChannel.type.toUpperCase()}</span>
 									<button
 										type="button"
-										className="comms-icon-btn comms-icon-btn-with-icon"
+										className="comms-icon-btn comms-icon-btn-with-icon comms-header-members-btn"
 										onClick={() => setShowMembers(true)}
 									>
 										<Users size={14} />
@@ -584,7 +584,7 @@ export function CommsLayout({ character }: { character: ActiveCharacter }) {
 										activeChannel.type === 'dm') && (
 										<button
 											type="button"
-											className="comms-icon-btn comms-icon-btn-with-icon"
+											className="comms-icon-btn comms-icon-btn-with-icon comms-header-leave-btn"
 											onClick={() => handleLeaveOrClose(activeChannel)}
 											title={
 												activeChannel.type === 'group'

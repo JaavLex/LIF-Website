@@ -315,26 +315,29 @@ export function MessageComposer({
 			<div className="comms-composer-row">
 				<button
 					type="button"
-					className="comms-icon-btn comms-icon-btn-with-icon"
+					className="comms-icon-btn comms-icon-btn-with-icon comms-composer-attach-btn"
 					onClick={() => setShowPicker(true)}
 					disabled={disabled}
+					title="Ajouter une pièce jointe"
 				>
 					<Paperclip size={14} />
 					<span>Pièce jointe</span>
 				</button>
-				<label>
+				<label className="comms-composer-anon-label">
 					<input
 						type="checkbox"
 						checked={isAnonymous}
 						onChange={(e) => setIsAnonymous(e.target.checked)}
 						disabled={disabled}
 					/>
-					Envoyer anonymement
+					<span className="comms-composer-anon-full">Envoyer anonymement</span>
+					<span className="comms-composer-anon-short">Anon</span>
 				</label>
 				<button
 					type="submit"
 					className="comms-send-btn comms-icon-btn-with-icon"
 					disabled={disabled || (!body.trim() && attachments.length === 0)}
+					title="Transmettre le message"
 				>
 					<Send size={14} />
 					<span>TRANSMETTRE</span>

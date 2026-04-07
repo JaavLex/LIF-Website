@@ -6,9 +6,21 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.6.11',
+  version: '1.6.12',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.6.12',
+      date: '2026-04-07',
+      changes: [
+        'COMMS — Refonte « Tactical HUD / Night Vision Glass » : panneaux verre sombre translucides avec backdrop-filter (le fond Matrix MW2 repasse derrière), équilibre entre lisibilité et ambiance',
+        'COMMS — Palette vert matrix/ambre HUD/rouille alerte sur fond verre-nuit, glow léger sur les titres et mentions',
+        'COMMS — Crochets d\'angle HUD (corner brackets) et scanlines subtiles sur la zone de messages',
+        'COMMS — Mobile : bouton « Membres » masqué de l\'en-tête (redondant avec la barre d\'onglets), « Quitter »/« Fermer » et « Sons » en icônes seules',
+        'COMMS — Mobile : label « Envoyer anonymement » raccourci en « Anon », modals en bottom-sheet plein écran avec boutons empilés',
+        'COMMS — Mobile : cibles tactiles 44px+, safe-area-inset, fallback @supports pour navigateurs sans backdrop-filter',
+      ],
+    },
     {
       version: '1.6.11',
       date: '2026-04-07',
