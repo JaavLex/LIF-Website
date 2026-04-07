@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { SafeMarkdown } from '@/lib/safe-markdown';
 import type { CommsMessage } from './CommsLayout';
+import { AnonymousAvatar } from './AnonymousAvatar';
 
 function formatTimestamp(iso: string): string {
 	const d = new Date(iso);
@@ -59,7 +60,9 @@ export function MessageList({
 						className={`comms-message${m.isOwn ? ' own' : ''}${m.isAnonymous ? ' anonymous' : ''}`}
 					>
 						<div className="comms-message-avatar">
-							{sender?.avatarUrl ? (
+							{m.isAnonymous ? (
+								<AnonymousAvatar size={36} />
+							) : sender?.avatarUrl ? (
 								<img src={sender.avatarUrl} alt="" />
 							) : (
 								initials

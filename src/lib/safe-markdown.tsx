@@ -4,27 +4,21 @@ import React from 'react';
  * Tiny safe markdown renderer.
  *
  * Supports: **bold**, *italic*, `code`, [links](url), > quotes,
- * - lists, # headings, paragraphs, line breaks. HTML is escaped — never
- * rendered. Links are restricted to http(s) and forced to open in a new
- * tab with rel=noopener,noreferrer.
+ * - lists, # headings, paragraphs, line breaks. HTML is never rendered —
+ * React text nodes auto-escape. Links are restricted to http(s) and forced
+ * to open in a new tab with rel=noopener,noreferrer.
  *
  * No external deps so the package can ship without adding to the bundle.
  */
-
-function escapeHtml(s: string): string {
-	return s
-		.replace(/&/g, '&amp;')
-		.replace(/</g, '&lt;')
-		.replace(/>/g, '&gt;')
-		.replace(/"/g, '&quot;')
-		.replace(/'/g, '&#039;');
-}
 
 function renderInline(text: string): React.ReactNode[] {
 	const out: React.ReactNode[] = [];
 	let i = 0;
 	let key = 0;
-	const safe = escapeHtml(text);
+	// React already escapes text content placed in JSX children, so we operate
+	// on the raw source. Pre-escaping (&quot;, &amp;, …) would result in
+	// literal entity strings being shown to the user.
+	const safe = text;
 
 	while (i < safe.length) {
 		const slice = safe.slice(i);

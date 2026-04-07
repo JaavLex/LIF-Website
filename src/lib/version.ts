@@ -6,9 +6,22 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.6.3',
+  version: '1.6.4',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.6.4',
+      date: '2026-04-07',
+      changes: [
+        'COMMS — son de notification (ping doux) pour les nouveaux messages',
+        'COMMS — son radio (statique + alerte) lors d\'une mention @',
+        'COMMS — bouton 🔊/🔇 dans la barre de profil pour couper les sons (mémorisé)',
+        'COMMS — bandeau d\'avis : fermeture mémorisée localement',
+        'COMMS — créateurs de groupe peuvent retirer un membre depuis le panneau « Membres »',
+        'COMMS — utilisateurs anonymes : avatar mystérieux à capuche avec œil rouge',
+        'COMMS — correctif visuel : guillemets et caractères spéciaux dans les noms (échappement HTML doublé supprimé)',
+      ],
+    },
     {
       version: '1.6.3',
       date: '2026-04-07',

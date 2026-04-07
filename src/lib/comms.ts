@@ -456,6 +456,7 @@ export interface EnrichedChannel {
 	createdByCharacterId?: number | null;
 	lastMessageAt?: string | null;
 	lastMessagePreview?: string | null;
+	lastMessageMentionsViewer?: boolean;
 	iconUrl?: string | null;
 	subtitle?: string | null;
 	displayMembers?: Array<{
@@ -605,6 +606,9 @@ export async function enrichChannelsForDisplay(
 			createdByCharacterId: ch.createdByCharacterId,
 			lastMessageAt: ch.lastMessageAt,
 			lastMessagePreview: last?.body ? String(last.body).slice(0, 100) : null,
+			lastMessageMentionsViewer:
+				Array.isArray(last?.mentions) &&
+				last.mentions.map(Number).includes(viewerCharacterId),
 			iconUrl,
 			subtitle,
 			displayMembers,

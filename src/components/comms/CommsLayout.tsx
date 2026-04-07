@@ -3,6 +3,12 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
+import {
+	playNotification,
+	playRadioPing,
+	isCommsMuted,
+	setCommsMuted,
+} from '@/lib/comms-sounds';
 import type { ActiveCharacter } from '@/lib/comms';
 import { ChannelList } from './ChannelList';
 import { MessageList } from './MessageList';
@@ -31,6 +37,7 @@ export interface CommsChannel {
 	createdByCharacterId?: number | null;
 	lastMessageAt?: string | null;
 	lastMessagePreview?: string | null;
+	lastMessageMentionsViewer?: boolean;
 	iconUrl?: string | null;
 	subtitle?: string | null;
 	displayMembers?: CommsChannelDisplayMember[];
@@ -74,6 +81,7 @@ export function CommsLayout({ character }: { character: ActiveCharacter }) {
 	const [loading, setLoading] = useState(true);
 	const [disclaimerAccepted, setDisclaimerAccepted] = useState<boolean | null>(null);
 	const [bannerClosed, setBannerClosed] = useState(false);
+	const [muted, setMuted] = useState(false);
 	const [showNewDm, setShowNewDm] = useState(false);
 	const [showNewGroup, setShowNewGroup] = useState(false);
 	const [showMembers, setShowMembers] = useState(false);
@@ -115,20 +123,29 @@ export function CommsLayout({ character }: { character: ActiveCharacter }) {
 				for (const ch of newChannels) {
 					if (!ch.lastMessageAt) continue;
 					const prev = seen.get(ch.id);
-					if (prev && ch.lastMessageAt > prev && ch.id !== activeId) {
-						const toastId = ++toastIdRef.current;
-						setToasts((t) => [
-							...t,
-							{
-								id: toastId,
-								channelId: ch.id,
-								channelName: ch.name,
-								snippet: ch.lastMessagePreview || '',
-							},
-						]);
-						setTimeout(() => {
-							setToasts((t) => t.filter((x) => x.id !== toastId));
-						}, 6000);
+					if (prev && ch.lastMessageAt > prev) {
+						const isActive = ch.id === activeId;
+						const mention = !!ch.lastMessageMentionsViewer;
+						if (!isActive) {
+							const toastId = ++toastIdRef.current;
+							setToasts((t) => [
+								...t,
+								{
+									id: toastId,
+									channelId: ch.id,
+									channelName: ch.name,
+									snippet: ch.lastMessagePreview || '',
+								},
+							]);
+							setTimeout(() => {
+								setToasts((t) => t.filter((x) => x.id !== toastId));
+							}, 6000);
+							if (mention) playRadioPing();
+							else playNotification();
+						} else if (mention) {
+							// Active channel but mentions us → still play radio ping
+							playRadioPing();
+						}
 					}
 				}
 			}
@@ -182,6 +199,33 @@ export function CommsLayout({ character }: { character: ActiveCharacter }) {
 		checkEligibility();
 		loadChannels().then(() => setLoading(false));
 	}, [checkEligibility, loadChannels]);
+
+	// Hydrate persisted UI state on mount
+	useEffect(() => {
+		if (typeof window === 'undefined') return;
+		setBannerClosed(window.localStorage.getItem('comms.banner.closed') === '1');
+		setMuted(isCommsMuted());
+		const onMuteChange = (e: Event) => {
+			setMuted((e as CustomEvent).detail);
+		};
+		window.addEventListener('comms-mute-change', onMuteChange);
+		return () => window.removeEventListener('comms-mute-change', onMuteChange);
+	}, []);
+
+	const closeBanner = useCallback(() => {
+		setBannerClosed(true);
+		if (typeof window !== 'undefined') {
+			window.localStorage.setItem('comms.banner.closed', '1');
+		}
+	}, []);
+
+	const toggleMuted = useCallback(() => {
+		setMuted((m) => {
+			const next = !m;
+			setCommsMuted(next);
+			return next;
+		});
+	}, []);
 
 	// Presence heartbeat: ping every 30s while page is mounted
 	useEffect(() => {
@@ -382,6 +426,15 @@ export function CommsLayout({ character }: { character: ActiveCharacter }) {
 					</div>
 				</div>
 				<div className="comms-profile-bar-spacer" />
+				<button
+					type="button"
+					className="comms-icon-btn"
+					onClick={toggleMuted}
+					title={muted ? 'Réactiver les sons' : 'Couper les sons'}
+					aria-pressed={muted}
+				>
+					{muted ? '🔇 Sons' : '🔊 Sons'}
+				</button>
 			</div>
 
 			{!bannerClosed && (
@@ -394,7 +447,7 @@ export function CommsLayout({ character }: { character: ActiveCharacter }) {
 					</div>
 					<button
 						className="comms-disclaimer-close"
-						onClick={() => setBannerClosed(true)}
+						onClick={closeBanner}
 						aria-label="Fermer"
 					>
 						✕
@@ -541,6 +594,12 @@ export function CommsLayout({ character }: { character: ActiveCharacter }) {
 						setProfileCharacterId(id);
 					}}
 					onlineIds={onlineMemberIds}
+					canKick={
+						activeChannel?.type === 'group' &&
+						activeChannel?.createdByCharacterId === character.id
+					}
+					viewerId={character.id}
+					onMembersChanged={() => loadChannels()}
 				/>
 			)}
 

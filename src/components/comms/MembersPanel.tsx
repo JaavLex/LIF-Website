@@ -17,15 +17,33 @@ export function MembersPanel({
 	onClose,
 	onSelectMember,
 	onlineIds,
+	canKick = false,
+	viewerId,
+	onMembersChanged,
 }: {
 	channelId: number;
 	onClose: () => void;
 	onSelectMember: (id: number) => void;
 	onlineIds?: number[];
+	canKick?: boolean;
+	viewerId?: number;
+	onMembersChanged?: () => void;
 }) {
 	const onlineSet = new Set(onlineIds || []);
 	const [members, setMembers] = useState<Member[]>([]);
 	const [loading, setLoading] = useState(true);
+	const [busyId, setBusyId] = useState<number | null>(null);
+
+	const loadMembers = () => {
+		setLoading(true);
+		return fetch(`/api/comms/channels/${channelId}/members`)
+			.then((r) => (r.ok ? r.json() : { members: [] }))
+			.then((d) => {
+				setMembers(d.members || []);
+				setLoading(false);
+			})
+			.catch(() => setLoading(false));
+	};
 
 	useEffect(() => {
 		let cancelled = false;
@@ -45,6 +63,30 @@ export function MembersPanel({
 			cancelled = true;
 		};
 	}, [channelId]);
+
+	async function handleKick(memberId: number, memberName: string) {
+		if (!confirm(`Retirer ${memberName} du groupe ?`)) return;
+		setBusyId(memberId);
+		try {
+			const remaining = members
+				.map((m) => m.id)
+				.filter((id) => id !== memberId);
+			const res = await fetch(`/api/comms/channels/${channelId}`, {
+				method: 'PATCH',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ members: remaining }),
+			});
+			if (!res.ok) {
+				const data = await res.json().catch(() => ({}));
+				alert(data.error || 'Erreur');
+				return;
+			}
+			await loadMembers();
+			onMembersChanged?.();
+		} finally {
+			setBusyId(null);
+		}
+	}
 
 	return (
 		<div className="comms-modal-backdrop" onClick={onClose}>
@@ -79,17 +121,29 @@ export function MembersPanel({
 				) : (
 					<div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
 						{members.map((m) => (
-							<button
+							<div
 								key={m.id}
+								style={{
+									display: 'flex',
+									alignItems: 'center',
+									gap: '0.5rem',
+									padding: '0.5rem',
+									background: 'rgba(0,0,0,0.4)',
+									border: '1px solid var(--primary)',
+								}}
+							>
+							<button
 								type="button"
 								onClick={() => onSelectMember(m.id)}
 								style={{
 									display: 'flex',
 									alignItems: 'center',
 									gap: '0.75rem',
-									padding: '0.5rem',
-									background: 'rgba(0,0,0,0.4)',
-									border: '1px solid var(--primary)',
+									flex: 1,
+									minWidth: 0,
+									padding: 0,
+									background: 'transparent',
+									border: 'none',
 									color: 'var(--text)',
 									cursor: 'pointer',
 									fontFamily: 'inherit',
@@ -166,6 +220,19 @@ export function MembersPanel({
 									</div>
 								</div>
 							</button>
+								{canKick && m.id !== viewerId && (
+									<button
+										type="button"
+										className="comms-modal-btn"
+										onClick={() => handleKick(m.id, m.fullName)}
+										disabled={busyId === m.id}
+										style={{ padding: '0.25rem 0.6rem', fontSize: '0.75rem' }}
+										title="Retirer du groupe"
+									>
+										{busyId === m.id ? '…' : '✕ Retirer'}
+									</button>
+								)}
+							</div>
 						))}
 					</div>
 				)}

@@ -2,12 +2,14 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
+import { playNotification, playRadioPing } from '@/lib/comms-sounds';
 
 interface Toast {
 	id: number;
 	channelId: number;
 	channelName: string;
 	snippet: string;
+	mention: boolean;
 }
 
 interface ChannelLite {
@@ -15,6 +17,7 @@ interface ChannelLite {
 	name: string;
 	lastMessageAt?: string | null;
 	lastMessagePreview?: string | null;
+	lastMessageMentionsViewer?: boolean;
 }
 
 /**
@@ -61,6 +64,7 @@ export function GlobalCommsNotifier() {
 						const prev = seen.get(ch.id);
 						if (prev && ch.lastMessageAt > prev) {
 							const toastId = ++toastIdRef.current;
+							const mention = !!ch.lastMessageMentionsViewer;
 							if (!cancelled) {
 								setToasts((t) => [
 									...t,
@@ -69,11 +73,14 @@ export function GlobalCommsNotifier() {
 										channelId: ch.id,
 										channelName: ch.name,
 										snippet: ch.lastMessagePreview || '',
+										mention,
 									},
 								]);
 								setTimeout(() => {
 									setToasts((t) => t.filter((x) => x.id !== toastId));
 								}, 6000);
+								if (mention) playRadioPing();
+								else playNotification();
 							}
 						}
 					}
