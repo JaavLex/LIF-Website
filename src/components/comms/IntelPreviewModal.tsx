@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { lexicalToText } from '@/lib/constants';
 
 interface Intel {
 	id: number;
@@ -15,20 +16,6 @@ interface Intel {
 	linkedTarget?: any;
 	linkedFaction?: any;
 	media?: Array<{ file?: any; caption?: string }>;
-}
-
-// Extracts plain text from a Lexical JSON node tree. Avoids HTML injection.
-function lexicalToText(node: any): string {
-	if (!node) return '';
-	if (typeof node === 'string') return node;
-	if (Array.isArray(node)) return node.map(lexicalToText).join('');
-	if (typeof node !== 'object') return '';
-	let out = '';
-	if (typeof node.text === 'string') out += node.text;
-	if (Array.isArray(node.children)) out += node.children.map(lexicalToText).join('');
-	if (node.type === 'paragraph' || node.type === 'heading') out += '\n';
-	if (node.root) return lexicalToText(node.root);
-	return out;
 }
 
 export function IntelPreviewModal({
