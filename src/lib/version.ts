@@ -6,9 +6,21 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.6.18',
+  version: '1.6.19',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.6.19',
+      date: '2026-04-07',
+      changes: [
+        'PERSONNEL — Refonte complète du panneau de commande : onglets + recherche (icône loupe) + filtres + compteur dans une seule carte org-card avec bande verte à gauche, gradient et coins HUD',
+        'PERSONNEL — Nouveau sélecteur « Grouper par » : Statut / Unité / Faction (chips Rajdhani avec icônes Lucide)',
+        'PERSONNEL — Groupes pliables : chaque section devient une carte avec en-tête cliquable (icône HUD, logo unité/faction, titre Rajdhani coloré, ligne dégradée, compteur, chevron rotatif), animation de révélation',
+        'PERSONNEL — Boutons « Tout déplier / Tout replier » dans le panneau',
+        'PERSONNEL — Couleur des groupes dérivée du statut, de la faction (accent) ou de l\'unité (primaire)',
+        'TRÉSORERIE — « Fonds de l\'organisation » entièrement refait en hero org-card or : bande dorée 4px, watermark $ géant, gradient + scanlines, montant Rajdhani 3.6rem avec triple text-shadow, tag de variation chip, graphique avec coins HUD dorés, palette d\'or au lieu du vert',
+      ],
+    },
     {
       version: '1.6.18',
       date: '2026-04-07',
