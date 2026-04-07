@@ -1,5 +1,6 @@
 import * as migration_20260329_084817 from './20260329_084817';
 import * as migration_20260331_185031_add_rp_rules_password from './20260331_185031_add_rp_rules_password';
+import * as migration_20260406_180000_add_callsign from './20260406_180000_add_callsign';
 
 export const migrations = [
   {
@@ -11,5 +12,10 @@ export const migrations = [
     up: migration_20260331_185031_add_rp_rules_password.up,
     down: migration_20260331_185031_add_rp_rules_password.down,
     name: '20260331_185031_add_rp_rules_password'
+  },
+  {
+    up: migration_20260406_180000_add_callsign.up,
+    down: migration_20260406_180000_add_callsign.down,
+    name: '20260406_180000_add_callsign',
   },
 ];

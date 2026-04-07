@@ -43,12 +43,13 @@ const generateMatricule: CollectionBeforeChangeHook = async ({
 };
 
 const generateFullName: CollectionBeforeChangeHook = ({ data }) => {
+	const callsign = data?.callsign ? `"${data.callsign}" ` : '';
 	if (data?.firstName && data?.lastName) {
-		data.fullName = `${data.firstName} ${data.lastName}`;
+		data.fullName = `${data.firstName} ${callsign}${data.lastName}`;
 	} else if (data?.firstName) {
-		data.fullName = data.firstName;
+		data.fullName = `${data.firstName}${callsign ? ' ' + callsign.trim() : ''}`;
 	} else if (data?.lastName) {
-		data.fullName = data.lastName;
+		data.fullName = `${callsign}${data.lastName}`;
 	} else if (!data?.fullName) {
 		data.fullName = 'Sans nom';
 	}
@@ -125,6 +126,14 @@ export const Characters: CollectionConfig = {
 									required: true,
 								},
 							],
+						},
+						{
+							name: 'callsign',
+							label: 'Callsign',
+							type: 'text',
+							admin: {
+								description: 'Surnom affiché entre prénom et nom (ex: Eagle)',
+							},
 						},
 						{
 							type: 'row',
