@@ -6,9 +6,20 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.6.10',
+  version: '1.6.11',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.6.11',
+      date: '2026-04-07',
+      changes: [
+        'COMMS — Refonte visuelle « Field Operations Console » : palette parchemin/olive/ambre (fini le tout-noir), texture papier, typographie Rajdhani militaire condensée pour les titres',
+        'COMMS — Mobile : barre d\'onglets fixe en bas (Canaux / Discussion / Membres) dans la zone du pouce',
+        'COMMS — Mobile : cibles tactiles 44px+, composer respecte safe-area-inset iOS, font-size 16px (anti-zoom Safari)',
+        'COMMS — Bandes de couleur par type de canal (faction olive, unité ambre, DM encre, groupe rouille)',
+        'COMMS — Boutons d\'action toujours visibles sur mobile (pas de hover sur tactile)',
+      ],
+    },
     {
       version: '1.6.10',
       date: '2026-04-07',

@@ -42,6 +42,7 @@ export function ChannelList({
 							<div
 								key={ch.id}
 								className={`comms-channel-item${activeId === ch.id ? ' active' : ''}${mentionCount > 0 ? ' has-mentions' : ''}`}
+								data-type={ch.type}
 								onClick={() => onSelect(ch.id)}
 							>
 								<ChannelIcon channel={ch} />

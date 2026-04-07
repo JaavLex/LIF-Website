@@ -13,6 +13,7 @@ import {
 	MessageSquare,
 	MessageCirclePlus,
 	UsersRound,
+	List,
 } from 'lucide-react';
 import {
 	playNotification,
@@ -640,6 +641,45 @@ export function CommsLayout({ character }: { character: ActiveCharacter }) {
 					)}
 				</main>
 			</div>
+
+			{/* Mobile bottom tab bar (only renders on mobile via CSS). */}
+			<nav className="comms-mobile-tabs" aria-label="Navigation comms">
+				<button
+					type="button"
+					className={`comms-mobile-tab${!mobileShowMain ? ' active' : ''}`}
+					onClick={() => setMobileShowMain(false)}
+				>
+					<span className="comms-mobile-tab-icon"><List size={20} /></span>
+					<span>Canaux</span>
+					{(() => {
+						const total = Object.values(mentionCounts).reduce(
+							(a, b) => a + (b || 0),
+							0,
+						);
+						return total > 0 ? (
+							<span className="comms-mobile-tab-badge">@{total}</span>
+						) : null;
+					})()}
+				</button>
+				<button
+					type="button"
+					className={`comms-mobile-tab${mobileShowMain ? ' active' : ''}`}
+					onClick={() => setMobileShowMain(true)}
+					disabled={!activeId}
+				>
+					<span className="comms-mobile-tab-icon"><MessageSquare size={20} /></span>
+					<span>Discussion</span>
+				</button>
+				<button
+					type="button"
+					className="comms-mobile-tab"
+					onClick={() => activeId && setShowMembers(true)}
+					disabled={!activeChannel}
+				>
+					<span className="comms-mobile-tab-icon"><Users size={20} /></span>
+					<span>Membres</span>
+				</button>
+			</nav>
 
 			{disclaimerAccepted === false && (
 				<DisclaimerModal onAccept={handleAcceptDisclaimer} />
