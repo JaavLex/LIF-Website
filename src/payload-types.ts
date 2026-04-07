@@ -81,6 +81,8 @@ export interface Config {
     'moderation-events': ModerationEvent;
     'moderation-sanctions': ModerationSanction;
     'bank-history': BankHistory;
+    'comms-channels': CommsChannel;
+    'comms-messages': CommsMessage;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -102,6 +104,8 @@ export interface Config {
     'moderation-events': ModerationEventsSelect<false> | ModerationEventsSelect<true>;
     'moderation-sanctions': ModerationSanctionsSelect<false> | ModerationSanctionsSelect<true>;
     'bank-history': BankHistorySelect<false> | BankHistorySelect<true>;
+    'comms-channels': CommsChannelsSelect<false> | CommsChannelsSelect<true>;
+    'comms-messages': CommsMessagesSelect<false> | CommsMessagesSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -169,6 +173,8 @@ export interface User {
     | boolean
     | null;
   isGuildMember?: boolean | null;
+  commsDisclaimerAcceptedAt?: string | null;
+  commsBanned?: boolean | null;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -374,6 +380,10 @@ export interface Character {
   fullName?: string | null;
   firstName: string;
   lastName: string;
+  /**
+   * Surnom affiché entre prénom et nom (ex: Eagle)
+   */
+  callsign?: string | null;
   dateOfBirth?: string | null;
   placeOfOrigin?: string | null;
   height?: number | null;
@@ -794,6 +804,63 @@ export interface BankHistory {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "comms-channels".
+ */
+export interface CommsChannel {
+  id: number;
+  name: string;
+  type: 'faction' | 'unit' | 'dm' | 'group';
+  factionRef?: string | null;
+  unitRefId?: number | null;
+  /**
+   * Tableau JSON des IDs de personnages
+   */
+  members?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  createdByCharacterId?: number | null;
+  lastMessageAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "comms-messages".
+ */
+export interface CommsMessage {
+  id: number;
+  channelId: number;
+  senderCharacterId: number;
+  senderDiscordId?: string | null;
+  isAnonymous?: boolean | null;
+  body?: string | null;
+  /**
+   * JSON array of { kind: "character"|"intel"|"media", refId: number, meta?: any }
+   */
+  attachments?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  editedAt?: string | null;
+  deletedAt?: string | null;
+  deletedBy?: string | null;
+  senderIp?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -871,6 +938,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'bank-history';
         value: number | BankHistory;
+      } | null)
+    | ({
+        relationTo: 'comms-channels';
+        value: number | CommsChannel;
+      } | null)
+    | ({
+        relationTo: 'comms-messages';
+        value: number | CommsMessage;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -926,6 +1001,8 @@ export interface UsersSelect<T extends boolean = true> {
   discordAvatar?: T;
   discordRoles?: T;
   isGuildMember?: T;
+  commsDisclaimerAcceptedAt?: T;
+  commsBanned?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -1105,6 +1182,7 @@ export interface CharactersSelect<T extends boolean = true> {
   fullName?: T;
   firstName?: T;
   lastName?: T;
+  callsign?: T;
   dateOfBirth?: T;
   placeOfOrigin?: T;
   height?: T;
@@ -1311,6 +1389,39 @@ export interface BankHistorySelect<T extends boolean = true> {
   amount?: T;
   previousAmount?: T;
   source?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "comms-channels_select".
+ */
+export interface CommsChannelsSelect<T extends boolean = true> {
+  name?: T;
+  type?: T;
+  factionRef?: T;
+  unitRefId?: T;
+  members?: T;
+  createdByCharacterId?: T;
+  lastMessageAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "comms-messages_select".
+ */
+export interface CommsMessagesSelect<T extends boolean = true> {
+  channelId?: T;
+  senderCharacterId?: T;
+  senderDiscordId?: T;
+  isAnonymous?: T;
+  body?: T;
+  attachments?: T;
+  editedAt?: T;
+  deletedAt?: T;
+  deletedBy?: T;
+  senderIp?: T;
   updatedAt?: T;
   createdAt?: T;
 }
