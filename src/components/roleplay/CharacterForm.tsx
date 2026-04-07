@@ -76,6 +76,7 @@ export function CharacterForm({
 	const [form, setForm] = useState({
 		firstName: editData?.firstName || '',
 		lastName: editData?.lastName || '',
+		callsign: editData?.callsign || '',
 		dateOfBirth: editData?.dateOfBirth?.split('T')[0] || '',
 		placeOfOrigin: editData?.placeOfOrigin || '',
 		height: editData?.height || '',
@@ -181,6 +182,7 @@ export function CharacterForm({
 			const body: any = {
 				firstName: form.firstName,
 				lastName: form.lastName,
+				callsign: form.callsign || undefined,
 				placeOfOrigin: form.placeOfOrigin || undefined,
 				physicalDescription: form.physicalDescription || undefined,
 				motto: form.motto || undefined,
@@ -495,6 +497,22 @@ export function CharacterForm({
 								className="filter-input"
 								style={{ width: '100%' }}
 							/>
+						</div>
+					</div>
+
+					<div>
+						<label style={labelStyle}>Callsign</label>
+						<input
+							type="text"
+							name="callsign"
+							value={form.callsign}
+							onChange={handleChange}
+							placeholder="Ex: Eagle"
+							className="filter-input"
+							style={{ width: '100%' }}
+						/>
+						<div style={{ fontSize: '0.75rem', color: 'var(--muted)', marginTop: '0.25rem' }}>
+							Surnom affiché entre prénom et nom
 						</div>
 					</div>
 
