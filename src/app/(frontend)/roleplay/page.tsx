@@ -324,9 +324,25 @@ export default async function RoleplayPage({
 					(f) => f.type === 'hostile' && !(f as any).isMainFaction,
 				);
 
-				// Group units by parent faction name
+				// Featured "main" units of the main faction (e.g. Cerberus / Specter)
+				const mainFactionId =
+					mainFaction && typeof mainFaction === 'object' ? mainFaction.id : null;
+				const mainUnits = mainFactionId
+					? units.docs.filter((u) => {
+							if (!(u as any).isMain) return false;
+							const parentId =
+								u.parentFaction && typeof u.parentFaction === 'object'
+									? u.parentFaction.id
+									: u.parentFaction;
+							return parentId === mainFactionId;
+						})
+					: [];
+				const mainUnitIds = new Set(mainUnits.map((u) => u.id));
+
+				// Group units by parent faction name (excluding featured main units)
 				const unitsByFaction = new Map<string, typeof units.docs>();
 				for (const u of units.docs) {
+					if (mainUnitIds.has(u.id)) continue;
 					const parentName =
 						u.parentFaction && typeof u.parentFaction === 'object'
 							? u.parentFaction.name
@@ -481,6 +497,76 @@ export default async function RoleplayPage({
 									</Link>
 								);
 							})()}
+
+							{/* Featured "spearhead" units of the main faction (Cerberus / Spectre by default) */}
+							{mainUnits.length > 0 && (
+								<div className="main-units-strip">
+									<div className="main-units-strip-header">
+										<span className="main-units-strip-marker" aria-hidden />
+										<span className="main-units-strip-label">FER&nbsp;DE&nbsp;LANCE</span>
+										<span className="main-units-strip-line" />
+										<span className="main-units-strip-count">{mainUnits.length}</span>
+									</div>
+									<div className="main-units-strip-grid">
+										{mainUnits.map((unit, idx) => {
+											const insignia =
+												typeof unit.insignia === 'object' ? unit.insignia : null;
+											const color = unit.color || 'var(--primary)';
+											const tagline = (unit as any).selectorTagline || null;
+											const stamp = String(idx + 1).padStart(2, '0');
+											return (
+												<Link
+													key={unit.id}
+													href={`/roleplay/unite/${unit.slug}`}
+													className="main-unit-card"
+													style={{ ['--org-color' as any]: color }}
+												>
+													<span className="main-unit-card-stamp" aria-hidden>
+														{stamp}
+													</span>
+													<span className="main-unit-card-watermark" aria-hidden>
+														{unit.name}
+													</span>
+													<div className="main-unit-card-insignia">
+														{insignia?.url ? (
+															<Image
+																src={insignia.url}
+																alt={unit.name}
+																width={64}
+																height={64}
+																style={{ objectFit: 'contain' }}
+																unoptimized
+															/>
+														) : (
+															<span>{unit.name.charAt(0)}</span>
+														)}
+													</div>
+													<div className="main-unit-card-body">
+														<div className="main-unit-card-eyebrow">
+															UNITÉ&nbsp;PRINCIPALE
+														</div>
+														<div className="main-unit-card-name">{unit.name}</div>
+														<span className="main-unit-card-rule" aria-hidden />
+														{tagline && (
+															<div className="main-unit-card-tagline">{tagline}</div>
+														)}
+													</div>
+													<div className="main-unit-card-cta">
+														<span>Ouvrir le dossier</span>
+														<span className="main-unit-card-cta-arrow" aria-hidden>
+															→
+														</span>
+													</div>
+													<span className="main-unit-card-corner tl" aria-hidden />
+													<span className="main-unit-card-corner tr" aria-hidden />
+													<span className="main-unit-card-corner bl" aria-hidden />
+													<span className="main-unit-card-corner br" aria-hidden />
+												</Link>
+											);
+										})}
+									</div>
+								</div>
+							)}
 
 							{/* Factions sorted by alignment */}
 							{factions.docs.length > 0 && (

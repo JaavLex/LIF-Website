@@ -6,9 +6,18 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.6.22',
+  version: '1.6.23',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.6.23',
+      date: '2026-04-07',
+      changes: [
+        'ROLEPLAY — Section « Organisations & Unités » : nouvelle bande « FER DE LANCE » directement sous la faction principale, mettant en avant les unités marquées « Unité principale » dans Payload (par défaut Cerberus & Spectre).',
+        'ROLEPLAY — Cartes featured « main unit » avec insigne en cadre HUD, watermark du nom en arrière-plan, numéro stamp #01 / #02, règle colorée qui s\'étire au hover, tagline (depuis le champ Payload `selectorTagline`), CTA pleine largeur qui se remplit de la couleur d\'unité au hover, et coins HUD aux 4 angles.',
+        'ROLEPLAY — Les unités featured ne sont plus dupliquées dans la liste groupée par faction parente en dessous (déduplication côté serveur).',
+      ],
+    },
     {
       version: '1.6.22',
       date: '2026-04-07',
