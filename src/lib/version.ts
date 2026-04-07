@@ -6,9 +6,21 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.6.25',
+  version: '1.6.26',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.6.26',
+      date: '2026-04-07',
+      changes: [
+        'TUTORIEL — Réécriture complète de l\'algorithme de positionnement de la carte : mesure réelle de la taille rendue via ref + `useLayoutEffect` au lieu de constantes hardcodées (380px), élimination du `setTimeout(400)` qui provoquait du flicker.',
+        'TUTORIEL — Carte transformée en flex column avec un conteneur `.tutorial-tooltip-body` interne qui scroll : header, actions et barre de progression restent toujours visibles même sur les étapes avec dummy form (correction step 7 « Créer un personnage » qui sortait de l\'écran).',
+        'TUTORIEL — Hard-clamp final du `top`/`left` pour garantir que la carte entière reste dans le viewport sur tous les côtés (top, bottom, left, right) et toutes les tailles d\'écran.',
+        'TUTORIEL — Sélection automatique du meilleur côté : si le côté demandé ne peut pas accueillir la carte, on choisit celui qui a le plus d\'espace ; si rien ne fit, on centre la carte sur le viewport.',
+        'TUTORIEL — `scrollIntoView` passé en `behavior: \'auto\'` (instantané) pour éviter les mesures stales pendant l\'animation de scroll.',
+        'TUTORIEL — Mobile : suppression de la largeur CSS hardcodée, la largeur est désormais calculée dynamiquement (`vw - padding`) pour s\'adapter à toutes les tailles d\'écran.',
+      ],
+    },
     {
       version: '1.6.25',
       date: '2026-04-07',

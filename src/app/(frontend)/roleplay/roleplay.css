@@ -3310,7 +3310,8 @@
 	position: fixed;
 	z-index: 10002;
 	max-width: 460px;
-	width: 460px;
+	display: flex;
+	flex-direction: column;
 	color: var(--tut-ink);
 	background:
 		linear-gradient(
@@ -3366,6 +3367,20 @@
 	0%   { transform: translateY(0); opacity: 0.9; }
 	50%  { transform: translateY(4px); opacity: 1; }
 	100% { transform: translateY(0); opacity: 0.9; }
+}
+
+/* BODY — the only scrollable region inside the card. Header, actions and
+   progress always remain visible even when the body holds a dummy form. */
+.tutorial-tooltip-body {
+	flex: 1 1 auto;
+	min-height: 0;
+	overflow-y: auto;
+	overflow-x: hidden;
+}
+.tutorial-tooltip-header,
+.tutorial-tooltip-actions,
+.tutorial-tooltip > .tutorial-dots {
+	flex-shrink: 0;
 }
 
 /* HEADER — asymmetric: oversized step number + stacked title */
@@ -3682,12 +3697,10 @@ body:has(.tutorial-buttons) > .version-info-wrapper {
 /* Tutorial: Dummy form inside tooltip */
 .tutorial-tooltip.has-dummy-form {
 	max-width: 480px;
-	max-height: 80vh;
-	overflow-y: auto;
 }
 
 .tutorial-dummy-wrapper {
-	margin-top: 0.5rem;
+	margin: 0 1.05rem 1rem 1.05rem;
 }
 
 .tutorial-dummy-form {
@@ -3765,13 +3778,16 @@ body:has(.tutorial-buttons) > .version-info-wrapper {
 /* Tutorial responsive */
 @media (max-width: 768px) {
 	.tutorial-tooltip {
-		width: calc(100vw - 1.5rem);
 		max-width: calc(100vw - 1.5rem);
 		border-left-width: 3px;
 	}
 
 	.tutorial-tooltip.has-dummy-form {
 		max-width: calc(100vw - 1.5rem);
+	}
+
+	.tutorial-dummy-wrapper {
+		margin: 0 0.85rem 0.85rem 0.85rem;
 	}
 
 	.tutorial-tooltip-header {

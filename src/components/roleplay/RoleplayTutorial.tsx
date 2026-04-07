@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useLayoutEffect, useCallback, useRef } from 'react';
 import { ChevronUp, ChevronDown } from 'lucide-react';
 import {
 	DummyCharacterForm,
@@ -221,9 +221,9 @@ export function RoleplayTutorial({
 	const [mode, setMode] = useState<TutorialMode>('user');
 	const [currentStep, setCurrentStep] = useState(0);
 	const [spotlightRect, setSpotlightRect] = useState<DOMRect | null>(null);
-	const [tooltipStyle, setTooltipStyle] = useState<React.CSSProperties>({});
 	const [mobileToolbarOpen, setMobileToolbarOpen] = useState(false);
 	const animatingRef = useRef(false);
+	const tooltipRef = useRef<HTMLDivElement>(null);
 
 	// Toggle body attribute so CSS can hide/show audio controls too
 	useEffect(() => {
@@ -252,160 +252,166 @@ export function RoleplayTutorial({
 		}
 	}, [isAdmin]);
 
-	const positionTooltip = useCallback((step: TutorialStep) => {
+	/**
+	 * Position the tooltip card by measuring its actual rendered size and the
+	 * target element's bounding rect. Imperative (no React state) so we can
+	 * re-run cheaply on resize/scroll without flicker. Hard-clamps the final
+	 * top/left so the entire card always stays inside the viewport — even
+	 * tall steps with dummy forms (the body scrolls internally instead of
+	 * pushing actions off-screen).
+	 */
+	const positionTooltip = useCallback((step: TutorialStep, skipScroll = false) => {
+		const el = tooltipRef.current;
+		if (!el) return;
+
 		const vw = window.innerWidth;
 		const vh = window.innerHeight;
 		const pad = 12;
 		const mobile = vw <= 768;
-		const tooltipW = mobile ? vw - pad * 2 : 380;
+		const desiredW = mobile ? vw - pad * 2 : Math.min(460, vw - pad * 2);
+		const maxH = vh - pad * 2;
+
+		// Reset positioning so we can measure the natural rendered height for
+		// the new step (the previous step may have constrained height).
+		el.style.position = 'fixed';
+		el.style.right = 'auto';
+		el.style.bottom = 'auto';
+		el.style.transform = 'none';
+		el.style.width = `${desiredW}px`;
+		el.style.maxWidth = `${desiredW}px`;
+		el.style.maxHeight = `${maxH}px`;
+		// Move offscreen for clean measurement
+		el.style.top = '0px';
+		el.style.left = '-9999px';
+		// Force reflow
+		void el.offsetHeight;
+		const measured = el.getBoundingClientRect();
+		const cardW = Math.min(measured.width, desiredW);
+		const cardH = Math.min(measured.height, maxH);
+
+		const clampLeft = (l: number) =>
+			Math.max(pad, Math.min(l, vw - cardW - pad));
+		const clampTop = (t: number) =>
+			Math.max(pad, Math.min(t, vh - cardH - pad));
+
+		const placeCenter = () => {
+			el.style.left = `${clampLeft((vw - cardW) / 2)}px`;
+			el.style.top = `${clampTop((vh - cardH) / 2)}px`;
+		};
 
 		// Center positioning for steps without a target
 		if (!step.target || step.position === 'center') {
 			setSpotlightRect(null);
-			setTooltipStyle({
-				position: 'fixed',
-				top: '50%',
-				left: mobile ? pad : '50%',
-				width: mobile ? tooltipW : undefined,
-				transform: mobile ? 'translateY(-50%)' : 'translate(-50%, -50%)',
-				maxHeight: '85vh',
-				overflowY: 'auto',
-			});
+			placeCenter();
 			animatingRef.current = false;
 			return;
 		}
 
-		const el = document.querySelector(step.target);
-		if (!el) {
+		const target = document.querySelector(step.target);
+		if (!target) {
 			setSpotlightRect(null);
-			setTooltipStyle({
-				position: 'fixed',
-				top: '50%',
-				left: mobile ? pad : '50%',
-				width: mobile ? tooltipW : undefined,
-				transform: mobile ? 'translateY(-50%)' : 'translate(-50%, -50%)',
-				maxHeight: '85vh',
-				overflowY: 'auto',
-			});
+			placeCenter();
 			animatingRef.current = false;
 			return;
 		}
 
-		el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+		// Bring target into view instantly so our measurements are stable.
+		// Skipped on scroll/resize repositioning to avoid feedback loops.
+		if (!skipScroll) {
+			target.scrollIntoView({ behavior: 'auto', block: 'center' });
+		}
+		const rect = target.getBoundingClientRect();
+		setSpotlightRect(rect);
 
-		// Wait for scroll to settle then position
-		setTimeout(() => {
-			const rect = el.getBoundingClientRect();
-			setSpotlightRect(rect);
+		// If target nearly fills viewport, just center the card.
+		if (rect.height > vh * 0.75 || rect.width > vw * 0.85) {
+			placeCenter();
+			animatingRef.current = false;
+			return;
+		}
 
-			// If the element is taller than the viewport, position tooltip in center
-			if (rect.height > vh * 0.7) {
-				setTooltipStyle({
-					position: 'fixed',
-					top: '50%',
-					left: mobile ? pad : '50%',
-					width: mobile ? tooltipW : undefined,
-					transform: mobile ? 'translateY(-50%)' : 'translate(-50%, -50%)',
-					maxHeight: '85vh',
-					overflowY: 'auto',
-					zIndex: 10002,
-				});
+		// Resolve preferred side, with mobile fallback for left/right.
+		let pos = step.position;
+		if (mobile && (pos === 'left' || pos === 'right')) {
+			pos = rect.top > vh / 2 ? 'top' : 'bottom';
+		}
+
+		// Available space on each side of the target.
+		const spaceBelow = vh - rect.bottom - pad;
+		const spaceAbove = rect.top - pad;
+		const spaceRight = vw - rect.right - pad;
+		const spaceLeft = rect.left - pad;
+
+		// Pick a side that actually fits the card; otherwise pick the largest.
+		const fitsBottom = spaceBelow >= cardH;
+		const fitsTop = spaceAbove >= cardH;
+		const fitsRight = !mobile && spaceRight >= cardW;
+		const fitsLeft = !mobile && spaceLeft >= cardW;
+
+		const candidates: Array<{ side: typeof pos; fits: boolean; space: number }> = [
+			{ side: 'bottom', fits: fitsBottom, space: spaceBelow },
+			{ side: 'top', fits: fitsTop, space: spaceAbove },
+			{ side: 'right', fits: fitsRight, space: spaceRight },
+			{ side: 'left', fits: fitsLeft, space: spaceLeft },
+		];
+		// Prefer the requested side if it fits; otherwise the side with the
+		// most room (so we never end up with an off-screen card).
+		const requested = candidates.find((c) => c.side === pos);
+		let chosen = requested && requested.fits ? requested : null;
+		if (!chosen) {
+			const fitting = candidates.filter((c) => c.fits);
+			if (fitting.length > 0) {
+				chosen =
+					fitting.find((c) => c.side === pos) ||
+					fitting.sort((a, b) => b.space - a.space)[0];
+			} else {
+				// Nothing fits — fall back to centering over the viewport.
+				placeCenter();
 				animatingRef.current = false;
 				return;
 			}
+		}
 
-			const style: React.CSSProperties = { position: 'fixed' };
-			if (mobile) style.width = tooltipW;
+		const targetCenterX = rect.left + rect.width / 2;
+		const targetCenterY = rect.top + rect.height / 2;
 
-			// On narrow screens, left/right positions don't fit — fall back to bottom/top
-			let pos = step.position;
-			if (mobile && (pos === 'left' || pos === 'right')) {
-				pos = rect.top > vh / 2 ? 'top' : 'bottom';
-			}
+		let top = 0;
+		let left = 0;
+		switch (chosen.side) {
+			case 'bottom':
+				top = rect.bottom + pad;
+				left = targetCenterX - cardW / 2;
+				break;
+			case 'top':
+				top = rect.top - pad - cardH;
+				left = targetCenterX - cardW / 2;
+				break;
+			case 'right':
+				top = targetCenterY - cardH / 2;
+				left = rect.right + pad;
+				break;
+			case 'left':
+				top = targetCenterY - cardH / 2;
+				left = rect.left - pad - cardW;
+				break;
+		}
 
-			// Clamp rect edges to viewport for positioning calculations
-			const visTop = Math.max(0, rect.top);
-			const visBottom = Math.min(vh, rect.bottom);
-
-			const leftVal = mobile
-				? pad
-				: Math.max(
-						pad,
-						Math.min(rect.left + rect.width / 2 - tooltipW / 2, vw - tooltipW - pad),
-					);
-
-			switch (pos) {
-				case 'bottom': {
-					let topVal = visBottom + pad;
-					const spaceBelow = vh - topVal - pad;
-					const spaceAbove = visTop - pad * 2;
-					// If not enough room below, try above
-					if (spaceBelow < 200 && spaceAbove > spaceBelow) {
-						const bottomVal = Math.max(pad, vh - visTop + pad);
-						style.bottom = bottomVal;
-						style.maxHeight = vh - bottomVal - pad;
-					} else {
-						if (topVal > vh - 200) topVal = vh - 200;
-						if (topVal < pad) topVal = pad;
-						style.top = topVal;
-						style.maxHeight = vh - topVal - pad;
-					}
-					style.left = leftVal;
-					style.overflowY = 'auto';
-					break;
-				}
-				case 'top': {
-					let bottomVal = vh - visTop + pad;
-					const spaceAbove = visTop - pad * 2;
-					const spaceBelow = vh - visBottom - pad * 2;
-					// If not enough room above, try below
-					if (spaceAbove < 200 && spaceBelow > spaceAbove) {
-						const topVal = Math.max(pad, visBottom + pad);
-						style.top = topVal;
-						style.maxHeight = vh - topVal - pad;
-					} else {
-						if (bottomVal > vh - 200) bottomVal = vh - 200;
-						if (bottomVal < pad) bottomVal = pad;
-						style.bottom = bottomVal;
-						style.maxHeight = vh - bottomVal - pad;
-					}
-					style.left = leftVal;
-					style.overflowY = 'auto';
-					break;
-				}
-				case 'left':
-					style.top = Math.max(
-						pad,
-						Math.min(visTop + (visBottom - visTop) / 2, vh - 200),
-					);
-					style.right = vw - rect.left + pad;
-					style.transform = 'translateY(-50%)';
-					break;
-				case 'right':
-					style.top = Math.max(
-						pad,
-						Math.min(visTop + (visBottom - visTop) / 2, vh - 200),
-					);
-					style.left = rect.right + pad;
-					style.transform = 'translateY(-50%)';
-					break;
-			}
-
-			setTooltipStyle(style);
-			animatingRef.current = false;
-		}, 400);
+		el.style.left = `${clampLeft(left)}px`;
+		el.style.top = `${clampTop(top)}px`;
+		animatingRef.current = false;
 	}, []);
 
-	useEffect(() => {
+	useLayoutEffect(() => {
 		if (!active) return;
 		animatingRef.current = true;
+		// Run after layout so the new step's content is in the DOM.
 		positionTooltip(steps[currentStep]);
 	}, [active, currentStep, positionTooltip, steps]);
 
 	useEffect(() => {
 		if (!active) return;
 		const handler = () => {
-			if (!animatingRef.current) positionTooltip(steps[currentStep]);
+			if (!animatingRef.current) positionTooltip(steps[currentStep], true);
 		};
 		window.addEventListener('resize', handler);
 		window.addEventListener('scroll', handler, true);
@@ -570,8 +576,8 @@ export function RoleplayTutorial({
 					)}
 
 					<div
+						ref={tooltipRef}
 						className={`tutorial-tooltip${step.dummyForm ? ' has-dummy-form' : ''}`}
-						style={tooltipStyle}
 					>
 						<div className="tutorial-tooltip-header">
 							<span className="tutorial-step-badge">
@@ -588,13 +594,15 @@ export function RoleplayTutorial({
 							</button>
 						</div>
 
-						<p className="tutorial-tooltip-content">{step.content}</p>
+						<div className="tutorial-tooltip-body">
+							<p className="tutorial-tooltip-content">{step.content}</p>
 
-						{step.dummyForm && DUMMY_FORMS[step.dummyForm] && (
-							<div className="tutorial-dummy-wrapper">
-								{DUMMY_FORMS[step.dummyForm]()}
-							</div>
-						)}
+							{step.dummyForm && DUMMY_FORMS[step.dummyForm] && (
+								<div className="tutorial-dummy-wrapper">
+									{DUMMY_FORMS[step.dummyForm]()}
+								</div>
+							)}
+						</div>
 
 						<div className="tutorial-tooltip-actions">
 							<button
