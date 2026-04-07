@@ -29,23 +29,25 @@ const LINES: Array<{ delay: number; tag: string; text: string }> = [
 const TOTAL_DURATION = 3400; // ms — slightly after the last line
 
 export function SplashScreen() {
-	const [mounted, setMounted] = useState(false);
-	const [visible, setVisible] = useState(false);
+	// IMPORTANT: default `visible: true` so the splash covers the page from
+	// the very first paint. If we used `false` + useEffect, the page would
+	// render first and the splash would pop on top after hydration — making
+	// it look like "both exist at the same time". sessionStorage is checked
+	// inside useEffect and dismisses immediately if already seen.
+	const [visible, setVisible] = useState(true);
 	const [closing, setClosing] = useState(false);
 
-	// Decide on mount whether to show. Use sessionStorage so it only appears
-	// once per browser session — refreshes within the same session skip it.
 	useEffect(() => {
-		setMounted(true);
 		try {
 			const seen = sessionStorage.getItem(STORAGE_KEY);
-			if (!seen) {
-				setVisible(true);
-				sessionStorage.setItem(STORAGE_KEY, '1');
+			if (seen) {
+				// Already shown this session — vanish without animation.
+				setVisible(false);
+				return;
 			}
+			sessionStorage.setItem(STORAGE_KEY, '1');
 		} catch {
-			// Storage blocked — show splash anyway, just don't persist
-			setVisible(true);
+			// Storage blocked — just show the splash normally.
 		}
 	}, []);
 
@@ -72,7 +74,7 @@ export function SplashScreen() {
 		setTimeout(() => setVisible(false), 320);
 	}
 
-	if (!mounted || !visible) return null;
+	if (!visible) return null;
 
 	return (
 		<div

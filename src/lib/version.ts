@@ -6,9 +6,16 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.6.31',
+  version: '1.6.32',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.6.32',
+      date: '2026-04-07',
+      changes: [
+        'SPLASH — Fix : la page de fond apparaissait brièvement avant le splash, donnant l\'impression que « les deux existaient en même temps ». Cause : le composant utilisait `visible: false` + `useEffect` pour décider de monter, donc la page paintait d\'abord puis le splash popait par-dessus à l\'hydratation. Maintenant `visible: true` par défaut → SSR rend déjà le splash plein écran avant tout, et `useEffect` le dismiss instantanément si déjà vu cette session.',
+      ],
+    },
     {
       version: '1.6.31',
       date: '2026-04-07',
