@@ -165,6 +165,9 @@ export default function ModerationPage() {
 								</a>
 							</div>
 						)}
+						<a href="/moderation/comms" className="mod-header-btn">
+							COMMS
+						</a>
 						<a href="/roleplay" className="mod-header-btn">
 							← Roleplay
 						</a>

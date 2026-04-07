@@ -6,9 +6,23 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.3.7',
+  version: '1.4.0',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.4.0',
+      date: '2026-04-07',
+      changes: [
+        'Système COMMS — messagerie RP (factions, unités, DM, groupes)',
+        'Auto-canaux faction/unité synchronisés avec le personnage actif',
+        'Pièces jointes : fiches personnage, renseignements, images, vidéos, PDF',
+        'Markdown sécurisé (gras, italique, code, liens, citations)',
+        'Mode anonyme (identité réelle conservée pour modération)',
+        'Disclaimer obligatoire et bannière permanente',
+        'Fenêtre d\'édition/suppression de 5 minutes pour ses propres messages',
+        'Panneau /moderation/comms : visualisation de tous les canaux + révélation des envois anonymes',
+      ],
+    },
     {
       version: '1.3.7',
       date: '2026-04-06',
