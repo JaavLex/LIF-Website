@@ -132,11 +132,12 @@ describe('Disclaimer enforcement', () => {
 });
 
 describe('SafeMarkdown sanitization', () => {
-	it('escapes raw HTML script tags', () => {
+	it('does not bypass React auto-escape via dangerous innerHTML', () => {
 		const content = readSrc('lib/safe-markdown.tsx');
-		// Verify the escapeHtml function exists and replaces <
-		expect(content).toContain('escapeHtml');
-		expect(content).toContain("replace(/</g, '&lt;')");
+		// React auto-escapes any string placed in JSX children, so the renderer
+		// must never use the dangerous innerHTML escape hatch.
+		const dangerousProp = 'dangerously' + 'SetInnerHTML';
+		expect(content).not.toContain(dangerousProp);
 	});
 
 	it('restricts links to http(s) only', () => {
