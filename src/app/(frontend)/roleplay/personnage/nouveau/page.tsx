@@ -101,29 +101,44 @@ export default async function NewCharacterPage({
 		payload.find({ collection: 'factions', sort: 'name', limit: 100 }),
 	]);
 
-	// Restrict the unit chooser to LIF parent units (the ones a player joins)
-	const playerUnits = units.docs.filter((u: any) => {
-		const fname =
-			typeof u.parentFaction === 'object' && u.parentFaction
-				? u.parentFaction.name
-				: null;
-		return !fname || fname === 'LIF';
+	// Identify the main faction (admin-marked via Payload)
+	const mainFaction =
+		factions.docs.find((f: any) => f.isMainFaction) ||
+		factions.docs.find((f: any) => (f.slug || '').toLowerCase() === 'lif') ||
+		factions.docs[0] ||
+		null;
+	const mainFactionId = mainFaction?.id || null;
+	const mainFactionName = mainFaction?.name || 'LIF';
+
+	// Player units = units belonging to the main faction
+	const allMainFactionUnits = units.docs.filter((u: any) => {
+		const pf = u.parentFaction;
+		const pid = typeof pf === 'object' && pf ? pf.id : pf;
+		return pid && mainFactionId && pid === mainFactionId;
 	});
+
+	// Show isMain units in the chooser. If admin hasn't marked any, fall back to all units of the main faction.
+	const mainUnits = allMainFactionUnits.filter((u: any) => u.isMain);
+	const playerUnits = mainUnits.length > 0 ? mainUnits : allMainFactionUnits;
 
 	// If no unit selected → show the chooser
 	if (!unitSlug) {
 		return (
-			<div className="terminal-container">
+			<div className="terminal-container enrol-container">
 				<Link href="/roleplay" className="retour-link">
 					← Retour à la base de données
 				</Link>
-				<UnitSelector units={serialize(playerUnits) as any} />
+				<UnitSelector
+					units={serialize(playerUnits) as any}
+					mainFactionName={mainFactionName}
+				/>
 			</div>
 		);
 	}
 
-	// Resolve the chosen unit by slug
-	const lockedUnit = playerUnits.find(
+	// Resolve the chosen unit by slug — search across ALL main-faction units so an
+	// admin can still link directly to a non-flagged unit if needed.
+	const lockedUnit = allMainFactionUnits.find(
 		(u: any) => (u.slug || '').toLowerCase() === unitSlug.toLowerCase(),
 	);
 
@@ -147,7 +162,7 @@ export default async function NewCharacterPage({
 	}
 
 	return (
-		<div className="terminal-container">
+		<div className="terminal-container enrol-container">
 			<Link
 				href="/roleplay/personnage/nouveau"
 				className="retour-link"

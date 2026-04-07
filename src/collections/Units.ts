@@ -66,5 +66,60 @@ export const Units: CollectionConfig = {
 				description: "Couleur hex pour l'affichage",
 			},
 		},
+		{
+			name: 'isMain',
+			label: 'Unité principale',
+			type: 'checkbox',
+			defaultValue: false,
+			admin: {
+				position: 'sidebar',
+				description:
+					"Marque cette unité comme principale sous la faction principale (Cerberus, Spectre…). Affichée dans le sélecteur de création de personnage.",
+			},
+		},
+		{
+			type: 'collapsible',
+			label: 'Sélecteur de création de personnage',
+			admin: {
+				description:
+					"Texte affiché dans la fenêtre de choix d'unité au moment de créer un personnage.",
+			},
+			fields: [
+				{
+					name: 'selectorTagline',
+					label: 'Tagline (sous-titre court)',
+					type: 'text',
+					admin: {
+						placeholder: "Ex : Force d'assaut blindée",
+					},
+				},
+				{
+					name: 'selectorPitch',
+					label: 'Pitch (paragraphe de présentation)',
+					type: 'textarea',
+					admin: {
+						placeholder:
+							"Décrivez en 2-3 phrases la doctrine, la mission et l'identité de l'unité.",
+					},
+				},
+				{
+					name: 'selectorTraits',
+					label: 'Traits / spécialités',
+					type: 'array',
+					labels: { singular: 'Trait', plural: 'Traits' },
+					admin: {
+						description: '3 à 5 traits courts (ex : « Combat conventionnel »).',
+					},
+					fields: [
+						{
+							name: 'label',
+							label: 'Trait',
+							type: 'text',
+							required: true,
+						},
+					],
+				},
+			],
+		},
 	],
 };

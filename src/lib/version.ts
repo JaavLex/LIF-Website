@@ -6,9 +6,23 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.6.21',
+  version: '1.6.22',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.6.22',
+      date: '2026-04-07',
+      changes: [
+        'PAYLOAD — Nouveau champ « Unité principale » sur les Unités (case à cocher dans la sidebar). Cerberus / Spectre peuvent être marqués comme principaux et apparaissent dans le sélecteur d\'enrôlement.',
+        'PAYLOAD — Nouveau panneau collapsible « Sélecteur de création » sur les Unités : Tagline, Pitch (textarea) et liste de Traits. Le texte du sélecteur d\'unité est désormais éditable depuis l\'admin (plus de hardcode).',
+        'PAYLOAD — Le sélecteur s\'appuie sur la « Faction principale » (déjà existante) pour filtrer les unités proposées au joueur.',
+        'CRÉATION PERSONNAGE — Refonte complète du sélecteur d\'unité (étape 01) en aesthetic « éditorial-brutaliste tactique » : canvas full-black avec grille topographique, numéros stencil géants (11rem), label vertical en marge, titre tri-ligne « CHOISISSEZ / VOTRE / ALLÉGEANCE. » avec hiérarchie de couleur, brief copy en serif body.',
+        'CRÉATION PERSONNAGE — Cartes d\'unité « ID-CARD poster » : insigne avec halo lumineux qui pulse au hover, watermark du nom unité en arrière-plan, règle colorée qui s\'étire, traits en monospace avec ▸, et bande CTA pleine largeur qui se remplit de la couleur d\'unité de bas en haut au hover.',
+        'CRÉATION PERSONNAGE — Animations échelonnées à l\'apparition (cards stagger 80ms), pulse sur le dot d\'état, rule extension au hover, icône CTA qui décolle.',
+        'CRÉATION PERSONNAGE — Refonte complète du formulaire (étape 02) avec la même grammaire visuelle : header asymétrique « 02 / 02 » + titre tri-ligne « RÉDIGEZ / VOTRE / DOSSIER. », inputs minimalistes (bordure 1px, fond translucide, focus vert), labels monospace 0.66rem en uppercase, sections h2 avec barre verte + numéro à droite, bouton submit blanc-sur-noir qui devient vert au hover.',
+        'CRÉATION PERSONNAGE — Footer signature « SIGNÉ // COMMANDEMENT [FACTION] // FORMULAIRE F-01 // ENRÔLEMENT // 2026.04 ».',
+      ],
+    },
     {
       version: '1.6.21',
       date: '2026-04-07',

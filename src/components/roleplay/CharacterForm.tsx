@@ -338,9 +338,65 @@ export function CharacterForm({
 	const gridTwoClass = 'char-form-grid-two';
 
 	return (
-		<form onSubmit={handleSubmit}>
-			<div className="terminal-panel">
-				<h1>{editData ? 'Modifier le dossier' : 'Nouveau dossier personnel'}</h1>
+		<form onSubmit={handleSubmit} className="char-form-shell">
+			<div className="char-form-grid-bg" aria-hidden />
+			<div className="char-form-vignette" aria-hidden />
+			<div className="char-form-rail" aria-hidden>
+				<span>
+					{editData
+						? 'DOSSIER PERSONNEL // ÉDITION'
+						: 'DOSSIER PERSONNEL // ENRÔLEMENT 02'}
+				</span>
+			</div>
+
+			{!editData && (
+				<header className="char-form-header">
+					<div className="char-form-step">
+						<span className="char-form-step-num">02</span>
+						<span className="char-form-step-of">/ 02</span>
+					</div>
+					<div className="char-form-brief">
+						<div className="char-form-brief-tag">
+							<span className="char-form-brief-dot" />
+							SECTION 02 — IDENTITÉ DU PERSONNEL
+						</div>
+						<h1 className="char-form-brief-title">
+							<span>RÉDIGEZ</span>
+							<span>VOTRE</span>
+							<span>DOSSIER.</span>
+						</h1>
+						<p className="char-form-brief-body">
+							Complétez chaque champ avec précision. Ces informations seront
+							versées au registre du commandement et apparaîtront sur votre
+							fiche d&apos;opérateur.
+						</p>
+					</div>
+				</header>
+			)}
+
+			{editData && (
+				<header className="char-form-header char-form-header--edit">
+					<div className="char-form-step">
+						<span className="char-form-step-num">EDIT</span>
+					</div>
+					<div className="char-form-brief">
+						<div className="char-form-brief-tag">
+							<span className="char-form-brief-dot" />
+							MODIFICATION DE DOSSIER
+						</div>
+						<h1 className="char-form-brief-title">
+							<span>METTRE</span>
+							<span>À JOUR</span>
+							<span>LE DOSSIER.</span>
+						</h1>
+					</div>
+				</header>
+			)}
+
+			<div className="char-form-panel">
+				<h1 style={{ display: 'none' }}>
+					{editData ? 'Modifier le dossier' : 'Nouveau dossier personnel'}
+				</h1>
 
 				{error && (
 					<div

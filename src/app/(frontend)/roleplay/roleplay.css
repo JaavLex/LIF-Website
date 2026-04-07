@@ -6230,539 +6230,997 @@ body:has(.tutorial-buttons) > .version-info-wrapper {
   }
 }
 
-/* ============================================================
-   UNIT SELECTOR (character creation step 01)
-   ============================================================ */
+/* ============================================================================
+   ENROLEMENT — Step 01 unit selector + Step 02 character form
+   Editorial-brutalist tactical aesthetic.
+   Full-bleed black, oversized stencil numerals, asymmetric layouts,
+   typography-led hierarchy, single-color accent floods on hover.
+   ============================================================================ */
 
-.unit-selector {
+.enrol-container {
   position: relative;
-  margin-top: 1rem;
-  padding: 2.25rem 2rem 2.5rem;
-  background:
-    linear-gradient(
-      135deg,
-      rgba(20, 24, 18, 0.92) 0%,
-      rgba(12, 14, 10, 0.96) 50%,
-      rgba(8, 10, 8, 0.98) 100%
-    );
-  border: 1px solid color-mix(in srgb, var(--primary) 40%, transparent);
-  box-shadow:
-    0 0 0 1px rgba(0, 0, 0, 0.6),
-    0 24px 60px -20px rgba(0, 0, 0, 0.85),
-    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  padding: 0 !important;
+  background: transparent !important;
+  border: none !important;
+}
+
+.enrol-container .retour-link {
+  position: relative;
+  z-index: 5;
+  display: inline-block;
+  margin: 1.25rem 0 0 1.5rem;
+  font-family: 'Courier New', monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(241, 245, 232, 0.55);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  padding-bottom: 2px;
+  transition: color 0.25s, border-color 0.25s;
+}
+.enrol-container .retour-link:hover {
+  color: #f1f5e8;
+  border-bottom-color: rgba(241, 245, 232, 0.5);
+}
+
+/* ============================================================
+   ENROL SHELL — full-bleed editorial canvas
+   ============================================================ */
+.enrol-shell {
+  --enrol-ink: #f4f1e8;
+  --enrol-ink-dim: rgba(244, 241, 232, 0.55);
+  --enrol-ink-faint: rgba(244, 241, 232, 0.18);
+  --enrol-bg: #060706;
+  --enrol-bg-soft: #0b0d0a;
+  position: relative;
+  margin: 1rem 0 0;
+  padding: 4rem 3.5rem 5rem 6rem;
+  background: var(--enrol-bg);
+  color: var(--enrol-ink);
   overflow: hidden;
   isolation: isolate;
+  border-top: 1px solid rgba(244, 241, 232, 0.08);
+  border-bottom: 1px solid rgba(244, 241, 232, 0.08);
 }
 
-.unit-selector::before {
-  content: '';
+/* faint topographic grid backdrop */
+.enrol-grid-bg {
   position: absolute;
   inset: 0;
-  background: radial-gradient(
-    ellipse at top right,
-    color-mix(in srgb, var(--primary) 18%, transparent) 0%,
-    transparent 60%
-  );
-  pointer-events: none;
-  z-index: 0;
-}
-
-.unit-selector-noise {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
   background-image:
-    repeating-linear-gradient(
-      0deg,
-      rgba(255, 255, 255, 0.012) 0,
-      rgba(255, 255, 255, 0.012) 1px,
-      transparent 1px,
-      transparent 3px
+    linear-gradient(rgba(244, 241, 232, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(244, 241, 232, 0.025) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: radial-gradient(ellipse at 30% 0%, black 0%, transparent 80%);
+  -webkit-mask-image: radial-gradient(ellipse at 30% 0%, black 0%, transparent 80%);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.enrol-vignette {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(
+      ellipse at top right,
+      rgba(74, 124, 35, 0.18) 0%,
+      transparent 55%
+    ),
+    radial-gradient(
+      ellipse at bottom left,
+      rgba(0, 0, 0, 0.6) 0%,
+      transparent 60%
     );
   z-index: 0;
-}
-
-.unit-selector-scan {
-  position: absolute;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    color-mix(in srgb, var(--primary) 60%, transparent),
-    transparent
-  );
   pointer-events: none;
-  z-index: 1;
-  animation: unitSelectorScan 6s linear infinite;
 }
 
-@keyframes unitSelectorScan {
-  0%   { top: 0;    opacity: 0; }
-  10%  { opacity: 0.5; }
-  90%  { opacity: 0.5; }
-  100% { top: 100%; opacity: 0; }
-}
-
-.unit-selector-head {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-  margin-bottom: 2rem;
-  padding-bottom: 1.5rem;
-  border-bottom: 1px dashed color-mix(in srgb, var(--primary) 35%, transparent);
-}
-
-.unit-selector-step {
+/* vertical rotated label down the left margin */
+.enrol-rail {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 4rem;
   display: flex;
   align-items: center;
-  gap: 1.25rem;
+  justify-content: center;
+  z-index: 4;
+  border-right: 1px solid rgba(244, 241, 232, 0.06);
+  background: rgba(0, 0, 0, 0.35);
 }
-
-.unit-selector-step-num {
-  font-family: 'Rajdhani', 'Inter', sans-serif;
-  font-size: 4.5rem;
-  line-height: 0.85;
-  font-weight: 700;
-  color: var(--primary);
-  text-shadow:
-    0 0 24px color-mix(in srgb, var(--primary) 50%, transparent),
-    0 4px 0 rgba(0, 0, 0, 0.85);
-  letter-spacing: -0.04em;
-}
-
-.unit-selector-step-divider {
-  width: 2px;
-  align-self: stretch;
-  background: linear-gradient(
-    180deg,
-    transparent,
-    color-mix(in srgb, var(--primary) 70%, transparent),
-    transparent
-  );
-}
-
-.unit-selector-step-text {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-}
-
-.unit-selector-step-eyebrow {
+.enrol-rail span {
+  transform: rotate(-90deg);
+  white-space: nowrap;
   font-family: 'Courier New', monospace;
-  font-size: 0.75rem;
-  letter-spacing: 0.22em;
-  color: color-mix(in srgb, var(--primary) 75%, white 5%);
+  font-size: 0.7rem;
+  letter-spacing: 0.32em;
+  color: rgba(244, 241, 232, 0.32);
   text-transform: uppercase;
 }
 
-.unit-selector-step-title {
-  font-family: 'Rajdhani', 'Inter', sans-serif;
-  font-size: 2.4rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  color: #f1f5e8;
-  margin: 0;
-  text-shadow:
-    0 0 20px color-mix(in srgb, var(--primary) 35%, transparent),
-    0 2px 0 rgba(0, 0, 0, 0.9);
-  text-transform: uppercase;
-}
-
-.unit-selector-warning {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.6rem;
-  margin: 0;
-  padding: 0.6rem 0.9rem;
-  background: rgba(212, 175, 55, 0.06);
-  border-left: 2px solid #d4af37;
-  color: color-mix(in srgb, #f1f5e8 70%, transparent);
-  font-size: 0.78rem;
-  font-family: 'Courier New', monospace;
-  letter-spacing: 0.04em;
-  align-self: flex-start;
-}
-
-.unit-selector-warning strong {
-  color: #d4af37;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.unit-selector-warning svg {
-  color: #d4af37;
-  flex-shrink: 0;
-}
-
-.unit-selector-grid {
+/* ============================================================
+   ENROL HEADER — asymmetric: giant 01 left, briefing right
+   ============================================================ */
+.enrol-header {
   position: relative;
   z-index: 2;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: minmax(11rem, 14rem) 1fr;
+  gap: 3rem;
+  align-items: start;
+  margin-bottom: 4rem;
+  padding-bottom: 2.5rem;
+  border-bottom: 1px solid rgba(244, 241, 232, 0.08);
+  animation: enrolFadeIn 0.7s 0.05s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
-.unit-card-choice {
-  --unit-color: #4a7c23;
-  position: relative;
+.enrol-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.4rem;
+  line-height: 0.78;
+  font-family: 'Rajdhani', 'Inter', sans-serif;
+  font-weight: 700;
+  color: var(--enrol-ink);
+}
+.enrol-step-num {
+  font-size: 11rem;
+  letter-spacing: -0.06em;
+  color: var(--enrol-ink);
+  text-shadow: 0 6px 0 rgba(0, 0, 0, 0.85);
+  -webkit-text-stroke: 1px rgba(0, 0, 0, 0.4);
+}
+.enrol-step-of {
+  font-size: 1.6rem;
+  letter-spacing: 0.04em;
+  color: var(--enrol-ink-dim);
+  margin-top: 0.5rem;
+}
+
+.enrol-brief {
   display: flex;
   flex-direction: column;
-  padding: 1.75rem 1.75rem 1.5rem;
-  background:
-    linear-gradient(
-      155deg,
-      color-mix(in srgb, var(--unit-color) 14%, rgba(8, 10, 8, 0.96)) 0%,
-      rgba(8, 10, 8, 0.98) 60%,
-      rgba(4, 6, 4, 1) 100%
-    );
-  border: 1px solid color-mix(in srgb, var(--unit-color) 50%, transparent);
-  border-left: 4px solid var(--unit-color);
-  text-decoration: none;
-  color: inherit;
-  cursor: pointer;
-  overflow: hidden;
-  isolation: isolate;
-  transition:
-    transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1),
-    border-color 0.3s ease,
-    box-shadow 0.35s ease;
-  box-shadow:
-    0 0 0 1px rgba(0, 0, 0, 0.5),
-    0 14px 36px -16px rgba(0, 0, 0, 0.8);
+  gap: 1.25rem;
+  padding-top: 1.2rem;
 }
 
-.unit-card-choice::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(
-    circle at 110% -10%,
-    color-mix(in srgb, var(--unit-color) 28%, transparent) 0%,
-    transparent 55%
-  );
-  pointer-events: none;
-  z-index: 0;
-  transition: opacity 0.35s ease;
-  opacity: 0.7;
-}
-
-.unit-card-choice:hover {
-  transform: translateY(-4px);
-  border-color: color-mix(in srgb, var(--unit-color) 90%, transparent);
-  box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--unit-color) 30%, transparent),
-    0 24px 50px -16px color-mix(in srgb, var(--unit-color) 40%, transparent),
-    0 24px 50px -20px rgba(0, 0, 0, 0.9);
-}
-
-.unit-card-choice:hover::before {
-  opacity: 1;
-}
-
-.unit-card-choice:hover .unit-card-choice-cta {
-  background: var(--unit-color);
-  color: #060806;
-  letter-spacing: 0.22em;
-}
-
-.unit-card-choice:hover .unit-card-choice-cta svg {
-  transform: translateX(4px);
-}
-
-.unit-card-choice-corner {
-  position: absolute;
-  width: 14px;
-  height: 14px;
-  border-color: var(--unit-color);
-  border-style: solid;
-  border-width: 0;
-  z-index: 3;
-  pointer-events: none;
-}
-.unit-card-choice-corner.tl {
-  top: 8px;
-  left: 8px;
-  border-top-width: 2px;
-  border-left-width: 2px;
-}
-.unit-card-choice-corner.tr {
-  top: 8px;
-  right: 8px;
-  border-top-width: 2px;
-  border-right-width: 2px;
-}
-.unit-card-choice-corner.bl {
-  bottom: 8px;
-  left: 8px;
-  border-bottom-width: 2px;
-  border-left-width: 2px;
-}
-.unit-card-choice-corner.br {
-  bottom: 8px;
-  right: 8px;
-  border-bottom-width: 2px;
-  border-right-width: 2px;
-}
-
-.unit-card-choice-scan {
-  position: absolute;
-  inset: 0;
-  background-image: repeating-linear-gradient(
-    0deg,
-    rgba(255, 255, 255, 0.018) 0,
-    rgba(255, 255, 255, 0.018) 1px,
-    transparent 1px,
-    transparent 3px
-  );
-  pointer-events: none;
-  z-index: 0;
-}
-
-.unit-card-choice-watermark {
-  position: absolute;
-  right: -0.5rem;
-  bottom: -1.5rem;
-  font-family: 'Rajdhani', 'Inter', sans-serif;
-  font-size: 9rem;
-  font-weight: 700;
-  line-height: 0.8;
-  color: color-mix(in srgb, var(--unit-color) 8%, transparent);
-  letter-spacing: -0.05em;
-  pointer-events: none;
-  z-index: 0;
+.enrol-brief-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-family: 'Courier New', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.24em;
+  color: var(--enrol-ink-dim);
   text-transform: uppercase;
 }
-
-.unit-card-choice-insignia {
-  position: relative;
-  z-index: 2;
-  width: 140px;
-  height: 140px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0.25rem auto 1.25rem;
-  background:
-    radial-gradient(
-      circle at center,
-      color-mix(in srgb, var(--unit-color) 22%, transparent) 0%,
-      transparent 70%
-    );
-  border: 1px solid color-mix(in srgb, var(--unit-color) 35%, transparent);
-  color: var(--unit-color);
+.enrol-brief-dot {
+  width: 8px;
+  height: 8px;
+  background: #4a7c23;
+  box-shadow: 0 0 12px rgba(74, 124, 35, 0.7);
+  animation: enrolPulse 2.4s ease-in-out infinite;
 }
 
-.unit-card-choice-insignia img {
-  object-fit: contain;
-  filter: drop-shadow(0 0 18px color-mix(in srgb, var(--unit-color) 55%, transparent));
-}
-
-.unit-card-choice-body {
-  position: relative;
-  z-index: 2;
+.enrol-brief-title {
+  margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
-  text-align: left;
+  font-family: 'Rajdhani', 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: clamp(2.6rem, 5.4vw, 5.2rem);
+  line-height: 0.88;
+  letter-spacing: -0.015em;
+  color: var(--enrol-ink);
+  text-transform: uppercase;
+}
+.enrol-brief-title span {
+  display: block;
+}
+.enrol-brief-line-2 {
+  padding-left: 1.6em;
+  color: var(--enrol-ink-dim);
+}
+.enrol-brief-line-3 {
+  padding-left: 0.6em;
+  color: #4a7c23;
+  text-shadow: 0 0 24px rgba(74, 124, 35, 0.4);
 }
 
-.unit-card-choice-eyebrow {
+.enrol-brief-body {
+  margin: 0;
+  max-width: 56ch;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.98rem;
+  line-height: 1.65;
+  color: rgba(244, 241, 232, 0.72);
+}
+.enrol-brief-body em {
+  font-style: normal;
+  color: var(--enrol-ink);
+  border-bottom: 1px dashed rgba(244, 241, 232, 0.5);
+  padding-bottom: 1px;
+}
+
+.enrol-brief-warn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  align-self: flex-start;
+  padding: 0.55rem 0.95rem;
+  background: rgba(212, 175, 55, 0.08);
+  border-left: 3px solid #d4af37;
   font-family: 'Courier New', monospace;
   font-size: 0.7rem;
   letter-spacing: 0.18em;
-  color: color-mix(in srgb, var(--unit-color) 75%, white 5%);
+  color: #d4af37;
   text-transform: uppercase;
 }
 
-.unit-card-choice-name {
+/* ============================================================
+   ENROL DECK — unit cards (asymmetric ID-card poster)
+   ============================================================ */
+.enrol-deck {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  gap: 2rem;
+  margin-bottom: 3.5rem;
+}
+
+.enrol-card {
+  --unit-color: #4a7c23;
+  position: relative;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  min-height: 540px;
+  padding: 2.25rem 2rem 0;
+  background: var(--enrol-bg-soft);
+  border: 1px solid rgba(244, 241, 232, 0.1);
+  text-decoration: none;
+  color: var(--enrol-ink);
+  overflow: hidden;
+  isolation: isolate;
+  cursor: pointer;
+  transition:
+    transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1),
+    border-color 0.4s ease;
+  opacity: 0;
+  animation: enrolCardIn 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.enrol-card:hover {
+  border-color: var(--unit-color);
+  transform: translateY(-6px);
+}
+
+.enrol-card-index {
+  position: absolute;
+  top: 1.1rem;
+  right: 1.4rem;
+  font-family: 'Rajdhani', 'Inter', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.28em;
+  color: rgba(244, 241, 232, 0.32);
+  z-index: 4;
+}
+.enrol-card-index::before {
+  content: '';
+  display: inline-block;
+  width: 18px;
+  height: 1px;
+  background: rgba(244, 241, 232, 0.4);
+  margin-right: 0.45rem;
+  vertical-align: middle;
+}
+
+/* insignia with glowing halo */
+.enrol-card-insignia-wrap {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem 0 0.5rem;
+}
+.enrol-card-insignia-halo {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  width: 280px;
+  height: 280px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at center,
+    color-mix(in srgb, var(--unit-color) 32%, transparent) 0%,
+    transparent 55%
+  );
+  filter: blur(6px);
+  opacity: 0.7;
+  transition: opacity 0.5s, transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+  z-index: 0;
+  pointer-events: none;
+}
+.enrol-card:hover .enrol-card-insignia-halo {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1.15);
+}
+
+.enrol-card-insignia {
+  position: relative;
+  z-index: 1;
+  width: 170px;
+  height: 170px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  filter: drop-shadow(
+    0 0 24px color-mix(in srgb, var(--unit-color) 65%, transparent)
+  );
+  transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.enrol-card:hover .enrol-card-insignia {
+  transform: scale(1.04);
+}
+.enrol-card-insignia img {
+  object-fit: contain;
+}
+.enrol-card-insignia-fallback {
+  font-family: 'Rajdhani', 'Inter', sans-serif;
+  font-size: 7rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--unit-color);
+  text-shadow: 0 0 30px color-mix(in srgb, var(--unit-color) 60%, transparent);
+}
+
+/* watermark of the unit name behind everything */
+.enrol-card-watermark {
+  position: absolute;
+  left: -0.5rem;
+  bottom: 5.5rem;
+  right: -0.5rem;
+  font-family: 'Rajdhani', 'Inter', sans-serif;
+  font-size: clamp(5rem, 11vw, 8rem);
+  font-weight: 700;
+  line-height: 0.78;
+  letter-spacing: -0.05em;
+  color: rgba(244, 241, 232, 0.025);
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: clip;
+  pointer-events: none;
+  z-index: 0;
+  text-align: center;
+  transition: color 0.5s ease;
+}
+.enrol-card:hover .enrol-card-watermark {
+  color: color-mix(in srgb, var(--unit-color) 9%, transparent);
+}
+
+.enrol-card-body {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  padding: 1.5rem 0 1.5rem;
+  text-align: left;
+}
+
+.enrol-card-eyebrow {
+  font-family: 'Courier New', monospace;
+  font-size: 0.66rem;
+  letter-spacing: 0.22em;
+  color: rgba(244, 241, 232, 0.45);
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.enrol-card-eyebrow-sep {
+  color: var(--unit-color);
+  font-size: 1rem;
+  line-height: 0;
+}
+
+.enrol-card-name {
   margin: 0;
   font-family: 'Rajdhani', 'Inter', sans-serif;
-  font-size: 2.1rem;
   font-weight: 700;
-  letter-spacing: 0.04em;
-  line-height: 1;
-  color: #f1f5e8;
+  font-size: clamp(2.4rem, 4vw, 3.4rem);
+  line-height: 0.88;
+  letter-spacing: -0.01em;
+  color: var(--enrol-ink);
   text-transform: uppercase;
-  text-shadow:
-    0 0 18px color-mix(in srgb, var(--unit-color) 50%, transparent),
-    0 2px 0 rgba(0, 0, 0, 0.9);
 }
 
-.unit-card-choice-tagline {
+.enrol-card-rule {
+  width: 56px;
+  height: 2px;
+  background: var(--unit-color);
+  margin: 0.2rem 0 0.4rem;
+  transition: width 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.enrol-card:hover .enrol-card-rule {
+  width: 110px;
+}
+
+.enrol-card-tagline {
   font-family: 'Rajdhani', 'Inter', sans-serif;
-  font-size: 0.95rem;
   font-weight: 500;
-  letter-spacing: 0.05em;
-  color: color-mix(in srgb, var(--unit-color) 90%, white 5%);
+  font-size: 1rem;
+  letter-spacing: 0.06em;
+  color: color-mix(in srgb, var(--unit-color) 80%, white 10%);
   text-transform: uppercase;
 }
 
-.unit-card-choice-pitch {
-  margin: 0.35rem 0 0.6rem;
-  font-size: 0.85rem;
-  line-height: 1.55;
-  color: color-mix(in srgb, #f1f5e8 65%, transparent);
+.enrol-card-pitch {
+  margin: 0.1rem 0 0.5rem;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.92rem;
+  line-height: 1.6;
+  color: rgba(244, 241, 232, 0.7);
 }
 
-.unit-card-choice-traits {
+.enrol-card-traits {
   list-style: none;
-  margin: 0 0 1.1rem;
+  margin: 0;
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 0.35rem;
 }
-
-.unit-card-choice-traits li {
+.enrol-card-traits li {
   display: flex;
   align-items: center;
-  gap: 0.55rem;
+  gap: 0.6rem;
   font-family: 'Courier New', monospace;
   font-size: 0.72rem;
-  letter-spacing: 0.12em;
-  color: color-mix(in srgb, #f1f5e8 60%, transparent);
+  letter-spacing: 0.14em;
+  color: rgba(244, 241, 232, 0.65);
   text-transform: uppercase;
 }
-
-.unit-card-choice-trait-marker {
-  width: 6px;
-  height: 6px;
-  background: var(--unit-color);
-  box-shadow: 0 0 6px color-mix(in srgb, var(--unit-color) 70%, transparent);
-}
-
-.unit-card-choice-cta {
-  margin-top: auto;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.6rem;
-  padding: 0.85rem 1rem;
-  background: transparent;
-  border: 1px solid var(--unit-color);
+.enrol-card-trait-tick {
   color: var(--unit-color);
-  font-family: 'Rajdhani', 'Inter', sans-serif;
-  font-size: 0.95rem;
-  font-weight: 700;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  transition: all 0.3s ease;
+  font-size: 0.85rem;
+  line-height: 1;
 }
 
-.unit-card-choice-cta svg {
-  transition: transform 0.3s ease;
-}
-
-.unit-selector-empty {
+/* CTA strip — fills with color on hover */
+.enrol-card-cta {
   position: relative;
   z-index: 2;
-  text-align: center;
-  padding: 2rem;
-  color: var(--muted);
-  font-family: 'Courier New', monospace;
+  margin: 0 -2rem;
+  padding: 1.1rem 1.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  border-top: 1px solid rgba(244, 241, 232, 0.1);
+  overflow: hidden;
+  isolation: isolate;
+}
+.enrol-card-cta-fill {
+  position: absolute;
+  inset: 0;
+  background: var(--unit-color);
+  transform: translateY(101%);
+  transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+  z-index: -1;
+}
+.enrol-card:hover .enrol-card-cta-fill {
+  transform: translateY(0);
+}
+.enrol-card-cta-label {
+  font-family: 'Rajdhani', 'Inter', sans-serif;
+  font-weight: 700;
   font-size: 0.85rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--unit-color);
+  transition: color 0.45s ease;
+}
+.enrol-card-cta-icon {
+  color: var(--unit-color);
+  transition: color 0.45s ease, transform 0.45s ease;
+}
+.enrol-card:hover .enrol-card-cta-label,
+.enrol-card:hover .enrol-card-cta-icon {
+  color: #060706;
+}
+.enrol-card:hover .enrol-card-cta-icon {
+  transform: translate(3px, -3px);
 }
 
-@media (max-width: 768px) {
-  .unit-selector {
-    padding: 1.5rem 1rem;
+/* empty state */
+.enrol-empty {
+  position: relative;
+  z-index: 2;
+  margin: 2rem 0 4rem;
+  padding: 3rem 2rem;
+  text-align: center;
+  font-family: 'Courier New', monospace;
+  font-size: 0.85rem;
+  color: rgba(244, 241, 232, 0.55);
+  border: 1px dashed rgba(244, 241, 232, 0.18);
+  line-height: 1.7;
+}
+
+/* footer signature */
+.enrol-foot {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  padding-top: 2rem;
+  margin-top: 1rem;
+  border-top: 1px solid rgba(244, 241, 232, 0.08);
+  font-family: 'Courier New', monospace;
+  font-size: 0.66rem;
+  letter-spacing: 0.22em;
+  color: rgba(244, 241, 232, 0.4);
+  text-transform: uppercase;
+}
+.enrol-foot-sep {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    rgba(244, 241, 232, 0.18),
+    rgba(244, 241, 232, 0.02)
+  );
+}
+
+/* animations */
+@keyframes enrolFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-12px);
   }
-  .unit-selector-step-num {
-    font-size: 3.2rem;
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
-  .unit-selector-step-title {
-    font-size: 1.7rem;
+}
+@keyframes enrolCardIn {
+  from {
+    opacity: 0;
+    transform: translateY(28px);
   }
-  .unit-selector-grid {
-    grid-template-columns: 1fr;
-    gap: 1rem;
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
-  .unit-card-choice {
-    padding: 1.25rem 1.1rem 1.1rem;
+}
+@keyframes enrolPulse {
+  0%,
+  100% {
+    opacity: 0.6;
+    transform: scale(1);
   }
-  .unit-card-choice-name {
-    font-size: 1.7rem;
-  }
-  .unit-card-choice-watermark {
-    font-size: 6rem;
+  50% {
+    opacity: 1;
+    transform: scale(1.25);
   }
 }
 
 /* ============================================================
-   CHARACTER FORM — locked unit display
+   ENROL — responsive
    ============================================================ */
+@media (max-width: 900px) {
+  .enrol-shell {
+    padding: 2.5rem 1.4rem 3rem 4rem;
+  }
+  .enrol-rail {
+    width: 2.6rem;
+  }
+  .enrol-rail span {
+    font-size: 0.6rem;
+    letter-spacing: 0.24em;
+  }
+  .enrol-header {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+    padding-bottom: 1.75rem;
+  }
+  .enrol-step-num {
+    font-size: 7rem;
+  }
+  .enrol-brief {
+    padding-top: 0;
+  }
+  .enrol-deck {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+    margin-bottom: 2.5rem;
+  }
+  .enrol-card {
+    min-height: 0;
+    padding: 1.75rem 1.5rem 0;
+  }
+  .enrol-card-cta {
+    margin: 0 -1.5rem;
+    padding: 1rem 1.4rem;
+  }
+  .enrol-card-watermark {
+    font-size: 5rem;
+  }
+  .enrol-foot {
+    flex-wrap: wrap;
+    gap: 0.6rem;
+  }
+}
 
+/* ============================================================
+   CHARACTER FORM SHELL — Step 02 editorial dossier
+   ============================================================ */
+.char-form-shell {
+  --enrol-ink: #f4f1e8;
+  --enrol-ink-dim: rgba(244, 241, 232, 0.55);
+  --enrol-bg: #060706;
+  --enrol-bg-soft: #0b0d0a;
+  position: relative;
+  margin: 1rem 0 0;
+  padding: 4rem 3.5rem 4.5rem 6rem;
+  background: var(--enrol-bg);
+  color: var(--enrol-ink);
+  overflow: hidden;
+  isolation: isolate;
+  border-top: 1px solid rgba(244, 241, 232, 0.08);
+  border-bottom: 1px solid rgba(244, 241, 232, 0.08);
+}
+
+.char-form-grid-bg {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(244, 241, 232, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(244, 241, 232, 0.025) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: radial-gradient(ellipse at 75% 0%, black 0%, transparent 80%);
+  -webkit-mask-image: radial-gradient(ellipse at 75% 0%, black 0%, transparent 80%);
+  z-index: 0;
+  pointer-events: none;
+}
+.char-form-vignette {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(
+      ellipse at top left,
+      rgba(74, 124, 35, 0.16) 0%,
+      transparent 55%
+    ),
+    radial-gradient(
+      ellipse at bottom right,
+      rgba(0, 0, 0, 0.55) 0%,
+      transparent 60%
+    );
+  z-index: 0;
+  pointer-events: none;
+}
+.char-form-rail {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 4;
+  border-right: 1px solid rgba(244, 241, 232, 0.06);
+  background: rgba(0, 0, 0, 0.35);
+}
+.char-form-rail span {
+  transform: rotate(-90deg);
+  white-space: nowrap;
+  font-family: 'Courier New', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.32em;
+  color: rgba(244, 241, 232, 0.32);
+  text-transform: uppercase;
+}
+
+.char-form-header {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: minmax(11rem, 14rem) 1fr;
+  gap: 3rem;
+  align-items: start;
+  margin-bottom: 3rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid rgba(244, 241, 232, 0.08);
+  animation: enrolFadeIn 0.7s 0.05s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.char-form-header--edit .char-form-step-num {
+  font-size: 4.5rem;
+}
+
+.char-form-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.4rem;
+  line-height: 0.78;
+  font-family: 'Rajdhani', 'Inter', sans-serif;
+  font-weight: 700;
+}
+.char-form-step-num {
+  font-size: 11rem;
+  letter-spacing: -0.06em;
+  color: var(--enrol-ink);
+  text-shadow: 0 6px 0 rgba(0, 0, 0, 0.85);
+}
+.char-form-step-of {
+  font-size: 1.6rem;
+  letter-spacing: 0.04em;
+  color: var(--enrol-ink-dim);
+  margin-top: 0.5rem;
+}
+
+.char-form-brief {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding-top: 1.2rem;
+}
+.char-form-brief-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-family: 'Courier New', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.24em;
+  color: var(--enrol-ink-dim);
+  text-transform: uppercase;
+}
+.char-form-brief-dot {
+  width: 8px;
+  height: 8px;
+  background: #4a7c23;
+  box-shadow: 0 0 12px rgba(74, 124, 35, 0.7);
+  animation: enrolPulse 2.4s ease-in-out infinite;
+}
+.char-form-brief-title {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  font-family: 'Rajdhani', 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: clamp(2.2rem, 4.6vw, 4.4rem);
+  line-height: 0.88;
+  letter-spacing: -0.015em;
+  color: var(--enrol-ink);
+  text-transform: uppercase;
+}
+.char-form-brief-title span:nth-child(2) {
+  padding-left: 1.6em;
+  color: var(--enrol-ink-dim);
+}
+.char-form-brief-title span:nth-child(3) {
+  padding-left: 0.6em;
+  color: #4a7c23;
+}
+.char-form-brief-body {
+  margin: 0;
+  max-width: 56ch;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.95rem;
+  line-height: 1.65;
+  color: rgba(244, 241, 232, 0.7);
+}
+
+/* ============================================================
+   CHAR FORM PANEL — re-style every section inside
+   ============================================================ */
+.char-form-panel {
+  position: relative;
+  z-index: 2;
+  background: transparent;
+}
+
+.char-form-panel h2 {
+  position: relative;
+  margin: 2.4rem 0 1.4rem !important;
+  padding: 0 0 0.7rem !important;
+  font-family: 'Rajdhani', 'Inter', sans-serif !important;
+  font-weight: 700 !important;
+  font-size: 1.5rem !important;
+  letter-spacing: 0.04em !important;
+  text-transform: uppercase;
+  color: var(--enrol-ink) !important;
+  border-bottom: 1px solid rgba(244, 241, 232, 0.12);
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+.char-form-panel h2::before {
+  content: '';
+  display: inline-block;
+  width: 28px;
+  height: 2px;
+  background: #4a7c23;
+}
+.char-form-panel h2::after {
+  content: attr(data-num);
+  margin-left: auto;
+  font-family: 'Courier New', monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.18em;
+  color: rgba(244, 241, 232, 0.35);
+}
+
+/* form inputs — clean editorial style override */
+.char-form-panel .filter-input,
+.char-form-panel .filter-select,
+.char-form-panel input[type='text'],
+.char-form-panel input[type='number'],
+.char-form-panel input[type='date'],
+.char-form-panel textarea,
+.char-form-panel select {
+  background: rgba(255, 255, 255, 0.025) !important;
+  border: 1px solid rgba(244, 241, 232, 0.14) !important;
+  color: var(--enrol-ink) !important;
+  font-family: 'Source Sans 3', system-ui, sans-serif !important;
+  font-size: 0.95rem !important;
+  padding: 0.7rem 0.9rem !important;
+  transition: border-color 0.25s, background-color 0.25s !important;
+  border-radius: 0 !important;
+}
+.char-form-panel .filter-input:focus,
+.char-form-panel .filter-select:focus,
+.char-form-panel input:focus,
+.char-form-panel textarea:focus,
+.char-form-panel select:focus {
+  outline: none !important;
+  border-color: #4a7c23 !important;
+  background: rgba(74, 124, 35, 0.05) !important;
+  box-shadow: 0 0 0 1px rgba(74, 124, 35, 0.4) !important;
+}
+.char-form-panel label {
+  font-family: 'Courier New', monospace !important;
+  font-size: 0.66rem !important;
+  letter-spacing: 0.18em !important;
+  text-transform: uppercase;
+  color: rgba(244, 241, 232, 0.55) !important;
+  margin-bottom: 0.4rem !important;
+}
+
+/* Submit button area */
+.char-form-panel .char-form-submit {
+  margin-top: 3rem !important;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(244, 241, 232, 0.1);
+}
+.char-form-panel .char-form-submit button[type='submit'] {
+  background: var(--enrol-ink) !important;
+  color: #060706 !important;
+  font-family: 'Rajdhani', 'Inter', sans-serif !important;
+  font-weight: 700 !important;
+  font-size: 0.95rem !important;
+  letter-spacing: 0.18em !important;
+  text-transform: uppercase;
+  padding: 1rem 2rem !important;
+  border: none !important;
+  border-radius: 0 !important;
+  transition: background-color 0.3s, color 0.3s !important;
+}
+.char-form-panel .char-form-submit button[type='submit']:hover {
+  background: #4a7c23 !important;
+  color: var(--enrol-ink) !important;
+}
+.char-form-panel .char-form-submit a {
+  background: transparent !important;
+  border: 1px solid rgba(244, 241, 232, 0.25) !important;
+  color: rgba(244, 241, 232, 0.7) !important;
+  font-family: 'Courier New', monospace !important;
+  font-size: 0.78rem !important;
+  letter-spacing: 0.16em !important;
+  text-transform: uppercase;
+  padding: 1rem 1.5rem !important;
+  text-decoration: none !important;
+  border-radius: 0 !important;
+}
+.char-form-panel .char-form-submit a:hover {
+  border-color: var(--enrol-ink) !important;
+  color: var(--enrol-ink) !important;
+}
+
+/* ============================================================
+   CHAR FORM — locked unit display
+   ============================================================ */
 .char-form-locked-unit {
   --unit-color: #4a7c23;
   display: flex;
   align-items: center;
-  gap: 0.85rem;
+  gap: 1rem;
   width: 100%;
-  padding: 0.7rem 0.85rem;
-  background:
-    linear-gradient(
-      135deg,
-      color-mix(in srgb, var(--unit-color) 18%, rgba(8, 10, 8, 0.92)) 0%,
-      rgba(8, 10, 8, 0.95) 100%
-    );
-  border: 1px solid color-mix(in srgb, var(--unit-color) 55%, transparent);
+  padding: 0.85rem 1rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid color-mix(in srgb, var(--unit-color) 50%, transparent);
   border-left: 3px solid var(--unit-color);
   position: relative;
 }
-
 .char-form-locked-unit-insignia {
-  width: 48px;
-  height: 48px;
+  width: 52px;
+  height: 52px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: radial-gradient(
     circle at center,
-    color-mix(in srgb, var(--unit-color) 28%, transparent) 0%,
+    color-mix(in srgb, var(--unit-color) 26%, transparent) 0%,
     transparent 70%
   );
-  border: 1px solid color-mix(in srgb, var(--unit-color) 40%, transparent);
   color: var(--unit-color);
   flex-shrink: 0;
 }
-
 .char-form-locked-unit-insignia img {
   object-fit: contain;
 }
-
 .char-form-locked-unit-text {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 0.15rem;
+  gap: 0.2rem;
   min-width: 0;
 }
-
 .char-form-locked-unit-eyebrow {
   font-family: 'Courier New', monospace;
-  font-size: 0.65rem;
-  letter-spacing: 0.16em;
-  color: color-mix(in srgb, var(--unit-color) 75%, white 5%);
+  font-size: 0.62rem;
+  letter-spacing: 0.2em;
+  color: color-mix(in srgb, var(--unit-color) 80%, white 5%);
   text-transform: uppercase;
 }
-
 .char-form-locked-unit-name {
   font-family: 'Rajdhani', 'Inter', sans-serif;
-  font-size: 1.15rem;
+  font-size: 1.35rem;
   font-weight: 700;
-  letter-spacing: 0.04em;
-  color: #f1f5e8;
+  letter-spacing: 0.02em;
+  color: #f4f1e8;
   text-transform: uppercase;
-  text-shadow: 0 0 12px color-mix(in srgb, var(--unit-color) 45%, transparent);
+  line-height: 1;
 }
-
 .char-form-locked-unit-badge {
-  font-size: 1rem;
-  color: color-mix(in srgb, var(--unit-color) 80%, white 5%);
+  font-size: 1.1rem;
+  color: color-mix(in srgb, var(--unit-color) 70%, white 5%);
   opacity: 0.7;
   flex-shrink: 0;
+}
+
+@media (max-width: 900px) {
+  .char-form-shell {
+    padding: 2.5rem 1.4rem 3rem 4rem;
+  }
+  .char-form-rail {
+    width: 2.6rem;
+  }
+  .char-form-rail span {
+    font-size: 0.6rem;
+    letter-spacing: 0.24em;
+  }
+  .char-form-header {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+  }
+  .char-form-step-num {
+    font-size: 6.5rem;
+  }
+  .char-form-header--edit .char-form-step-num {
+    font-size: 3rem;
+  }
+  .char-form-brief {
+    padding-top: 0;
+  }
 }
