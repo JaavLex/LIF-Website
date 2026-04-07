@@ -160,7 +160,26 @@ export default async function CharacterPage({
 				}
 			>
 				<div className="char-dossier-hero">
-					<div className="char-dossier-hero-stripe" />
+					<div className="char-dossier-hero-photo">
+						{avatar?.url ? (
+							<Image
+								src={avatar.url}
+								alt={character.fullName || ''}
+								width={160}
+								height={200}
+								unoptimized
+							/>
+						) : (
+							<span className="char-dossier-hero-photo-initials">
+								{character.firstName?.[0]}
+								{character.lastName?.[0]}
+							</span>
+						)}
+						<span className="char-dossier-hero-photo-corner tl" aria-hidden />
+						<span className="char-dossier-hero-photo-corner tr" aria-hidden />
+						<span className="char-dossier-hero-photo-corner bl" aria-hidden />
+						<span className="char-dossier-hero-photo-corner br" aria-hidden />
+					</div>
 					<div className="char-dossier-hero-body">
 						<div className="char-dossier-hero-meta">
 							<span className="char-dossier-hero-tag">
@@ -170,16 +189,13 @@ export default async function CharacterPage({
 							<span className="char-dossier-hero-id">
 								{character.militaryId || '— — —'}
 							</span>
-							{character.callsign && (
-								<>
-									<span className="char-dossier-hero-divider" />
-									<span className="char-dossier-hero-callsign">
-										« {character.callsign} »
-									</span>
-								</>
-							)}
+							<span className="char-dossier-hero-divider" />
+							<span className="char-dossier-hero-classification">
+								{character.classification}
+							</span>
 						</div>
 						<h1 className="char-dossier-hero-title">
+							<span className="char-dossier-hero-name">{character.fullName}</span>
 							{character.isMainCharacter && (
 								<span
 									className="char-dossier-hero-star"
@@ -188,24 +204,22 @@ export default async function CharacterPage({
 									★
 								</span>
 							)}
-							{rankIcon?.url && (
-								<Image
-									src={rankIcon.url}
-									alt={rank!.name}
-									width={40}
-									height={40}
-									className="char-dossier-hero-rank"
-									unoptimized
-								/>
-							)}
-							{rank && (
-								<span className="char-dossier-hero-rank-abbr">
-									{rank.abbreviation || rank.name}
-								</span>
-							)}
-							<span className="char-dossier-hero-name">{character.fullName}</span>
 						</h1>
 						<div className="char-dossier-hero-sub">
+							{rank && (
+								<span className="char-dossier-hero-rank">
+									{rankIcon?.url && (
+										<Image
+											src={rankIcon.url}
+											alt={rank.name}
+											width={18}
+											height={18}
+											unoptimized
+										/>
+									)}
+									{rank.name}
+								</span>
+							)}
 							{unit && (
 								<span
 									className="char-dossier-hero-chip"
@@ -259,6 +273,11 @@ export default async function CharacterPage({
 					<span className="char-dossier-hero-corner tr" aria-hidden />
 					<span className="char-dossier-hero-corner bl" aria-hidden />
 					<span className="char-dossier-hero-corner br" aria-hidden />
+					{character.callsign && (
+						<span className="char-dossier-hero-watermark" aria-hidden>
+							{character.callsign}
+						</span>
+					)}
 					{(canEdit || canDelete) && (
 						<div className="char-dossier-hero-actions">
 							{isOwner && <SyncRankButton characterId={character.id} />}
@@ -286,22 +305,6 @@ export default async function CharacterPage({
 				<div className="character-detail">
 					{/* Sidebar */}
 					<div className="character-sidebar">
-						{avatar?.url ? (
-							<Image
-								src={avatar.url}
-								alt={character.fullName || ''}
-								width={300}
-								height={400}
-								className="character-photo"
-								unoptimized
-							/>
-						) : (
-							<div className="character-photo-placeholder">
-								{character.firstName?.[0]}
-								{character.lastName?.[0]}
-							</div>
-						)}
-
 						<div className="character-info-block">
 							<h3>Informations</h3>
 							<div className="info-row">

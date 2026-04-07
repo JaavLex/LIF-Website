@@ -6,9 +6,21 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.6.16',
+  version: '1.6.17',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.6.17',
+      date: '2026-04-07',
+      changes: [
+        'FICHE PERSONNAGE — Refonte du hero en style « carte d\'identité militaire »',
+        'FICHE PERSONNAGE — Portrait encadré (coins HUD, scanlines, glow couleur unité/faction) intégré dans le hero',
+        'FICHE PERSONNAGE — Nom complet géant en Rajdhani 2.35rem, couleur de la faction/unité, double text-shadow (glow + ombre portée)',
+        'FICHE PERSONNAGE — Suppression des doublons (abréviation de grade retirée, callsign intégré au nom), callsign en watermark géant en arrière-plan',
+        'FICHE PERSONNAGE — Grade en chip compact avec icône, ligne meta : PERSONNEL/CIBLE · matricule · classification',
+        'FICHE PERSONNAGE — Photo retirée de la sidebar (intégrée au hero), sidebar épurée',
+      ],
+    },
     {
       version: '1.6.16',
       date: '2026-04-07',
