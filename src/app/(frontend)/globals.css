@@ -1383,3 +1383,337 @@ html[data-dev-banner] .navbar {
   left: 0;
   color: var(--primary);
 }
+
+/* Site-wide comms toast notifier (also reused inside /comms page) */
+.comms-toast-stack {
+  position: fixed;
+  top: 5rem;
+  right: 1rem;
+  z-index: 1100;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-width: 320px;
+}
+
+.comms-toast {
+  background: rgba(0, 0, 0, 0.92);
+  border: 1px solid var(--primary);
+  border-left: 4px solid var(--primary);
+  color: var(--foreground);
+  font-family: inherit;
+  padding: 0.6rem 0.8rem;
+  cursor: pointer;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5), 0 0 12px rgba(80, 180, 80, 0.25);
+  animation: comms-toast-in 0.25s ease-out;
+}
+
+.comms-toast:hover {
+  background: rgba(80, 180, 80, 0.12);
+}
+
+.comms-toast-channel {
+  font-size: 0.78rem;
+  font-weight: bold;
+  color: var(--primary);
+  letter-spacing: 0.5px;
+}
+
+.comms-toast-snippet {
+  font-size: 0.72rem;
+  color: var(--muted, #888);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@keyframes comms-toast-in {
+  from {
+    transform: translateX(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* ============================================================================
+   SPLASH SCREEN — first-visit terminal boot intro
+   Pure CRT phosphor terminal: black canvas, monochrome green output,
+   line-by-line typed reveal, scanlines + flicker. Click anywhere to skip.
+   ============================================================================ */
+
+.splash-screen {
+  --ss-green: #6da542;
+  --ss-green-bright: #9be25e;
+  --ss-amber: #c9a040;
+  --ss-red: #c75541;
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #04060a;
+  color: var(--ss-green);
+  font-family: 'Courier New', 'Lucida Console', Monaco, monospace;
+  cursor: pointer;
+  overflow: hidden;
+  isolation: isolate;
+  animation: splash-screen-in 0.18s ease-out;
+}
+
+.splash-screen--closing {
+  animation: splash-screen-out 0.32s ease-in forwards;
+  pointer-events: none;
+}
+
+@keyframes splash-screen-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes splash-screen-out {
+  from { opacity: 1; transform: scale(1); filter: brightness(1); }
+  60%  { filter: brightness(2.4); }
+  to   { opacity: 0; transform: scale(1.04); filter: brightness(0.2); }
+}
+
+/* CRT screen warp & glow */
+.splash-screen-crt {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(
+      ellipse at center,
+      rgba(109, 165, 66, 0.08) 0%,
+      transparent 55%
+    ),
+    radial-gradient(
+      ellipse at center,
+      transparent 50%,
+      rgba(0, 0, 0, 0.85) 100%
+    );
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Hard horizontal scanlines — CRT signature */
+.splash-screen-scanlines {
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.35) 0 1px,
+    transparent 1px 3px
+  );
+  pointer-events: none;
+  z-index: 4;
+  mix-blend-mode: multiply;
+}
+
+/* Soft outer vignette */
+.splash-screen-vignette {
+  position: absolute;
+  inset: 0;
+  box-shadow: inset 0 0 220px rgba(0, 0, 0, 0.95);
+  pointer-events: none;
+  z-index: 3;
+}
+
+/* Subtle phosphor flicker */
+.splash-screen-flicker {
+  position: absolute;
+  inset: 0;
+  background: rgba(109, 165, 66, 0.025);
+  pointer-events: none;
+  z-index: 2;
+  animation: splash-screen-flicker 7s steps(1) infinite;
+}
+
+@keyframes splash-screen-flicker {
+  0%, 100% { opacity: 0.7; }
+  3%       { opacity: 0.3; }
+  6%       { opacity: 0.85; }
+  12%      { opacity: 0.55; }
+  47%      { opacity: 0.9; }
+  48%      { opacity: 0.4; }
+  49%      { opacity: 0.85; }
+  82%      { opacity: 0.5; }
+}
+
+.splash-screen-shell {
+  position: relative;
+  z-index: 5;
+  width: min(720px, calc(100vw - 2.4rem));
+  padding: 0;
+  background: transparent;
+  text-shadow:
+    0 0 1px var(--ss-green),
+    0 0 8px color-mix(in srgb, var(--ss-green) 45%, transparent),
+    0 0 18px color-mix(in srgb, var(--ss-green) 18%, transparent);
+}
+
+/* Fake terminal title bar — three dots, no chrome */
+.splash-screen-topbar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 0.9rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--ss-green) 30%, transparent);
+  font-size: 0.62rem;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--ss-green) 65%, transparent);
+}
+
+.splash-screen-topbar-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border: 1px solid color-mix(in srgb, var(--ss-green) 60%, transparent);
+}
+
+.splash-screen-topbar-dot:nth-child(1) {
+  background: color-mix(in srgb, var(--ss-red) 65%, transparent);
+  border-color: color-mix(in srgb, var(--ss-red) 70%, transparent);
+}
+.splash-screen-topbar-dot:nth-child(2) {
+  background: color-mix(in srgb, var(--ss-amber) 65%, transparent);
+  border-color: color-mix(in srgb, var(--ss-amber) 70%, transparent);
+}
+.splash-screen-topbar-dot:nth-child(3) {
+  background: color-mix(in srgb, var(--ss-green) 65%, transparent);
+}
+
+.splash-screen-topbar-title {
+  margin-left: auto;
+}
+
+/* Output area — looks exactly like a tty */
+.splash-screen-output {
+  margin: 0;
+  padding: 1.1rem 1rem 1rem;
+  font-family: inherit;
+  font-size: clamp(0.78rem, 1.6vw, 0.95rem);
+  line-height: 1.55;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.splash-screen-line {
+  display: block;
+  opacity: 0;
+  /* Each line slides in from a clipped right edge — feels like teletype */
+  animation: splash-line-type 0.22s steps(1) forwards;
+}
+
+@keyframes splash-line-type {
+  0%   { opacity: 0; clip-path: inset(0 100% 0 0); }
+  1%   { opacity: 1; }
+  100% { opacity: 1; clip-path: inset(0 0 0 0); }
+}
+
+.splash-screen-tag {
+  display: inline-block;
+  margin-right: 0.6rem;
+  padding: 0 0.05rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.splash-screen-tag--ok {
+  color: var(--ss-green-bright);
+}
+.splash-screen-tag--boot {
+  color: var(--ss-amber);
+}
+.splash-screen-tag--warn {
+  color: var(--ss-amber);
+  animation: splash-warn-blink 1.4s steps(1) infinite;
+}
+.splash-screen-tag--err {
+  color: var(--ss-red);
+}
+.splash-screen-tag--sys {
+  color: var(--ss-green);
+}
+
+@keyframes splash-warn-blink {
+  0%, 60% { opacity: 1; }
+  61%, 100% { opacity: 0.45; }
+}
+
+.splash-screen-text {
+  color: var(--ss-green);
+}
+
+.splash-screen-text--final {
+  color: var(--ss-green-bright);
+  font-weight: 600;
+}
+
+.splash-screen-line--prompt {
+  margin-top: 0.4rem;
+}
+
+.splash-screen-cursor {
+  display: inline-block;
+  margin-left: 0.35rem;
+  color: var(--ss-green-bright);
+  animation: splash-cursor-blink 1s steps(1) infinite;
+}
+
+@keyframes splash-cursor-blink {
+  0%, 50%   { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+.splash-screen-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.6rem 0.9rem;
+  margin-top: 0.4rem;
+  border-top: 1px solid color-mix(in srgb, var(--ss-green) 30%, transparent);
+  font-size: 0.6rem;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--ss-green) 60%, transparent);
+}
+
+@media (max-width: 640px) {
+  .splash-screen-shell {
+    width: calc(100vw - 1.4rem);
+  }
+  .splash-screen-output {
+    padding: 0.85rem 0.7rem;
+    font-size: 0.72rem;
+  }
+  .splash-screen-foot {
+    flex-direction: column;
+    gap: 0.3rem;
+    text-align: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .splash-screen,
+  .splash-screen-flicker,
+  .splash-screen-line,
+  .splash-screen-cursor,
+  .splash-screen-tag--warn {
+    animation: none !important;
+  }
+  .splash-screen-line {
+    opacity: 1;
+    clip-path: none;
+  }
+}
+

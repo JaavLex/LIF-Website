@@ -205,7 +205,7 @@ export async function discordUnbanUser(
 	}
 }
 
-async function sendDiscordDM(userId: string, content: string): Promise<void> {
+export async function sendDiscordDM(userId: string, content: string): Promise<void> {
 	const botToken = process.env.DISCORD_BOT_TOKEN;
 	if (!botToken) throw new Error('Bot non configuré');
 

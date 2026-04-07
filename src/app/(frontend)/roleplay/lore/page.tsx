@@ -21,149 +21,235 @@ export default async function LorePage() {
 
 	if (!showLore) {
 		return (
-			<div className="terminal-container">
-				<div
-					className="terminal-panel"
-					style={{ textAlign: 'center', padding: '4rem' }}
-				>
-					<h2 style={{ color: 'var(--muted)' }}>Section en cours de rédaction</h2>
-					<p style={{ color: 'var(--muted)', marginTop: '1rem' }}>
-						Le lore sera disponible prochainement.
-					</p>
-					<Link href="/roleplay" className="retour-link">
-						← Retour à la base de données
+			<div className="lore-window">
+				<div className="lore-window-grid-bg" aria-hidden />
+				<div className="lore-window-vignette" aria-hidden />
+				<div className="lore-window-topbar">
+					<Link href="/roleplay" className="lore-window-back">
+						<span aria-hidden>←</span>
+						<span>Retour</span>
 					</Link>
+				</div>
+				<div className="lore-empty">
+					<div className="lore-empty-glyph" aria-hidden>
+						§
+					</div>
+					<h2 className="lore-empty-title">ARCHIVES VERROUILLÉES</h2>
+					<p className="lore-empty-text">
+						Le lore est en cours de rédaction. Revenez prochainement.
+					</p>
 				</div>
 			</div>
 		);
 	}
 
-	return (
-		<div className="terminal-container">
-			<Link href="/roleplay" className="retour-link">
-				← Retour à la base de données
-			</Link>
+	let chapterNum = 0;
 
-			<div className="terminal-header">
-				<div className="terminal-header-left">
-					<div className="terminal-header-dots">
-						<span className="terminal-dot green" />
-						<span className="terminal-dot yellow" />
-						<span className="terminal-dot red" />
-					</div>
-					<span className="terminal-title">ARCHIVES — LORE & HISTORIQUE</span>
+	return (
+		<div className="lore-window">
+			<div className="lore-window-grid-bg" aria-hidden />
+			<div className="lore-window-vignette" aria-hidden />
+			<span className="lore-window-rail" aria-hidden>
+				ARCHIVES // LORE & HISTORIQUE
+			</span>
+
+			<div className="lore-window-topbar">
+				<Link href="/roleplay" className="lore-window-back">
+					<span aria-hidden>←</span>
+					<span>Retour</span>
+				</Link>
+				<div className="lore-window-tab">
+					<span className="lore-window-tab-num">AR-001</span>
+					<span className="lore-window-tab-label">ARCHIVES</span>
 				</div>
-				<div className="terminal-header-right">CLASSIFICATION: PUBLIC</div>
+				<div className="lore-window-topbar-right">
+					<span className="classification-badge public">PUBLIC</span>
+				</div>
 			</div>
 
-			<div className="terminal-panel">
-				<h1>LORE & HISTORIQUE</h1>
+			<header className="lore-masthead">
+				<div className="lore-masthead-eyebrow">
+					<span className="lore-masthead-marker" aria-hidden />
+					Dossier d&apos;archives — Volume I
+				</div>
+				<h1 className="lore-masthead-title">
+					<span className="lore-masthead-title-line">Lore</span>
+					<span className="lore-masthead-title-line accent">&amp;</span>
+					<span className="lore-masthead-title-line">Historique</span>
+				</h1>
+				<div className="lore-masthead-meta">
+					<span>{loreBlocks.length} sections</span>
+					<span className="lore-masthead-divider" />
+					<span>{timelineEvents.length} entrées chronologiques</span>
+				</div>
+			</header>
 
+			<div className="lore-stream">
 				{loreBlocks.map((block: any, index: number) => {
 					switch (block.blockType) {
-						case 'loreText':
+						case 'loreText': {
+							chapterNum += 1;
 							return (
-								<div key={index} className="lore-section">
-									{block.title && <h2>{block.title}</h2>}
-									<div className="lore-text">
-										<RichTextRenderer content={block.content} />
+								<section key={index} className="lore-section lore-section--text">
+									<div className="lore-section-marker">
+										<span className="lore-section-marker-symbol">§</span>
+										<span className="lore-section-marker-num">
+											{String(chapterNum).padStart(2, '0')}
+										</span>
 									</div>
-								</div>
+									<div className="lore-section-body">
+										{block.title && (
+											<h2 className="lore-section-title">{block.title}</h2>
+										)}
+										<div className="lore-text">
+											<RichTextRenderer content={block.content} />
+										</div>
+									</div>
+								</section>
 							);
+						}
 						case 'loreBanner':
 							return (
-								<div key={index} className="lore-section">
+								<figure key={index} className="lore-banner-figure">
 									{block.image?.url && (
-										<Image
-											src={block.image.url}
-											alt={block.caption || ''}
-											width={1200}
-											height={400}
-											className="lore-banner"
-											unoptimized
-										/>
+										<div className="lore-banner-frame">
+											<Image
+												src={block.image.url}
+												alt={block.caption || ''}
+												width={1600}
+												height={500}
+												className="lore-banner"
+												unoptimized
+											/>
+											<span className="lore-banner-corner tl" aria-hidden />
+											<span className="lore-banner-corner tr" aria-hidden />
+											<span className="lore-banner-corner bl" aria-hidden />
+											<span className="lore-banner-corner br" aria-hidden />
+										</div>
 									)}
 									{block.caption && (
-										<p
-											style={{
-												textAlign: 'center',
-												color: 'var(--muted)',
-												fontSize: '0.85rem',
-												marginTop: '0.5rem',
-											}}
-										>
+										<figcaption className="lore-banner-caption">
+											<span className="lore-banner-caption-marker" aria-hidden />
 											{block.caption}
-										</p>
+										</figcaption>
 									)}
-								</div>
+								</figure>
 							);
-						case 'loreGallery':
+						case 'loreGallery': {
+							chapterNum += 1;
 							return (
-								<div key={index} className="lore-section">
-									{block.title && <h2>{block.title}</h2>}
-									<div className="lore-gallery">
-										{block.images?.map(
-											(img: any, i: number) =>
-												img.image?.url && (
-													<Image
-														key={i}
-														src={img.image.url}
-														alt={img.caption || ''}
-														width={400}
-														height={300}
-														unoptimized
-													/>
-												),
-										)}
+								<section key={index} className="lore-section lore-section--gallery">
+									<div className="lore-section-marker">
+										<span className="lore-section-marker-symbol">§</span>
+										<span className="lore-section-marker-num">
+											{String(chapterNum).padStart(2, '0')}
+										</span>
 									</div>
-								</div>
+									<div className="lore-section-body">
+										{block.title && (
+											<h2 className="lore-section-title">{block.title}</h2>
+										)}
+										<div className="lore-gallery">
+											{block.images?.map(
+												(img: any, i: number) =>
+													img.image?.url && (
+														<figure key={i} className="lore-gallery-item">
+															<div className="lore-gallery-frame">
+																<Image
+																	src={img.image.url}
+																	alt={img.caption || ''}
+																	width={600}
+																	height={450}
+																	unoptimized
+																/>
+																<span
+																	className="lore-gallery-corner tl"
+																	aria-hidden
+																/>
+																<span
+																	className="lore-gallery-corner br"
+																	aria-hidden
+																/>
+															</div>
+															{img.caption && (
+																<figcaption className="lore-gallery-caption">
+																	{img.caption}
+																</figcaption>
+															)}
+														</figure>
+													),
+											)}
+										</div>
+									</div>
+								</section>
 							);
+						}
 						default:
 							return null;
 					}
 				})}
 
 				{timelineEvents.length > 0 && (
-					<>
-						<h2
-							style={{
-								color: 'var(--primary)',
-								textTransform: 'uppercase',
-								letterSpacing: '2px',
-								marginTop: '3rem',
-								marginBottom: '1.5rem',
-								paddingBottom: '0.5rem',
-								borderBottom: '1px solid var(--primary)',
-							}}
-						>
-							Chronologie
-						</h2>
-						<div className="timeline">
-							{timelineEvents.map((event: any, index: number) => (
-								<div key={index} className="timeline-item">
-									<div className="timeline-date">
-										{new Date(event.date).toLocaleDateString('fr-FR', {
-											year: 'numeric',
-											month: 'long',
-											day: 'numeric',
-										})}
-									</div>
-									<div className="timeline-title">{event.title}</div>
-									{event.description && (
-										<div className="timeline-description">{event.description}</div>
-									)}
-								</div>
-							))}
+					<section className="lore-section lore-section--timeline">
+						<div className="lore-section-marker">
+							<span className="lore-section-marker-symbol">⌖</span>
+							<span className="lore-section-marker-num">CHR</span>
 						</div>
-					</>
+						<div className="lore-section-body">
+							<h2 className="lore-section-title">Chronologie</h2>
+							<ol className="lore-timeline">
+								{timelineEvents.map((event: any, index: number) => {
+									const date = new Date(event.date);
+									const day = date.toLocaleDateString('fr-FR', {
+										day: '2-digit',
+									});
+									const month = date.toLocaleDateString('fr-FR', {
+										month: 'short',
+									});
+									const year = date.toLocaleDateString('fr-FR', {
+										year: 'numeric',
+									});
+									return (
+										<li key={index} className="lore-timeline-entry">
+											<div className="lore-timeline-stamp" aria-hidden>
+												<span className="lore-timeline-stamp-year">{year}</span>
+												<span className="lore-timeline-stamp-day">{day}</span>
+												<span className="lore-timeline-stamp-month">{month}</span>
+											</div>
+											<div className="lore-timeline-rail" aria-hidden>
+												<span className="lore-timeline-node" />
+											</div>
+											<article className="lore-timeline-card">
+												<header className="lore-timeline-card-header">
+													<span className="lore-timeline-index">
+														№ {String(index + 1).padStart(3, '0')}
+													</span>
+												</header>
+												<h4 className="lore-timeline-title">{event.title}</h4>
+												{event.description && (
+													<p className="lore-timeline-description">
+														{event.description}
+													</p>
+												)}
+											</article>
+										</li>
+									);
+								})}
+							</ol>
+						</div>
+					</section>
 				)}
 
 				{loreBlocks.length === 0 && timelineEvents.length === 0 && (
-					<div
-						style={{ textAlign: 'center', padding: '3rem', color: 'var(--muted)' }}
-					>
-						Le lore n&apos;a pas encore été rédigé. Consultez cette page
-						ultérieurement.
+					<div className="lore-empty">
+						<div className="lore-empty-glyph" aria-hidden>
+							§
+						</div>
+						<h2 className="lore-empty-title">PAGES BLANCHES</h2>
+						<p className="lore-empty-text">
+							Le lore n&apos;a pas encore été rédigé. Consultez cette page
+							ultérieurement.
+						</p>
 					</div>
 				)}
 			</div>

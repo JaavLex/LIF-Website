@@ -35,6 +35,19 @@ export const CommsMessages: CollectionConfig = {
 					'JSON array of { kind: "character"|"intel"|"media", refId: number, meta?: any }',
 			},
 		},
+		{
+			name: 'replyToMessageId',
+			type: 'number',
+			index: true,
+			admin: { description: 'ID du message auquel celui-ci répond' },
+		},
+		{
+			name: 'mentions',
+			type: 'json',
+			admin: {
+				description: "Tableau JSON d'IDs de personnages mentionnés (@ping)",
+			},
+		},
 		{ name: 'editedAt', type: 'date', admin: { readOnly: true } },
 		{ name: 'deletedAt', type: 'date', admin: { readOnly: true } },
 		{ name: 'deletedBy', type: 'text', admin: { readOnly: true } },

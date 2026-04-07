@@ -3,6 +3,7 @@ import { getPayloadClient } from '@/lib/payload';
 import { requireSession, isErrorResponse } from '@/lib/api-auth';
 import { checkAdminPermissions } from '@/lib/admin';
 import { notifyStatusChange } from '@/lib/discord-notify';
+import { generateUniqueCallsign } from '@/lib/callsign';
 
 export async function PATCH(
 	request: NextRequest,
@@ -56,6 +57,19 @@ export async function PATCH(
 			body.biId = null;
 		}
 
+		// Callsign is mandatory: reject clearing; auto-fill legacy rows missing one
+		if (body.callsign !== undefined) {
+			if (typeof body.callsign !== 'string' || !body.callsign.trim()) {
+				return NextResponse.json(
+					{ message: 'Le callsign est obligatoire.' },
+					{ status: 400 },
+				);
+			}
+			body.callsign = body.callsign.trim();
+		} else if (!existing.callsign) {
+			body.callsign = await generateUniqueCallsign(payload);
+		}
+
 		// Admin reassign: allow full admins to change linked Discord account
 		if (isAdmin && body.linkedDiscordId !== undefined) {
 			const { isAdmin: isFullAdmin, level } = await checkAdminPermissions(session);
@@ -78,6 +92,33 @@ export async function PATCH(
 			delete body.targetFaction;
 			delete body.etatMajorNotes;
 			delete body.faction;
+			delete body.rankOverride;
+			// Unit is chosen at character creation and locked thereafter — only admins can move
+			// a player between units.
+			delete body.unit;
+		}
+
+		// Auto-derive rank from Discord roles unless rankOverride is explicitly enabled.
+		// Applies on every edit so the saved rank stays in sync with the user's current roles.
+		const overrideAfter =
+			body.rankOverride !== undefined ? body.rankOverride : existing.rankOverride;
+		if (!overrideAfter && isOwner && session.roles?.length) {
+			const ranks = await payload.find({
+				collection: 'ranks',
+				where: { discordRoleId: { in: session.roles } },
+				sort: '-order',
+				limit: 1,
+			});
+			if (ranks.docs.length > 0) {
+				body.rank = ranks.docs[0].id;
+			} else {
+				const defaultRank = await payload.find({
+					collection: 'ranks',
+					sort: 'order',
+					limit: 1,
+				});
+				if (defaultRank.docs.length > 0) body.rank = defaultRank.docs[0].id;
+			}
 		}
 
 		const oldStatus = existing.status;
@@ -233,12 +274,29 @@ export async function GET(
 
 	try {
 		const payload = await getPayloadClient();
-		const doc = await payload.findByID({
+		const doc = (await payload.findByID({
 			collection: 'characters',
 			id: characterId,
 			depth: 2,
-		});
-		return NextResponse.json(doc);
+		})) as any;
+
+		// Resolve the faction logo by name (faction is stored as text on the
+		// character; the Factions collection holds the upload).
+		let factionLogoUrl: string | null = null;
+		if (doc.faction) {
+			const factionResult = await payload.find({
+				collection: 'factions',
+				where: { name: { equals: doc.faction } },
+				limit: 1,
+				depth: 1,
+			});
+			const f = factionResult.docs[0] as any;
+			if (f && typeof f.logo === 'object') {
+				factionLogoUrl = f.logo?.url || null;
+			}
+		}
+
+		return NextResponse.json({ ...doc, factionLogoUrl });
 	} catch {
 		return NextResponse.json({ message: 'Non trouvé' }, { status: 404 });
 	}

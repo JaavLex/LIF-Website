@@ -44,6 +44,15 @@ export const CommsChannels: CollectionConfig = {
 			admin: { description: 'Tableau JSON des IDs de personnages' },
 		},
 		{ name: 'createdByCharacterId', type: 'number' },
+		{
+			name: 'anonForCharacterId',
+			label: 'Membre anonyme (DM)',
+			type: 'number',
+			admin: {
+				description:
+					"Pour les DM anonymes : ID du personnage dont l'identité est masquée pour l'autre partie",
+			},
+		},
 		{ name: 'lastMessageAt', type: 'date', admin: { readOnly: true } },
 	],
 };

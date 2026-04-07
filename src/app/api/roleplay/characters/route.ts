@@ -14,6 +14,15 @@ export async function POST(request: NextRequest) {
 		const body = await request.json();
 		const payload = await getPayloadClient();
 
+		// Callsign is mandatory
+		if (!body.callsign || typeof body.callsign !== 'string' || !body.callsign.trim()) {
+			return NextResponse.json(
+				{ message: 'Le callsign est obligatoire.' },
+				{ status: 400 },
+			);
+		}
+		body.callsign = body.callsign.trim();
+
 		// Check if user is admin (via DB role or Discord roles)
 		const { isAdmin } = await checkAdminPermissions(session);
 
@@ -87,6 +96,28 @@ export async function POST(request: NextRequest) {
 
 			// Default status for new characters
 			body.status = 'in-service';
+		}
+
+		// For admins creating their own (non-NPC) character, also auto-derive rank
+		// from Discord roles unless rankOverride is enabled. Mirrors the non-admin path
+		// so the form's "detected rank" matches the saved value.
+		if (isAdmin && !isNpcCreation && !body.rankOverride && session.roles?.length) {
+			const ranks = await payload.find({
+				collection: 'ranks',
+				where: { discordRoleId: { in: session.roles } },
+				sort: '-order',
+				limit: 1,
+			});
+			if (ranks.docs.length > 0) {
+				body.rank = ranks.docs[0].id;
+			} else {
+				const defaultRank = await payload.find({
+					collection: 'ranks',
+					sort: 'order',
+					limit: 1,
+				});
+				if (defaultRank.docs.length > 0) body.rank = defaultRank.docs[0].id;
+			}
 		}
 
 		const doc = await payload.create({

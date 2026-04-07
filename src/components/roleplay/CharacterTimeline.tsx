@@ -13,6 +13,18 @@ const TYPE_LABELS: Record<string, string> = {
 	other: 'Autre',
 };
 
+// Short stencil glyph + tone class
+const TYPE_META: Record<string, { glyph: string; tone: string }> = {
+	promotion: { glyph: '↑', tone: 'tone-accent' },
+	mutation: { glyph: '⇄', tone: 'tone-primary' },
+	wound: { glyph: '✚', tone: 'tone-danger' },
+	mission: { glyph: '◆', tone: 'tone-primary' },
+	disciplinary: { glyph: '!', tone: 'tone-danger' },
+	medal: { glyph: '★', tone: 'tone-gold' },
+	training: { glyph: '◎', tone: 'tone-primary' },
+	other: { glyph: '·', tone: 'tone-muted' },
+};
+
 interface TimelineEvent {
 	id: number;
 	type: string;
@@ -48,63 +60,57 @@ export function CharacterTimeline({
 	};
 
 	return (
-		<div className="timeline">
-			{events.map(event => (
-				<div key={event.id} className={`timeline-item ${event.type}`}>
-					<div
-						style={{
-							display: 'flex',
-							justifyContent: 'space-between',
-							alignItems: 'flex-start',
-						}}
+		<ol className="char-timeline">
+			{events.map((event, idx) => {
+				const meta = TYPE_META[event.type] || TYPE_META.other;
+				const date = new Date(event.date);
+				const day = date.toLocaleDateString('fr-FR', { day: '2-digit' });
+				const month = date.toLocaleDateString('fr-FR', { month: 'short' });
+				const year = date.toLocaleDateString('fr-FR', { year: 'numeric' });
+				return (
+					<li
+						key={event.id}
+						className={`char-timeline-entry ${event.type} ${meta.tone}`}
 					>
-						<div style={{ flex: 1 }}>
-							<div className="timeline-date">
-								{new Date(event.date).toLocaleDateString('fr-FR', {
-									year: 'numeric',
-									month: 'long',
-									day: 'numeric',
-								})}
-							</div>
-							<span
-								className="timeline-type"
-								style={{
-									color: `var(--${event.type === 'promotion' || event.type === 'medal' ? 'accent' : event.type === 'wound' || event.type === 'disciplinary' ? 'danger' : 'primary'})`,
-								}}
-							>
-								{TYPE_LABELS[event.type] || event.type}
-							</span>
-							<div className="timeline-title">{event.title}</div>
-							{event.description && (
-								<div className="timeline-description">
-									{typeof event.description === 'string' ? event.description : null}
-								</div>
-							)}
+						<div className="char-timeline-stamp" aria-hidden>
+							<span className="char-timeline-stamp-day">{day}</span>
+							<span className="char-timeline-stamp-month">{month}</span>
+							<span className="char-timeline-stamp-year">{year}</span>
 						</div>
-						{isAdmin && (
-							<button
-								type="button"
-								onClick={() => handleDelete(event.id)}
-								disabled={deleting === event.id}
-								style={{
-									background: 'none',
-									border: '1px solid var(--danger)',
-									color: 'var(--danger)',
-									padding: '0.15rem 0.4rem',
-									cursor: 'pointer',
-									fontSize: '0.7rem',
-									opacity: deleting === event.id ? 0.5 : 1,
-									flexShrink: 0,
-									marginLeft: '0.5rem',
-								}}
-								title="Supprimer cet événement"
-							>
-								{deleting === event.id ? '...' : '✕'}
-							</button>
-						)}
-					</div>
-				</div>
-			))}
-		</div>
+						<div className="char-timeline-rail" aria-hidden>
+							<span className="char-timeline-node">{meta.glyph}</span>
+						</div>
+						<article className="char-timeline-card">
+							<header className="char-timeline-card-header">
+								<span className="char-timeline-type-badge">
+									{TYPE_LABELS[event.type] || event.type}
+								</span>
+								<span className="char-timeline-card-index">
+									№ {String(events.length - idx).padStart(3, '0')}
+								</span>
+								{isAdmin && (
+									<button
+										type="button"
+										onClick={() => handleDelete(event.id)}
+										disabled={deleting === event.id}
+										className="char-timeline-delete"
+										title="Supprimer cet événement"
+									>
+										{deleting === event.id ? '…' : '✕'}
+									</button>
+								)}
+							</header>
+							<h4 className="char-timeline-title">{event.title}</h4>
+							{event.description &&
+								typeof event.description === 'string' && (
+									<p className="char-timeline-description">
+										{event.description}
+									</p>
+								)}
+						</article>
+					</li>
+				);
+			})}
+		</ol>
 	);
 }

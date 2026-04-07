@@ -1,0 +1,2032 @@
+/* =============================================================================
+   COMMS — Tactical HUD Overlay (Night Vision Glass)
+   -----------------------------------------------------------------------------
+   Semi-transparent smoked-glass panels layered over the site-wide Matrix
+   canvas. The MW2-style background shows through every surface; panels are
+   dark enough for readability but never opaque. Matrix-green primary with
+   HUD-amber accents. All color tokens scoped to .comms-page.
+   ============================================================================= */
+
+.comms-page {
+	/* === Night-vision palette ============================================== */
+	--cc-panel:        rgba(6, 12, 8, 0.68);
+	--cc-panel-hi:     rgba(16, 26, 18, 0.76);
+	--cc-panel-2:      rgba(10, 18, 12, 0.78);
+	--cc-panel-lo:     rgba(3, 8, 5, 0.58);
+	--cc-panel-glass:  rgba(12, 22, 14, 0.62);
+	--cc-text:         #e6f0d8;
+	--cc-text-soft:    #b4c49e;
+	--cc-text-mute:    #7e8c72;
+	--cc-matrix:       #a8e065;
+	--cc-matrix-deep:  #6fb82a;
+	--cc-matrix-dim:   #4a7c23;
+	--cc-amber:        #e8b450;
+	--cc-amber-deep:   #b88220;
+	--cc-amber-tint:   rgba(232, 180, 80, 0.14);
+	--cc-rust:         #e06248;
+	--cc-rust-deep:    #a83a1f;
+	--cc-rust-tint:    rgba(224, 98, 72, 0.12);
+	--cc-line:         rgba(140, 220, 120, 0.25);
+	--cc-line-hi:      rgba(180, 240, 150, 0.50);
+	--cc-line-strong:  rgba(168, 224, 101, 0.75);
+	--cc-ink:          #0a100a;
+	--cc-matrix-tint:  rgba(111, 184, 42, 0.14);
+	--cc-backdrop-blur: blur(8px) saturate(1.25) brightness(0.95);
+	--cc-shadow-sm:    0 1px 0 rgba(0, 0, 0, 0.25), 0 2px 6px rgba(0, 0, 0, 0.35);
+	--cc-shadow-md:    0 2px 0 rgba(0, 0, 0, 0.25), 0 8px 20px rgba(0, 0, 0, 0.45);
+	--cc-shadow-lg:    0 4px 0 rgba(0, 0, 0, 0.28), 0 20px 40px rgba(0, 0, 0, 0.55);
+	--cc-glow-matrix:  0 0 12px rgba(168, 224, 101, 0.35);
+	--cc-glow-amber:   0 0 12px rgba(232, 180, 80, 0.40);
+	--cc-glow-rust:    0 0 14px rgba(224, 98, 72, 0.45);
+
+	/* === Shell ============================================================= */
+	display: flex;
+	flex-direction: column;
+	height: calc(100vh - 4rem);
+	min-height: 0;
+	overflow: hidden;
+	position: relative;
+	z-index: 1;
+
+	/* Transparent so the Matrix canvas underneath is fully visible. */
+	background: transparent;
+	color: var(--cc-text);
+	font-family: var(--font-mono, 'Courier New', monospace);
+	font-size: 0.85rem;
+}
+
+/* Subtle top-to-bottom darkening veil so text at the edges stays legible over
+   bright matrix patches — but only ~25% max opacity, never a full cover. */
+.comms-page::before {
+	content: '';
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+	background:
+		radial-gradient(ellipse at 50% 40%, transparent 0%, rgba(0, 8, 0, 0.22) 60%, rgba(0, 8, 0, 0.42) 100%);
+	z-index: 0;
+}
+
+.comms-page > * { position: relative; z-index: 1; }
+
+/* =============================================================================
+   PROFILE BAR — operator ID plate suspended on the HUD
+   ============================================================================= */
+.comms-profile-bar {
+	display: flex;
+	align-items: center;
+	gap: 0.85rem;
+	padding: 0.6rem 0.9rem;
+	margin: 0.85rem 1rem 0;
+	background: var(--cc-panel);
+	backdrop-filter: var(--cc-backdrop-blur);
+	-webkit-backdrop-filter: var(--cc-backdrop-blur);
+	border: 1px solid var(--cc-line);
+	border-left: 3px solid var(--cc-matrix);
+	box-shadow: var(--cc-shadow-md), inset 0 1px 0 rgba(168, 224, 101, 0.08);
+	font-size: 0.8rem;
+	position: relative;
+	flex-wrap: wrap;
+}
+
+/* HUD corner brackets (top-right) */
+.comms-profile-bar::after {
+	content: '';
+	position: absolute;
+	top: -1px;
+	right: -1px;
+	width: 14px;
+	height: 14px;
+	border-top: 2px solid var(--cc-matrix);
+	border-right: 2px solid var(--cc-matrix);
+	pointer-events: none;
+}
+
+.comms-profile-bar-avatar {
+	width: 44px;
+	height: 44px;
+	border: 1px solid var(--cc-matrix);
+	background: rgba(0, 0, 0, 0.55);
+	flex-shrink: 0;
+	overflow: hidden;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--cc-matrix);
+	font-family: var(--font-heading, 'Rajdhani', sans-serif);
+	font-size: 1rem;
+	font-weight: 700;
+	letter-spacing: 1px;
+	box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.5), 0 0 0 1px var(--cc-line);
+}
+
+.comms-profile-bar-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+.comms-profile-bar-info {
+	display: flex;
+	flex-direction: column;
+	gap: 0.15rem;
+	min-width: 0;
+	flex: 1;
+}
+
+.comms-profile-bar-name {
+	display: flex;
+	align-items: center;
+	gap: 0.45rem;
+	color: var(--cc-matrix);
+	font-family: var(--font-heading, 'Rajdhani', sans-serif);
+	font-weight: 700;
+	font-size: 1.05rem;
+	letter-spacing: 1.2px;
+	text-transform: uppercase;
+	text-shadow: 0 0 10px rgba(168, 224, 101, 0.35);
+}
+
+.comms-profile-bar-name img.rank-icon {
+	height: 18px;
+	width: auto;
+	display: inline-block;
+}
+
+.comms-profile-bar-meta {
+	display: flex;
+	align-items: center;
+	gap: 0.55rem;
+	color: var(--cc-text-soft);
+	font-size: 0.72rem;
+	letter-spacing: 0.5px;
+	flex-wrap: wrap;
+}
+
+.comms-profile-bar-meta img.affil-icon {
+	height: 18px;
+	width: auto;
+	display: inline-block;
+	vertical-align: middle;
+}
+
+.comms-profile-bar-spacer { flex: 1; }
+
+/* =============================================================================
+   DISCLAIMER BANNER
+   ============================================================================= */
+.comms-disclaimer-banner {
+	background: var(--cc-amber-tint);
+	backdrop-filter: var(--cc-backdrop-blur);
+	-webkit-backdrop-filter: var(--cc-backdrop-blur);
+	border: 1px solid var(--cc-amber);
+	border-left: 3px solid var(--cc-amber);
+	color: var(--cc-text);
+	padding: 0.7rem 0.95rem;
+	margin: 0.75rem 1rem 0;
+	font-size: 0.78rem;
+	line-height: 1.5;
+	display: flex;
+	align-items: flex-start;
+	gap: 0.75rem;
+	position: relative;
+	box-shadow: var(--cc-shadow-sm);
+}
+
+.comms-disclaimer-banner strong {
+	color: var(--cc-amber);
+	letter-spacing: 1.5px;
+	font-family: var(--font-heading, 'Rajdhani', sans-serif);
+	font-weight: 700;
+	text-shadow: var(--cc-glow-amber);
+}
+
+.comms-disclaimer-close {
+	background: rgba(0, 0, 0, 0.4);
+	border: 1px solid var(--cc-text-mute);
+	color: var(--cc-text-soft);
+	cursor: pointer;
+	padding: 0.2rem 0.45rem;
+	margin-left: auto;
+	font-family: inherit;
+	font-size: 0.75rem;
+	flex-shrink: 0;
+	display: inline-flex;
+	align-items: center;
+	transition: all 0.15s;
+	min-height: 28px;
+}
+
+.comms-disclaimer-close:hover {
+	border-color: var(--cc-rust);
+	color: var(--cc-rust);
+	background: var(--cc-rust-tint);
+}
+
+/* =============================================================================
+   MAIN LAYOUT — main HUD frame
+   ============================================================================= */
+.comms-layout {
+	display: grid;
+	grid-template-columns: 290px 1fr;
+	gap: 0;
+	flex: 1;
+	border: 1px solid var(--cc-line);
+	margin: 0.85rem 1rem 1rem;
+	background: var(--cc-panel);
+	backdrop-filter: var(--cc-backdrop-blur);
+	-webkit-backdrop-filter: var(--cc-backdrop-blur);
+	box-shadow: var(--cc-shadow-lg), inset 0 1px 0 rgba(168, 224, 101, 0.06);
+	min-height: 0;
+	position: relative;
+}
+
+/* HUD corner brackets — all four corners */
+.comms-layout::before,
+.comms-layout::after {
+	content: '';
+	position: absolute;
+	width: 18px;
+	height: 18px;
+	pointer-events: none;
+	z-index: 2;
+}
+.comms-layout::before {
+	top: -2px;
+	left: -2px;
+	border-top: 2px solid var(--cc-matrix);
+	border-left: 2px solid var(--cc-matrix);
+}
+.comms-layout::after {
+	bottom: -2px;
+	right: -2px;
+	border-bottom: 2px solid var(--cc-matrix);
+	border-right: 2px solid var(--cc-matrix);
+}
+
+/* =============================================================================
+   SIDEBAR
+   ============================================================================= */
+.comms-sidebar {
+	border-right: 1px solid var(--cc-line);
+	display: flex;
+	flex-direction: column;
+	background: var(--cc-panel-lo);
+	min-height: 0;
+}
+
+.comms-sidebar-header {
+	padding: 0.85rem 1rem;
+	border-bottom: 1px solid var(--cc-line);
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	background: var(--cc-panel-2);
+	position: relative;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+
+.comms-sidebar-header::before {
+	content: '';
+	position: absolute;
+	left: 0;
+	top: 0;
+	bottom: 0;
+	width: 3px;
+	background: var(--cc-matrix);
+	box-shadow: var(--cc-glow-matrix);
+}
+
+.comms-sidebar-header h3 {
+	color: var(--cc-matrix);
+	font-family: var(--font-heading, 'Rajdhani', sans-serif);
+	font-size: 0.95rem;
+	font-weight: 700;
+	letter-spacing: 3px;
+	margin: 0;
+	text-transform: uppercase;
+	text-shadow: var(--cc-glow-matrix);
+}
+
+.comms-sidebar-actions {
+	display: flex;
+	gap: 0.35rem;
+	flex-wrap: wrap;
+}
+
+/* === Universal icon button =============================================== */
+.comms-icon-btn {
+	background: rgba(0, 0, 0, 0.45);
+	border: 1px solid var(--cc-matrix-dim);
+	color: var(--cc-matrix);
+	cursor: pointer;
+	padding: 0.4rem 0.65rem;
+	font-family: var(--font-heading, 'Rajdhani', sans-serif);
+	font-size: 0.75rem;
+	font-weight: 600;
+	letter-spacing: 1px;
+	text-transform: uppercase;
+	transition: all 0.15s;
+	box-shadow: var(--cc-shadow-sm);
+	min-height: 34px;
+	display: inline-flex;
+	align-items: center;
+}
+
+.comms-icon-btn:hover:not(:disabled) {
+	background: rgba(168, 224, 101, 0.18);
+	border-color: var(--cc-matrix);
+	color: var(--cc-matrix);
+	box-shadow: var(--cc-shadow-md), var(--cc-glow-matrix);
+	transform: translateY(-1px);
+}
+
+.comms-icon-btn:active:not(:disabled) {
+	transform: translateY(0);
+	box-shadow: var(--cc-shadow-sm);
+}
+
+.comms-icon-btn:disabled {
+	opacity: 0.45;
+	cursor: not-allowed;
+}
+
+.comms-icon-btn-with-icon {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4rem;
+}
+
+.comms-icon-btn-square {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0.4rem 0.55rem;
+	min-width: 38px;
+	min-height: 38px;
+}
+
+/* =============================================================================
+   CHANNEL LIST
+   ============================================================================= */
+.comms-channel-section {
+	padding: 0.5rem 0;
+	border-bottom: 1px dashed var(--cc-line);
+}
+
+.comms-channel-section-title {
+	font-size: 0.65rem;
+	color: var(--cc-text-mute);
+	font-family: var(--font-heading, 'Rajdhani', sans-serif);
+	letter-spacing: 2px;
+	font-weight: 600;
+	padding: 0.4rem 1rem;
+	text-transform: uppercase;
+}
+
+.comms-channel-list {
+	flex: 1;
+	overflow-y: auto;
+	min-height: 0;
+	padding-bottom: 0.5rem;
+}
+
+.comms-channel-list::-webkit-scrollbar { width: 8px; }
+.comms-channel-list::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.3); }
+.comms-channel-list::-webkit-scrollbar-thumb {
+	background: var(--cc-matrix-dim);
+	border: 1px solid rgba(0, 0, 0, 0.3);
+}
+.comms-channel-list::-webkit-scrollbar-thumb:hover { background: var(--cc-matrix-deep); }
+
+.comms-channel-item {
+	padding: 0.7rem 1rem 0.7rem 0.8rem;
+	cursor: pointer;
+	border-left: 3px solid transparent;
+	display: flex;
+	gap: 0.7rem;
+	align-items: center;
+	transition: background 0.12s, border-color 0.12s;
+	position: relative;
+	min-height: 60px;
+}
+
+.comms-channel-item[data-type='faction'] { border-left-color: var(--cc-matrix); }
+.comms-channel-item[data-type='unit']    { border-left-color: var(--cc-amber); }
+.comms-channel-item[data-type='dm']      { border-left-color: #5a9ea5; }
+.comms-channel-item[data-type='group']   { border-left-color: var(--cc-rust); }
+
+.comms-channel-icon {
+	width: 40px;
+	height: 40px;
+	flex-shrink: 0;
+	border: 1px solid var(--cc-matrix-dim);
+	background: rgba(0, 0, 0, 0.55);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--cc-matrix);
+	font-family: var(--font-heading, 'Rajdhani', sans-serif);
+	font-size: 0.95rem;
+	font-weight: 700;
+	overflow: hidden;
+	position: relative;
+}
+
+.comms-channel-icon img { width: 100%; height: 100%; object-fit: cover; }
+
+.comms-channel-stack {
+	width: 40px;
+	height: 40px;
+	flex-shrink: 0;
+	position: relative;
+}
+
+.comms-channel-stack-bubble {
+	position: absolute;
+	width: 24px;
+	height: 24px;
+	border: 1px solid var(--cc-matrix-dim);
+	background: rgba(0, 0, 0, 0.65);
+	overflow: hidden;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--cc-matrix);
+	font-size: 0.65rem;
+	font-weight: 700;
+	font-family: var(--font-heading, 'Rajdhani', sans-serif);
+}
+
+.comms-channel-stack-bubble img { width: 100%; height: 100%; object-fit: cover; }
+.comms-channel-stack-bubble.b0 { top: 0; left: 0; }
+.comms-channel-stack-bubble.b1 { top: 0; right: 0; }
+.comms-channel-stack-bubble.b2 { bottom: 0; left: 0; }
+.comms-channel-stack-bubble.b3 { bottom: 0; right: 0; }
+
+.comms-channel-body {
+	flex: 1;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 0.18rem;
+}
+
+.comms-channel-item:hover {
+	background: var(--cc-panel-hi);
+}
+
+.comms-channel-item.active {
+	background: var(--cc-matrix-tint);
+}
+.comms-channel-item.active::after {
+	content: '';
+	position: absolute;
+	right: 0;
+	top: 0;
+	bottom: 0;
+	width: 2px;
+	background: var(--cc-matrix);
+	box-shadow: 0 0 10px var(--cc-matrix);
+}
+
+.comms-channel-name {
+	font-size: 0.88rem;
+	color: var(--cc-text);
+	font-weight: 600;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	letter-spacing: 0.2px;
+}
+
+.comms-channel-meta {
+	font-size: 0.68rem;
+	color: var(--cc-text-mute);
+	display: flex;
+	justify-content: space-between;
+	gap: 0.5rem;
+	font-variant-numeric: tabular-nums;
+}
+
+.comms-channel-preview {
+	font-size: 0.7rem;
+	color: var(--cc-text-mute);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.comms-channel-mention-badge {
+	position: absolute;
+	top: 8px;
+	right: 8px;
+	min-width: 22px;
+	height: 22px;
+	padding: 0 6px;
+	border-radius: 11px;
+	background: linear-gradient(180deg, var(--cc-rust) 0%, var(--cc-rust-deep) 100%);
+	color: #fff;
+	font-size: 0.7rem;
+	font-weight: 700;
+	letter-spacing: 0.5px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border: 1px solid var(--cc-rust);
+	box-shadow: var(--cc-glow-rust), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+	pointer-events: none;
+	z-index: 2;
+	font-family: var(--font-heading, 'Rajdhani', sans-serif);
+}
+
+.comms-channel-item.has-mentions {
+	background: var(--cc-rust-tint);
+}
+
+/* =============================================================================
+   MAIN PANEL (chat area)
+   ============================================================================= */
+.comms-main {
+	display: flex;
+	flex-direction: column;
+	min-height: 0;
+	background: var(--cc-panel-lo);
+}
+
+.comms-main-header {
+	padding: 0.75rem 1rem;
+	border-bottom: 1px solid var(--cc-line);
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	background: var(--cc-panel-2);
+	gap: 0.6rem;
+	flex-wrap: wrap;
+	position: relative;
+}
+
+.comms-main-header::before {
+	content: '';
+	position: absolute;
+	left: 0;
+	top: 0;
+	bottom: 0;
+	width: 3px;
+	background: var(--cc-amber);
+	box-shadow: 0 0 10px var(--cc-amber);
+}
+
+.comms-main-header h2 {
+	color: var(--cc-text);
+	margin: 0;
+	font-family: var(--font-heading, 'Rajdhani', sans-serif);
+	font-size: 1.1rem;
+	font-weight: 700;
+	letter-spacing: 1.5px;
+	text-transform: uppercase;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	min-width: 0;
+	text-shadow: 0 0 8px rgba(168, 224, 101, 0.2);
+}
+
+.comms-main-header-meta {
+	font-size: 0.7rem;
+	color: var(--cc-text-soft);
+	display: flex;
+	align-items: center;
+	gap: 0.45rem;
+	flex-wrap: wrap;
+	letter-spacing: 0.5px;
+}
+
+.comms-main-header-meta > span:first-child {
+	font-family: var(--font-heading, 'Rajdhani', sans-serif);
+	font-weight: 700;
+	letter-spacing: 2px;
+	color: var(--cc-amber);
+	background: rgba(0, 0, 0, 0.5);
+	border: 1px solid var(--cc-amber);
+	padding: 0.15rem 0.5rem;
+	font-size: 0.65rem;
+	text-shadow: var(--cc-glow-amber);
+}
+
+/* =============================================================================
+   MESSAGE LIST — faint scanline overlay for HUD feel
+   ============================================================================= */
+.comms-message-list {
+	flex: 1;
+	overflow-y: auto;
+	padding: 1.1rem 1.1rem 0.6rem;
+	display: flex;
+	flex-direction: column;
+	gap: 0.65rem;
+	min-height: 0;
+	position: relative;
+}
+
+/* Very subtle scanlines */
+.comms-message-list::before {
+	content: '';
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+	background: repeating-linear-gradient(
+		0deg,
+		transparent 0px,
+		transparent 2px,
+		rgba(168, 224, 101, 0.025) 2px,
+		rgba(168, 224, 101, 0.025) 3px
+	);
+	z-index: 0;
+}
+
+.comms-message-list > * { position: relative; z-index: 1; }
+
+.comms-message-list::-webkit-scrollbar { width: 10px; }
+.comms-message-list::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.35); }
+.comms-message-list::-webkit-scrollbar-thumb {
+	background: var(--cc-matrix-dim);
+	border: 1px solid rgba(0, 0, 0, 0.3);
+}
+.comms-message-list::-webkit-scrollbar-thumb:hover { background: var(--cc-matrix-deep); }
+
+.comms-message {
+	display: flex;
+	gap: 0.75rem;
+	padding: 0.55rem 0.65rem;
+	border: 1px solid transparent;
+	transition: background 0.12s, border-color 0.12s;
+	position: relative;
+}
+
+.comms-message:hover {
+	border-color: var(--cc-line);
+	background: rgba(0, 0, 0, 0.3);
+}
+
+.comms-message.own {
+	background: rgba(168, 224, 101, 0.07);
+	border-color: rgba(168, 224, 101, 0.30);
+}
+.comms-message.own:hover {
+	background: rgba(168, 224, 101, 0.12);
+}
+
+.comms-message.anonymous {
+	background: var(--cc-rust-tint);
+	border-color: rgba(224, 98, 72, 0.35);
+}
+
+.comms-message.mentions-me {
+	background: var(--cc-amber-tint);
+	border-color: var(--cc-amber);
+	box-shadow: inset 4px 0 0 var(--cc-amber), var(--cc-glow-amber);
+}
+.comms-message.mentions-me:hover {
+	background: rgba(232, 180, 80, 0.22);
+}
+
+.comms-message-avatar {
+	width: 42px;
+	height: 42px;
+	border: 1px solid var(--cc-matrix-dim);
+	background: rgba(0, 0, 0, 0.55);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 0.9rem;
+	color: var(--cc-matrix);
+	flex-shrink: 0;
+	overflow: hidden;
+	font-family: var(--font-heading, 'Rajdhani', sans-serif);
+	font-weight: 700;
+}
+
+.comms-message-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+.comms-message-body {
+	flex: 1;
+	min-width: 0;
+}
+
+.comms-message-header {
+	display: flex;
+	gap: 0.55rem;
+	align-items: center;
+	margin-bottom: 0.2rem;
+	flex-wrap: wrap;
+}
+
+.comms-message-sender {
+	color: var(--cc-matrix);
+	font-family: var(--font-heading, 'Rajdhani', sans-serif);
+	font-size: 0.95rem;
+	font-weight: 700;
+	letter-spacing: 1px;
+	text-transform: uppercase;
+	display: inline-flex;
+	align-items: center;
+	text-shadow: 0 0 8px rgba(168, 224, 101, 0.3);
+}
+
+.comms-message-sender.anonymous { color: var(--cc-rust); text-shadow: var(--cc-glow-rust); }
+
+.comms-sender-link {
+	background: transparent;
+	border: none;
+	padding: 0;
+	font: inherit;
+	cursor: pointer;
+	text-align: left;
+	color: inherit;
+}
+
+.comms-sender-link:hover { text-decoration: underline; text-decoration-color: var(--cc-amber); }
+
+.comms-message-rank-icon {
+	height: 18px;
+	width: 18px;
+	object-fit: contain;
+	display: inline-block;
+	vertical-align: middle;
+	margin-right: 0.35rem;
+	filter: drop-shadow(0 0 3px rgba(168, 224, 101, 0.35));
+}
+
+.comms-message-time {
+	font-size: 0.68rem;
+	color: var(--cc-text-mute);
+	font-variant-numeric: tabular-nums;
+}
+
+.comms-message-edited {
+	font-size: 0.65rem;
+	color: var(--cc-text-mute);
+	font-style: italic;
+}
+
+.comms-message-actions {
+	margin-left: auto;
+	display: flex;
+	gap: 0.3rem;
+	opacity: 0;
+	transition: opacity 0.12s;
+}
+
+.comms-message:hover .comms-message-actions { opacity: 1; }
+
+.comms-message-action {
+	background: rgba(0, 0, 0, 0.5);
+	border: 1px solid var(--cc-line);
+	color: var(--cc-text-soft);
+	font-size: 0.65rem;
+	padding: 0.25rem 0.5rem;
+	cursor: pointer;
+	font-family: var(--font-heading, 'Rajdhani', sans-serif);
+	letter-spacing: 0.5px;
+	text-transform: uppercase;
+	font-weight: 600;
+	transition: all 0.12s;
+	min-height: 28px;
+}
+
+.comms-message-action:hover {
+	border-color: var(--cc-matrix);
+	color: var(--cc-matrix);
+	background: rgba(168, 224, 101, 0.12);
+}
+
+/* === Markdown content =================================================== */
+.comms-md {
+	font-size: 0.86rem;
+	line-height: 1.55;
+	color: var(--cc-text);
+	word-wrap: break-word;
+}
+
+.comms-md-p { margin: 0.25rem 0; white-space: pre-wrap; }
+
+.comms-md-h {
+	margin: 0.5rem 0 0.25rem;
+	color: var(--cc-matrix);
+	font-size: 0.95rem;
+	font-family: var(--font-heading, 'Rajdhani', sans-serif);
+	letter-spacing: 0.5px;
+}
+
+.comms-md-quote {
+	border-left: 3px solid var(--cc-amber);
+	padding: 0.25rem 0.75rem;
+	margin: 0.35rem 0;
+	color: var(--cc-text-soft);
+	font-style: italic;
+	background: var(--cc-amber-tint);
+}
+
+.comms-md-ul { margin: 0.25rem 0; padding-left: 1.25rem; }
+
+.comms-md-code {
+	background: rgba(0, 0, 0, 0.55);
+	padding: 0.05rem 0.35rem;
+	border: 1px solid var(--cc-line);
+	font-size: 0.78rem;
+	color: var(--cc-matrix);
+}
+
+.comms-md-link {
+	color: var(--cc-matrix);
+	text-decoration: underline;
+	text-decoration-color: var(--cc-amber);
+	text-underline-offset: 2px;
+}
+.comms-md-link:hover { color: var(--cc-amber); }
+
+.comms-mention {
+	color: var(--cc-amber);
+	background: var(--cc-amber-tint);
+	border: 1px solid var(--cc-amber);
+	padding: 0 0.3rem;
+	font-weight: 700;
+	border-radius: 2px;
+	text-shadow: var(--cc-glow-amber);
+}
+
+/* === Reply preview ====================================================== */
+.comms-message-reply-preview {
+	border-left: 3px solid var(--cc-amber);
+	padding: 0.25rem 0.6rem;
+	margin-bottom: 0.35rem;
+	background: rgba(0, 0, 0, 0.45);
+	font-size: 0.72rem;
+	color: var(--cc-text-soft);
+	cursor: pointer;
+	transition: background 0.12s;
+}
+
+.comms-message-reply-preview:hover { background: rgba(0, 0, 0, 0.6); }
+
+.comms-message-reply-preview-name {
+	color: var(--cc-amber);
+	font-weight: 700;
+	margin-right: 0.4rem;
+	display: inline-flex;
+	align-items: center;
+	gap: 0.25rem;
+	font-family: var(--font-heading, 'Rajdhani', sans-serif);
+	letter-spacing: 0.5px;
+}
+
+/* === Attachments ======================================================== */
+.comms-attachments {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+	margin-top: 0.5rem;
+}
+
+.comms-attachment {
+	border: 1px solid var(--cc-line);
+	padding: 0.55rem 0.65rem;
+	background: rgba(0, 0, 0, 0.45);
+	font-size: 0.78rem;
+	display: flex;
+	gap: 0.55rem;
+	align-items: center;
+	max-width: 100%;
+	color: var(--cc-text);
+}
+
+.comms-attachment img {
+	max-width: 100%;
+	height: auto;
+	max-height: 320px;
+	object-fit: contain;
+	border: 1px solid var(--cc-line);
+}
+
+.comms-attachment video {
+	max-width: 100%;
+	max-height: 280px;
+	border: 1px solid var(--cc-line);
+}
+
+.comms-attachment a {
+	color: var(--cc-matrix);
+	text-decoration: underline;
+	text-decoration-color: var(--cc-amber);
+	word-break: break-all;
+}
+
+.comms-attachment-button {
+	background: rgba(0, 0, 0, 0.5);
+	border: 1px solid var(--cc-line);
+	border-left: 3px solid var(--cc-matrix);
+	color: var(--cc-text);
+	font: inherit;
+	cursor: pointer;
+	text-align: left;
+	width: 100%;
+	transition: all 0.12s;
+	min-height: 40px;
+}
+
+.comms-attachment-button:hover {
+	background: rgba(168, 224, 101, 0.10);
+	border-left-color: var(--cc-amber);
+	transform: translateX(2px);
+}
+
+/* =============================================================================
+   COMPOSER
+   ============================================================================= */
+.comms-composer {
+	border-top: 1px solid var(--cc-line);
+	padding: 0.8rem 1rem;
+	background: var(--cc-panel-2);
+	display: flex;
+	flex-direction: column;
+	gap: 0.55rem;
+	position: relative;
+}
+
+.comms-composer textarea {
+	width: 100%;
+	background: rgba(0, 0, 0, 0.55);
+	border: 1px solid var(--cc-line);
+	color: var(--cc-text);
+	padding: 0.6rem 0.7rem;
+	font-family: var(--font-mono, 'Courier New', monospace);
+	font-size: 0.88rem;
+	resize: vertical;
+	min-height: 64px;
+	transition: border-color 0.12s, box-shadow 0.12s;
+}
+
+.comms-composer textarea:focus {
+	outline: none;
+	border-color: var(--cc-matrix);
+	box-shadow: 0 0 0 3px var(--cc-matrix-tint), inset 0 0 12px rgba(168, 224, 101, 0.05);
+}
+
+.comms-composer textarea::placeholder {
+	color: var(--cc-text-mute);
+	font-style: italic;
+}
+
+.comms-composer-row {
+	display: flex;
+	gap: 0.55rem;
+	align-items: center;
+	flex-wrap: wrap;
+}
+
+.comms-composer-anon-label {
+	font-size: 0.72rem;
+	color: var(--cc-text-soft);
+	display: flex;
+	align-items: center;
+	gap: 0.35rem;
+	cursor: pointer;
+	letter-spacing: 0.3px;
+	min-height: 34px;
+	padding: 0 0.3rem;
+}
+
+.comms-composer-anon-label input[type='checkbox'] {
+	accent-color: var(--cc-matrix);
+	width: 16px;
+	height: 16px;
+	cursor: pointer;
+}
+
+.comms-composer-anon-short { display: none; }
+
+.comms-send-btn {
+	background: linear-gradient(180deg, var(--cc-matrix-deep) 0%, var(--cc-matrix-dim) 100%);
+	color: var(--cc-ink);
+	border: 1px solid var(--cc-matrix);
+	padding: 0.55rem 1.4rem;
+	font-family: var(--font-heading, 'Rajdhani', sans-serif);
+	font-size: 0.85rem;
+	font-weight: 700;
+	letter-spacing: 2px;
+	text-transform: uppercase;
+	cursor: pointer;
+	margin-left: auto;
+	display: inline-flex;
+	align-items: center;
+	gap: 0.45rem;
+	box-shadow: var(--cc-shadow-sm), 0 0 14px rgba(168, 224, 101, 0.3);
+	transition: all 0.12s;
+	min-height: 40px;
+}
+
+.comms-send-btn:hover:not(:disabled) {
+	background: linear-gradient(180deg, var(--cc-matrix) 0%, var(--cc-matrix-deep) 100%);
+	transform: translateY(-1px);
+	box-shadow: var(--cc-shadow-md), 0 0 20px rgba(168, 224, 101, 0.5);
+}
+
+.comms-send-btn:active:not(:disabled) {
+	transform: translateY(0);
+}
+
+.comms-send-btn:disabled {
+	opacity: 0.4;
+	cursor: not-allowed;
+	box-shadow: var(--cc-shadow-sm);
+}
+
+/* === Composer hint button & popover ===================================== */
+.comms-composer-hint-btn {
+	position: absolute;
+	top: 8px;
+	right: 8px;
+	width: 28px;
+	height: 28px;
+	border-radius: 50%;
+	border: 1px solid var(--cc-matrix-dim);
+	background: rgba(0, 0, 0, 0.6);
+	color: var(--cc-matrix);
+	font-family: inherit;
+	font-size: 0.75rem;
+	font-weight: 700;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0;
+	z-index: 3;
+	box-shadow: var(--cc-shadow-sm);
+	transition: all 0.12s;
+}
+
+.comms-composer-hint-btn:hover {
+	background: var(--cc-matrix);
+	color: var(--cc-ink);
+	box-shadow: var(--cc-glow-matrix);
+}
+
+.comms-composer-hints {
+	position: absolute;
+	bottom: calc(100% + 8px);
+	right: 0;
+	left: auto;
+	background: var(--cc-panel-hi);
+	backdrop-filter: var(--cc-backdrop-blur);
+	-webkit-backdrop-filter: var(--cc-backdrop-blur);
+	border: 1px solid var(--cc-matrix-dim);
+	border-left: 2px solid var(--cc-matrix);
+	padding: 0.55rem 0.7rem 0.65rem;
+	font-size: 0.74rem;
+	color: var(--cc-text);
+	z-index: 6;
+	box-shadow: var(--cc-shadow-lg);
+	width: min(280px, calc(100vw - 1.5rem));
+	max-height: min(60vh, 360px);
+	overflow-y: auto;
+	animation: commsHintsIn 0.18s ease-out;
+}
+
+@keyframes commsHintsIn {
+	from {
+		opacity: 0;
+		transform: translateY(4px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+.comms-composer-hints::after {
+	content: '';
+	position: absolute;
+	bottom: -6px;
+	right: 12px;
+	width: 10px;
+	height: 10px;
+	background: var(--cc-panel-hi);
+	border-right: 1px solid var(--cc-matrix-dim);
+	border-bottom: 1px solid var(--cc-matrix-dim);
+	transform: rotate(45deg);
+}
+
+.comms-composer-hints-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.5rem;
+	margin-bottom: 0.4rem;
+	padding-bottom: 0.35rem;
+	border-bottom: 1px dashed var(--cc-line);
+	font-family: var(--font-heading, 'Rajdhani', sans-serif);
+	font-size: 0.7rem;
+	font-weight: 700;
+	letter-spacing: 2px;
+	text-transform: uppercase;
+	color: var(--cc-matrix);
+}
+
+.comms-composer-hints-close {
+	background: transparent;
+	border: 1px solid transparent;
+	color: var(--cc-text);
+	cursor: pointer;
+	padding: 2px;
+	display: flex;
+	align-items: center;
+	transition: color 0.15s, border-color 0.15s;
+}
+
+.comms-composer-hints-close:hover {
+	color: var(--cc-matrix);
+	border-color: var(--cc-matrix-dim);
+}
+
+.comms-composer-hints-list {
+	margin: 0;
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 0.18rem;
+}
+
+.comms-composer-hints-row {
+	display: grid;
+	grid-template-columns: minmax(0, auto) minmax(0, 1fr);
+	align-items: center;
+	gap: 0.55rem;
+	padding: 0.12rem 0;
+	margin: 0;
+}
+
+.comms-composer-hints-row dt {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.2rem;
+	margin: 0;
+	min-width: 0;
+	flex-wrap: wrap;
+}
+
+.comms-composer-hints-row dd {
+	margin: 0;
+	color: var(--cc-text);
+	font-size: 0.72rem;
+	letter-spacing: 0.02em;
+	min-width: 0;
+}
+
+.comms-composer-hints-divider {
+	height: 1px;
+	margin: 0.55rem 0 0.35rem;
+	background: linear-gradient(90deg, var(--cc-matrix-dim), transparent);
+}
+
+.comms-composer-hints-mdtitle {
+	font-family: var(--font-heading, 'Rajdhani', sans-serif);
+	font-size: 0.65rem;
+	font-weight: 700;
+	letter-spacing: 2px;
+	text-transform: uppercase;
+	color: var(--cc-text);
+	opacity: 0.7;
+	margin-bottom: 0.3rem;
+}
+
+.comms-composer-hints kbd {
+	background: rgba(0, 0, 0, 0.55);
+	border: 1px solid var(--cc-matrix-dim);
+	color: var(--cc-matrix);
+	padding: 0.08rem 0.4rem;
+	font-family: var(--font-mono, 'Courier New', monospace);
+	font-size: 0.68rem;
+	border-radius: 2px;
+	white-space: nowrap;
+	line-height: 1.2;
+}
+
+.comms-composer-hints code {
+	background: rgba(0, 0, 0, 0.55);
+	border: 1px solid var(--cc-line);
+	padding: 0.05rem 0.4rem;
+	color: var(--cc-matrix);
+	font-size: 0.68rem;
+	font-family: var(--font-mono, 'Courier New', monospace);
+	white-space: nowrap;
+	line-height: 1.2;
+}
+
+/* === Composer reply ribbon ============================================== */
+.comms-composer-reply {
+	border-left: 3px solid var(--cc-matrix);
+	background: rgba(0, 0, 0, 0.45);
+	padding: 0.45rem 0.65rem;
+	display: flex;
+	align-items: flex-start;
+	gap: 0.55rem;
+	font-size: 0.76rem;
+	border: 1px solid var(--cc-line);
+	border-left-width: 3px;
+}
+
+.comms-composer-reply-text {
+	flex: 1;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 0.12rem;
+}
+
+.comms-composer-reply-name {
+	color: var(--cc-matrix);
+	font-weight: 700;
+	display: inline-flex;
+	align-items: center;
+	gap: 0.3rem;
+	font-family: var(--font-heading, 'Rajdhani', sans-serif);
+	letter-spacing: 0.5px;
+}
+
+.comms-composer-reply-snippet {
+	color: var(--cc-text-soft);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.comms-composer-disclaimer {
+	font-size: 0.7rem;
+	color: var(--cc-text-mute);
+	font-style: italic;
+	display: flex;
+	align-items: center;
+	gap: 0.4rem;
+}
+
+/* === Mention picker ===================================================== */
+.comms-mention-picker {
+	position: absolute;
+	bottom: calc(100% + 4px);
+	left: 0;
+	right: 0;
+	max-height: 240px;
+	overflow-y: auto;
+	background: var(--cc-panel-hi);
+	backdrop-filter: var(--cc-backdrop-blur);
+	-webkit-backdrop-filter: var(--cc-backdrop-blur);
+	border: 1px solid var(--cc-matrix-dim);
+	z-index: 50;
+	display: flex;
+	flex-direction: column;
+	box-shadow: var(--cc-shadow-lg);
+}
+
+.comms-mention-picker-item {
+	display: flex;
+	align-items: center;
+	gap: 0.55rem;
+	padding: 0.55rem 0.75rem;
+	background: transparent;
+	border: none;
+	color: var(--cc-text);
+	font: inherit;
+	font-size: 0.82rem;
+	text-align: left;
+	cursor: pointer;
+	border-bottom: 1px solid var(--cc-line);
+	min-height: 48px;
+}
+
+.comms-mention-picker-item:hover,
+.comms-mention-picker-item.active {
+	background: var(--cc-matrix-tint);
+	color: var(--cc-matrix);
+}
+
+.comms-mention-picker-avatar {
+	width: 28px;
+	height: 28px;
+	border: 1px solid var(--cc-matrix-dim);
+	background: rgba(0, 0, 0, 0.5);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 0.7rem;
+	color: var(--cc-matrix);
+	overflow: hidden;
+	flex-shrink: 0;
+	font-family: var(--font-heading, 'Rajdhani', sans-serif);
+	font-weight: 700;
+}
+
+.comms-mention-picker-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+/* =============================================================================
+   TYPING INDICATOR
+   ============================================================================= */
+.comms-typing-indicator {
+	padding: 0.4rem 1.1rem;
+	font-size: 0.72rem;
+	color: var(--cc-text-soft);
+	font-style: italic;
+	border-top: 1px dashed var(--cc-line);
+	background: rgba(0, 0, 0, 0.35);
+	display: flex;
+	align-items: center;
+	gap: 0.4rem;
+}
+
+.comms-typing-indicator::before {
+	content: '';
+	display: inline-block;
+	width: 6px;
+	height: 6px;
+	border-radius: 50%;
+	background: var(--cc-matrix);
+	box-shadow: var(--cc-glow-matrix);
+	animation: cc-typing-pulse 1s ease-in-out infinite;
+}
+
+@keyframes cc-typing-pulse {
+	0%, 100% { opacity: 0.3; transform: scale(0.9); }
+	50%      { opacity: 1;   transform: scale(1.2); }
+}
+
+/* =============================================================================
+   TOASTS
+   ============================================================================= */
+.comms-toast-stack {
+	position: fixed;
+	top: 5rem;
+	right: 1rem;
+	z-index: 1100;
+	display: flex;
+	flex-direction: column;
+	gap: 0.55rem;
+	max-width: 340px;
+}
+
+.comms-toast {
+	background: var(--cc-panel-hi);
+	backdrop-filter: var(--cc-backdrop-blur);
+	-webkit-backdrop-filter: var(--cc-backdrop-blur);
+	border: 1px solid var(--cc-matrix-dim);
+	border-left: 4px solid var(--cc-matrix);
+	color: var(--cc-text);
+	font-family: inherit;
+	padding: 0.7rem 0.9rem;
+	cursor: pointer;
+	text-align: left;
+	display: flex;
+	flex-direction: column;
+	gap: 0.25rem;
+	box-shadow: var(--cc-shadow-lg), var(--cc-glow-matrix);
+	animation: cc-toast-in 0.3s cubic-bezier(0.2, 0.8, 0.3, 1.2);
+	transition: background 0.12s, transform 0.12s;
+}
+
+.comms-toast:hover {
+	background: rgba(168, 224, 101, 0.12);
+	transform: translateX(-2px);
+}
+
+.comms-toast-channel {
+	font-size: 0.8rem;
+	font-weight: 700;
+	color: var(--cc-matrix);
+	letter-spacing: 1px;
+	display: flex;
+	align-items: center;
+	gap: 0.45rem;
+	font-family: var(--font-heading, 'Rajdhani', sans-serif);
+	text-transform: uppercase;
+	text-shadow: var(--cc-glow-matrix);
+}
+
+.comms-toast-snippet {
+	font-size: 0.74rem;
+	color: var(--cc-text-soft);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+@keyframes cc-toast-in {
+	from { transform: translateX(30px); opacity: 0; }
+	to   { transform: translateX(0);    opacity: 1; }
+}
+
+/* =============================================================================
+   MODALS
+   ============================================================================= */
+.comms-modal-backdrop {
+	position: fixed;
+	inset: 0;
+	background: rgba(0, 8, 4, 0.72);
+	backdrop-filter: blur(6px);
+	-webkit-backdrop-filter: blur(6px);
+	z-index: 1000;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 1rem;
+	animation: cc-fade-in 0.18s ease-out;
+}
+
+@keyframes cc-fade-in {
+	from { opacity: 0; }
+	to   { opacity: 1; }
+}
+
+.comms-modal {
+	background: var(--cc-panel-hi);
+	backdrop-filter: var(--cc-backdrop-blur);
+	-webkit-backdrop-filter: var(--cc-backdrop-blur);
+	border: 1px solid var(--cc-matrix-dim);
+	border-top: 4px solid var(--cc-matrix);
+	max-width: 620px;
+	width: 100%;
+	padding: 1.5rem 1.75rem;
+	max-height: 90vh;
+	overflow-y: auto;
+	color: var(--cc-text);
+	box-shadow: var(--cc-shadow-lg), var(--cc-glow-matrix);
+	animation: cc-modal-in 0.22s cubic-bezier(0.2, 0.8, 0.3, 1.05);
+	position: relative;
+}
+
+/* HUD corner brackets on modals too */
+.comms-modal::before,
+.comms-modal::after {
+	content: '';
+	position: absolute;
+	width: 14px;
+	height: 14px;
+	pointer-events: none;
+}
+.comms-modal::before {
+	top: -2px;
+	left: -2px;
+	border-top: 2px solid var(--cc-matrix);
+	border-left: 2px solid var(--cc-matrix);
+}
+.comms-modal::after {
+	bottom: -2px;
+	right: -2px;
+	border-bottom: 2px solid var(--cc-matrix);
+	border-right: 2px solid var(--cc-matrix);
+}
+
+@keyframes cc-modal-in {
+	from { transform: translateY(12px) scale(0.98); opacity: 0; }
+	to   { transform: translateY(0)    scale(1);    opacity: 1; }
+}
+
+.comms-modal h2 {
+	color: var(--cc-amber);
+	margin-top: 0;
+	letter-spacing: 1.5px;
+	font-family: var(--font-heading, 'Rajdhani', sans-serif);
+	font-weight: 700;
+	text-transform: uppercase;
+	text-shadow: var(--cc-glow-amber);
+}
+
+.comms-modal p {
+	color: var(--cc-text);
+	font-size: 0.86rem;
+	line-height: 1.6;
+}
+
+.comms-modal-actions {
+	display: flex;
+	gap: 0.6rem;
+	margin-top: 1.25rem;
+	justify-content: flex-end;
+	flex-wrap: wrap;
+}
+
+.comms-modal-btn {
+	background: rgba(0, 0, 0, 0.5);
+	border: 1px solid var(--cc-matrix-dim);
+	color: var(--cc-matrix);
+	padding: 0.55rem 1.15rem;
+	font-family: var(--font-heading, 'Rajdhani', sans-serif);
+	font-size: 0.82rem;
+	font-weight: 600;
+	cursor: pointer;
+	letter-spacing: 1.2px;
+	text-transform: uppercase;
+	transition: all 0.12s;
+	box-shadow: var(--cc-shadow-sm);
+	min-height: 42px;
+}
+
+.comms-modal-btn:hover {
+	background: rgba(168, 224, 101, 0.15);
+	transform: translateY(-1px);
+	box-shadow: var(--cc-shadow-md);
+}
+
+.comms-modal-btn.primary {
+	background: linear-gradient(180deg, var(--cc-matrix-deep), var(--cc-matrix-dim));
+	color: var(--cc-ink);
+	border-color: var(--cc-matrix);
+	box-shadow: var(--cc-shadow-sm), 0 0 12px rgba(168, 224, 101, 0.3);
+}
+
+.comms-modal-btn.primary:hover {
+	background: linear-gradient(180deg, var(--cc-matrix), var(--cc-matrix-deep));
+}
+
+/* =============================================================================
+   MEMBERS PANEL — sticky header with prominent back button
+   ============================================================================= */
+.comms-members-panel {
+	max-width: 540px;
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+}
+
+.comms-members-panel-header {
+	position: sticky;
+	top: 0;
+	z-index: 2;
+	display: flex;
+	align-items: center;
+	gap: 0.85rem;
+	padding: 0.9rem 1.1rem;
+	background: linear-gradient(
+		180deg,
+		rgba(6, 14, 8, 0.92),
+		rgba(6, 14, 8, 0.78)
+	);
+	backdrop-filter: blur(6px);
+	-webkit-backdrop-filter: blur(6px);
+	border-bottom: 1px solid var(--cc-matrix-dim);
+}
+
+.comms-members-panel-header h2 {
+	margin: 0;
+	font-size: 1.02rem;
+	letter-spacing: 1.4px;
+}
+
+.comms-members-back {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.45rem;
+	background: rgba(0, 0, 0, 0.55);
+	border: 1px solid var(--cc-matrix-dim);
+	color: var(--cc-matrix);
+	font-family: var(--font-heading, 'Rajdhani', sans-serif);
+	font-size: 0.82rem;
+	font-weight: 600;
+	letter-spacing: 1.1px;
+	text-transform: uppercase;
+	padding: 0.55rem 0.85rem;
+	cursor: pointer;
+	transition: all 0.12s;
+	min-height: 40px;
+}
+
+.comms-members-back:hover {
+	background: rgba(168, 224, 101, 0.15);
+	box-shadow: 0 0 10px rgba(168, 224, 101, 0.25);
+}
+
+.comms-members-panel-body {
+	padding: 1rem 1.1rem calc(1.1rem + env(safe-area-inset-bottom, 0px));
+	overflow-y: auto;
+	flex: 1;
+}
+
+/* =============================================================================
+   EMPTY STATE / SEARCH
+   ============================================================================= */
+.comms-empty {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex: 1;
+	color: var(--cc-text-mute);
+	font-size: 0.9rem;
+	font-family: var(--font-heading, 'Rajdhani', sans-serif);
+	letter-spacing: 1.5px;
+	text-transform: uppercase;
+	padding: 2rem;
+	text-align: center;
+}
+
+.comms-search-input {
+	background: rgba(0, 0, 0, 0.5);
+	border: 1px solid var(--cc-line);
+	color: var(--cc-text);
+	padding: 0.6rem 0.75rem;
+	font-family: inherit;
+	font-size: 0.85rem;
+	width: 100%;
+	min-height: 40px;
+	transition: border-color 0.12s, box-shadow 0.12s;
+}
+
+.comms-search-input:focus {
+	outline: none;
+	border-color: var(--cc-matrix);
+	box-shadow: 0 0 0 3px var(--cc-matrix-tint);
+}
+
+/* =============================================================================
+   MOBILE BOTTOM TAB BAR
+   ============================================================================= */
+.comms-mobile-tabs {
+	display: none;
+}
+
+.comms-mobile-back {
+	display: none;
+}
+
+/* =============================================================================
+   RESPONSIVE
+   ============================================================================= */
+
+/* Tablet & below — pull margins in */
+@media (max-width: 1024px) {
+	.comms-layout {
+		grid-template-columns: 240px 1fr;
+		margin: 0.6rem 0.6rem;
+	}
+	.comms-profile-bar { margin: 0.6rem 0.6rem 0; }
+	.comms-disclaimer-banner { margin: 0.6rem 0.6rem 0; }
+}
+
+/* Mobile ================================================================== */
+@media (max-width: 768px) {
+	.comms-page {
+		height: calc(100dvh - 4rem);
+	}
+
+	/* Compact profile bar — everything wraps, all buttons icon-only */
+	.comms-profile-bar {
+		margin: 0.5rem 0.5rem 0;
+		padding: 0.55rem 0.7rem;
+		gap: 0.6rem;
+		border-left-width: 3px;
+	}
+	.comms-profile-bar::after { display: none; }
+	.comms-profile-bar-avatar {
+		width: 40px;
+		height: 40px;
+	}
+	.comms-profile-bar-name {
+		font-size: 0.95rem;
+		letter-spacing: 0.7px;
+	}
+	.comms-profile-bar-meta {
+		font-size: 0.68rem;
+		gap: 0.35rem;
+	}
+	.comms-profile-bar-spacer { display: none; }
+
+	/* Sons mute + help buttons: icon-only on mobile, still tappable */
+	.comms-profile-mute-btn span,
+	.comms-profile-help-btn span {
+		display: none;
+	}
+	.comms-profile-mute-btn,
+	.comms-profile-help-btn {
+		padding: 0.45rem;
+		min-width: 38px;
+		min-height: 38px;
+		justify-content: center;
+	}
+
+	.comms-disclaimer-banner {
+		margin: 0.5rem 0.5rem 0;
+		padding: 0.6rem 0.75rem;
+		font-size: 0.74rem;
+	}
+
+	/* Single-column layout, full bleed, no horizontal margin */
+	.comms-layout {
+		grid-template-columns: 1fr;
+		margin: 0.5rem 0 0;
+		border-left: none;
+		border-right: none;
+	}
+	/* Hide HUD corner brackets on mobile (the layout is full-bleed) */
+	.comms-layout::before,
+	.comms-layout::after { display: none; }
+
+	.comms-sidebar,
+	.comms-main {
+		display: none;
+	}
+	.comms-mobile .comms-sidebar { display: flex; }
+	.comms-mobile.active .comms-sidebar { display: none; }
+	.comms-mobile.active .comms-main { display: flex; }
+
+	.comms-sidebar {
+		border-right: none;
+	}
+
+	/* Channel cards */
+	.comms-channel-item {
+		padding: 0.9rem 1rem 0.9rem 0.9rem;
+		min-height: 72px;
+		gap: 0.85rem;
+	}
+	.comms-channel-icon,
+	.comms-channel-stack {
+		width: 48px;
+		height: 48px;
+	}
+	.comms-channel-stack-bubble {
+		width: 28px;
+		height: 28px;
+	}
+	.comms-channel-name { font-size: 0.96rem; }
+	.comms-channel-preview,
+	.comms-channel-meta { font-size: 0.74rem; }
+
+	/* Main header — drastically simpler on mobile */
+	.comms-main-header {
+		padding: 0.65rem 0.8rem;
+		gap: 0.5rem;
+		position: sticky;
+		top: 0;
+		z-index: 5;
+	}
+	.comms-main-header h2 {
+		font-size: 1rem;
+		letter-spacing: 1px;
+		flex: 1;
+	}
+	.comms-main-header-meta {
+		gap: 0.35rem;
+	}
+	/* Hide TYPE label on mobile (redundant with channel stripe) */
+	.comms-main-header-meta > span:first-child { display: none; }
+	/* Hide Members button on mobile — it's in the bottom tab bar */
+	.comms-header-members-btn { display: none !important; }
+	/* Leave/Close button — icon only on mobile */
+	.comms-header-leave-btn span {
+		display: none;
+	}
+	.comms-header-leave-btn {
+		padding: 0.45rem;
+		min-width: 38px;
+		min-height: 38px;
+		justify-content: center;
+	}
+
+	.comms-mobile-back {
+		display: inline-flex !important;
+		align-items: center;
+		justify-content: center;
+		width: 40px;
+		height: 40px;
+		padding: 0;
+		flex-shrink: 0;
+	}
+
+	/* Message list */
+	.comms-message-list {
+		padding: 0.85rem 0.75rem 0.5rem;
+		gap: 0.55rem;
+	}
+	.comms-message {
+		padding: 0.55rem 0.5rem;
+		gap: 0.55rem;
+	}
+	.comms-message-avatar {
+		width: 38px;
+		height: 38px;
+	}
+	.comms-message-sender { font-size: 0.88rem; }
+	.comms-message-time { font-size: 0.66rem; }
+
+	/* On mobile, message actions are always visible (no hover) */
+	.comms-message-actions {
+		opacity: 1;
+		flex-wrap: wrap;
+	}
+	.comms-message-action {
+		padding: 0.35rem 0.55rem;
+		font-size: 0.7rem;
+		min-height: 34px;
+	}
+
+	/* Composer — respects safe-area-inset */
+	.comms-composer {
+		padding: 0.7rem 0.75rem;
+		gap: 0.5rem;
+	}
+	.comms-composer textarea {
+		font-size: 16px; /* defeat iOS auto-zoom */
+		min-height: 60px;
+	}
+
+	/* Composer row buttons: give everything breathing room */
+	.comms-composer-row {
+		gap: 0.45rem;
+	}
+	.comms-composer-attach-btn {
+		flex-shrink: 0;
+	}
+	.comms-composer-anon-full { display: none; }
+	.comms-composer-anon-short { display: inline; }
+	.comms-composer-anon-label {
+		font-size: 0.78rem;
+		gap: 0.3rem;
+	}
+	.comms-send-btn {
+		padding: 0.6rem 1rem;
+		font-size: 0.78rem;
+		letter-spacing: 1.5px;
+		min-height: 44px;
+	}
+	.comms-icon-btn {
+		min-height: 38px;
+		padding: 0.45rem 0.65rem;
+	}
+	.comms-icon-btn-square {
+		min-width: 40px;
+		min-height: 40px;
+	}
+
+	/* MOBILE BOTTOM TAB BAR */
+	.comms-mobile-tabs {
+		display: flex;
+		flex-shrink: 0;
+		background: var(--cc-panel-2);
+		backdrop-filter: var(--cc-backdrop-blur);
+		-webkit-backdrop-filter: var(--cc-backdrop-blur);
+		border-top: 1px solid var(--cc-line);
+		box-shadow: 0 -2px 20px rgba(0, 0, 0, 0.5);
+		padding: 0.3rem 0.35rem calc(0.3rem + env(safe-area-inset-bottom, 0px));
+		gap: 0.3rem;
+		z-index: 6;
+	}
+	.comms-mobile-tab {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 0.15rem;
+		padding: 0.5rem 0.4rem;
+		min-height: 54px;
+		background: transparent;
+		border: 1px solid transparent;
+		color: var(--cc-text-soft);
+		font-family: var(--font-heading, 'Rajdhani', sans-serif);
+		font-size: 0.65rem;
+		font-weight: 700;
+		letter-spacing: 1.5px;
+		text-transform: uppercase;
+		cursor: pointer;
+		transition: all 0.12s;
+		position: relative;
+	}
+	.comms-mobile-tab:disabled {
+		opacity: 0.35;
+		cursor: not-allowed;
+	}
+	.comms-mobile-tab.active {
+		background: var(--cc-matrix-tint);
+		border-color: var(--cc-matrix-dim);
+		color: var(--cc-matrix);
+		text-shadow: var(--cc-glow-matrix);
+		box-shadow: inset 0 -3px 0 var(--cc-matrix);
+	}
+	.comms-mobile-tab-icon {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+	.comms-mobile-tab-badge {
+		position: absolute;
+		top: 4px;
+		right: calc(50% - 22px);
+		min-width: 18px;
+		height: 18px;
+		padding: 0 5px;
+		border-radius: 9px;
+		background: linear-gradient(180deg, var(--cc-rust), var(--cc-rust-deep));
+		color: #fff;
+		font-size: 0.6rem;
+		font-weight: 700;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border: 1px solid var(--cc-rust);
+		box-shadow: var(--cc-glow-rust);
+	}
+
+	/* Toasts: full-width banners, above the tab bar */
+	.comms-toast-stack {
+		top: auto;
+		bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+		right: 0.5rem;
+		left: 0.5rem;
+		max-width: none;
+	}
+
+	/* Modals become full-screen sheets on mobile */
+	.comms-modal-backdrop {
+		padding: 0;
+		align-items: stretch;
+	}
+	.comms-modal {
+		max-width: 100%;
+		max-height: 100dvh;
+		padding: 1.1rem 1rem calc(1.1rem + env(safe-area-inset-bottom, 0px));
+		border-left: none;
+		border-right: none;
+		border-bottom: none;
+		border-top: 4px solid var(--cc-matrix);
+		border-radius: 0;
+		animation: cc-modal-sheet-in 0.25s cubic-bezier(0.2, 0.8, 0.3, 1.05);
+	}
+	.comms-modal::before,
+	.comms-modal::after { display: none; }
+	.comms-modal-actions {
+		justify-content: stretch;
+		flex-direction: column-reverse;
+	}
+	.comms-modal-btn {
+		width: 100%;
+		justify-content: center;
+	}
+
+	/* Members panel keeps zero padding so its sticky header can go edge-to-edge */
+	.comms-modal.comms-members-panel {
+		padding: 0;
+		padding-bottom: env(safe-area-inset-bottom, 0px);
+	}
+	.comms-members-panel-header {
+		padding: 0.85rem 0.9rem calc(0.85rem + env(safe-area-inset-top, 0px));
+	}
+	.comms-members-back {
+		min-height: 44px;
+		padding: 0.6rem 0.95rem;
+	}
+
+	@keyframes cc-modal-sheet-in {
+		from { transform: translateY(24px); opacity: 0; }
+		to   { transform: translateY(0);    opacity: 1; }
+	}
+
+	/* Sidebar header buttons: slightly larger targets */
+	.comms-sidebar-header { padding: 0.8rem 0.9rem; }
+}
+
+/* Very narrow phones */
+@media (max-width: 380px) {
+	.comms-channel-item { padding: 0.75rem 0.8rem 0.75rem 0.7rem; }
+	.comms-message-list { padding: 0.7rem 0.55rem 0.4rem; }
+	.comms-main-header h2 { font-size: 0.92rem; letter-spacing: 0.8px; }
+	.comms-composer-attach-btn span { display: none; }
+	.comms-send-btn span { display: inline; }
+	.comms-send-btn {
+		padding: 0.6rem 0.85rem;
+		letter-spacing: 1px;
+		font-size: 0.74rem;
+	}
+	.comms-mobile-tab { font-size: 0.6rem; letter-spacing: 1px; }
+	.comms-profile-bar-meta { font-size: 0.64rem; }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+	.comms-toast,
+	.comms-modal,
+	.comms-modal-backdrop,
+	.comms-typing-indicator::before,
+	.comms-icon-btn,
+	.comms-send-btn,
+	.comms-message-action,
+	.comms-attachment-button,
+	.comms-modal-btn {
+		animation: none !important;
+		transition: none !important;
+	}
+}
+
+/* Safari/Firefox without backdrop-filter: thicken the panel backgrounds so
+   text stays readable */
+@supports not (backdrop-filter: blur(1px)) {
+	.comms-page {
+		--cc-panel:       rgba(6, 12, 8, 0.92);
+		--cc-panel-hi:    rgba(16, 26, 18, 0.94);
+		--cc-panel-2:     rgba(10, 18, 12, 0.94);
+		--cc-panel-lo:    rgba(3, 8, 5, 0.88);
+		--cc-panel-glass: rgba(12, 22, 14, 0.92);
+	}
+}

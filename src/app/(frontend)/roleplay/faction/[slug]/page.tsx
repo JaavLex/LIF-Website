@@ -8,9 +8,15 @@ import type { Faction, Unit, Character } from '@/payload-types';
 export const dynamic = 'force-dynamic';
 
 const TYPE_LABELS: Record<string, string> = {
-	allied: 'Alliée',
-	neutral: 'Neutre',
-	hostile: 'Hostile',
+	allied: 'ALLIÉE',
+	neutral: 'NEUTRE',
+	hostile: 'HOSTILE',
+};
+
+const TYPE_CODES: Record<string, string> = {
+	allied: 'A',
+	neutral: 'N',
+	hostile: 'H',
 };
 
 export default async function FactionPage({
@@ -51,144 +57,265 @@ export default async function FactionPage({
 		depth: 2,
 	});
 
-	return (
-		<div className="terminal-container">
-			<Link href="/roleplay" className="retour-link">
-				← Retour à la base de données
-			</Link>
+	const factionLogo =
+		faction.logo && typeof faction.logo === 'object' ? faction.logo : null;
+	const factionColor = faction.color || 'var(--primary)';
+	const typeLabel =
+		(faction.type && TYPE_LABELS[faction.type]) || 'NEUTRE';
+	const typeCode = (faction.type && TYPE_CODES[faction.type]) || 'N';
+	const isMain = (faction as any).isMainFaction;
+	const mainUnits = units.docs.filter((u) => (u as any).isMain);
+	const otherUnits = units.docs.filter((u) => !(u as any).isMain);
 
-			<div className="terminal-header">
-				<div className="terminal-header-left">
-					<div className="terminal-header-dots">
-						<span className="terminal-dot green" />
-						<span className="terminal-dot yellow" />
-						<span className="terminal-dot red" />
-					</div>
-					<span className="terminal-title">FICHE FACTION</span>
-				</div>
-				<div className="terminal-header-right">
-					<span
-						className={`status-badge ${faction.type === 'hostile' ? 'kia' : faction.type === 'allied' ? 'in-service' : 'mia'}`}
-					>
-						{(faction.type && TYPE_LABELS[faction.type]) || 'Neutre'}
+	return (
+		<div className="terminal-container dossier-container">
+			<div
+				className={`dossier-shell type-${faction.type || 'neutral'}`}
+				style={{ ['--dossier-color' as any]: factionColor }}
+			>
+				{/* Atmospheric layers */}
+				<div className="dossier-grid-bg" aria-hidden />
+				<div className="dossier-vignette" aria-hidden />
+				<div className="dossier-rail" aria-hidden>
+					<span>
+						DOSSIER&nbsp;FACTION&nbsp;//&nbsp;{typeLabel}&nbsp;//&nbsp;LIF&nbsp;2026
 					</span>
 				</div>
-			</div>
 
-			<div className="terminal-panel">
-				<div
-					style={{
-						display: 'flex',
-						alignItems: 'center',
-						gap: '1.5rem',
-						marginBottom: '2rem',
-					}}
-				>
-					{faction.logo && typeof faction.logo === 'object' && faction.logo.url && (
-						<Image
-							src={faction.logo.url}
-							alt={faction.name}
-							width={80}
-							height={80}
-							style={{ objectFit: 'contain' }}
-							unoptimized
-						/>
+				{/* Back nav */}
+				<div className="dossier-back-row">
+					<Link href="/roleplay" className="dossier-back-link">
+						<span aria-hidden>←</span>
+						<span>Retour à la base de données</span>
+					</Link>
+					{isMain && (
+						<span className="dossier-pill dossier-pill-main">
+							<span className="dossier-pill-dot" />
+							COMMANDEMENT&nbsp;LIF
+						</span>
 					)}
-					<div>
-						<h1
-							style={{
-								margin: 0,
-								color: faction.color || 'var(--text)',
-							}}
-						>
-							{faction.name}
-						</h1>
-						<p style={{ color: 'var(--muted)', margin: '0.25rem 0 0' }}>
-							{(faction.type && TYPE_LABELS[faction.type]) || 'Neutre'}
-						</p>
-					</div>
 				</div>
 
-				{faction.description && (
-					<div style={{ marginBottom: '2rem' }}>
-						<h3 style={{ color: 'var(--primary)' }}>Description</h3>
-						<RichTextRenderer content={faction.description} />
+				{/* Hero */}
+				<header className="dossier-hero">
+					<div className="dossier-hero-stamp" aria-hidden>
+						<span className="dossier-hero-stamp-glyph">{typeCode}</span>
+						<span className="dossier-hero-stamp-label">F-{String(faction.id).padStart(2, '0')}</span>
 					</div>
+
+					<div className="dossier-hero-meta">
+						<div className="dossier-hero-eyebrow">
+							<span className="dossier-hero-eyebrow-marker" />
+							<span>FICHE&nbsp;FACTION&nbsp;//&nbsp;CLASSIFICATION&nbsp;{typeLabel}</span>
+						</div>
+
+						<h1 className="dossier-hero-title">
+							<span className="dossier-hero-title-line dim">FACTION</span>
+							<span className="dossier-hero-title-line accent">{faction.name}</span>
+							<span className="dossier-hero-title-line muted">
+								//&nbsp;{typeLabel}
+							</span>
+						</h1>
+
+						<div className="dossier-hero-stats">
+							<div className="dossier-stat">
+								<span className="dossier-stat-num">{units.docs.length}</span>
+								<span className="dossier-stat-label">UNITÉ{units.docs.length !== 1 ? 'S' : ''}</span>
+							</div>
+							<div className="dossier-stat-sep" aria-hidden />
+							<div className="dossier-stat">
+								<span className="dossier-stat-num">{characters.docs.length}</span>
+								<span className="dossier-stat-label">EFFECTIF{characters.docs.length !== 1 ? 'S' : ''}</span>
+							</div>
+							<div className="dossier-stat-sep" aria-hidden />
+							<div className="dossier-stat">
+								<span className="dossier-stat-num">{mainUnits.length}</span>
+								<span className="dossier-stat-label">FER&nbsp;DE&nbsp;LANCE</span>
+							</div>
+						</div>
+					</div>
+
+					<div className="dossier-hero-emblem">
+						<div className="dossier-hero-emblem-frame">
+							{factionLogo?.url ? (
+								<Image
+									src={factionLogo.url}
+									alt={faction.name}
+									width={130}
+									height={130}
+									style={{ objectFit: 'contain' }}
+									unoptimized
+								/>
+							) : (
+								<span>{faction.name.charAt(0)}</span>
+							)}
+							<span className="dossier-hero-emblem-corner tl" />
+							<span className="dossier-hero-emblem-corner tr" />
+							<span className="dossier-hero-emblem-corner bl" />
+							<span className="dossier-hero-emblem-corner br" />
+						</div>
+					</div>
+				</header>
+
+				{/* Description */}
+				{faction.description && (
+					<section className="dossier-block">
+						<div className="dossier-block-header">
+							<span className="dossier-block-num">01</span>
+							<span className="dossier-block-line" />
+							<span className="dossier-block-title">DOCTRINE&nbsp;&amp;&nbsp;DOCTRINAIRE</span>
+						</div>
+						<div className="dossier-prose">
+							<RichTextRenderer content={faction.description} />
+						</div>
+					</section>
 				)}
 
-				{/* Units */}
-				{units.docs.length > 0 && (
-					<div style={{ marginBottom: '2rem' }}>
-						<h3 style={{ color: 'var(--primary)' }}>Unités ({units.docs.length})</h3>
-						<div
-							style={{
-								display: 'flex',
-								flexDirection: 'column',
-								gap: '0.5rem',
-							}}
-						>
-							{units.docs.map((unit) => {
-								const insignia = typeof unit.insignia === 'object' ? unit.insignia : null;
+				{/* Featured main units */}
+				{mainUnits.length > 0 && (
+					<section className="dossier-block">
+						<div className="dossier-block-header">
+							<span className="dossier-block-num">02</span>
+							<span className="dossier-block-line" />
+							<span className="dossier-block-title">FER&nbsp;DE&nbsp;LANCE</span>
+							<span className="dossier-block-count">{mainUnits.length}</span>
+						</div>
+						<div className="dossier-units-featured">
+							{mainUnits.map((unit, idx) => {
+								const insignia =
+									typeof unit.insignia === 'object' ? unit.insignia : null;
+								const cmdr =
+									unit.commander && typeof unit.commander === 'object'
+										? unit.commander
+										: null;
+								const stamp = String(idx + 1).padStart(2, '0');
 								return (
-								<Link
-									key={unit.id}
-									href={`/roleplay/unite/${unit.slug}`}
-									style={{
-										display: 'flex',
-										alignItems: 'center',
-										gap: '0.75rem',
-										padding: '0.75rem 1rem',
-										background: 'var(--bg-secondary)',
-										border: '1px solid var(--border)',
-										textDecoration: 'none',
-										color: 'var(--text)',
-										transition: 'border-color 0.2s',
-									}}
-								>
-									{insignia?.url && (
-										<Image
-											src={insignia.url}
-											alt={unit.name}
-											width={28}
-											height={28}
-											style={{ objectFit: 'contain' }}
-											unoptimized
-										/>
-									)}
-									<div>
-										<div
-											style={{
-												fontWeight: 600,
-												color: unit.color || 'var(--text)',
-											}}
+									<Link
+										key={unit.id}
+										href={`/roleplay/unite/${unit.slug}`}
+										className="dossier-unit-feature"
+										style={{
+											['--unit-color' as any]: unit.color || factionColor,
+										}}
+									>
+										<span className="dossier-unit-feature-stamp" aria-hidden>
+											#{stamp}
+										</span>
+										<span
+											className="dossier-unit-feature-watermark"
+											aria-hidden
 										>
 											{unit.name}
+										</span>
+										<div className="dossier-unit-feature-insignia">
+											{insignia?.url ? (
+												<Image
+													src={insignia.url}
+													alt={unit.name}
+													width={56}
+													height={56}
+													style={{ objectFit: 'contain' }}
+													unoptimized
+												/>
+											) : (
+												<span>{unit.name.charAt(0)}</span>
+											)}
 										</div>
-										{unit.commander && typeof unit.commander === 'object' && (
-											<div
-												style={{
-													fontSize: '0.75rem',
-													color: 'var(--muted)',
-												}}
-											>
-												Commandant: {unit.commander.fullName}
+										<div className="dossier-unit-feature-body">
+											<div className="dossier-unit-feature-eyebrow">
+												UNITÉ&nbsp;PRINCIPALE
 											</div>
-										)}
-									</div>
-								</Link>
+											<div className="dossier-unit-feature-name">
+												{unit.name}
+											</div>
+											{cmdr && (
+												<div className="dossier-unit-feature-cmdr">
+													CMD &nbsp;·&nbsp; {cmdr.fullName}
+												</div>
+											)}
+										</div>
+										<span className="dossier-unit-feature-arrow" aria-hidden>
+											→
+										</span>
+									</Link>
 								);
 							})}
 						</div>
-					</div>
+					</section>
 				)}
 
-				{/* Characters in this faction */}
+				{/* Other units */}
+				{otherUnits.length > 0 && (
+					<section className="dossier-block">
+						<div className="dossier-block-header">
+							<span className="dossier-block-num">{mainUnits.length > 0 ? '03' : '02'}</span>
+							<span className="dossier-block-line" />
+							<span className="dossier-block-title">UNITÉS&nbsp;RATTACHÉES</span>
+							<span className="dossier-block-count">{otherUnits.length}</span>
+						</div>
+						<div className="dossier-units-grid">
+							{otherUnits.map((unit) => {
+								const insignia =
+									typeof unit.insignia === 'object' ? unit.insignia : null;
+								const cmdr =
+									unit.commander && typeof unit.commander === 'object'
+										? unit.commander
+										: null;
+								return (
+									<Link
+										key={unit.id}
+										href={`/roleplay/unite/${unit.slug}`}
+										className="dossier-unit-card"
+										style={{
+											['--unit-color' as any]: unit.color || factionColor,
+										}}
+									>
+										<div className="dossier-unit-card-insignia">
+											{insignia?.url ? (
+												<Image
+													src={insignia.url}
+													alt={unit.name}
+													width={36}
+													height={36}
+													style={{ objectFit: 'contain' }}
+													unoptimized
+												/>
+											) : (
+												<span>{unit.name.charAt(0)}</span>
+											)}
+										</div>
+										<div className="dossier-unit-card-body">
+											<div className="dossier-unit-card-name">{unit.name}</div>
+											<div className="dossier-unit-card-meta">
+												{cmdr ? `CMD ${cmdr.fullName}` : 'UNITÉ'}
+											</div>
+										</div>
+										<span className="dossier-unit-card-arrow" aria-hidden>
+											›
+										</span>
+									</Link>
+								);
+							})}
+						</div>
+					</section>
+				)}
+
+				{/* Members */}
 				{characters.docs.length > 0 && (
-					<div>
-						<h3 style={{ color: 'var(--primary)' }}>
-							Membres ({characters.docs.length})
-						</h3>
-						<div className="personnel-grid">
+					<section className="dossier-block">
+						<div className="dossier-block-header">
+							<span className="dossier-block-num">
+								{mainUnits.length > 0 && otherUnits.length > 0
+									? '04'
+									: mainUnits.length > 0 || otherUnits.length > 0
+										? '03'
+										: '02'}
+							</span>
+							<span className="dossier-block-line" />
+							<span className="dossier-block-title">EFFECTIFS&nbsp;ENREGISTRÉS</span>
+							<span className="dossier-block-count">{characters.docs.length}</span>
+						</div>
+						<div className="dossier-roster-grid">
 							{characters.docs.map((character) => {
 								const rank =
 									typeof character.rank === 'object' ? character.rank : null;
@@ -200,61 +327,70 @@ export default async function FactionPage({
 									<Link
 										key={character.id}
 										href={`/roleplay/personnage/${character.id}`}
-										className="personnel-card"
+										className="dossier-roster-card"
 									>
-										<div className="personnel-card-header">
+										<div className="dossier-roster-avatar">
 											{avatar?.url ? (
 												<Image
 													src={avatar.url}
 													alt={character.fullName || ''}
-													width={64}
-													height={64}
-													className="personnel-avatar"
+													width={56}
+													height={56}
+													style={{ objectFit: 'cover' }}
 													unoptimized
 												/>
 											) : (
-												<div className="personnel-avatar-placeholder">
+												<span>
 													{character.firstName?.[0]}
 													{character.lastName?.[0]}
+												</span>
+											)}
+										</div>
+										<div className="dossier-roster-body">
+											<div className="dossier-roster-name">
+												{character.fullName}
+											</div>
+											{rank && (
+												<div className="dossier-roster-rank">
+													{rankIcon?.url && (
+														<Image
+															src={rankIcon.url}
+															alt={rank.name}
+															width={14}
+															height={14}
+															unoptimized
+														/>
+													)}
+													<span>{rank.abbreviation || rank.name}</span>
 												</div>
 											)}
-											<div className="personnel-info">
-												<div className="personnel-name">{character.fullName}</div>
-												{rank && (
-													<div
-														className="personnel-rank"
-														style={{
-															display: 'flex',
-															alignItems: 'center',
-															gap: '0.35rem',
-														}}
-													>
-														{rankIcon?.url && (
-															<Image
-																src={rankIcon.url}
-																alt={rank.name}
-																width={18}
-																height={18}
-																unoptimized
-															/>
-														)}
-														<span>{rank.abbreviation || rank.name}</span>
-													</div>
-												)}
-											</div>
 										</div>
 									</Link>
 								);
 							})}
 						</div>
-					</div>
+					</section>
 				)}
 
 				{characters.docs.length === 0 && units.docs.length === 0 && (
-					<p style={{ color: 'var(--muted)', textAlign: 'center' }}>
-						Aucune donnée associée à cette faction.
-					</p>
+					<section className="dossier-block">
+						<div className="dossier-empty">
+							<span className="dossier-empty-glyph" aria-hidden>
+								◯
+							</span>
+							<span>Aucune donnée associée à cette faction.</span>
+						</div>
+					</section>
 				)}
+
+				{/* Footer signature */}
+				<footer className="dossier-footer">
+					<span className="dossier-footer-line" />
+					<span className="dossier-footer-text">
+						SCELLÉ&nbsp;//&nbsp;COMMANDEMENT&nbsp;LIF&nbsp;//&nbsp;DOSSIER&nbsp;F-{String(faction.id).padStart(4, '0')}
+					</span>
+					<span className="dossier-footer-line" />
+				</footer>
 			</div>
 		</div>
 	);

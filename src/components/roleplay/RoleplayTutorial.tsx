@@ -1,7 +1,9 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { ChevronUp, ChevronDown } from 'lucide-react';
+import { useTutorialPositioning } from './useTutorialPositioning';
+import './tutorial-overlay.css';
 import {
 	DummyCharacterForm,
 	DummyIntelForm,
@@ -11,8 +13,11 @@ import {
 } from './TutorialDummyForms';
 import { VersionInfo } from '@/components/VersionInfo';
 
-const TUTORIAL_SEEN_KEY = 'lif-roleplay-tutorial-seen';
-const ADMIN_TUTORIAL_SEEN_KEY = 'lif-roleplay-admin-tutorial-seen';
+// v2 — bumped 2026-04-07 when COMMS / Organisations steps were added.
+// Bumping the suffix re-shows the tutorial to existing users so they discover
+// the new sections (especially COMMS, which is essential).
+const TUTORIAL_SEEN_KEY = 'lif-roleplay-tutorial-seen.v2';
+const ADMIN_TUTORIAL_SEEN_KEY = 'lif-roleplay-admin-tutorial-seen.v2';
 
 interface TutorialStep {
 	id: string;
@@ -63,6 +68,14 @@ const USER_STEPS: TutorialStep[] = [
 		position: 'bottom',
 	},
 	{
+		id: 'comms',
+		target: '[data-tutorial="comms-button"]',
+		title: 'COMMS — CANAL TACTIQUE',
+		content:
+			"⚡ FONCTIONNALITÉ ESSENTIELLE. Le bouton COMMS ouvre le HUD tactique de communication : canaux de discussion en jeu, messages de mission, mentions @vous. Une pastille rouge apparaît dès qu'on vous adresse un message — vérifiez-la régulièrement, c'est ainsi que les autres opérateurs vous contactent.",
+		position: 'bottom',
+	},
+	{
 		id: 'personnel',
 		target: '[data-tutorial="personnel-panel"]',
 		title: 'REGISTRE DU PERSONNEL',
@@ -83,9 +96,17 @@ const USER_STEPS: TutorialStep[] = [
 		target: null,
 		title: 'CRÉER UN PERSONNAGE',
 		content:
-			'Cliquez sur « Nouveau Personnage » dans la barre de session. Voici les champs à remplir :',
+			"Cliquez sur « Nouveau Personnage » dans la barre de session. Vous choisirez d'abord votre unité (Cerberus ou Spectre — c'est définitif), puis vous remplirez votre dossier. Voici les champs :",
 		position: 'center',
 		dummyForm: 'character',
+	},
+	{
+		id: 'organisations',
+		target: '[data-tutorial="organisations"]',
+		title: 'ORGANISATIONS & UNITÉS',
+		content:
+			"La hiérarchie de la LIF : faction principale en hero, fer de lance (Cerberus / Spectre) en bandes featured, puis les factions alliées / neutres / hostiles. Cliquez sur n'importe quelle faction ou unité pour ouvrir son dossier complet (description, doctrine, commandement, effectifs).",
+		position: 'top',
 	},
 	{
 		id: 'intelligence',
@@ -117,7 +138,7 @@ const USER_STEPS: TutorialStep[] = [
 		target: null,
 		title: 'BRIEFING TERMINÉ',
 		content:
-			'Vous êtes prêt. Explorez les dossiers, créez votre personnage et contribuez aux renseignements. Relancez ce tutoriel via le bouton en bas à gauche.',
+			"Vous êtes prêt. Explorez les dossiers, créez votre personnage, surveillez vos COMMS et contribuez aux renseignements. Relancez ce tutoriel via le bouton en bas à gauche.",
 		position: 'center',
 	},
 ];
@@ -136,7 +157,7 @@ const ADMIN_STEPS: TutorialStep[] = [
 		target: '[data-tutorial="admin-panel"]',
 		title: "PANNEAU D'ADMINISTRATION",
 		content:
-			'Créez et gérez les Unités (nom, slug, couleur, insigne) et Factions (type, couleur, logo).',
+			"Créez et gérez les Unités (nom, slug, couleur, insigne, drapeau « Unité principale » + tagline / pitch / traits du sélecteur) et les Factions (type, couleur, logo, drapeau « Faction principale »). Les unités principales de la faction principale apparaissent automatiquement sous la bannière FER DE LANCE de la page d'accueil.",
 		position: 'bottom',
 		adminOnly: true,
 	},
@@ -201,10 +222,14 @@ export function RoleplayTutorial({
 	const [active, setActive] = useState(false);
 	const [mode, setMode] = useState<TutorialMode>('user');
 	const [currentStep, setCurrentStep] = useState(0);
-	const [spotlightRect, setSpotlightRect] = useState<DOMRect | null>(null);
-	const [tooltipStyle, setTooltipStyle] = useState<React.CSSProperties>({});
 	const [mobileToolbarOpen, setMobileToolbarOpen] = useState(false);
-	const animatingRef = useRef(false);
+
+	const steps = mode === 'admin' ? ADMIN_STEPS : USER_STEPS;
+	const { tooltipRef, spotlightRect, animatingRef } = useTutorialPositioning(
+		active,
+		currentStep,
+		steps,
+	);
 
 	// Toggle body attribute so CSS can hide/show audio controls too
 	useEffect(() => {
@@ -214,8 +239,6 @@ export function RoleplayTutorial({
 			document.documentElement.removeAttribute('data-toolbar-open');
 		}
 	}, [mobileToolbarOpen]);
-
-	const steps = mode === 'admin' ? ADMIN_STEPS : USER_STEPS;
 
 	useEffect(() => {
 		if (!localStorage.getItem(TUTORIAL_SEEN_KEY)) {
@@ -233,168 +256,6 @@ export function RoleplayTutorial({
 		}
 	}, [isAdmin]);
 
-	const positionTooltip = useCallback((step: TutorialStep) => {
-		const vw = window.innerWidth;
-		const vh = window.innerHeight;
-		const pad = 12;
-		const mobile = vw <= 768;
-		const tooltipW = mobile ? vw - pad * 2 : 380;
-
-		// Center positioning for steps without a target
-		if (!step.target || step.position === 'center') {
-			setSpotlightRect(null);
-			setTooltipStyle({
-				position: 'fixed',
-				top: '50%',
-				left: mobile ? pad : '50%',
-				width: mobile ? tooltipW : undefined,
-				transform: mobile ? 'translateY(-50%)' : 'translate(-50%, -50%)',
-				maxHeight: '85vh',
-				overflowY: 'auto',
-			});
-			animatingRef.current = false;
-			return;
-		}
-
-		const el = document.querySelector(step.target);
-		if (!el) {
-			setSpotlightRect(null);
-			setTooltipStyle({
-				position: 'fixed',
-				top: '50%',
-				left: mobile ? pad : '50%',
-				width: mobile ? tooltipW : undefined,
-				transform: mobile ? 'translateY(-50%)' : 'translate(-50%, -50%)',
-				maxHeight: '85vh',
-				overflowY: 'auto',
-			});
-			animatingRef.current = false;
-			return;
-		}
-
-		el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-
-		// Wait for scroll to settle then position
-		setTimeout(() => {
-			const rect = el.getBoundingClientRect();
-			setSpotlightRect(rect);
-
-			// If the element is taller than the viewport, position tooltip in center
-			if (rect.height > vh * 0.7) {
-				setTooltipStyle({
-					position: 'fixed',
-					top: '50%',
-					left: mobile ? pad : '50%',
-					width: mobile ? tooltipW : undefined,
-					transform: mobile ? 'translateY(-50%)' : 'translate(-50%, -50%)',
-					maxHeight: '85vh',
-					overflowY: 'auto',
-					zIndex: 10002,
-				});
-				animatingRef.current = false;
-				return;
-			}
-
-			const style: React.CSSProperties = { position: 'fixed' };
-			if (mobile) style.width = tooltipW;
-
-			// On narrow screens, left/right positions don't fit — fall back to bottom/top
-			let pos = step.position;
-			if (mobile && (pos === 'left' || pos === 'right')) {
-				pos = rect.top > vh / 2 ? 'top' : 'bottom';
-			}
-
-			// Clamp rect edges to viewport for positioning calculations
-			const visTop = Math.max(0, rect.top);
-			const visBottom = Math.min(vh, rect.bottom);
-
-			const leftVal = mobile
-				? pad
-				: Math.max(
-						pad,
-						Math.min(rect.left + rect.width / 2 - tooltipW / 2, vw - tooltipW - pad),
-					);
-
-			switch (pos) {
-				case 'bottom': {
-					let topVal = visBottom + pad;
-					const spaceBelow = vh - topVal - pad;
-					const spaceAbove = visTop - pad * 2;
-					// If not enough room below, try above
-					if (spaceBelow < 200 && spaceAbove > spaceBelow) {
-						const bottomVal = Math.max(pad, vh - visTop + pad);
-						style.bottom = bottomVal;
-						style.maxHeight = vh - bottomVal - pad;
-					} else {
-						if (topVal > vh - 200) topVal = vh - 200;
-						if (topVal < pad) topVal = pad;
-						style.top = topVal;
-						style.maxHeight = vh - topVal - pad;
-					}
-					style.left = leftVal;
-					style.overflowY = 'auto';
-					break;
-				}
-				case 'top': {
-					let bottomVal = vh - visTop + pad;
-					const spaceAbove = visTop - pad * 2;
-					const spaceBelow = vh - visBottom - pad * 2;
-					// If not enough room above, try below
-					if (spaceAbove < 200 && spaceBelow > spaceAbove) {
-						const topVal = Math.max(pad, visBottom + pad);
-						style.top = topVal;
-						style.maxHeight = vh - topVal - pad;
-					} else {
-						if (bottomVal > vh - 200) bottomVal = vh - 200;
-						if (bottomVal < pad) bottomVal = pad;
-						style.bottom = bottomVal;
-						style.maxHeight = vh - bottomVal - pad;
-					}
-					style.left = leftVal;
-					style.overflowY = 'auto';
-					break;
-				}
-				case 'left':
-					style.top = Math.max(
-						pad,
-						Math.min(visTop + (visBottom - visTop) / 2, vh - 200),
-					);
-					style.right = vw - rect.left + pad;
-					style.transform = 'translateY(-50%)';
-					break;
-				case 'right':
-					style.top = Math.max(
-						pad,
-						Math.min(visTop + (visBottom - visTop) / 2, vh - 200),
-					);
-					style.left = rect.right + pad;
-					style.transform = 'translateY(-50%)';
-					break;
-			}
-
-			setTooltipStyle(style);
-			animatingRef.current = false;
-		}, 400);
-	}, []);
-
-	useEffect(() => {
-		if (!active) return;
-		animatingRef.current = true;
-		positionTooltip(steps[currentStep]);
-	}, [active, currentStep, positionTooltip, steps]);
-
-	useEffect(() => {
-		if (!active) return;
-		const handler = () => {
-			if (!animatingRef.current) positionTooltip(steps[currentStep]);
-		};
-		window.addEventListener('resize', handler);
-		window.addEventListener('scroll', handler, true);
-		return () => {
-			window.removeEventListener('resize', handler);
-			window.removeEventListener('scroll', handler, true);
-		};
-	}, [active, currentStep, positionTooltip, steps]);
 
 	const closeTutorial = useCallback(() => {
 		if (mode === 'admin') {
@@ -551,8 +412,8 @@ export function RoleplayTutorial({
 					)}
 
 					<div
+						ref={tooltipRef}
 						className={`tutorial-tooltip${step.dummyForm ? ' has-dummy-form' : ''}`}
-						style={tooltipStyle}
 					>
 						<div className="tutorial-tooltip-header">
 							<span className="tutorial-step-badge">
@@ -569,13 +430,15 @@ export function RoleplayTutorial({
 							</button>
 						</div>
 
-						<p className="tutorial-tooltip-content">{step.content}</p>
+						<div className="tutorial-tooltip-body">
+							<p className="tutorial-tooltip-content">{step.content}</p>
 
-						{step.dummyForm && DUMMY_FORMS[step.dummyForm] && (
-							<div className="tutorial-dummy-wrapper">
-								{DUMMY_FORMS[step.dummyForm]()}
-							</div>
-						)}
+							{step.dummyForm && DUMMY_FORMS[step.dummyForm] && (
+								<div className="tutorial-dummy-wrapper">
+									{DUMMY_FORMS[step.dummyForm]()}
+								</div>
+							)}
+						</div>
 
 						<div className="tutorial-tooltip-actions">
 							<button

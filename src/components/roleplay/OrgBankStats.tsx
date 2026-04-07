@@ -58,10 +58,10 @@ export default function OrgBankStats({ isAdmin }: { isAdmin?: boolean }) {
 
 		// Grid lines
 		const gridLines = 5;
-		ctx.strokeStyle = 'rgba(0, 255, 65, 0.08)';
+		ctx.strokeStyle = 'rgba(212, 175, 55, 0.10)';
 		ctx.lineWidth = 0.5;
 		ctx.font = '10px "Courier New", monospace';
-		ctx.fillStyle = 'rgba(0, 255, 65, 0.4)';
+		ctx.fillStyle = 'rgba(212, 175, 55, 0.55)';
 		ctx.textAlign = 'right';
 
 		for (let i = 0; i <= gridLines; i++) {
@@ -82,7 +82,7 @@ export default function OrgBankStats({ isAdmin }: { isAdmin?: boolean }) {
 		}
 
 		// Axis
-		ctx.strokeStyle = 'rgba(0, 255, 65, 0.3)';
+		ctx.strokeStyle = 'rgba(212, 175, 55, 0.4)';
 		ctx.lineWidth = 1;
 		ctx.beginPath();
 		ctx.moveTo(padLeft, padTop);
@@ -92,8 +92,8 @@ export default function OrgBankStats({ isAdmin }: { isAdmin?: boolean }) {
 
 		// Fill gradient under line
 		const gradient = ctx.createLinearGradient(0, padTop, 0, h - padBottom);
-		gradient.addColorStop(0, 'rgba(74, 124, 35, 0.25)');
-		gradient.addColorStop(1, 'rgba(74, 124, 35, 0.02)');
+		gradient.addColorStop(0, 'rgba(212, 175, 55, 0.32)');
+		gradient.addColorStop(1, 'rgba(212, 175, 55, 0.02)');
 
 		ctx.beginPath();
 		ctx.moveTo(padLeft, h - padBottom);
@@ -108,8 +108,21 @@ export default function OrgBankStats({ isAdmin }: { isAdmin?: boolean }) {
 		ctx.fillStyle = gradient;
 		ctx.fill();
 
-		// Line
-		ctx.strokeStyle = 'rgba(74, 124, 35, 0.9)';
+		// Glow line (drawn first, behind the main line)
+		ctx.strokeStyle = 'rgba(212, 175, 55, 0.32)';
+		ctx.lineWidth = 8;
+		ctx.lineJoin = 'round';
+		ctx.beginPath();
+		for (let i = 0; i < history.length; i++) {
+			const x = padLeft + (i / (history.length - 1)) * graphW;
+			const y = padTop + ((maxVal - history[i].total) / range) * graphH;
+			if (i === 0) ctx.moveTo(x, y);
+			else ctx.lineTo(x, y);
+		}
+		ctx.stroke();
+
+		// Main line
+		ctx.strokeStyle = 'rgba(212, 175, 55, 1)';
 		ctx.lineWidth = 2;
 		ctx.lineJoin = 'round';
 		ctx.beginPath();
@@ -121,20 +134,8 @@ export default function OrgBankStats({ isAdmin }: { isAdmin?: boolean }) {
 		}
 		ctx.stroke();
 
-		// Glow line
-		ctx.strokeStyle = 'rgba(74, 124, 35, 0.3)';
-		ctx.lineWidth = 6;
-		ctx.beginPath();
-		for (let i = 0; i < history.length; i++) {
-			const x = padLeft + (i / (history.length - 1)) * graphW;
-			const y = padTop + ((maxVal - history[i].total) / range) * graphH;
-			if (i === 0) ctx.moveTo(x, y);
-			else ctx.lineTo(x, y);
-		}
-		ctx.stroke();
-
 		// Data points
-		ctx.fillStyle = 'rgba(74, 124, 35, 1)';
+		ctx.fillStyle = 'rgba(212, 175, 55, 1)';
 		for (let i = 0; i < history.length; i++) {
 			const x = padLeft + (i / (history.length - 1)) * graphW;
 			const y = padTop + ((maxVal - history[i].total) / range) * graphH;
@@ -144,7 +145,7 @@ export default function OrgBankStats({ isAdmin }: { isAdmin?: boolean }) {
 		}
 
 		// Date labels on X axis
-		ctx.fillStyle = 'rgba(0, 255, 65, 0.4)';
+		ctx.fillStyle = 'rgba(212, 175, 55, 0.55)';
 		ctx.font = '9px "Courier New", monospace';
 		ctx.textAlign = 'center';
 

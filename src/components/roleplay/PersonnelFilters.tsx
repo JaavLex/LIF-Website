@@ -3,12 +3,21 @@
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import {
+	Search,
+	ChevronDown,
+	Shield,
+	Flag,
+	Activity,
+	LayoutGrid,
+} from 'lucide-react';
 
 interface Character {
 	id: number;
 	fullName: string;
 	firstName: string;
 	lastName: string;
+	callsign?: string | null;
 	militaryId: string;
 	status: string;
 	classification: string;
@@ -28,7 +37,12 @@ interface Character {
 		order: number;
 		icon?: { url: string } | null;
 	} | null;
-	unit?: { id: number; name: string; slug: string; insignia?: { url: string } | null } | null;
+	unit?: {
+		id: number;
+		name: string;
+		slug: string;
+		insignia?: { url: string } | null;
+	} | null;
 }
 
 interface Rank {
@@ -82,6 +96,7 @@ const THREAT_LABELS: Record<string, string> = {
 };
 
 type TabType = 'personnel' | 'targets' | 'my-characters' | 'archives';
+type GroupByType = 'status' | 'unit' | 'faction';
 
 export function PersonnelFilters({
 	characters,
@@ -103,8 +118,18 @@ export function PersonnelFilters({
 	const [rankFilter, setRankFilter] = useState('all');
 	const [unitFilter, setUnitFilter] = useState('all');
 	const [activeTab, setActiveTab] = useState<TabType>('personnel');
+	const [groupBy, setGroupBy] = useState<GroupByType>('status');
+	const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
 
-	// Split and filter
+	const factionMap = useMemo(() => {
+		const map = new Map<string, FactionItem>();
+		(factions || []).forEach(f => {
+			if (f?.name) map.set(f.name, f);
+		});
+		return map;
+	}, [factions]);
+
+	// Split into tab buckets
 	const { personnel, targets, myCharacters, archives } = useMemo(() => {
 		const personnel: Character[] = [];
 		const targets: Character[] = [];
@@ -171,7 +196,7 @@ export function PersonnelFilters({
 			return true;
 		});
 
-		// Sort: status first, then rank (descending order)
+		// Sort: status first, then rank descending
 		result.sort((a, b) => {
 			const statusA = STATUS_ORDER[a.status] ?? 99;
 			const statusB = STATUS_ORDER[b.status] ?? 99;
@@ -179,7 +204,7 @@ export function PersonnelFilters({
 
 			const rankA = typeof a.rank === 'object' && a.rank ? a.rank.order : 0;
 			const rankB = typeof b.rank === 'object' && b.rank ? b.rank.order : 0;
-			return rankB - rankA; // Higher rank first
+			return rankB - rankA;
 		});
 
 		return result;
@@ -195,44 +220,90 @@ export function PersonnelFilters({
 		unitFilter,
 	]);
 
-	// Group by status, then by rank within each status
-	const groupedByStatusAndRank = useMemo(() => {
-		const statusGroups: {
-			status: string;
-			rankGroups: { rank: Rank | null; characters: Character[] }[];
-		}[] = [];
-		let currentStatus = '';
-		let currentRankGroups: { rank: Rank | null; characters: Character[] }[] = [];
+	type GroupBucket = {
+		key: string;
+		label: string;
+		iconUrl?: string;
+		fallbackIcon: 'status' | 'unit' | 'faction';
+		statusKey?: string;
+		color?: string;
+		characters: Character[];
+		sortKey: number;
+	};
+
+	const groups: GroupBucket[] = useMemo(() => {
+		const map = new Map<string, GroupBucket>();
 
 		for (const c of filtered) {
-			if (c.status !== currentStatus) {
-				if (currentRankGroups.length > 0) {
-					statusGroups.push({
-						status: currentStatus,
-						rankGroups: currentRankGroups,
-					});
-				}
-				currentStatus = c.status;
-				currentRankGroups = [];
-			}
+			let key: string;
+			let label: string;
+			let iconUrl: string | undefined;
+			let fallbackIcon: GroupBucket['fallbackIcon'] = 'status';
+			let statusKey: string | undefined;
+			let color: string | undefined;
+			let sortKey = 0;
 
-			const charRank = typeof c.rank === 'object' && c.rank ? c.rank : null;
-			const rankId = charRank?.id ?? -1;
-			const lastRankGroup = currentRankGroups[currentRankGroups.length - 1];
-
-			if (lastRankGroup && (lastRankGroup.rank?.id ?? -1) === rankId) {
-				lastRankGroup.characters.push(c);
+			if (groupBy === 'status') {
+				key = `s-${c.status}`;
+				label = STATUS_LABELS[c.status] || c.status;
+				fallbackIcon = 'status';
+				statusKey = c.status;
+				sortKey = STATUS_ORDER[c.status] ?? 99;
+			} else if (groupBy === 'unit') {
+				const u = typeof c.unit === 'object' && c.unit ? c.unit : null;
+				key = u ? `u-${u.id}` : 'u-none';
+				label = u ? u.name : 'Sans unité';
+				iconUrl = u?.insignia?.url;
+				fallbackIcon = 'unit';
+				sortKey = u ? u.id : 9999;
 			} else {
-				currentRankGroups.push({ rank: charRank, characters: [c] });
+				const fname = c.isTarget ? c.targetFaction : c.faction;
+				key = fname ? `f-${fname}` : 'f-none';
+				label = fname || 'Sans faction';
+				const fobj = fname ? factionMap.get(fname) : null;
+				iconUrl = fobj?.logo?.url;
+				color = fobj?.color;
+				fallbackIcon = 'faction';
+				sortKey = fname ? 0 : 9999;
 			}
+
+			let g = map.get(key);
+			if (!g) {
+				g = {
+					key,
+					label,
+					iconUrl,
+					fallbackIcon,
+					statusKey,
+					color,
+					characters: [],
+					sortKey,
+				};
+				map.set(key, g);
+			}
+			g.characters.push(c);
 		}
 
-		if (currentRankGroups.length > 0) {
-			statusGroups.push({ status: currentStatus, rankGroups: currentRankGroups });
-		}
+		const arr = Array.from(map.values());
+		arr.sort((a, b) => {
+			if (a.sortKey !== b.sortKey) return a.sortKey - b.sortKey;
+			return a.label.localeCompare(b.label);
+		});
+		return arr;
+	}, [filtered, groupBy, factionMap]);
 
-		return statusGroups;
-	}, [filtered]);
+	const toggleGroup = (key: string) => {
+		setCollapsedGroups(prev => {
+			const next = new Set(prev);
+			if (next.has(key)) next.delete(key);
+			else next.add(key);
+			return next;
+		});
+	};
+
+	const collapseAll = () =>
+		setCollapsedGroups(new Set(groups.map(g => g.key)));
+	const expandAll = () => setCollapsedGroups(new Set());
 
 	const tabs: { key: TabType; label: string; count: number }[] = [
 		{ key: 'personnel', label: 'Personnel', count: personnel.length },
@@ -251,309 +322,330 @@ export function PersonnelFilters({
 
 	return (
 		<div data-tutorial="filters">
-			{/* Tabs */}
-			<div className="personnel-tabs">
-				{tabs.map(tab => (
-					<button
-						key={tab.key}
-						className={`personnel-tab ${activeTab === tab.key ? 'active' : ''}`}
-						onClick={() => setActiveTab(tab.key)}
-					>
-						{tab.label}
-						<span className="tab-count">{tab.count}</span>
-					</button>
-				))}
-			</div>
-
-			{/* Filters */}
-			<div className="filters-bar">
-				<input
-					type="text"
-					className="filter-input"
-					placeholder="Rechercher par nom ou matricule..."
-					value={search}
-					onChange={e => setSearch(e.target.value)}
-				/>
-				<select
-					className="filter-select"
-					value={statusFilter}
-					onChange={e => setStatusFilter(e.target.value)}
-				>
-					<option value="all">Tous les statuts</option>
-					{Object.entries(STATUS_LABELS).map(([value, label]) => (
-						<option key={value} value={value}>
-							{label}
-						</option>
+			{/* Command panel — org-card aesthetic */}
+			<div className="personnel-command">
+				<div className="personnel-command-bg" aria-hidden />
+				<div className="personnel-command-tabs">
+					{tabs.map(tab => (
+						<button
+							key={tab.key}
+							type="button"
+							className={`personnel-command-tab ${activeTab === tab.key ? 'active' : ''}`}
+							onClick={() => setActiveTab(tab.key)}
+						>
+							<span className="personnel-command-tab-label">{tab.label}</span>
+							<span className="personnel-command-tab-count">{tab.count}</span>
+						</button>
 					))}
-				</select>
-				<select
-					className="filter-select"
-					value={rankFilter}
-					onChange={e => setRankFilter(e.target.value)}
-				>
-					<option value="all">Tous les grades</option>
-					{ranks.map(r => (
-						<option key={r.id} value={r.id}>
-							{r.name}
-						</option>
-					))}
-				</select>
-				<select
-					className="filter-select"
-					value={unitFilter}
-					onChange={e => setUnitFilter(e.target.value)}
-				>
-					<option value="all">Toutes les unités</option>
-					{units.map(u => (
-						<option key={u.id} value={u.id}>
-							{u.name}
-						</option>
-					))}
-				</select>
-			</div>
+				</div>
 
-			<div
-				style={{ marginBottom: '1rem', fontSize: '0.8rem', color: 'var(--muted)' }}
-			>
-				{filtered.length} résultat{filtered.length !== 1 ? 's' : ''}
-			</div>
-
-			{/* Render grouped by status then by rank */}
-			{groupedByStatusAndRank.map(statusGroup => (
-				<div key={statusGroup.status}>
-					<div className="status-separator">
-						<span className={`status-badge ${statusGroup.status}`}>
-							{STATUS_LABELS[statusGroup.status] || statusGroup.status}
-						</span>
-						<span className="separator-line" />
-						<span className="separator-count">
-							{statusGroup.rankGroups.reduce(
-								(sum, rg) => sum + rg.characters.length,
-								0,
-							)}
+				<div className="personnel-command-row">
+					<div className="personnel-search">
+						<Search size={14} strokeWidth={2} />
+						<input
+							type="text"
+							placeholder="Rechercher par nom, callsign ou matricule…"
+							value={search}
+							onChange={e => setSearch(e.target.value)}
+						/>
+					</div>
+					<div className="personnel-command-count">
+						<span className="personnel-command-count-num">{filtered.length}</span>
+						<span className="personnel-command-count-label">
+							résultat{filtered.length !== 1 ? 's' : ''}
 						</span>
 					</div>
-					{statusGroup.rankGroups.map((rankGroup, rgIdx) => (
-						<div key={rgIdx}>
-							<div
-								style={{
-									display: 'flex',
-									alignItems: 'center',
-									gap: '0.5rem',
-									margin: '0.75rem 0 0.4rem',
-									paddingLeft: '0.25rem',
-								}}
-							>
-								{rankGroup.rank?.icon?.url && (
+				</div>
+
+				<div className="personnel-command-row">
+					<select
+						className="filter-select personnel-command-select"
+						value={statusFilter}
+						onChange={e => setStatusFilter(e.target.value)}
+					>
+						<option value="all">Tous les statuts</option>
+						{Object.entries(STATUS_LABELS).map(([value, label]) => (
+							<option key={value} value={value}>
+								{label}
+							</option>
+						))}
+					</select>
+					<select
+						className="filter-select personnel-command-select"
+						value={rankFilter}
+						onChange={e => setRankFilter(e.target.value)}
+					>
+						<option value="all">Tous les grades</option>
+						{ranks.map(r => (
+							<option key={r.id} value={r.id}>
+								{r.name}
+							</option>
+						))}
+					</select>
+					<select
+						className="filter-select personnel-command-select"
+						value={unitFilter}
+						onChange={e => setUnitFilter(e.target.value)}
+					>
+						<option value="all">Toutes les unités</option>
+						{units.map(u => (
+							<option key={u.id} value={u.id}>
+								{u.name}
+							</option>
+						))}
+					</select>
+				</div>
+
+				<div className="personnel-command-row personnel-command-bottom">
+					<div className="personnel-groupby">
+						<span className="personnel-groupby-label">
+							<LayoutGrid size={11} strokeWidth={2} />
+							Grouper
+						</span>
+						<button
+							type="button"
+							className={`personnel-groupby-btn ${groupBy === 'status' ? 'active' : ''}`}
+							onClick={() => setGroupBy('status')}
+						>
+							<Activity size={11} strokeWidth={2} />
+							Statut
+						</button>
+						<button
+							type="button"
+							className={`personnel-groupby-btn ${groupBy === 'unit' ? 'active' : ''}`}
+							onClick={() => setGroupBy('unit')}
+						>
+							<Shield size={11} strokeWidth={2} />
+							Unité
+						</button>
+						<button
+							type="button"
+							className={`personnel-groupby-btn ${groupBy === 'faction' ? 'active' : ''}`}
+							onClick={() => setGroupBy('faction')}
+						>
+							<Flag size={11} strokeWidth={2} />
+							Faction
+						</button>
+					</div>
+					<div className="personnel-collapse-actions">
+						<button
+							type="button"
+							className="personnel-collapse-btn"
+							onClick={expandAll}
+						>
+							Tout déplier
+						</button>
+						<span className="personnel-collapse-sep">·</span>
+						<button
+							type="button"
+							className="personnel-collapse-btn"
+							onClick={collapseAll}
+						>
+							Tout replier
+						</button>
+					</div>
+				</div>
+			</div>
+
+			{/* Groups */}
+			{groups.map(group => {
+				const collapsed = collapsedGroups.has(group.key);
+				const groupClass = `personnel-group${collapsed ? ' collapsed' : ''} group-icon-${group.fallbackIcon}${
+					group.statusKey ? ` group-status-${group.statusKey}` : ''
+				}`;
+				const styleVars: React.CSSProperties = group.color
+					? ({ ['--group-color' as any]: group.color } as React.CSSProperties)
+					: {};
+				return (
+					<div key={group.key} className={groupClass} style={styleVars}>
+						<button
+							type="button"
+							className="personnel-group-header"
+							onClick={() => toggleGroup(group.key)}
+							aria-expanded={!collapsed}
+						>
+							<span className="personnel-group-icon">
+								{group.iconUrl ? (
 									<Image
-										src={rankGroup.rank.icon.url}
-										alt={rankGroup.rank.name}
-										width={20}
-										height={20}
+										src={group.iconUrl}
+										alt={group.label}
+										width={22}
+										height={22}
 										unoptimized
 									/>
+								) : group.fallbackIcon === 'unit' ? (
+									<Shield size={14} strokeWidth={1.6} />
+								) : group.fallbackIcon === 'faction' ? (
+									<Flag size={14} strokeWidth={1.6} />
+								) : (
+									<Activity size={14} strokeWidth={1.6} />
 								)}
-								<span
-									style={{
-										fontSize: '0.8rem',
-										color: 'var(--muted)',
-										fontWeight: 600,
-										textTransform: 'uppercase',
-										letterSpacing: '0.05em',
-									}}
-								>
-									{rankGroup.rank ? rankGroup.rank.name : 'Aucun grade'}
-								</span>
-								<span style={{ fontSize: '0.7rem', color: 'var(--muted)' }}>
-									({rankGroup.characters.length})
-								</span>
-							</div>
-							<div className="personnel-grid">
-								{rankGroup.characters.map(character => (
-									<Link
-										key={character.id}
-										href={`/roleplay/personnage/${character.id}`}
-										className={`personnel-card ${activeTab === 'targets' ? 'target-card' : ''}`}
-									>
-										<div className="personnel-card-header">
-											{character.avatar?.url ? (
-												<Image
-													src={character.avatar.url}
-													alt={character.fullName}
-													width={64}
-													height={64}
-													className="personnel-avatar"
-													unoptimized
-												/>
-											) : (
-												<div className="personnel-avatar-placeholder">
-													{character.firstName?.[0]}
-													{character.lastName?.[0]}
-												</div>
-											)}
-											<div className="personnel-info">
-												<div className="personnel-name">
-													{character.isMainCharacter && (
-														<span
-															className="main-character-badge"
-															title="Personnage principal"
-														>
-															★
-														</span>
-													)}
-													{character.fullName}
-												</div>
-												{character.rank && typeof character.rank === 'object' && (
-													<div
-														className="personnel-rank"
-														style={{
-															display: 'flex',
-															alignItems: 'center',
-															gap: '0.35rem',
-														}}
-													>
-														{character.rank.icon?.url && (
-															<Image
-																src={character.rank.icon.url}
-																alt={character.rank.name}
-																width={18}
-																height={18}
-																unoptimized
-															/>
-														)}
-														<span>
-															{character.rank.abbreviation || character.rank.name}
-														</span>
-													</div>
-												)}
-												{!character.rank && (
-													<div
-														className="personnel-rank"
-														style={{ color: 'var(--muted)' }}
-													>
-														Aucun grade
-													</div>
-												)}
-												{character.unit && typeof character.unit === 'object' && (
-													<div className="personnel-unit-info">
-														{character.unit.insignia?.url && (
-															<Image
-																src={character.unit.insignia.url}
-																alt={character.unit.name}
-																width={16}
-																height={16}
-																className="unit-insignia-small"
-																unoptimized
-															/>
-														)}
-														<span>{character.unit.name}</span>
-													</div>
-												)}
-												{/* Faction display */}
-												{!character.isTarget &&
-													character.faction &&
-													(() => {
-														const factionObj = factions?.find(
-															f => f.name === character.faction,
-														);
-														return (
-															<div
-																className="personnel-unit-info"
-																style={{
-																	color: factionObj?.color || 'var(--muted)',
-																}}
-															>
-																{factionObj?.logo?.url && (
-																	<Image
-																		src={factionObj.logo.url}
-																		alt={character.faction}
-																		width={16}
-																		height={16}
-																		style={{ objectFit: 'contain' }}
-																		unoptimized
-																	/>
-																)}
-																<span>{character.faction}</span>
-															</div>
-														);
-													})()}
-												{/* Target-specific: faction and threat */}
-												{character.isTarget &&
-													character.targetFaction &&
-													(() => {
-														const factionObj = factions?.find(
-															f => f.name === character.targetFaction,
-														);
-														return (
-															<div
-																className="target-faction-info"
-																style={{
-																	display: 'flex',
-																	alignItems: 'center',
-																	gap: '0.35rem',
-																}}
-															>
-																{factionObj?.logo?.url && (
-																	<Image
-																		src={factionObj.logo.url}
-																		alt={character.targetFaction}
-																		width={16}
-																		height={16}
-																		style={{ objectFit: 'contain' }}
-																		unoptimized
-																	/>
-																)}
-																<span>{character.targetFaction}</span>
-															</div>
-														);
-													})()}
+							</span>
+							<span className="personnel-group-label">{group.label}</span>
+							<span className="personnel-group-line" />
+							<span className="personnel-group-count">
+								{group.characters.length}
+							</span>
+							<ChevronDown
+								size={16}
+								strokeWidth={2}
+								className="personnel-group-chevron"
+							/>
+						</button>
+						{!collapsed && (
+							<div className="personnel-group-body">
+								<div className="char-grid">
+									{group.characters.map(character => {
+										const rank =
+											typeof character.rank === 'object' && character.rank
+												? character.rank
+												: null;
+										const unit =
+											typeof character.unit === 'object' && character.unit
+												? character.unit
+												: null;
+										const factionName = character.isTarget
+											? character.targetFaction
+											: character.faction;
+										const factionObj = factionName
+											? factionMap.get(factionName)
+											: null;
+										return (
+											<Link
+												key={character.id}
+												href={`/roleplay/personnage/${character.id}`}
+												className={`char-card status-${character.status}${character.isTarget ? ' is-target' : ''}${character.isMainCharacter ? ' is-main' : ''}`}
+												data-status={character.status}
+												data-classification={character.classification}
+											>
 												{character.isTarget && character.threatLevel && (
-													<span className={`threat-badge ${character.threatLevel}`}>
+													<span
+														className={`char-card-threat threat-${character.threatLevel}`}
+														title={`Menace: ${THREAT_LABELS[character.threatLevel] || character.threatLevel}`}
+													>
 														{THREAT_LABELS[character.threatLevel] ||
 															character.threatLevel}
 													</span>
 												)}
-												{character.discordUsername && (
-													<div
-														style={{
-															fontSize: '0.7rem',
-															color: 'var(--muted)',
-															marginTop: '0.15rem',
-														}}
-													>
-														@{character.discordUsername}
+												<div className="char-card-avatar">
+													{character.avatar?.url ? (
+														<Image
+															src={character.avatar.url}
+															alt={character.fullName}
+															width={50}
+															height={50}
+															unoptimized
+														/>
+													) : (
+														<span className="char-card-avatar-initials">
+															{character.firstName?.[0]}
+															{character.lastName?.[0]}
+														</span>
+													)}
+												</div>
+												<div className="char-card-body">
+													<div className="char-card-name-row">
+														<span className="char-card-name">
+															{character.fullName}
+														</span>
+														{character.isMainCharacter && (
+															<span
+																className="char-card-main-star"
+																title="Personnage principal"
+															>
+																★
+															</span>
+														)}
 													</div>
-												)}
-											</div>
-										</div>
-										<div className="personnel-card-meta">
-											<span className="personnel-id">
-												{character.militaryId || '—'}
-											</span>
-											<div
-												style={{
-													display: 'flex',
-													gap: '0.5rem',
-													alignItems: 'center',
-												}}
-											>
-												<span className={`status-badge ${character.status}`}>
-													{STATUS_LABELS[character.status] || character.status}
-												</span>
-												<span
-													className={`classification-badge ${character.classification}`}
-												>
-													{character.classification}
-												</span>
-											</div>
-										</div>
-									</Link>
-								))}
+													<div className="char-card-meta">
+														<span className="char-card-meta-rank">
+															{rank?.icon?.url && (
+																<Image
+																	src={rank.icon.url}
+																	alt={rank.name}
+																	title={rank.name}
+																	width={14}
+																	height={14}
+																	unoptimized
+																/>
+															)}
+															<span>
+																{rank?.abbreviation || rank?.name || 'SANS GRADE'}
+															</span>
+														</span>
+														{unit && (
+															<>
+																<span className="char-card-meta-sep">·</span>
+																<span className="char-card-meta-unit">
+																	{unit.insignia?.url && (
+																		<Image
+																			src={unit.insignia.url}
+																			alt={unit.name}
+																			title={unit.name}
+																			width={14}
+																			height={14}
+																			unoptimized
+																		/>
+																	)}
+																	<span>{unit.name}</span>
+																</span>
+															</>
+														)}
+														{factionName && (
+															<>
+																<span className="char-card-meta-sep">·</span>
+																<span className="char-card-meta-faction">
+																	{factionObj?.logo?.url && (
+																		<Image
+																			src={factionObj.logo.url}
+																			alt={factionName}
+																			title={factionName}
+																			width={14}
+																			height={14}
+																			unoptimized
+																		/>
+																	)}
+																	<span>{factionName}</span>
+																</span>
+															</>
+														)}
+													</div>
+												</div>
+												<div className="char-card-end">
+													<div className="char-card-tags">
+														<span
+															className={`char-card-class class-${character.classification}`}
+															title={character.classification}
+														>
+															{character.classification?.charAt(0).toUpperCase()}
+														</span>
+														<span
+															className="char-card-status-dot"
+															title={
+																STATUS_LABELS[character.status] || character.status
+															}
+															aria-hidden
+														/>
+													</div>
+													<span
+														className="char-card-id"
+														title={character.militaryId || ''}
+													>
+														{character.militaryId || '—'}
+													</span>
+													<span className="char-card-arrow" aria-hidden>
+														›
+													</span>
+												</div>
+											</Link>
+										);
+									})}
+								</div>
 							</div>
-						</div>
-					))}
-				</div>
-			))}
+						)}
+					</div>
+				);
+			})}
 
 			{/* Empty states */}
 			{filtered.length === 0 && (
