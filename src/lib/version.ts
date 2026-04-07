@@ -6,9 +6,17 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.4.0',
+  version: '1.4.1',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.4.1',
+      date: '2026-04-07',
+      changes: [
+        'Correction : table payload_locked_documents_rels manquait les colonnes pour comms (causait une erreur SQL au save admin et au clic Accept)',
+        'Auto-grade Discord : appliqué aussi à la modification (et pour les admins quand "grade forcé" est désactivé)',
+      ],
+    },
     {
       version: '1.4.0',
       date: '2026-04-07',

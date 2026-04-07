@@ -78,6 +78,30 @@ export async function PATCH(
 			delete body.targetFaction;
 			delete body.etatMajorNotes;
 			delete body.faction;
+			delete body.rankOverride;
+		}
+
+		// Auto-derive rank from Discord roles unless rankOverride is explicitly enabled.
+		// Applies on every edit so the saved rank stays in sync with the user's current roles.
+		const overrideAfter =
+			body.rankOverride !== undefined ? body.rankOverride : existing.rankOverride;
+		if (!overrideAfter && isOwner && session.roles?.length) {
+			const ranks = await payload.find({
+				collection: 'ranks',
+				where: { discordRoleId: { in: session.roles } },
+				sort: '-order',
+				limit: 1,
+			});
+			if (ranks.docs.length > 0) {
+				body.rank = ranks.docs[0].id;
+			} else {
+				const defaultRank = await payload.find({
+					collection: 'ranks',
+					sort: 'order',
+					limit: 1,
+				});
+				if (defaultRank.docs.length > 0) body.rank = defaultRank.docs[0].id;
+			}
 		}
 
 		const oldStatus = existing.status;

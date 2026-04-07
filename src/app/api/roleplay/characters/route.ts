@@ -89,6 +89,28 @@ export async function POST(request: NextRequest) {
 			body.status = 'in-service';
 		}
 
+		// For admins creating their own (non-NPC) character, also auto-derive rank
+		// from Discord roles unless rankOverride is enabled. Mirrors the non-admin path
+		// so the form's "detected rank" matches the saved value.
+		if (isAdmin && !isNpcCreation && !body.rankOverride && session.roles?.length) {
+			const ranks = await payload.find({
+				collection: 'ranks',
+				where: { discordRoleId: { in: session.roles } },
+				sort: '-order',
+				limit: 1,
+			});
+			if (ranks.docs.length > 0) {
+				body.rank = ranks.docs[0].id;
+			} else {
+				const defaultRank = await payload.find({
+					collection: 'ranks',
+					sort: 'order',
+					limit: 1,
+				});
+				if (defaultRank.docs.length > 0) body.rank = defaultRank.docs[0].id;
+			}
+		}
+
 		const doc = await payload.create({
 			collection: 'characters',
 			data: body,
