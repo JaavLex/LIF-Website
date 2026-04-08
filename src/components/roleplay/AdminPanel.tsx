@@ -3,17 +3,20 @@
 import { useState } from 'react';
 import { UnitManagement } from './admin/UnitManagement';
 import { FactionManagement } from './admin/FactionManagement';
-import type { UnitItem, FactionItem } from './admin/types';
+import { CharacterManagement } from './admin/CharacterManagement';
+import type { UnitItem, FactionItem, RankItem } from './admin/types';
 
-export type { UnitItem, FactionItem };
+export type { UnitItem, FactionItem, RankItem };
 
 export function AdminPanel({
 	units,
 	factions,
+	ranks = [],
 	adminLevel = 'full',
 }: {
 	units: UnitItem[];
 	factions: FactionItem[];
+	ranks?: RankItem[];
 	adminLevel?: 'full' | 'limited';
 }) {
 	const isFullAccess = adminLevel === 'full';
@@ -21,13 +24,19 @@ export function AdminPanel({
 	const [error, setError] = useState('');
 	const [success, setSuccess] = useState('');
 
-	// Track which section is active (unit create, faction create, unit edit, faction edit)
+	// Track which section is active (unit create, faction create, character create, unit edit, faction edit)
 	const [activeSection, setActiveSection] = useState<
-		'none' | 'unit-create' | 'faction-create' | 'unit-edit' | 'faction-edit'
+		| 'none'
+		| 'unit-create'
+		| 'faction-create'
+		| 'character-create'
+		| 'unit-edit'
+		| 'faction-edit'
 	>('none');
 
 	const showUnitForm = activeSection === 'unit-create';
 	const showFactionForm = activeSection === 'faction-create';
+	const showCharacterForm = activeSection === 'character-create';
 
 	return (
 		<div
@@ -99,7 +108,27 @@ export function AdminPanel({
 				>
 					{showFactionForm ? 'Annuler' : '+ Nouvelle Faction'}
 				</button>
+				<button
+					type="button"
+					onClick={() =>
+						setActiveSection(showCharacterForm ? 'none' : 'character-create')
+					}
+					className="session-btn"
+					style={{ padding: '0.5rem 1rem', fontSize: '0.85rem' }}
+				>
+					{showCharacterForm ? 'Annuler' : '+ Nouveau PNJ / Cible'}
+				</button>
 			</div>
+
+			<CharacterManagement
+				units={units}
+				ranks={ranks}
+				showCreateForm={showCharacterForm}
+				setError={setError}
+				setSuccess={setSuccess}
+				submitting={submitting}
+				setSubmitting={setSubmitting}
+			/>
 
 			<UnitManagement
 				units={units}

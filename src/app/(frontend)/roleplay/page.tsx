@@ -259,6 +259,7 @@ export default async function RoleplayPage({
 					<AdminPanel
 						units={serialize(units.docs)}
 						factions={serialize(factions.docs)}
+						ranks={serialize(ranks.docs)}
 						adminLevel={adminPermissions?.level === 'full' ? 'full' : 'limited'}
 					/>
 				</div>

@@ -6,9 +6,17 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.6.39',
+  version: '1.6.40',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.6.40',
+      date: '2026-04-08',
+      changes: [
+        'ROLEPLAY — Nouveau bouton « + Nouveau PNJ / Cible » dans le panneau Administration sur `/roleplay`, à côté de « + Nouvelle Unité » et « + Nouvelle Faction ». Permet aux admins de créer des personnages non-joueurs (PNJ ou Cibles ennemies) directement depuis le front, sans passer par Payload. Formulaire avec prénom/nom/callsign obligatoires, unité et grade optionnels (sélecteurs depuis les collections existantes), texte libre pour la faction, toggle « Cible / Ennemi » qui révèle les champs faction cible et niveau de menace, et sélecteurs de statut/classification. Après création, redirection automatique vers la fiche du PNJ pour compléter background, photo, devise, etc.',
+        'API — `POST /api/roleplay/characters` respecte maintenant le flag `isNpc` plus rigoureusement : (1) `isMainCharacter` n\'est plus forcé à `true` pour les PNJ (par défaut `false`, l\'admin peut le flipper plus tard), (2) la notification Discord « nouveau personnel » n\'est plus envoyée pour les PNJ, qui ne sont pas de vrais enrôlements et spammeraient le canal pour rien.',
+      ],
+    },
     {
       version: '1.6.39',
       date: '2026-04-08',

@@ -55,8 +55,13 @@ export async function POST(request: NextRequest) {
 			}
 		}
 
-		// Main character is always true for new characters
-		body.isMainCharacter = true;
+		// Main character is always true for new player characters. NPCs / Targets
+		// are NOT main characters by default — admins can flip the flag later.
+		if (!isNpcCreation) {
+			body.isMainCharacter = true;
+		} else if (typeof body.isMainCharacter !== 'boolean') {
+			body.isMainCharacter = false;
+		}
 
 		// Non-admins: strip admin-only fields, auto-assign rank from Discord roles
 		if (!isAdmin) {
@@ -125,19 +130,22 @@ export async function POST(request: NextRequest) {
 			data: body,
 		});
 
-		// Send Discord notification (non-blocking)
-		const fullDoc: Character = await payload.findByID({
-			collection: 'characters',
-			id: doc.id,
-			depth: 2,
-		});
-		notifyNewCharacter({
-			id: doc.id as number,
-			fullName: fullDoc.fullName || `${fullDoc.firstName} ${fullDoc.lastName}`,
-			discordUsername: fullDoc.discordUsername || '',
-			rank: typeof fullDoc.rank === 'object' ? fullDoc.rank : null,
-			unit: typeof fullDoc.unit === 'object' ? fullDoc.unit : null,
-		}).catch(() => {});
+		// Send Discord notification (non-blocking) — skip for NPCs / Targets,
+		// they are not real player enrollments and would just spam the channel.
+		if (!isNpcCreation) {
+			const fullDoc: Character = await payload.findByID({
+				collection: 'characters',
+				id: doc.id,
+				depth: 2,
+			});
+			notifyNewCharacter({
+				id: doc.id as number,
+				fullName: fullDoc.fullName || `${fullDoc.firstName} ${fullDoc.lastName}`,
+				discordUsername: fullDoc.discordUsername || '',
+				rank: typeof fullDoc.rank === 'object' ? fullDoc.rank : null,
+				unit: typeof fullDoc.unit === 'object' ? fullDoc.unit : null,
+			}).catch(() => {});
+		}
 
 		return NextResponse.json({ id: doc.id, doc });
 	} catch (error: any) {

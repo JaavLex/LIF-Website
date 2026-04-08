@@ -28,6 +28,13 @@ export interface FactionItem {
 	description?: any;
 }
 
+export interface RankItem {
+	id: number;
+	name: string;
+	abbreviation?: string | null;
+	order?: number | null;
+}
+
 export async function uploadFile(file: File): Promise<number> {
 	const formData = new FormData();
 	formData.append('file', file);
