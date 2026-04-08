@@ -6,9 +6,18 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.6.43',
+  version: '1.6.44',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.6.44',
+      date: '2026-04-08',
+      changes: [
+        'COMMS — Nouveau `@everyone` dans les canaux de groupe / unité / faction. Taper `@everyone` dans le compositeur mentionne tous les membres du canal (sauf l\'expéditeur) : ping radio bruyant en direct, notification mod en jeu, MAIS pas de fanout DM Discord (pour éviter de spammer 20+ personnes en DM à chaque callout tactique). `@everyone` est silencieusement ignoré en DM. L\'autocomplete du compositeur ajoute une entrée « 👥 @everyone » en tête de liste pour les canaux non-DM.',
+        'COMMS / MOD — Fix notifications dupliquées côté mod `AR-DiscordLink` : la requête `/api/roleplay/notifications/pending` est désormais clampée à `createdAt <= now` (en plus de `> effectiveSince`), ce qui empêche la livraison multiple de messages insérés entre la capture de `Date.now()` et l\'exécution de la requête. Chaque notification expose aussi un `id` stable (l\'ID du document `comms-messages`) pour que le mod puisse déduper via un `HashSet` LRU côté jeu — robuste contre les requêtes concurrentes, les redémarrages et le clock skew.',
+        'COMMS — Fix son de notification dupliqué dans le navigateur : `CommsLayout.loadChannels` mettait à jour son `seen` map APRÈS avoir joué le son, donc deux appels concurrents (polling 3s + refresh post-envoi de `handleSend`) observaient tous deux la même baseline stale et jouaient le son deux fois pour le même message. La baseline est maintenant avancée AVANT l\'appel à `playRadioPing` / `playNotification`. Même fix appliqué par défense-en-profondeur dans `GlobalCommsNotifier` pour les pages hors /comms.',
+      ],
+    },
     {
       version: '1.6.43',
       date: '2026-04-08',
