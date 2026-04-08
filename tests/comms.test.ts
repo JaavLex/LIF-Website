@@ -223,3 +223,24 @@ describe('@everyone in MessageComposer', () => {
 		expect(layout).toMatch(/channelType=\{[^}]*activeChannel[^}]*type/);
 	});
 });
+
+describe('Mod notifications/pending endpoint — duplicate delivery fix', () => {
+	it('clamps the query with a less_than_equal upper bound on createdAt', () => {
+		const content = readSrc('app/api/roleplay/notifications/pending/route.ts');
+		expect(content).toContain('less_than_equal');
+		expect(content).toMatch(
+			/less_than_equal:\s*new Date\(now\)\.toISOString\(\)/,
+		);
+	});
+
+	it('returns a stable id on each notification so the mod can dedupe', () => {
+		const content = readSrc('app/api/roleplay/notifications/pending/route.ts');
+		expect(content).toContain('id: Number(m.id)');
+	});
+
+	it('documents the id field in the response JSDoc for dedupe', () => {
+		const content = readSrc('app/api/roleplay/notifications/pending/route.ts');
+		expect(content).toMatch(/id:\s*number/);
+		expect(content).toMatch(/dedupe|dedup/);
+	});
+});

@@ -22,6 +22,7 @@ const PUBLIC_BASE_URL =
  *     characterId?: number,
  *     serverTimeMs: number,
  *     notifications: Array<{
+ *       id: number,            // Stable message id — mod uses this to dedupe across retries/polls
  *       channel: string,       // For DMs: the sender's callsign (or full name);
  *                              // for group/unit/faction: the channel name
  *       sender: string,        // Sender display name
@@ -120,6 +121,7 @@ export async function POST(request: NextRequest) {
 				and: [
 					{ channelId: { in: Array.from(channelMap.keys()) } },
 					{ createdAt: { greater_than: new Date(effectiveSince).toISOString() } },
+					{ createdAt: { less_than_equal: new Date(now).toISOString() } },
 					{ senderCharacterId: { not_equals: characterId } },
 					{ deletedAt: { exists: false } },
 				],
@@ -212,6 +214,7 @@ export async function POST(request: NextRequest) {
 			const callSign = m.isAnonymous ? '' : info.callsign;
 
 			return {
+				id: Number(m.id),
 				channel: displayChannel,
 				sender: senderName,
 				callSign,
