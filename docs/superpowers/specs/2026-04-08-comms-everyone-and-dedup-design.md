@@ -246,57 +246,101 @@ already uses.
 
 ## 7. Bug fix: browser duplicate sounds
 
-### 7.1 Root cause
+### 7.1 Root cause — read-modify-write race in `loadChannels`
 
-When the user is on `/comms` with channel A active, two independent polling
-loops both detect new messages in A and each calls `playRadioPing()` or
-`playNotification()`:
+`GlobalCommsNotifier` already bails out entirely on `/comms` pages
+(`GlobalCommsNotifier.tsx:42` — `if (onCommsPage) return;`), so it is
+**not** a second sound source when the user is on `/comms`. The duplicate
+must be — and on inspection, is — entirely inside
+`CommsLayout.loadChannels` (`CommsLayout.tsx:142-215`).
 
-- `src/components/comms/GlobalCommsNotifier.tsx` — 12 s poll on the channels
-  list, dedupes via `seenRef[channelId]`.
-- `src/components/comms/CommsLayout.tsx` — 3 s poll on the active channel's
-  messages, dedupes via `seenLastMessageAtRef[activeId]`.
+The function's dedup logic, in pseudo-sequence:
 
-Each dedupes internally, but they are unaware of each other, so both fire for
-the same new message in the active channel.
+```ts
+for (const ch of newChannels) {
+  const prev = seen.get(ch.id);
+  if (prev && ch.lastMessageAt > prev) {
+    // ...setToasts, playRadioPing/playNotification...
+  }
+}
+for (const ch of newChannels) {
+  if (ch.lastMessageAt) seen.set(ch.id, ch.lastMessageAt);  // ← advance AFTER
+}
+```
 
-### 7.2 Fix — one source of truth per channel
+`loadChannels` is called from three different paths on `/comms`:
 
-**`CommsLayout.tsx`** is the authoritative source for the currently-active
-channel. **`GlobalCommsNotifier.tsx`** is the authoritative source for every
-other channel (and for all channels when the user is not on `/comms`).
+1. Initial mount effect (`CommsLayout.tsx:256-259`).
+2. Polling interval every 3 s while the page is visible
+   (`CommsLayout.tsx:345-349`).
+3. `handleSend` after a successful POST (`CommsLayout.tsx:369`).
 
-Implementation:
+Two concurrent `loadChannels` calls (e.g. the 3 s poll firing while
+`handleSend` is still in flight) both `await fetch('/api/comms/channels')`,
+both receive a response containing the same new `lastMessageAt`, both
+compare against the *same stale* `seen` map (because neither has reached
+the `seen.set(...)` loop yet), and both play the sound. Classic
+read-modify-write race. Same mechanism produces triple fires when a
+third caller overlaps.
 
-1. `CommsLayout.tsx` publishes the active channel ID to localStorage whenever
-   the active channel changes:
-   ```ts
-   useEffect(() => {
-     if (activeId) localStorage.setItem('comms.activeChannelId', String(activeId));
-     return () => localStorage.removeItem('comms.activeChannelId');
-   }, [activeId]);
-   ```
-   Also clear the key on `pagehide` as a backup so a force-closed tab does
-   not leave a stale value.
+The same race exists in `GlobalCommsNotifier.tsx:62-91` when the user is
+**not** on `/comms` — `seen.set` happens in a second loop after the sound
+call — but in practice the 12 s poll there overlaps much less often than
+the 3 s `CommsLayout` poll, which is why the symptom is loudest on
+`/comms` itself.
 
-2. `GlobalCommsNotifier.tsx` reads the key in its polling loop and skips any
-   channel whose ID matches the active value **only when `pathname` starts
-   with `/comms`**. If the user is on any other page, the key is ignored
-   (the user is not looking at any comms channel, so every channel should
-   notify).
+### 7.2 Fix — advance `seen` atomically before playing the sound
 
-3. First-tick silence in `GlobalCommsNotifier`: on initial mount, populate
-   `seenRef` from `localStorage` and then run one silent "baseline" pass
-   over the current channels list before starting to play sounds. Prevents
-   the "tab reopened after a day → play 20 sounds at once" scenario. If the
-   current implementation already does this, verify during implementation;
-   otherwise add it.
+Move the `seen.set(ch.id, ch.lastMessageAt)` call to the top of the
+`if (prev && ch.lastMessageAt > prev)` branch, before any async / sound
+work. That way, any subsequent or concurrent `loadChannels` call that
+observes the same response sees an advanced baseline for that channel
+and the condition is false, so the sound is not played again.
 
-### 7.3 Two-tab edge case
+Target snippet in `CommsLayout.loadChannels` (around line 160):
+
+```ts
+for (const ch of newChannels) {
+  if (!ch.lastMessageAt) continue;
+  const prev = seen.get(ch.id);
+  if (prev && ch.lastMessageAt > prev) {
+    // Advance baseline FIRST so a racing loadChannels call skips this
+    // channel instead of double-firing.
+    seen.set(ch.id, ch.lastMessageAt);
+
+    const isActive = ch.id === activeId;
+    const mention = !!ch.lastMessageMentionsViewer;
+    if (!isActive) {
+      // toast + sound (unchanged)
+    } else if (mention) {
+      playRadioPing();
+    }
+  }
+}
+// The "baseline for channels that did not advance" loop below is kept
+// but only runs for channels we have never seen before (first load or
+// new channel join).
+for (const ch of newChannels) {
+  if (ch.lastMessageAt && !seen.has(ch.id)) seen.set(ch.id, ch.lastMessageAt);
+}
+```
+
+Apply the exact same fix in `GlobalCommsNotifier.tsx` (same structure,
+same bug) as defense in depth for users not on `/comms`.
+
+### 7.3 First-tick silence (existing, verify in place)
+
+`CommsLayout.loadChannels` already gates the sound-playing loop behind
+`initializedSeenRef.current` (`CommsLayout.tsx:159`) and sets the ref
+after the first successful fetch. `GlobalCommsNotifier` does the same
+with `initializedRef` (`GlobalCommsNotifier.tsx:62, 92`). Both are
+already correct — no change needed.
+
+### 7.4 Two-tab edge case
 
 A user with `/comms` open in two tabs will hear one sound per tab (each
-`CommsLayout` instance plays independently). This is acceptable — each tab
-is an independent listener — and fixing it would require cross-tab
+`CommsLayout` instance plays independently). This is acceptable — each
+tab is an independent listener — and fixing it would require cross-tab
 coordination via `BroadcastChannel`. Out of scope.
 
 ## 8. Testing
