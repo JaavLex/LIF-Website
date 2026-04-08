@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getPayloadClient } from '@/lib/payload';
 
 const MOD_API_KEY = process.env.GAME_MOD_API_KEY || 'CHANGE_ME_TO_A_SECURE_KEY';
+const PUBLIC_BASE_URL =
+	process.env.NEXT_PUBLIC_BASE_URL ||
+	process.env.NEXT_PUBLIC_SITE_URL ||
+	process.env.SITE_URL ||
+	'';
 
 /**
  * POST /api/roleplay/notifications/pending
@@ -17,10 +22,14 @@ const MOD_API_KEY = process.env.GAME_MOD_API_KEY || 'CHANGE_ME_TO_A_SECURE_KEY';
  *     characterId?: number,
  *     serverTimeMs: number,
  *     notifications: Array<{
- *       channel: string,
- *       sender: string,
+ *       channel: string,       // For DMs: the sender's callsign (or full name);
+ *                              // for group/unit/faction: the channel name
+ *       sender: string,        // Sender display name
+ *       callSign: string,      // Sender's roleplay callsign (empty for anonymous);
+ *                              // mod uses this as the DM title, falls back to `channel` if empty
  *       body: string,
  *       isMention: boolean,
+ *       avatarUrl: string,     // Absolute URL to sender's avatar (empty if none)
  *       createdAtMs: number
  *     }>
  *   }
@@ -31,6 +40,13 @@ const MOD_API_KEY = process.env.GAME_MOD_API_KEY || 'CHANGE_ME_TO_A_SECURE_KEY';
 const MAX_NOTIFICATIONS = 20;
 const MAX_BODY_LEN = 180;
 const MAX_LOOKBACK_MS = 5 * 60 * 1000; // never look back further than 5 minutes
+
+function toAbsoluteUrl(url: string | null | undefined): string {
+	if (!url) return '';
+	if (/^https?:\/\//i.test(url)) return url;
+	if (!PUBLIC_BASE_URL) return url;
+	return PUBLIC_BASE_URL.replace(/\/$/, '') + (url.startsWith('/') ? url : '/' + url);
+}
 
 export async function POST(request: NextRequest) {
 	try {
@@ -74,7 +90,6 @@ export async function POST(request: NextRequest) {
 				: now - 30_000; // first poll: just the last 30s
 
 		// Fetch all channels (small-ish set) and filter to ones this character belongs to.
-		// Matches listChannelsForCharacter pattern in src/lib/comms.ts.
 		const allChannels = await payload.find({
 			collection: 'comms-channels',
 			limit: 500,
@@ -93,18 +108,17 @@ export async function POST(request: NextRequest) {
 			});
 		}
 
-		const channelIdToName = new Map<number, string>();
+		// Keep the full channel doc per id so we can discriminate by type later.
+		const channelMap = new Map<number, any>();
 		for (const ch of memberChannels) {
-			channelIdToName.set(Number(ch.id), String(ch.name ?? 'Canal'));
+			channelMap.set(Number(ch.id), ch);
 		}
 
-		// Fetch recent messages in those channels, newer than effectiveSince,
-		// not sent by this character, not deleted.
 		const msgs = await payload.find({
 			collection: 'comms-messages',
 			where: {
 				and: [
-					{ channelId: { in: Array.from(channelIdToName.keys()) } },
+					{ channelId: { in: Array.from(channelMap.keys()) } },
 					{ createdAt: { greater_than: new Date(effectiveSince).toISOString() } },
 					{ senderCharacterId: { not_equals: characterId } },
 					{ deletedAt: { exists: false } },
@@ -114,7 +128,8 @@ export async function POST(request: NextRequest) {
 			limit: MAX_NOTIFICATIONS,
 		});
 
-		// Resolve sender names in a single query
+		// Resolve sender info (name + callsign + avatar url) with depth so the
+		// upload relation is populated.
 		const senderIds = Array.from(
 			new Set(
 				(msgs.docs as any[])
@@ -122,29 +137,59 @@ export async function POST(request: NextRequest) {
 					.filter((n) => Number.isFinite(n)),
 			),
 		);
-		const senderNameMap = new Map<number, string>();
+		interface SenderInfo {
+			fullName: string;
+			callsign: string;
+			avatarUrl: string;
+		}
+		const senderInfoMap = new Map<number, SenderInfo>();
 		if (senderIds.length > 0) {
 			const senders = await payload.find({
 				collection: 'characters',
 				where: { id: { in: senderIds } },
 				limit: senderIds.length,
+				depth: 1,
 			});
 			for (const s of senders.docs as any[]) {
 				const first = String(s.firstName ?? '').trim();
 				const last = String(s.lastName ?? '').trim();
-				const name = [first, last].filter(Boolean).join(' ') || 'Inconnu';
-				senderNameMap.set(Number(s.id), name);
+				const fullName = [first, last].filter(Boolean).join(' ') || 'Inconnu';
+				const callsign = String(s.callsign ?? '').trim();
+				const avatarRaw =
+					typeof s.avatar === 'object' && s.avatar ? s.avatar.url || '' : '';
+				senderInfoMap.set(Number(s.id), {
+					fullName,
+					callsign,
+					avatarUrl: toAbsoluteUrl(avatarRaw),
+				});
 			}
 		}
 
 		const notifications = (msgs.docs as any[]).map((m) => {
-			const channelName = channelIdToName.get(Number(m.channelId)) ?? 'Canal';
+			const channel = channelMap.get(Number(m.channelId));
+			const channelType = String(channel?.type ?? 'group');
 			const senderId = Number(m.senderCharacterId);
-			let senderName = senderNameMap.get(senderId) ?? 'Inconnu';
-			if (m.isAnonymous) senderName = 'Anonyme';
+			const info: SenderInfo = senderInfoMap.get(senderId) ?? {
+				fullName: 'Inconnu',
+				callsign: '',
+				avatarUrl: '',
+			};
 
 			const mentions: number[] = Array.isArray(m.mentions) ? m.mentions : [];
 			const isMention = mentions.map(Number).includes(characterId);
+
+			// DMs: display the other party's callsign (or full name fallback).
+			// Other channel types: display the channel name.
+			let displayChannel: string;
+			if (channelType === 'dm') {
+				if (m.isAnonymous) displayChannel = 'Anonyme';
+				else displayChannel = info.callsign || info.fullName;
+			} else {
+				displayChannel = String(channel?.name ?? 'Canal');
+			}
+
+			let senderName = info.fullName;
+			if (m.isAnonymous) senderName = 'Anonyme';
 
 			let text = String(m.body ?? '');
 			if (!text && Array.isArray(m.attachments) && m.attachments.length > 0) {
@@ -159,11 +204,20 @@ export async function POST(request: NextRequest) {
 					? m.createdAt.getTime()
 					: new Date(m.createdAt).getTime();
 
+			// Hide avatar for anonymous messages so the sender isn't leaked.
+			const avatarUrl = m.isAnonymous ? '' : info.avatarUrl;
+			// Callsign of the sender. Empty for anonymous messages so we don't
+			// leak identity. The mod uses this to title DM notifications with
+			// the roleplay callsign; if empty, it falls back to the chat name.
+			const callSign = m.isAnonymous ? '' : info.callsign;
+
 			return {
-				channel: channelName,
+				channel: displayChannel,
 				sender: senderName,
+				callSign,
 				body: text,
 				isMention,
+				avatarUrl,
 				createdAtMs,
 			};
 		});

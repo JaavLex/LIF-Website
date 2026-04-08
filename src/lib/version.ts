@@ -6,9 +6,16 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.6.42',
+  version: '1.6.43',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.6.43',
+      date: '2026-04-08',
+      changes: [
+        'COMMS / MOD — `POST /api/roleplay/notifications/pending` renvoie maintenant un champ `callSign` par notification (callsign roleplay de l\'expéditeur, vide pour les messages anonymes). Le mod `AR-DiscordLink` l\'utilise pour titrer les notifications DM avec le callsign au lieu du nom du canal ; si le champ est vide, fallback silencieux sur le nom du canal. Rien ne casse côté mod si l\'ancienne réponse est servie — c\'est additif.',
+      ],
+    },
     {
       version: '1.6.42',
       date: '2026-04-08',
