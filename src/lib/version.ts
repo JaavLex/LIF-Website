@@ -6,9 +6,16 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.6.41',
+  version: '1.6.42',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.6.42',
+      date: '2026-04-08',
+      changes: [
+        'COMMS / MOD — Nouveau endpoint `POST /api/roleplay/notifications/pending` consommé par le mod `AR-DiscordLink` pour récupérer les notifications comms en attente d\'un joueur lié. Le mod envoie son BI ID, la clé API (`GAME_MOD_API_KEY`) et un watermark `sinceMs` ; le serveur résout le personnage, liste les canaux dont il est membre, et renvoie jusqu\'à 20 messages récents non envoyés par lui-même, non supprimés, avec nom d\'expéditeur (anonymisé si le message l\'est), nom de canal, flag `isMention` si le joueur est mentionné, et corps tronqué à 180 caractères. Le watermark est clampé à 5 minutes max pour éviter le spam historique au premier poll ; première requête = 30 dernières secondes. Permet au mod d\'afficher une notification in-game quand un joueur reçoit un message sur un canal auquel il appartient.',
+      ],
+    },
     {
       version: '1.6.41',
       date: '2026-04-08',
