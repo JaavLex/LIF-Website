@@ -161,6 +161,12 @@ export function CommsLayout({ character }: { character: ActiveCharacter }) {
 					if (!ch.lastMessageAt) continue;
 					const prev = seen.get(ch.id);
 					if (prev && ch.lastMessageAt > prev) {
+						// Advance the baseline FIRST. Any concurrent loadChannels call
+						// (e.g. 3s poll overlapping with handleSend's post-send refresh)
+						// will then see the advanced baseline and skip this channel —
+						// preventing the double/triple sound fire.
+						seen.set(ch.id, ch.lastMessageAt);
+
 						const isActive = ch.id === activeId;
 						const mention = !!ch.lastMessageMentionsViewer;
 						if (!isActive) {
@@ -193,8 +199,13 @@ export function CommsLayout({ character }: { character: ActiveCharacter }) {
 					}
 				}
 			}
+			// Seed baseline for channels we have never seen before (first load or
+			// newly joined channels). Channels that just advanced were already set
+			// above inside the match block.
 			for (const ch of newChannels) {
-				if (ch.lastMessageAt) seen.set(ch.id, ch.lastMessageAt);
+				if (ch.lastMessageAt && !seen.has(ch.id)) {
+					seen.set(ch.id, ch.lastMessageAt);
+				}
 			}
 			initializedSeenRef.current = true;
 			// Mirror seen-baseline into localStorage so the /roleplay COMMS button

@@ -244,3 +244,23 @@ describe('Mod notifications/pending endpoint — duplicate delivery fix', () => 
 		expect(content).toMatch(/dedupe|dedup/);
 	});
 });
+
+describe('CommsLayout sound-dedup race fix', () => {
+	it('advances seen.set for a channel before playing its sound', () => {
+		const content = readSrc('components/comms/CommsLayout.tsx');
+		const start = content.indexOf('const loadChannels');
+		const end = content.indexOf('const loadMessages');
+		expect(start).toBeGreaterThan(-1);
+		expect(end).toBeGreaterThan(start);
+		const body = content.slice(start, end);
+
+		const seenSetIdx = body.indexOf('seen.set(ch.id, ch.lastMessageAt)');
+		const radioPingIdx = body.indexOf('playRadioPing()');
+		const notifIdx = body.indexOf('playNotification()');
+		expect(seenSetIdx).toBeGreaterThan(-1);
+		expect(radioPingIdx).toBeGreaterThan(-1);
+		expect(notifIdx).toBeGreaterThan(-1);
+		expect(seenSetIdx).toBeLessThan(radioPingIdx);
+		expect(seenSetIdx).toBeLessThan(notifIdx);
+	});
+});
