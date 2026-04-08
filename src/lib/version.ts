@@ -6,9 +6,16 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.6.44',
+  version: '1.6.45',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.6.45',
+      date: '2026-04-08',
+      changes: [
+        'COMMS — Hotfix son de notification rejoué en quittant `/comms` : `GlobalCommsNotifier` conservait ses refs `seen` et `initializedRef` pendant le séjour sur `/comms` (où le composant est suspendu et `CommsLayout` prend le relais). Au retour sur une autre page du site, le premier poll comparait les `lastMessageAt` courants à la baseline stale et rejouait `playRadioPing` / `playNotification` pour tous les messages vus entre-temps sur `/comms`. Fix : on réinitialise `seenRef` et `initializedRef` à l\'entrée de `/comms`, de sorte que le prochain poll hors `/comms` réamorce silencieusement.',
+      ],
+    },
     {
       version: '1.6.44',
       date: '2026-04-08',

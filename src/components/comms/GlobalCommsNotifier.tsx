@@ -39,7 +39,17 @@ export function GlobalCommsNotifier() {
 	const onCommsPage = pathname?.startsWith('/roleplay/comms') ?? false;
 
 	useEffect(() => {
-		if (onCommsPage) return; // /comms has its own toaster
+		if (onCommsPage) {
+			// /comms has its own in-page toaster. While the user is on /comms,
+			// messages they observe there advance CommsLayout's own `seen` map,
+			// not ours. If we kept our stale baseline and resumed polling on
+			// exit, the first poll would compare against an old `seen` and
+			// replay notifications for messages the user already saw. Reset
+			// so the next exit re-seeds silently.
+			seenRef.current = new Map();
+			initializedRef.current = false;
+			return;
+		}
 		if (!enabledRef.current) return;
 
 		let cancelled = false;

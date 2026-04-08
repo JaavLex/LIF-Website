@@ -282,3 +282,17 @@ describe('GlobalCommsNotifier sound-dedup race fix', () => {
 		expect(seenSetIdx).toBeLessThan(notifIdx);
 	});
 });
+
+describe('GlobalCommsNotifier /comms-entry reset', () => {
+	it('clears seen and resets initialized when entering a /comms page', () => {
+		const content = readSrc('components/comms/GlobalCommsNotifier.tsx');
+		// The `if (onCommsPage)` branch must reset both refs so that on exit
+		// the first poll re-seeds silently instead of replaying messages
+		// already seen in CommsLayout.
+		const branchStart = content.indexOf('if (onCommsPage)');
+		expect(branchStart).toBeGreaterThan(-1);
+		const branch = content.slice(branchStart, branchStart + 600);
+		expect(branch).toContain('seenRef.current = new Map()');
+		expect(branch).toContain('initializedRef.current = false');
+	});
+});
