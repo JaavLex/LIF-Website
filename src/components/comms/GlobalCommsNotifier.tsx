@@ -64,6 +64,10 @@ export function GlobalCommsNotifier() {
 						if (!ch.lastMessageAt) continue;
 						const prev = seen.get(ch.id);
 						if (prev && ch.lastMessageAt > prev) {
+							// Advance baseline FIRST so a concurrent poll (or a manual
+							// refresh) does not double-fire the toast + sound.
+							seen.set(ch.id, ch.lastMessageAt);
+
 							const toastId = ++toastIdRef.current;
 							const mention = !!ch.lastMessageMentionsViewer;
 							if (!cancelled) {
@@ -87,7 +91,9 @@ export function GlobalCommsNotifier() {
 					}
 				}
 				for (const ch of channels) {
-					if (ch.lastMessageAt) seen.set(ch.id, ch.lastMessageAt);
+					if (ch.lastMessageAt && !seen.has(ch.id)) {
+						seen.set(ch.id, ch.lastMessageAt);
+					}
 				}
 				initializedRef.current = true;
 			} catch {}

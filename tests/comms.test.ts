@@ -264,3 +264,21 @@ describe('CommsLayout sound-dedup race fix', () => {
 		expect(seenSetIdx).toBeLessThan(notifIdx);
 	});
 });
+
+describe('GlobalCommsNotifier sound-dedup race fix', () => {
+	it('advances seen.set for a channel before playing its sound', () => {
+		const content = readSrc('components/comms/GlobalCommsNotifier.tsx');
+		const start = content.indexOf('const poll = async');
+		expect(start).toBeGreaterThan(-1);
+		const slice = content.slice(start, start + 2000);
+
+		const seenSetIdx = slice.indexOf('seen.set(ch.id, ch.lastMessageAt)');
+		const radioPingIdx = slice.indexOf('playRadioPing()');
+		const notifIdx = slice.indexOf('playNotification()');
+		expect(seenSetIdx).toBeGreaterThan(-1);
+		expect(radioPingIdx).toBeGreaterThan(-1);
+		expect(notifIdx).toBeGreaterThan(-1);
+		expect(seenSetIdx).toBeLessThan(radioPingIdx);
+		expect(seenSetIdx).toBeLessThan(notifIdx);
+	});
+});
