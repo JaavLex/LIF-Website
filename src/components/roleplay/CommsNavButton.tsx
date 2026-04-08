@@ -70,6 +70,14 @@ export function CommsNavButton() {
 				const seen = readMap(SEEN_KEY) as Record<string, string>;
 				const counts = readMap(STORAGE_KEY) as Record<string, number>;
 				let changed = false;
+				// Build a lookup of current channels so we can reconcile stale
+				// counts below. `lastMessageMentionsViewer` is a flag on the
+				// CURRENT latest message — if it's false, any older mention
+				// in this channel has been superseded by a non-mention, and
+				// the persisted counter is stale.
+				const currentById = new Map<string, ChannelLite>();
+				for (const ch of channels) currentById.set(String(ch.id), ch);
+
 				for (const ch of channels) {
 					if (!ch.lastMessageAt) continue;
 					const prev = seen[String(ch.id)];
@@ -82,6 +90,25 @@ export function CommsNavButton() {
 						changed = true;
 					}
 				}
+
+				// Reconcile stale counts: drop entries that no longer reflect
+				// an actual unread mention on the server.
+				for (const key of Object.keys(counts)) {
+					const ch = currentById.get(key);
+					if (!ch || !ch.lastMessageMentionsViewer) {
+						delete counts[key];
+						changed = true;
+					}
+				}
+				// Also drop seen entries for channels no longer in the list
+				// so localStorage doesn't grow unbounded.
+				for (const key of Object.keys(seen)) {
+					if (!currentById.has(key)) {
+						delete seen[key];
+						changed = true;
+					}
+				}
+
 				if (changed) {
 					writeMap(SEEN_KEY, seen);
 					writeMap(STORAGE_KEY, counts);

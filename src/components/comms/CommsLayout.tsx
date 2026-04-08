@@ -146,6 +146,29 @@ export function CommsLayout({ character }: { character: ActiveCharacter }) {
 			const data = await res.json();
 			const newChannels: CommsChannel[] = data.channels || [];
 			setChannels(newChannels);
+
+			// Reconcile stale mention counts against server state. The server
+			// `lastMessageMentionsViewer` flag reflects ONLY the current latest
+			// message — if a non-mention message followed an earlier mention,
+			// the flag flips back to false and the persisted counter is stale.
+			// Drop entries for channels no longer present or whose latest is no
+			// longer a mention.
+			const currentById = new Map<number, CommsChannel>();
+			for (const ch of newChannels) currentById.set(ch.id, ch);
+			setMentionCounts((c) => {
+				let changed = false;
+				const next = { ...c };
+				for (const key of Object.keys(next)) {
+					const idNum = Number(key);
+					const ch = currentById.get(idNum);
+					if (!ch || !ch.lastMessageMentionsViewer) {
+						delete next[idNum];
+						changed = true;
+					}
+				}
+				return changed ? next : c;
+			});
+
 			if (!activeId && newChannels.length) {
 				const requested =
 					requestedChannelId &&

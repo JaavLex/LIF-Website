@@ -6,9 +6,16 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.6.47',
+  version: '1.6.48',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.6.48',
+      date: '2026-04-08',
+      changes: [
+        'COMMS — Fix badge de mention stale sur le bouton COMMS de `/roleplay` et sur l\'onglet mobile `Canaux`. Le flag serveur `lastMessageMentionsViewer` reflète UNIQUEMENT si le dernier message courant du canal mentionne le viewer : si un message non-mention suit une mention, le flag repasse à `false` mais le compteur persistant dans `comms.mentionCounts.v1` (localStorage) n\'était jamais nettoyé — il restait bloqué jusqu\'à ce que l\'utilisateur ouvre ce canal spécifique sur `/comms`. Les deux pollers (`CommsNavButton` toutes les 12s et `CommsLayout.loadChannels` toutes les 3s) réconcilient désormais leurs compteurs contre l\'état serveur à chaque poll : les entrées pour des canaux absents de la liste OU dont le dernier message n\'est plus une mention sont supprimées. Le badge disparaît donc dès que la condition serveur n\'est plus vraie, sans attendre une interaction utilisateur.',
+      ],
+    },
     {
       version: '1.6.47',
       date: '2026-04-08',
