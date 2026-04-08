@@ -14,8 +14,15 @@ import {
 const BOT_TOKEN = process.env.DISCORD_BOT_TOKEN;
 const CLIENT_ID = process.env.DISCORD_CLIENT_ID;
 const GUILD_ID = process.env.DISCORD_GUILD_ID;
+// Public URL used to build clickable links in embeds. We must prefer
+// NEXT_PUBLIC_BASE_URL (the canonical public URL — https://lif-arma.com or
+// https://dev.lif-arma.com) over the legacy SITE_URL, which in production is
+// set to http://127.0.0.1:3001 for internal server-side fetches and would
+// leak as 127.0.0.1 links in Discord embeds.
 const SITE_URL =
-	process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://lif-arma.com';
+	process.env.NEXT_PUBLIC_BASE_URL ||
+	process.env.NEXT_PUBLIC_SITE_URL ||
+	'https://lif-arma.com';
 const DATABASE_URI = process.env.DATABASE_URI;
 
 if (!BOT_TOKEN || !CLIENT_ID || !GUILD_ID) {
@@ -102,7 +109,7 @@ async function registerCommands() {
 	const ouvrirRenseignements = new SlashCommandBuilder()
 		.setName('ouvrirrenseignements')
 		.setDescription(
-			'Voir les renseignements postés par un utilisateur ou un personnage',
+			'Voir les renseignements postés par un utilisateur, un personnage ou un matricule',
 		)
 		.addUserOption(option =>
 			option
@@ -113,7 +120,13 @@ async function registerCommands() {
 		.addIntegerOption(option =>
 			option
 				.setName('charid')
-				.setDescription('ID du personnage dont on veut voir les renseignements')
+				.setDescription('ID interne du personnage dont on veut voir les renseignements')
+				.setRequired(false),
+		)
+		.addStringOption(option =>
+			option
+				.setName('matricule')
+				.setDescription("Matricule du personnage (ex: DA-2042-001)")
 				.setRequired(false),
 		);
 
@@ -275,10 +288,12 @@ async function handleNotificationDb(interaction: ChatInputCommandInteraction) {
 async function handleOuvrirRenseignements(interaction: ChatInputCommandInteraction) {
 	const targetUser = interaction.options.getUser('utilisateur');
 	const charId = interaction.options.getInteger('charid');
+	const matricule = interaction.options.getString('matricule');
 
-	if (!targetUser && !charId) {
+	if (!targetUser && !charId && !matricule) {
 		await interaction.reply({
-			content: '❌ Veuillez spécifier un utilisateur ou un ID de personnage.',
+			content:
+				'❌ Veuillez spécifier un utilisateur, un ID de personnage ou un matricule.',
 			ephemeral: true,
 		});
 		return;
@@ -292,8 +307,37 @@ async function handleOuvrirRenseignements(interaction: ChatInputCommandInteracti
 		const payload = await getPayload({ config });
 
 		let reports: any[] = [];
+		let resolvedCharacter: { id: number; fullName?: string | null } | null = null;
 
-		if (charId) {
+		if (matricule) {
+			// Resolve the character by militaryId (matricule) — unique field.
+			const chars = await payload.find({
+				collection: 'characters',
+				where: { militaryId: { equals: matricule.trim() } },
+				limit: 1,
+				depth: 0,
+			});
+			if (chars.docs.length === 0) {
+				const embed = new EmbedBuilder()
+					.setColor(0x8b4513)
+					.setTitle('Matricule introuvable')
+					.setDescription(
+						`Aucun personnage n'a le matricule \`${matricule}\`.`,
+					)
+					.setTimestamp();
+				await interaction.editReply({ embeds: [embed] });
+				return;
+			}
+			resolvedCharacter = chars.docs[0] as any;
+			const result = await payload.find({
+				collection: 'intelligence',
+				where: { postedBy: { equals: resolvedCharacter!.id } },
+				sort: '-date',
+				limit: 10,
+				depth: 2,
+			});
+			reports = result.docs;
+		} else if (charId) {
 			// Search by character ID (postedBy)
 			const result = await payload.find({
 				collection: 'intelligence',
@@ -330,9 +374,11 @@ async function handleOuvrirRenseignements(interaction: ChatInputCommandInteracti
 				.setColor(0x8b4513)
 				.setTitle('Aucun renseignement trouvé')
 				.setDescription(
-					charId
-						? `Aucun rapport de renseignement trouvé pour le personnage #${charId}.`
-						: `Aucun rapport de renseignement trouvé pour ${targetUser!.toString()}.`,
+					resolvedCharacter
+						? `Aucun rapport de renseignement trouvé pour ${resolvedCharacter.fullName || `matricule ${matricule}`}.`
+						: charId
+							? `Aucun rapport de renseignement trouvé pour le personnage #${charId}.`
+							: `Aucun rapport de renseignement trouvé pour ${targetUser!.toString()}.`,
 				)
 				.setTimestamp();
 
@@ -343,9 +389,11 @@ async function handleOuvrirRenseignements(interaction: ChatInputCommandInteracti
 		const embed = new EmbedBuilder()
 			.setColor(0x8b4513)
 			.setTitle(
-				charId
-					? `Renseignements du personnage #${charId}`
-					: `Renseignements de ${targetUser!.displayName}`,
+				resolvedCharacter
+					? `Renseignements de ${resolvedCharacter.fullName || `matricule ${matricule}`}`
+					: charId
+						? `Renseignements du personnage #${charId}`
+						: `Renseignements de ${targetUser!.displayName}`,
 			)
 			.setDescription(
 				`${reports.length} rapport${reports.length > 1 ? 's' : ''} trouvé${reports.length > 1 ? 's' : ''}`,

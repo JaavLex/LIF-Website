@@ -6,9 +6,17 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.6.40',
+  version: '1.6.41',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.6.41',
+      date: '2026-04-08',
+      changes: [
+        'BOT DISCORD — Hotfix des liens dans les embeds : le bot utilisait la variable d\'env `SITE_URL` qui, en production, vaut `http://127.0.0.1:3001` (URL interne utilisée par les fetchs server-side Next.js). Résultat : tous les liens « Ouvrir le dossier » / « Ouvrir le rapport » dans les embeds Discord pointaient vers `127.0.0.1:3001`, inutilisables pour les joueurs. Fix : le bot privilégie maintenant `NEXT_PUBLIC_BASE_URL` (la vraie URL publique — `https://lif-arma.com` ou `https://dev.lif-arma.com`), avec un fallback sur `NEXT_PUBLIC_SITE_URL` puis `https://lif-arma.com`. `SITE_URL` n\'est plus lu par le bot.',
+        'BOT DISCORD — `/ouvrirrenseignements` accepte maintenant un troisième critère de recherche : `matricule` (ex : `DA-2042-001`). En plus des options existantes `utilisateur` (Discord) et `charid` (ID interne), on peut désormais récupérer les renseignements d\'un personnage directement par son matricule militaire — bien plus ergonomique en jeu ou en briefing. Le bot résout le matricule via le champ unique `militaryId` de la collection `characters`, retourne une erreur « Matricule introuvable » si aucun personnage ne correspond, sinon affiche les 10 derniers rapports de renseignement postés par ce personnage avec le nom complet du personnage dans le titre de l\'embed.',
+      ],
+    },
     {
       version: '1.6.40',
       date: '2026-04-08',
