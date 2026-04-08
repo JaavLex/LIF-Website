@@ -234,19 +234,25 @@ export async function POST(
 				if (!perms.isAdmin && !isOwner) {
 					return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
 				}
-				const fullName =
-					character.fullName ||
-					`${character.firstName} ${character.lastName}`;
+				// Sync name is ONLY `firstName lastName` — no callsign.
+				// `character.fullName` embeds the callsign in quotes
+				// (e.g. `John "Ghost" Doe`), and the quotes get escaped to
+				// `\"` when serialized to the game server's JSON file,
+				// which the mod then displays with the backslashes.
+				const first = String(character.firstName || '').trim();
+				const last = String(character.lastName || '').trim();
+				const syncName =
+					[first, last].filter(Boolean).join(' ') || 'Inconnu';
 				// Get rank abbreviation for prefix
 				let rankPrefix = 'LIF';
 				const rank = character.rank;
 				if (rank && typeof rank === 'object' && rank.abbreviation) {
 					rankPrefix = rank.abbreviation;
 				}
-				await setCustomName(biId, fullName, rankPrefix);
+				await setCustomName(biId, syncName, rankPrefix);
 				return NextResponse.json({
 					success: true,
-					name: fullName,
+					name: syncName,
 					prefix: rankPrefix,
 				});
 			}

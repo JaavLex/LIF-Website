@@ -6,9 +6,16 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.6.46',
+  version: '1.6.47',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.6.47',
+      date: '2026-04-08',
+      changes: [
+        'GAME SYNC — Fix nom synchronisé vers le serveur de jeu : le nom envoyé incluait `fullName` (qui contient le callsign entre guillemets, ex : `John "Ghost" Doe`), ce qui entraînait un échappement JSON des guillemets en `\\"` dans le fichier `customNames.json` du serveur, visible en jeu comme des backslashes devant les guillemets. Désormais on n\'envoie plus que `firstName lastName` (sans le callsign), avec le préfixe de grade inchangé (ex : `(CPL) John Doe`). Correctif appliqué au cron de sync auto (`game-sync-cron.ts`) ET à l\'endpoint manuel `POST /api/roleplay/characters/[id]/game-sync` action `sync-name`.',
+      ],
+    },
     {
       version: '1.6.46',
       date: '2026-04-08',
