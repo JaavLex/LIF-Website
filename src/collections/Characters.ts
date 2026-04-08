@@ -68,12 +68,41 @@ const clearMoneyOnUnlink: CollectionBeforeChangeHook = async ({
 	return data;
 };
 
+// Normalize empty strings → null on UNIQUE-constrained fields. Postgres allows
+// multiple NULLs in a UNIQUE index but treats empty string as a real value, so
+// creating two NPC characters in the Payload admin without a biId would crash
+// on the unique constraint. This hook protects the admin path (the /api route
+// already handles it for the front-end form).
+const normalizeUniqueEmptyStrings: CollectionBeforeChangeHook = ({ data }) => {
+	if (data) {
+		if (typeof data.biId === 'string' && data.biId.trim() === '') {
+			data.biId = null;
+		}
+		if (typeof data.discordId === 'string' && data.discordId.trim() === '') {
+			data.discordId = null;
+		}
+		if (
+			typeof data.discordUsername === 'string' &&
+			data.discordUsername.trim() === ''
+		) {
+			data.discordUsername = null;
+		}
+	}
+	return data;
+};
+
 export const Characters: CollectionConfig = {
 	slug: 'characters',
 	admin: {
 		useAsTitle: 'fullName',
 		defaultColumns: ['fullName', 'rank', 'status', 'faction', 'isMainCharacter'],
 		group: 'Roleplay',
+		description:
+			"Personnages joueurs (liés à un compte Discord) ET PNJ / Cibles. " +
+			"Pour créer un PNJ ou une Cible : laissez « Discord ID » et « Discord Username » VIDES, " +
+			"cochez « Cible / Ennemi » si applicable et choisissez la faction cible. " +
+			"Le matricule est généré automatiquement. " +
+			"Aucun BI ID n'est requis pour un PNJ.",
 	},
 	access: {
 		read: () => true,
@@ -93,7 +122,12 @@ export const Characters: CollectionConfig = {
 		},
 	},
 	hooks: {
-		beforeChange: [generateFullName, generateMatricule, clearMoneyOnUnlink],
+		beforeChange: [
+			normalizeUniqueEmptyStrings,
+			generateFullName,
+			generateMatricule,
+			clearMoneyOnUnlink,
+		],
 	},
 	fields: [
 		{
@@ -381,14 +415,15 @@ export const Characters: CollectionConfig = {
 				position: 'sidebar',
 			},
 		},
-		// Discord linkage
+		// Discord linkage — left empty for NPC / Target characters
 		{
 			name: 'discordId',
 			label: 'Discord ID',
 			type: 'text',
 			admin: {
 				position: 'sidebar',
-				readOnly: true,
+				description:
+					'Laissez vide pour un PNJ / Cible. Renseigné automatiquement quand un joueur crée son personnage via le site.',
 			},
 		},
 		{
@@ -397,7 +432,7 @@ export const Characters: CollectionConfig = {
 			type: 'text',
 			admin: {
 				position: 'sidebar',
-				readOnly: true,
+				description: 'Laissez vide pour un PNJ / Cible.',
 			},
 		},
 		// Game server linkage

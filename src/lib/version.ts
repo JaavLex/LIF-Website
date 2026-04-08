@@ -6,9 +6,16 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.6.38',
+  version: '1.6.39',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.6.39',
+      date: '2026-04-08',
+      changes: [
+        'PAYLOAD — Création de PNJ / Cibles depuis le panneau admin (`/admin → Roleplay → Characters`) : la limite « un personnage actif par compte Discord » de la page « nouveau personnage » côté front bloquait désormais aussi les admins qui voulaient créer des PNJ. Le panneau admin Payload contournait déjà cette limite mais avait deux frictions : (1) `discordId` et `discordUsername` étaient `readOnly`, donc impossible à renseigner si on voulait plus tard rattacher le PNJ à un joueur, (2) aucun hook ne convertissait les chaînes vides en `null` sur les colonnes `UNIQUE` (`biId`, `discordId`, `discordUsername`), donc créer deux PNJ sans BI ID crashait sur la contrainte d\'unicité postgres (postgres autorise plusieurs NULL mais pas plusieurs chaînes vides). Fix : nouveau hook `beforeChange` `normalizeUniqueEmptyStrings` qui force `\'\'` → `null` sur ces trois champs, `discordId` / `discordUsername` ne sont plus en lecture seule, et la collection a maintenant une `admin.description` qui explique exactement comment créer un PNJ ou une Cible (laisser les champs Discord vides, cocher `isTarget` si ennemi, choisir une faction cible). Test de régression ajouté dans `tests/security.test.ts`.',
+      ],
+    },
     {
       version: '1.6.38',
       date: '2026-04-08',

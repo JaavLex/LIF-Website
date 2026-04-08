@@ -56,6 +56,19 @@ describe('Collection access control', () => {
 		// Must check req.user
 		expect(content).toMatch(/create:\s*\(\{.*req.*\}\)\s*=>\s*!!req\.user/s);
 	});
+
+	it('Characters normalizes empty unique-constrained fields to null', () => {
+		const content = readSrc('collections/Characters.ts');
+		// Hook must exist and be wired into beforeChange so admin-panel NPC
+		// creation does not crash on the biId UNIQUE constraint when two NPCs
+		// are created without a BI ID.
+		expect(content).toContain('normalizeUniqueEmptyStrings');
+		expect(content).toMatch(/beforeChange:\s*\[[^\]]*normalizeUniqueEmptyStrings/);
+		// Must normalize all three unique/discord fields
+		expect(content).toMatch(/data\.biId\s*=\s*null/);
+		expect(content).toMatch(/data\.discordId\s*=\s*null/);
+		expect(content).toMatch(/data\.discordUsername\s*=\s*null/);
+	});
 });
 
 describe('Cron secret', () => {
