@@ -183,7 +183,9 @@ export function MessageComposer({
 			}
 			if (e.key === 'Enter' || e.key === 'Tab') {
 				e.preventDefault();
-				insertMention(suggestions[mentionState.highlight]);
+				const picked = suggestions[mentionState.highlight];
+				if (!picked) return;
+				insertMention(picked);
 				return;
 			}
 			if (e.key === 'Escape') {
@@ -329,6 +331,7 @@ export function MessageComposer({
 									<button
 										key="everyone"
 										type="button"
+										aria-label="Mentionner tout le monde"
 										className={`comms-mention-picker-item${isActive ? ' active' : ''}`}
 										onMouseDown={(e) => {
 											e.preventDefault();
