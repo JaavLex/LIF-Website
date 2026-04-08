@@ -274,6 +274,23 @@ export async function POST(
 		}
 	}
 
+	// Parse @everyone — expand to all channel members in non-DM channels.
+	// Word-boundary match: `hey@everyone` / `foreveryoneelse` do NOT trigger.
+	// Sender is excluded; explicit @[Name] mentions are merged without dupes.
+	// DMs silently ignore @everyone (literal text is preserved in the body).
+	const EVERYONE_RE = /(?:^|\s)@everyone(?:\b|$)/;
+	let isEveryoneMention = false;
+	if (String(channel.type) !== 'dm' && EVERYONE_RE.test(text)) {
+		isEveryoneMention = true;
+		const senderId = Number(eligibility.character.id);
+		for (const m of members) {
+			const n = Number(m);
+			if (!Number.isFinite(n)) continue;
+			if (n === senderId) continue;
+			if (!mentionIds.includes(n)) mentionIds.push(n);
+		}
+	}
+
 	if (!text.trim() && attachments.length === 0) {
 		return NextResponse.json({ error: 'Message vide' }, { status: 400 });
 	}
@@ -351,7 +368,9 @@ export async function POST(
 	// Fire-and-forget Discord DM notification for offline mentioned characters.
 	// We only DM characters that are not currently active on /comms (per the
 	// in-memory presence store) and that we have a discordId for.
-	if (mentionIds.length > 0) {
+	// Skipped when @everyone was used — per-person DM spam on top of in-browser
+	// sounds + mod API delivery would just be noise.
+	if (!isEveryoneMention && mentionIds.length > 0) {
 		void (async () => {
 			try {
 				const offline = mentionIds.filter((id) => !isOnline(id));

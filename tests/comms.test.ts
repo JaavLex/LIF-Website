@@ -165,3 +165,37 @@ describe('DM idempotency', () => {
 		expect(content).toMatch(/sort|find|where/);
 	});
 });
+
+describe('@everyone parsing in messages POST handler', () => {
+	it('declares the @everyone regex at word boundaries', () => {
+		const content = readSrc('app/api/comms/channels/[id]/messages/route.ts');
+		// Regex: @everyone at start-of-string or after whitespace, ending at \b or EOS.
+		expect(content).toMatch(/@everyone/);
+		expect(content).toMatch(/\(\?:\^\|\\s\)@everyone\(\?:\\b\|\$\)/);
+	});
+
+	it('expands @everyone to channel members in non-DM channels', () => {
+		const content = readSrc('app/api/comms/channels/[id]/messages/route.ts');
+		// The handler must branch on channel.type !== 'dm' before expanding.
+		expect(content).toMatch(/channel\.type[^'"]*['"]dm['"]/);
+		// isEveryoneMention flag must exist and be set to true in the expansion block.
+		expect(content).toContain('isEveryoneMention');
+		expect(content).toMatch(/isEveryoneMention\s*=\s*true/);
+	});
+
+	it('excludes the sender from the expanded @everyone member list', () => {
+		const content = readSrc('app/api/comms/channels/[id]/messages/route.ts');
+		// The expansion loop must skip the sender — look for a continue/skip
+		// guarded by a comparison with eligibility.character.id.
+		expect(content).toMatch(/eligibility\.character\.id/);
+		// And the expansion must dedupe against existing mentionIds to avoid
+		// double-adding an explicitly @-mentioned user.
+		expect(content).toMatch(/mentionIds\.includes/);
+	});
+
+	it('skips offline Discord DM fanout when @everyone is set', () => {
+		const content = readSrc('app/api/comms/channels/[id]/messages/route.ts');
+		// The offline-DM loop must be guarded by !isEveryoneMention.
+		expect(content).toMatch(/!\s*isEveryoneMention/);
+	});
+});
