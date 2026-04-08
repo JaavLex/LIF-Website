@@ -26,6 +26,7 @@ export function MessageComposer({
 	members,
 	onTyping,
 	viewerId,
+	channelType,
 }: {
 	onSend: (payload: {
 		body: string;
@@ -39,6 +40,7 @@ export function MessageComposer({
 	members?: MentionMember[];
 	onTyping?: () => void;
 	viewerId?: number;
+	channelType?: string;
 }) {
 	const [body, setBody] = useState('');
 	const [isAnonymous, setIsAnonymous] = useState(false);
@@ -63,6 +65,25 @@ export function MessageComposer({
 				)
 				.slice(0, 8)
 		: [];
+
+	// Synthetic @everyone entry for non-DM channels. Shown while the user is
+	// still typing a prefix of "everyone" (covers @, @e, @ev, …, @everyone).
+	// Sits at the top of the suggestion list so it's the default Enter target.
+	const showEveryone =
+		mentionState.open &&
+		channelType !== 'dm' &&
+		'everyone'.startsWith(mentionState.query.toLowerCase());
+
+	type MentionSuggestion =
+		| { kind: 'everyone' }
+		| { kind: 'member'; member: MentionMember };
+
+	const suggestions: MentionSuggestion[] = [
+		...(showEveryone ? [{ kind: 'everyone' as const }] : []),
+		...filteredMentions.map(
+			(member) => ({ kind: 'member' as const, member }),
+		),
+	];
 
 	function detectMention(value: string, caret: number) {
 		// Find '@' immediately before caret with no whitespace between
@@ -105,12 +126,15 @@ export function MessageComposer({
 		}
 	}
 
-	function insertMention(member: MentionMember) {
+	function insertMention(suggestion: MentionSuggestion) {
 		if (mentionState.anchor < 0) return;
 		const before = body.slice(0, mentionState.anchor);
 		const afterStart = mentionState.anchor + 1 + mentionState.query.length;
 		const after = body.slice(afterStart);
-		const token = `@[${member.fullName}](${member.id}) `;
+		const token =
+			suggestion.kind === 'everyone'
+				? '@everyone '
+				: `@[${suggestion.member.fullName}](${suggestion.member.id}) `;
 		const newBody = before + token + after;
 		setBody(newBody);
 		setMentionState({ open: false, anchor: -1, query: '', highlight: 0 });
@@ -139,12 +163,12 @@ export function MessageComposer({
 
 	function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
 		// Mention picker navigation takes precedence
-		if (mentionState.open && filteredMentions.length > 0) {
+		if (mentionState.open && suggestions.length > 0) {
 			if (e.key === 'ArrowDown') {
 				e.preventDefault();
 				setMentionState((s) => ({
 					...s,
-					highlight: (s.highlight + 1) % filteredMentions.length,
+					highlight: (s.highlight + 1) % suggestions.length,
 				}));
 				return;
 			}
@@ -153,13 +177,13 @@ export function MessageComposer({
 				setMentionState((s) => ({
 					...s,
 					highlight:
-						(s.highlight - 1 + filteredMentions.length) % filteredMentions.length,
+						(s.highlight - 1 + suggestions.length) % suggestions.length,
 				}));
 				return;
 			}
 			if (e.key === 'Enter' || e.key === 'Tab') {
 				e.preventDefault();
-				insertMention(filteredMentions[mentionState.highlight]);
+				insertMention(suggestions[mentionState.highlight]);
 				return;
 			}
 			if (e.key === 'Escape') {
@@ -296,31 +320,56 @@ export function MessageComposer({
 						</dl>
 					</div>
 				)}
-				{mentionState.open && filteredMentions.length > 0 && (
+				{mentionState.open && suggestions.length > 0 && (
 					<div className="comms-mention-picker">
-						{filteredMentions.map((m, idx) => (
-							<button
-								key={m.id}
-								type="button"
-								className={`comms-mention-picker-item${idx === mentionState.highlight ? ' active' : ''}`}
-								onMouseDown={(e) => {
-									e.preventDefault();
-									insertMention(m);
-								}}
-								onMouseEnter={() =>
-									setMentionState((s) => ({ ...s, highlight: idx }))
-								}
-							>
-								<span className="comms-mention-picker-avatar">
-									{m.avatarUrl ? (
-										<img src={m.avatarUrl} alt="" />
-									) : (
-										m.fullName.charAt(0)
-									)}
-								</span>
-								<span>{m.fullName}</span>
-							</button>
-						))}
+						{suggestions.map((s, idx) => {
+							const isActive = idx === mentionState.highlight;
+							if (s.kind === 'everyone') {
+								return (
+									<button
+										key="everyone"
+										type="button"
+										className={`comms-mention-picker-item${isActive ? ' active' : ''}`}
+										onMouseDown={(e) => {
+											e.preventDefault();
+											insertMention(s);
+										}}
+										onMouseEnter={() =>
+											setMentionState((st) => ({ ...st, highlight: idx }))
+										}
+									>
+										<span className="comms-mention-picker-avatar" aria-hidden>
+											👥
+										</span>
+										<span>@everyone</span>
+									</button>
+								);
+							}
+							const m = s.member;
+							return (
+								<button
+									key={m.id}
+									type="button"
+									className={`comms-mention-picker-item${isActive ? ' active' : ''}`}
+									onMouseDown={(e) => {
+										e.preventDefault();
+										insertMention(s);
+									}}
+									onMouseEnter={() =>
+										setMentionState((st) => ({ ...st, highlight: idx }))
+									}
+								>
+									<span className="comms-mention-picker-avatar">
+										{m.avatarUrl ? (
+											<img src={m.avatarUrl} alt="" />
+										) : (
+											m.fullName.charAt(0)
+										)}
+									</span>
+									<span>{m.fullName}</span>
+								</button>
+							);
+						})}
 					</div>
 				)}
 			</div>

@@ -199,3 +199,27 @@ describe('@everyone parsing in messages POST handler', () => {
 		expect(content).toMatch(/!\s*isEveryoneMention/);
 	});
 });
+
+describe('@everyone in MessageComposer', () => {
+	it('offers an @everyone suggestion in non-DM channels', () => {
+		const content = readSrc('components/comms/MessageComposer.tsx');
+		// A synthetic @everyone entry (label with the literal text).
+		expect(content).toContain('@everyone');
+		// Must be gated on non-DM channel type — the composer receives the
+		// channel type via props; a guard should reference it.
+		expect(content).toMatch(/channelType|channel\.type|['"]dm['"]/);
+	});
+
+	it('inserts the literal text "@everyone " on selection, not a bracketed id', () => {
+		const content = readSrc('components/comms/MessageComposer.tsx');
+		// Insertion must be the literal "@everyone " string, not the
+		// @[Name](id) format used for character mentions.
+		expect(content).toMatch(/['"]@everyone ['"]/);
+	});
+
+	it('passes channelType from CommsLayout to MessageComposer', () => {
+		const layout = readSrc('components/comms/CommsLayout.tsx');
+		// CommsLayout must forward channelType to MessageComposer
+		expect(layout).toMatch(/channelType=\{[^}]*activeChannel[^}]*type/);
+	});
+});

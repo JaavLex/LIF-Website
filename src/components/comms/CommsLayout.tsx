@@ -651,6 +651,7 @@ export function CommsLayout({ character }: { character: ActiveCharacter }) {
 									members={channelMembers}
 									onTyping={pingTyping}
 									viewerId={character.id}
+									channelType={activeChannel.type}
 								/>
 							</div>
 						</>
