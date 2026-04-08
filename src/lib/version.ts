@@ -6,9 +6,18 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.6.45',
+  version: '1.6.46',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.6.46',
+      date: '2026-04-08',
+      changes: [
+        'COMMS — Fix bouton `TRANSMETTRE` hors écran sur mobile : sur les viewports ≤ 768px, le bouton d\'envoi prend désormais toute la largeur sur sa propre ligne en dessous des contrôles `Pièce jointe` et `Anon`, garantissant qu\'il reste toujours atteignable même avec le clavier virtuel ouvert ou avec des libellés qui wrappent. Le label « Pièce jointe » est également masqué dès 768px (au lieu de 380px seulement) pour éviter l\'encombrement.',
+        'ROLEPLAY — Refonte du badge de mention sur le bouton COMMS de `/roleplay`. L\'ancien badge était positionné à `top:-8px / right:-8px`, hors des limites du bouton — or `.rp-nav-btn` a `overflow: hidden` (pour le halo de survol), ce qui le coupait et le rendait quasi invisible. Nouveau badge : cercle rouge radial dégradé posé à l\'intérieur du bouton, ancré au milieu verticalement près de la flèche, avec double halo pulsant (pulse du glow + anneau d\'onde qui se propage), chiffre brut sans le préfixe `@`, taille adaptative (1 chiffre / 2 chiffres / 99+), et respect de `prefers-reduced-motion`.',
+        'COMMS — Fix badge de mention qui persistait après lecture : la useEffect d\'ouverture de canal dans `CommsLayout` effaçait bien le compteur côté `/comms` mais n\'avançait pas le baseline partagé `comms.seenLastAt.v1` utilisé par `CommsNavButton`. Résultat : en revenant sur `/roleplay`, le poll suivant de `CommsNavButton` comparait le `lastMessageAt` actuel à un baseline stale et pouvait ré-incrémenter. La useEffect écrit maintenant explicitement le `lastMessageAt` courant du canal ouvert dans `comms.seenLastAt.v1` ET dans la ref en mémoire, ceinture+bretelles en plus du mirror existant dans `loadChannels`.',
+      ],
+    },
     {
       version: '1.6.45',
       date: '2026-04-08',

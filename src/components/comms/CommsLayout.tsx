@@ -334,6 +334,30 @@ export function CommsLayout({ character }: { character: ActiveCharacter }) {
 			delete next[activeId];
 			return next;
 		});
+		// Belt-and-suspenders: advance the shared seen-baseline used by
+		// CommsNavButton (the /roleplay COMMS button poller) so that when
+		// the user returns to /roleplay, the poller will not re-increment
+		// a count for a message they already opened here. We advance to
+		// the channel's current lastMessageAt (read from the in-memory
+		// channels state, not from the API — that's the same value the
+		// mirror in loadChannels would write moments later).
+		if (typeof window !== 'undefined') {
+			try {
+				const opened = channels.find((c) => c.id === activeId);
+				if (opened?.lastMessageAt) {
+					const raw = window.localStorage.getItem('comms.seenLastAt.v1');
+					const seenObj: Record<string, string> = raw ? JSON.parse(raw) : {};
+					seenObj[String(activeId)] = opened.lastMessageAt;
+					window.localStorage.setItem(
+						'comms.seenLastAt.v1',
+						JSON.stringify(seenObj),
+					);
+					// Also update the in-memory ref so the next loadChannels
+					// mirror keeps the same value instead of regressing.
+					seenLastMessageAtRef.current.set(activeId, opened.lastMessageAt);
+				}
+			} catch {}
+		}
 		// Load channel members for the mention picker (one-shot per channel switch)
 		fetch(`/api/comms/channels/${activeId}/members`)
 			.then((r) => (r.ok ? r.json() : { members: [] }))

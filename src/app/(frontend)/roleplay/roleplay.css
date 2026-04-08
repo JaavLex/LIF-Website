@@ -2132,35 +2132,78 @@
 	opacity: 1;
 }
 
-/* COMMS-specific badge (mention counter) */
+/* COMMS-specific badge (mention counter).
+ * Lives INSIDE the button bounds because .rp-nav-btn has overflow: hidden
+ * for the hover gradient — anything outside the rect gets clipped.
+ * A ringed circular counter with a dual-layer halo: the outer pulse ring
+ * reads at distance, the inner disc carries the number. */
 .rp-nav-btn__badge {
 	position: absolute;
-	top: -8px;
-	right: -8px;
-	min-width: 22px;
-	height: 22px;
-	padding: 0 6px;
-	border-radius: 11px;
-	background: linear-gradient(180deg, #d93030 0%, #8a0000 100%);
+	top: 50%;
+	right: 2.35rem;
+	transform: translateY(-50%);
+	min-width: 20px;
+	height: 20px;
+	padding: 0 5px;
+	border-radius: 999px;
+	background: radial-gradient(circle at 35% 30%, #ff6a6a 0%, #e21b1b 45%, #7a0000 100%);
 	color: #fff;
-	font-family: 'Courier New', monospace;
-	font-size: 0.7rem;
-	font-weight: 700;
-	letter-spacing: 0.5px;
-	display: flex;
+	font-family: 'Rajdhani', 'Source Sans 3', sans-serif;
+	font-size: 0.72rem;
+	font-weight: 800;
+	letter-spacing: 0;
+	line-height: 1;
+	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	border: 1px solid #ffb4b4;
+	border: 1.5px solid rgba(255, 220, 220, 0.85);
 	box-shadow:
-		0 0 8px rgba(255, 60, 60, 0.7),
-		inset 0 1px 0 rgba(255, 255, 255, 0.25);
+		0 0 0 1.5px rgba(15, 18, 15, 0.95),
+		0 0 14px rgba(255, 60, 60, 0.55),
+		inset 0 1px 0 rgba(255, 255, 255, 0.35),
+		inset 0 -2px 4px rgba(90, 0, 0, 0.6);
 	pointer-events: none;
-	z-index: 3;
-	animation: rpNavBadgePulse 2.4s ease-in-out infinite;
+	z-index: 5;
+	animation: rpNavBadgePulse 1.8s ease-in-out infinite;
+}
+/* Outer pulse ring */
+.rp-nav-btn__badge::before {
+	content: '';
+	position: absolute;
+	inset: -4px;
+	border-radius: inherit;
+	border: 1.5px solid rgba(255, 70, 70, 0.55);
+	animation: rpNavBadgeRing 1.8s ease-out infinite;
+	pointer-events: none;
 }
 @keyframes rpNavBadgePulse {
-	0%, 100% { box-shadow: 0 0 8px rgba(255, 60, 60, 0.6), inset 0 1px 0 rgba(255,255,255,0.25); }
-	50%      { box-shadow: 0 0 16px rgba(255, 60, 60, 0.95), inset 0 1px 0 rgba(255,255,255,0.3); }
+	0%, 100% {
+		box-shadow:
+			0 0 0 1.5px rgba(15, 18, 15, 0.95),
+			0 0 10px rgba(255, 60, 60, 0.5),
+			inset 0 1px 0 rgba(255, 255, 255, 0.35),
+			inset 0 -2px 4px rgba(90, 0, 0, 0.6);
+	}
+	50% {
+		box-shadow:
+			0 0 0 1.5px rgba(15, 18, 15, 0.95),
+			0 0 20px rgba(255, 80, 80, 0.95),
+			inset 0 1px 0 rgba(255, 255, 255, 0.45),
+			inset 0 -2px 4px rgba(90, 0, 0, 0.6);
+	}
+}
+@keyframes rpNavBadgeRing {
+	0%   { transform: scale(0.8); opacity: 0.9; }
+	80%  { transform: scale(1.55); opacity: 0; }
+	100% { transform: scale(1.55); opacity: 0; }
+}
+/* Widen slightly for 2-digit, cap at 99+ */
+.rp-nav-btn__badge[data-count="2"] { min-width: 24px; }
+.rp-nav-btn__badge[data-count="3"] { min-width: 30px; font-size: 0.66rem; letter-spacing: -0.2px; }
+
+@media (prefers-reduced-motion: reduce) {
+	.rp-nav-btn__badge,
+	.rp-nav-btn__badge::before { animation: none; }
 }
 
 /* Per-button accent variants */

@@ -130,10 +130,11 @@ export function CommsNavButton() {
 			{total > 0 && (
 				<span
 					className="rp-nav-btn__badge"
+					data-count={total > 99 ? 3 : String(total).length}
 					aria-label={`${total} mention${total > 1 ? 's' : ''} non lue${total > 1 ? 's' : ''}`}
 					title={`${total} mention${total > 1 ? 's' : ''} non lue${total > 1 ? 's' : ''}`}
 				>
-					@{total}
+					{total > 99 ? '99+' : total}
 				</span>
 			)}
 		</Link>
