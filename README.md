@@ -12,25 +12,36 @@ Site web de la communauté **LIF** (Légion Internationale Francophone), une com
 - **Serveurs live** — Statut, joueurs connectés, barres de remplissage (interrogation A2S)
 - **Navigation mobile** — Menu hamburger responsive
 
-### Roleplay (terminal militaire)
-- **Base de données de personnages** — Création, modification, consultation de fiches avec photo, grade, unité, faction, spécialisations
-- **Synchronisation serveur de jeu** — Liaison BI ID, sync argent et grade depuis le serveur Arma
-- **Système de grades** — Détection automatique via rôles Discord, icônes de grade
-- **Factions et unités** — Pages dédiées avec insignes, organigrammes
-- **Renseignements** — Fiches de renseignement avec galerie média
+### Roleplay (terminal militaire `/roleplay`)
+- **Base de données de personnages** — Création, modification, consultation de fiches avec photo, grade, unité, faction, spécialisations, background civil/militaire/légal
+- **Sélecteur d'unité immersif** — Doctrine, traits et pitch éditables par unité (Cerberus, Specter…), choix définitif
+- **Synchronisation serveur de jeu** — Liaison BI ID via le mod `AR-DiscordLink` (code à 6 caractères), sync argent et grade depuis Arma Reforger
+- **Détection automatique du grade** — Rôles Discord rafraîchis à chaque ouverture de fiche (`?refresh=1`), plus de grade périmé
+- **Factions et unités** — Pages dédiées avec insignes, hero de faction principale, fer-de-lance des unités principales
+- **Renseignements** — Fiches de renseignement avec galerie média et niveaux de menace
+- **Organisations & banque** — Statistiques économiques in-universe avec déduplication par BI ID
 - **Chronologie** — Historique des événements par personnage
 - **Musique d'ambiance** — Lecteur audio intégré avec playlist
-- **Tutoriel interactif** — Guide pas-à-pas avec spotlight
-- **Écran de chargement** — Animation terminal skippable
-- **Authentification Discord** — OAuth2, sessions sécurisées
+- **Splash screen terminal** — Séquence de boot ASCII verte (scopée à `/roleplay` et `/comms` uniquement)
+- **Authentification Discord** — OAuth2, sessions HMAC sécurisées
 
-### Modération
+### Comms (HUD tactique `/comms`)
+- **Canaux de transmission** — Messages temps réel, accusés de réception, mentions
+- **Interface glass tactique** — Redesign daylight, lisible jour comme nuit
+- **Navigation mobile bottom-tab** — Polish complet smartphone
+- **Drawer musique** — Ambiance pendant la lecture des transmissions
+- **Notifications globales** — `GlobalCommsNotifier` site-wide
+- **Liste des membres** — Avec back button, timestamps, icônes de grade
+
+### Modération (`/moderation`)
 - **Dossiers de modération** — Suivi des cas, sanctions, événements
+- **Échelle d'escalade** — Warn → mute → kick → ban automatisés
 - **Panneau admin** — Gestion des personnages, grades, unités, factions
 
 ### Administration (Payload CMS)
 - **Panel admin** à `/admin` — Gestion de tout le contenu
-- **Collections** — Users, Characters, Ranks, Units, Factions, Intelligence, Media, Pages, Posts, ModerationCases/Events/Sanctions, CharacterTimeline, BankHistory
+- **Collections** — Users, Characters, CharacterTimeline, Ranks, Units, Factions, Intelligence, BankHistory, CommsChannels, CommsMessages, ModerationCases/Events/Sanctions, Media, Pages, Posts
+- **Globals** — Roleplay (lore, hero faction, sync, admin roles), Homepage, Navigation, AdminDashboard
 
 ## Stack technique
 
@@ -43,7 +54,7 @@ Site web de la communauté **LIF** (Légion Internationale Francophone), une com
 | Langage | TypeScript |
 | Éditeur riche | Lexical |
 | Polices | Rajdhani (titres), Source Sans 3 (corps) |
-| Tests | Vitest (71 tests) |
+| Tests | Vitest (91 tests, 8 suites) |
 | Déploiement | Ansible, systemd |
 | Serveur | VPS Linux |
 
@@ -56,10 +67,12 @@ src/
 │   │   ├── page.tsx          # Accueil
 │   │   ├── roleplay/         # Terminal roleplay
 │   │   │   ├── personnage/   # Fiches personnage (CRUD)
+│   │   │   ├── lier/         # Liaison BI ID (mod AR-DiscordLink)
 │   │   │   ├── faction/      # Pages faction
 │   │   │   ├── unite/        # Pages unité
 │   │   │   ├── renseignement/# Fiches intel
 │   │   │   └── lore/         # Lore / univers
+│   │   ├── comms/            # HUD tactique (channels, messages, members)
 │   │   ├── moderation/       # Panel modération
 │   │   └── posts/            # Articles
 │   ├── api/                  # Routes API REST
@@ -69,10 +82,12 @@ src/
 │   │   ├── moderation/       # Cases, sanctions, events
 │   │   └── upload/           # Upload média
 │   └── (payload)/            # Admin Payload CMS
-├── collections/              # Schémas Payload (14 collections)
+├── collections/              # Schémas Payload (16 collections)
 ├── components/
 │   ├── roleplay/             # Composants RP (formulaires, listes, timeline, audio...)
+│   ├── comms/                # Composants HUD comms (channels, messages, members)
 │   ├── moderation/           # Composants modération
+│   ├── SplashScreen.tsx      # Boot terminal scopé /roleplay & /comms
 │   ├── Navbar.tsx            # Navigation (desktop + mobile)
 │   ├── ServerList.tsx        # Cartes serveur live
 │   └── VersionInfo.tsx       # Widget version/changelog
@@ -86,8 +101,9 @@ src/
 │   ├── constants.ts          # Utilitaires partagés
 │   └── version.ts            # Version et changelog
 ├── payload.config.ts         # Configuration Payload CMS
+├── migrations/               # Migrations Payload/drizzle (à appliquer manuellement)
 ansible/                      # Playbooks de déploiement
-tests/                        # Tests Vitest (7 suites, 71 tests)
+tests/                        # Tests Vitest (8 suites, 91 tests)
 ```
 
 ## Déploiement
@@ -115,7 +131,7 @@ Chaque déploiement : pull git, install deps, tests, build Next.js, restart syst
 npm test
 ```
 
-71 tests couvrant : auth sessions, sécurité API, imports, constantes, modération, versioning.
+91 tests couvrant : auth sessions, sécurité API, imports, constantes, modération, versioning, comms (channels/messages/mentions).
 
 ## Prérequis
 
