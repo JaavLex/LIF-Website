@@ -6,9 +6,19 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.6.50',
+  version: '1.6.51',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.6.51',
+      date: '2026-04-09',
+      changes: [
+        'ROLEPLAY — Nouvel onglet `PNJ` dans la liste du personnel, permettant aux admins de filtrer les personnages marqués `isNpc` / `isTarget` et de créer rapidement PNJ ou cibles via les boutons existants du panneau admin.',
+        'COMMS — Mode MJ (GameMaster) pour les admins : nouveau bandeau ambre en haut du layout `/comms` avec bascule `MJ`, sélecteur d\'incarnation (PNJ / cible), et puce discrète dans le composer permettant un override per-message. Quand le mode est actif, les admins voient tous les canaux non-DM du serveur (y compris ceux où ils ne sont pas membres — "ghost view" signalée par une pastille ambre dans la liste de canaux), peuvent poster dans ces canaux sans être ajoutés à la liste des membres, et les messages émis en mode MJ portent un tag `[MJ]` visible uniquement des autres admins. Sécurité : ré-validation serveur systématique (`requireGmAdmin`), rejet des personnages liés à un joueur Discord, rejet des canaux archivés, et strip du flag `postedAsGm` dans les réponses API pour les viewers non-admin.',
+        'API — Nouveau endpoint `GET /api/roleplay/characters/npcs` (admin-only) renvoyant la liste des personnages PNJ/cibles incarnables, utilisé par le contexte client `useGmMode` pour peupler le sélecteur. Nouveau helper `listChannelsForGmAdmin` retournant les canaux avec un flag `viewerIsGhost` quand l\'admin n\'en est pas membre. POST `/api/comms/channels/:id/messages` accepte désormais `{ gmMode, impersonateCharacterId }` avec validation complète côté serveur.',
+        'DB — Ajout de la colonne `posted_as_gm BOOLEAN DEFAULT FALSE` sur `comms_messages`, appliquée idempotemment sur le VPS dev via migration Payload manuelle.',
+      ],
+    },
     {
       version: '1.6.50',
       date: '2026-04-09',
