@@ -10,6 +10,7 @@ import {
 import { isOnline } from '@/lib/comms-presence';
 import { sendDiscordDM } from '@/lib/moderation';
 import { checkAdminPermissions } from '@/lib/admin';
+import { logAdminAction } from '@/lib/admin-log';
 
 export async function GET(
 	request: NextRequest,
@@ -421,6 +422,30 @@ export async function POST(
 		id: channelId,
 		data: { lastMessageAt: new Date().toISOString() } as any,
 	});
+
+	// Audit: log GM impersonation (an admin speaking as an NPC/target character).
+	// The message itself is a regular comms-message and isn't logged; we only
+	// record the impersonation event with enough metadata to locate it later.
+	if (gmMode && impersonatedCharacter) {
+		const impersonatedLabel =
+			impersonatedCharacter.fullName ||
+			`${impersonatedCharacter.firstName ?? ''} ${impersonatedCharacter.lastName ?? ''}`.trim() ||
+			`PNJ #${impersonatedCharacter.id}`;
+		void logAdminAction({
+			session: session!,
+			action: 'gm.impersonate',
+			summary: `A parlé en tant que ${impersonatedLabel}`,
+			entityType: 'character',
+			entityId: impersonatedCharacter.id,
+			entityLabel: impersonatedLabel,
+			metadata: {
+				channelId: Number(channelId),
+				messageId: created.id as number,
+				bodyPreview: (text || '').slice(0, 60),
+			},
+			request,
+		});
+	}
 
 	// Fire-and-forget Discord DM notification for offline mentioned characters.
 	// We only DM characters that are not currently active on /comms (per the

@@ -159,6 +159,24 @@ export async function PATCH(
 				after: doc as unknown as Record<string, unknown>,
 				request,
 			});
+
+			// Separate high-signal event: admin manually overriding the BI ID
+			// linkage (bypassing the player-driven code flow in
+			// src/lib/pending-links.ts). Fires only when biId actually changed.
+			const oldBiId = (existing as { biId?: string | null }).biId ?? null;
+			const newBiId = (doc as { biId?: string | null }).biId ?? null;
+			if (body.biId !== undefined && oldBiId !== newBiId) {
+				void logAdminAction({
+					session,
+					action: 'character.link.admin_override',
+					summary: `A forcé la liaison BI de ${doc.fullName || doc.firstName}`,
+					entityType: 'character',
+					entityId: doc.id,
+					entityLabel: doc.fullName || `${doc.firstName} ${doc.lastName}`,
+					metadata: { oldBiId, newBiId },
+					request,
+				});
+			}
 		}
 
 		return NextResponse.json({ id: doc.id, doc });

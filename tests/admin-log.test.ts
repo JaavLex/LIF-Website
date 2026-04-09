@@ -268,4 +268,47 @@ describe('route instrumentation smoke test', () => {
 		expect(src).toMatch(/comms_channel\.update/);
 		expect(src).toMatch(/comms_channel\.delete/);
 	});
+
+	it('gm/toggle route logs gm.enter and gm.exit', async () => {
+		const { readFileSync } = await import('node:fs');
+		const { join } = await import('node:path');
+		const src = readFileSync(
+			join(process.cwd(), 'src/app/api/comms/gm/toggle/route.ts'),
+			'utf8',
+		);
+		expect(src).toMatch(/from '@\/lib\/admin-log'/);
+		expect(src).toMatch(/gm\.enter/);
+		expect(src).toMatch(/gm\.exit/);
+	});
+
+	it('comms messages POST route logs gm.impersonate', async () => {
+		const { readFileSync } = await import('node:fs');
+		const { join } = await import('node:path');
+		const src = readFileSync(
+			join(process.cwd(), 'src/app/api/comms/channels/[id]/messages/route.ts'),
+			'utf8',
+		);
+		expect(src).toMatch(/from '@\/lib\/admin-log'/);
+		expect(src).toMatch(/gm\.impersonate/);
+	});
+
+	it('characters [id] PATCH logs character.link.admin_override', async () => {
+		const { readFileSync } = await import('node:fs');
+		const { join } = await import('node:path');
+		const src = readFileSync(
+			join(process.cwd(), 'src/app/api/roleplay/characters/[id]/route.ts'),
+			'utf8',
+		);
+		expect(src).toMatch(/character\.link\.admin_override/);
+	});
+
+	it('useGmMode client fires POST to /api/comms/gm/toggle on setEnabled', async () => {
+		const { readFileSync } = await import('node:fs');
+		const { join } = await import('node:path');
+		const src = readFileSync(
+			join(process.cwd(), 'src/components/comms/useGmMode.tsx'),
+			'utf8',
+		);
+		expect(src).toMatch(/\/api\/comms\/gm\/toggle/);
+	});
 });

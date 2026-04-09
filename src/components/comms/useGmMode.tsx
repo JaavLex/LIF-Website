@@ -93,6 +93,13 @@ export function GmModeProvider({ children }: { children: ReactNode }) {
 		setState((s) =>
 			value ? { ...s, enabled: true } : { ...INITIAL_STATE },
 		);
+		// Fire-and-forget audit log. Failure must not block the local toggle —
+		// the client state has already flipped above.
+		fetch('/api/comms/gm/toggle', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ enabled: value }),
+		}).catch(() => {});
 	}, []);
 
 	const setDefault = useCallback((id: number | null) => {
