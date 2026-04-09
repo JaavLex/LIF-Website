@@ -312,3 +312,60 @@ describe('route instrumentation smoke test', () => {
 		expect(src).toMatch(/\/api\/comms\/gm\/toggle/);
 	});
 });
+
+describe('source-level completeness guard', () => {
+	// Any file under src/app/api/** that imports requireFullAdmin /
+	// requireGmAdmin AND calls payload.create/update/delete MUST also import
+	// from @/lib/admin-log. Fails CI the moment an unlogged admin route is
+	// added — "forgot to instrument it" stops being a silent regression.
+	//
+	// The regex only matches requireFullAdmin / requireGmAdmin, not plain
+	// requireAdmin or requireSession + checkAdminPermissions. Those mixed-gate
+	// routes are reviewed manually in the secondary informational pass below.
+	//
+	// Allowlist for deliberate exceptions — every entry must carry a comment
+	// explaining why. "Forgot" is NOT a valid reason; fix the route instead.
+	const SKIP_FILES = new Set<string>([
+		// GET uses requireGmAdmin for read-only access to GM bypass channels;
+		// POST (the only mutation) is not admin-gated — any eligible comms
+		// user creates group channels there. Not an admin action.
+		'src/app/api/comms/channels/route.ts',
+	]);
+
+	it('every full/GM-admin mutation route imports admin-log', async () => {
+		const { readFileSync, readdirSync, statSync } = await import('node:fs');
+		const { join, relative } = await import('node:path');
+
+		const offenders: string[] = [];
+		const walk = (dir: string) => {
+			for (const name of readdirSync(dir)) {
+				const full = join(dir, name);
+				const st = statSync(full);
+				if (st.isDirectory()) {
+					walk(full);
+					continue;
+				}
+				if (!/route\.ts$/.test(name)) continue;
+
+				const rel = relative(process.cwd(), full).replace(/\\/g, '/');
+				if (SKIP_FILES.has(rel)) continue;
+
+				const content = readFileSync(full, 'utf8');
+
+				const hasAdminGate =
+					/from '@\/lib\/api-auth'/.test(content) &&
+					/require(FullAdmin|GmAdmin)\b/.test(content);
+				const hasPayloadMutation =
+					/payload\.(create|update|delete)\s*\(/.test(content);
+
+				if (hasAdminGate && hasPayloadMutation) {
+					const hasLogImport = /from '@\/lib\/admin-log'/.test(content);
+					if (!hasLogImport) offenders.push(rel);
+				}
+			}
+		};
+
+		walk(join(process.cwd(), 'src/app/api'));
+		expect(offenders).toEqual([]);
+	});
+});

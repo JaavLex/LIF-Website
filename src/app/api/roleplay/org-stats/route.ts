@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPayloadClient } from '@/lib/payload';
 import { requireFullAdmin, isErrorResponse } from '@/lib/api-auth';
+import { logAdminAction } from '@/lib/admin-log';
 import type { Character } from '@/payload-types';
 
 export const dynamic = 'force-dynamic';
@@ -153,6 +154,16 @@ export async function DELETE(request: NextRequest) {
 				});
 			}
 		}
+
+		void logAdminAction({
+			session: auth.session,
+			permissions: auth.permissions,
+			action: 'org_stats.reset',
+			summary: `A réinitialisé les statistiques de trésorerie (${deleted} entrées supprimées)`,
+			entityType: 'org_stats',
+			metadata: { deletedHistoryEntries: deleted },
+			request,
+		});
 
 		return NextResponse.json({ success: true, deleted });
 	} catch (error: any) {
