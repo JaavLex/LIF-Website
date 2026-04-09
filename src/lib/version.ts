@@ -6,9 +6,16 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.6.52',
+  version: '1.6.53',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.6.53',
+      date: '2026-04-09',
+      changes: [
+        'COMMS — Hotfix : le sélecteur GM chargeait indéfiniment et n\'affichait jamais les PNJ / cibles. Race de cycle de vie dans `useGmMode` : l\'effet de fetch listait `state.npcListLoading` dans ses dépendances ; quand il passait `npcListLoading` à `true`, React re-rendait, l\'effet re-roulait, sa cleanup flippait `cancelled = true` sur le fetch de la run précédente, et le `.then` sortait tôt sans jamais écrire `npcList` ni remettre `npcListLoading` à `false`. Fix : retirer `state.npcListLoading` des dépendances et garder uniquement `state.enabled` et `state.npcList` — de cette façon le setState de `npcListLoading` ne re-trigger plus l\'effet, le fetch survit jusqu\'à sa résolution, et la liste s\'affiche.',
+      ],
+    },
     {
       version: '1.6.52',
       date: '2026-04-09',

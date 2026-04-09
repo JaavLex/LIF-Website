@@ -54,10 +54,17 @@ export function GmModeProvider({ children }: { children: ReactNode }) {
 
 	// Fetch the NPC list on first enable. Cached for the lifetime of the
 	// provider — re-mounting (e.g. leaving /roleplay/comms) resets it.
+	//
+	// IMPORTANT: deps must NOT include `state.npcListLoading`. If it did, the
+	// `setState(npcListLoading: true)` below would trigger a rerender, the
+	// effect would re-run, its cleanup would flip `cancelled = true` on the
+	// still-pending first fetch, and the fetch's `.then` would early-return
+	// without ever clearing the loading flag — hanging the spinner forever.
 	useEffect(() => {
-		if (!state.enabled || state.npcList || state.npcListLoading) return;
+		if (!state.enabled) return;
+		if (state.npcList) return;
 		let cancelled = false;
-		setState((s) => ({ ...s, npcListLoading: true, npcListError: null }));
+		setState((s) => (s.npcListLoading ? s : { ...s, npcListLoading: true, npcListError: null }));
 		fetch('/api/roleplay/characters/npcs', { cache: 'no-store' })
 			.then(async (r) => {
 				if (!r.ok) throw new Error(`HTTP ${r.status}`);
@@ -80,7 +87,7 @@ export function GmModeProvider({ children }: { children: ReactNode }) {
 		return () => {
 			cancelled = true;
 		};
-	}, [state.enabled, state.npcList, state.npcListLoading]);
+	}, [state.enabled, state.npcList]);
 
 	const setEnabled = useCallback((value: boolean) => {
 		setState((s) =>
