@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPayloadClient } from '@/lib/payload';
 import { requireFullAdmin, isErrorResponse } from '@/lib/api-auth';
+import { logAdminAction } from '@/lib/admin-log';
 
 export async function PATCH(
 	request: NextRequest,
@@ -26,10 +27,24 @@ export async function PATCH(
 		if (body.logo !== undefined) updateData.logo = body.logo || null;
 		if (body.description !== undefined) updateData.description = body.description;
 
+		const existing = await payload.findByID({ collection: 'factions', id: docId });
+
 		const doc = await payload.update({
 			collection: 'factions',
 			id: docId,
 			data: updateData,
+		});
+
+		void logAdminAction({
+			session: auth.session,
+			action: 'faction.update',
+			summary: `A modifié la faction "${doc.name}"`,
+			entityType: 'faction',
+			entityId: doc.id,
+			entityLabel: doc.name,
+			before: existing as unknown as Record<string, unknown>,
+			after: doc as unknown as Record<string, unknown>,
+			request,
 		});
 
 		return NextResponse.json({ id: doc.id, doc });
@@ -55,7 +70,20 @@ export async function DELETE(
 
 	try {
 		const payload = await getPayloadClient();
+		const deletedSnapshot = await payload.findByID({ collection: 'factions', id: docId });
 		await payload.delete({ collection: 'factions', id: docId });
+
+		void logAdminAction({
+			session: auth.session,
+			action: 'faction.delete',
+			summary: `A supprimé la faction "${deletedSnapshot.name}"`,
+			entityType: 'faction',
+			entityId: docId,
+			entityLabel: deletedSnapshot.name,
+			before: deletedSnapshot as unknown as Record<string, unknown>,
+			request,
+		});
+
 		return NextResponse.json({ success: true });
 	} catch (error: unknown) {
 		console.error('Faction deletion error:', error);

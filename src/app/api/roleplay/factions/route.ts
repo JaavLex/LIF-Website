@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPayloadClient } from '@/lib/payload';
 import { requireAdmin, isErrorResponse } from '@/lib/api-auth';
+import { logAdminAction } from '@/lib/admin-log';
 
 export async function GET() {
 	try {
@@ -39,6 +40,17 @@ export async function POST(request: NextRequest) {
 				...(body.logo ? { logo: body.logo } : {}),
 				...(body.description ? { description: body.description } : {}),
 			},
+		});
+
+		void logAdminAction({
+			session: auth.session,
+			action: 'faction.create',
+			summary: `A créé la faction "${doc.name}"`,
+			entityType: 'faction',
+			entityId: doc.id,
+			entityLabel: doc.name,
+			after: doc as unknown as Record<string, unknown>,
+			request,
 		});
 
 		return NextResponse.json({ id: doc.id, doc });

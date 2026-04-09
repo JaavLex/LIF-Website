@@ -228,4 +228,16 @@ describe('route instrumentation smoke test', () => {
 		);
 		expect(src).toMatch(/character_timeline\.delete/);
 	});
+
+	it.each([
+		'src/app/api/roleplay/factions/route.ts',
+		'src/app/api/roleplay/factions/[id]/route.ts',
+		'src/app/api/roleplay/units/route.ts',
+		'src/app/api/roleplay/units/[id]/route.ts',
+	])('%s imports logAdminAction', async (rel) => {
+		const { readFileSync } = await import('node:fs');
+		const { join } = await import('node:path');
+		const src = readFileSync(join(process.cwd(), rel), 'utf8');
+		expect(src).toMatch(/from '@\/lib\/admin-log'/);
+	});
 });

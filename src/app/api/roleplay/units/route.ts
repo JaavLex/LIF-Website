@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPayloadClient } from '@/lib/payload';
 import { requireAdmin, isErrorResponse } from '@/lib/api-auth';
+import { logAdminAction } from '@/lib/admin-log';
 
 export async function POST(request: NextRequest) {
 	const auth = await requireAdmin(request);
@@ -24,6 +25,17 @@ export async function POST(request: NextRequest) {
 				...(body.parentFaction ? { parentFaction: body.parentFaction } : {}),
 				...(body.description ? { description: body.description } : {}),
 			},
+		});
+
+		void logAdminAction({
+			session: auth.session,
+			action: 'unit.create',
+			summary: `A créé l'unité "${doc.name}"`,
+			entityType: 'unit',
+			entityId: doc.id,
+			entityLabel: doc.name,
+			after: doc as unknown as Record<string, unknown>,
+			request,
 		});
 
 		return NextResponse.json({ id: doc.id, doc });
