@@ -3,6 +3,7 @@ import { getSession } from '@/lib/api-auth';
 import { checkAdminPermissions } from '@/lib/admin';
 import { checkCommsEligibility, COMMS_LIMITS } from '@/lib/comms';
 import { getPayloadClient } from '@/lib/payload';
+import { logAdminAction } from '@/lib/admin-log';
 
 export async function PATCH(
 	request: NextRequest,
@@ -62,7 +63,22 @@ export async function PATCH(
 		update.members = members;
 	}
 
-	await payload.update({ collection: 'comms-channels', id: channelId, data: update });
+	const updated = await payload.update({ collection: 'comms-channels', id: channelId, data: update });
+
+	if (isAdmin) {
+		void logAdminAction({
+			session: session!,
+			action: 'comms_channel.update',
+			summary: `A modifié le canal "${channel.name}"`,
+			entityType: 'comms_channel',
+			entityId: channelId,
+			entityLabel: channel.name,
+			before: channel as unknown as Record<string, unknown>,
+			after: updated as unknown as Record<string, unknown>,
+			request,
+		});
+	}
+
 	return NextResponse.json({ success: true });
 }
 
@@ -102,6 +118,18 @@ export async function DELETE(
 	if (channel.type === 'group') {
 		if (isCreator || isAdmin) {
 			await payload.delete({ collection: 'comms-channels', id: channelId });
+			if (isAdmin) {
+				void logAdminAction({
+					session: session!,
+					action: 'comms_channel.delete',
+					summary: `A supprimé le canal "${channel.name}"`,
+					entityType: 'comms_channel',
+					entityId: channelId,
+					entityLabel: channel.name,
+					before: channel as unknown as Record<string, unknown>,
+					request,
+				});
+			}
 			return NextResponse.json({ success: true, deleted: true });
 		}
 		if (!members.includes(eligibility.character.id)) {
@@ -139,6 +167,18 @@ export async function DELETE(
 			return NextResponse.json({ error: 'Non autorisé' }, { status: 403 });
 		}
 		await payload.delete({ collection: 'comms-channels', id: channelId });
+		if (isAdmin) {
+			void logAdminAction({
+				session: session!,
+				action: 'comms_channel.delete',
+				summary: `A supprimé le canal "${channel.name}"`,
+				entityType: 'comms_channel',
+				entityId: channelId,
+				entityLabel: channel.name,
+				before: channel as unknown as Record<string, unknown>,
+				request,
+			});
+		}
 		return NextResponse.json({ success: true, deleted: true });
 	}
 

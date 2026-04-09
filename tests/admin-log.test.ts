@@ -238,10 +238,34 @@ describe('route instrumentation smoke test', () => {
 		'src/app/api/roleplay/intelligence/[id]/route.ts',
 		'src/app/api/moderation/cases/route.ts',
 		'src/app/api/moderation/cases/[id]/route.ts',
+		'src/app/api/moderation/comms/messages/[id]/route.ts',
+		'src/app/api/comms/channels/[id]/route.ts',
 	])('%s imports logAdminAction', async (rel) => {
 		const { readFileSync } = await import('node:fs');
 		const { join } = await import('node:path');
 		const src = readFileSync(join(process.cwd(), rel), 'utf8');
 		expect(src).toMatch(/from '@\/lib\/admin-log'/);
+	});
+
+	it('moderation comms messages route logs both delete and restore actions', async () => {
+		const { readFileSync } = await import('node:fs');
+		const { join } = await import('node:path');
+		const src = readFileSync(
+			join(process.cwd(), 'src/app/api/moderation/comms/messages/[id]/route.ts'),
+			'utf8',
+		);
+		expect(src).toMatch(/comms_message\.delete/);
+		expect(src).toMatch(/comms_message\.restore/);
+	});
+
+	it('comms channels [id] route logs update and delete actions', async () => {
+		const { readFileSync } = await import('node:fs');
+		const { join } = await import('node:path');
+		const src = readFileSync(
+			join(process.cwd(), 'src/app/api/comms/channels/[id]/route.ts'),
+			'utf8',
+		);
+		expect(src).toMatch(/comms_channel\.update/);
+		expect(src).toMatch(/comms_channel\.delete/);
 	});
 });
