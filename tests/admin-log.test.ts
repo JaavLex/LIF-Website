@@ -334,6 +334,19 @@ describe('GET /api/moderation/admin-logs', () => {
 		expect(src).toMatch(/nextCursor/);
 		expect(src).toMatch(/createdAt/);
 	});
+
+	it('facets endpoint exists and is gated by requireFullAdmin', async () => {
+		const { readFileSync } = await import('node:fs');
+		const { join } = await import('node:path');
+		const src = readFileSync(
+			join(process.cwd(), 'src/app/api/moderation/admin-logs/facets/route.ts'),
+			'utf8',
+		);
+		expect(src).toMatch(/requireFullAdmin/);
+		expect(src).toMatch(/actors/);
+		expect(src).toMatch(/actions/);
+		expect(src).toMatch(/entityTypes/);
+	});
 });
 
 describe('admin-log retention cron', () => {
