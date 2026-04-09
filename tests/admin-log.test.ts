@@ -208,4 +208,24 @@ describe('route instrumentation smoke test', () => {
 		expect(src).toMatch(/from '@\/lib\/admin-log'/);
 		expect(src).toMatch(/logAdminAction\s*\(/);
 	});
+
+	it('timeline POST route imports logAdminAction', async () => {
+		const { readFileSync } = await import('node:fs');
+		const { join } = await import('node:path');
+		const src = readFileSync(
+			join(process.cwd(), 'src/app/api/roleplay/timeline/route.ts'),
+			'utf8',
+		);
+		expect(src).toMatch(/from '@\/lib\/admin-log'/);
+	});
+
+	it('timeline DELETE route imports logAdminAction', async () => {
+		const { readFileSync } = await import('node:fs');
+		const { join } = await import('node:path');
+		const src = readFileSync(
+			join(process.cwd(), 'src/app/api/roleplay/timeline/route.ts'),
+			'utf8',
+		);
+		expect(src).toMatch(/character_timeline\.delete/);
+	});
 });

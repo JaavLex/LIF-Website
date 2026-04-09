@@ -2,10 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getPayloadClient } from '@/lib/payload';
 import { requireAdmin, isErrorResponse } from '@/lib/api-auth';
 import { notifyTimelineEvent } from '@/lib/discord-notify';
+import { logAdminAction } from '@/lib/admin-log';
 
 export async function DELETE(request: NextRequest) {
 	const auth = await requireAdmin(request);
 	if (isErrorResponse(auth)) return auth;
+	const { session } = auth;
 
 	try {
 		const payload = await getPayloadClient();
@@ -15,9 +17,32 @@ export async function DELETE(request: NextRequest) {
 			return NextResponse.json({ message: 'ID manquant' }, { status: 400 });
 		}
 
+		// Capture snapshot before deletion for the audit log
+		const existing = await payload.findByID({
+			collection: 'character-timeline',
+			id: parseInt(id, 10),
+			depth: 1,
+		});
+		const characterName =
+			typeof existing.character === 'object' && existing.character !== null
+				? (existing.character as { fullName?: string; firstName?: string; lastName?: string }).fullName ||
+					`${(existing.character as { firstName?: string }).firstName ?? ''} ${(existing.character as { lastName?: string }).lastName ?? ''}`.trim()
+				: `personnage #${typeof existing.character === 'number' ? existing.character : '?'}`;
+
 		await payload.delete({
 			collection: 'character-timeline',
 			id: parseInt(id, 10),
+		});
+
+		void logAdminAction({
+			session,
+			action: 'character_timeline.delete',
+			summary: `A supprimé un événement du timeline de ${characterName}`,
+			entityType: 'character_timeline',
+			entityId: existing.id,
+			entityLabel: `${characterName} — ${existing.title}`,
+			before: existing as unknown as Record<string, unknown>,
+			request,
 		});
 
 		return NextResponse.json({ success: true });
@@ -31,6 +56,7 @@ export async function DELETE(request: NextRequest) {
 export async function POST(request: NextRequest) {
 	const auth = await requireAdmin(request);
 	if (isErrorResponse(auth)) return auth;
+	const { session } = auth;
 
 	try {
 		const payload = await getPayloadClient();
@@ -56,14 +82,27 @@ export async function POST(request: NextRequest) {
 					: parseInt(body.character, 10),
 		});
 
+		const characterName =
+			character.fullName || `${character.firstName} ${character.lastName}`;
+
 		notifyTimelineEvent({
 			characterId: character.id,
-			characterName:
-				character.fullName || `${character.firstName} ${character.lastName}`,
+			characterName,
 			type: body.type,
 			title: body.title,
 			date: body.date,
 		}).catch(() => {});
+
+		void logAdminAction({
+			session,
+			action: 'character_timeline.create',
+			summary: `A ajouté l'événement "${doc.title}" au timeline de ${characterName}`,
+			entityType: 'character_timeline',
+			entityId: doc.id,
+			entityLabel: `${characterName} — ${doc.title}`,
+			after: doc as unknown as Record<string, unknown>,
+			request,
+		});
 
 		return NextResponse.json({ id: doc.id, doc });
 	} catch (error: unknown) {
