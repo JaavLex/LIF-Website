@@ -124,6 +124,11 @@ export function MessageList({
 										{sender?.callsign || sender?.fullName || '[INCONNU]'}
 									</span>
 								)}
+								{m.postedAsGm && (
+									<span className="comms-message-mj-tag" title="Posté en mode MJ (visible aux admins uniquement)">
+										[MJ]
+									</span>
+								)}
 								<span className="comms-message-time">
 									{formatTimestamp(m.createdAt)}
 								</span>

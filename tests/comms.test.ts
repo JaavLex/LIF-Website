@@ -483,3 +483,11 @@ describe('MessageComposer GM puppet chip', () => {
 		expect(content).toContain('comms-composer-puppet-chip');
 	});
 });
+
+describe('MessageList MJ tag', () => {
+	it('renders MJ tag when postedAsGm is true', () => {
+		const content = readSrc('components/comms/MessageList.tsx');
+		expect(content).toContain('comms-message-mj-tag');
+		expect(content).toMatch(/m\.postedAsGm/);
+	});
+});

@@ -84,6 +84,7 @@ export interface CommsMessage {
 	editedAt?: string | null;
 	createdAt: string;
 	isOwn: boolean;
+	postedAsGm?: boolean;
 }
 
 function CommsLayoutInner({ character, isAdmin }: { character: ActiveCharacter; isAdmin: boolean }) {
