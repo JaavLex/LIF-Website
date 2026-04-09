@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin, isErrorResponse } from '@/lib/api-auth';
 import { getPayloadClient } from '@/lib/payload';
 import { sendModerationLog } from '@/lib/moderation';
+import { logAdminAction } from '@/lib/admin-log';
 
 // GET: list cases with optional filters
 export async function GET(request: NextRequest) {
@@ -215,6 +216,17 @@ export async function POST(request: NextRequest) {
 				{ name: 'Motif', value: reason, inline: true },
 			],
 			timestamp: new Date().toISOString(),
+		});
+
+		void logAdminAction({
+			session,
+			action: 'moderation_case.create',
+			summary: `A ouvert un dossier sur ${newCase.targetDiscordUsername ?? '?'}`,
+			entityType: 'moderation_case',
+			entityId: newCase.id,
+			entityLabel: newCase.targetDiscordUsername ?? String(newCase.id),
+			after: newCase as unknown as Record<string, unknown>,
+			request,
 		});
 
 		return NextResponse.json({ case: newCase, created: true });

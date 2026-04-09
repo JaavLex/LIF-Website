@@ -13,6 +13,7 @@ import {
 } from '@/lib/moderation';
 import { formatDurationLong, SANCTION_LABELS_LONG } from '@/lib/constants';
 import type { ModerationCase, ModerationSanction } from '@/payload-types';
+import { logAdminAction } from '@/lib/admin-log';
 
 // GET: get case details + events
 export async function GET(
@@ -159,6 +160,18 @@ export async function PATCH(
 				{ name: 'Modérateur', value: session.discordUsername, inline: true },
 			],
 			timestamp: new Date().toISOString(),
+		});
+
+		void logAdminAction({
+			session,
+			action: 'moderation_case.update',
+			summary: `A modifié le dossier de ${caseDoc.targetDiscordUsername ?? '?'}`,
+			entityType: 'moderation_case',
+			entityId: caseDoc.id,
+			entityLabel: caseDoc.targetDiscordUsername ?? String(caseDoc.id),
+			before: { status: oldStatus },
+			after: { status },
+			request,
 		});
 
 		return NextResponse.json({ success: true });
@@ -321,6 +334,17 @@ export async function POST(
 						discordSyncStatus: warnResult.success ? 'success' : 'failed',
 						discordSyncError: warnResult.error || '',
 					},
+				});
+
+				void logAdminAction({
+					session,
+					action: 'moderation_sanction.create',
+					summary: `A appliqué une sanction warn à ${sanction.targetDiscordUsername ?? '?'}`,
+					entityType: 'moderation_sanction',
+					entityId: sanction.id,
+					entityLabel: `${sanction.targetDiscordUsername ?? '?'} — warn`,
+					after: sanction as unknown as Record<string, unknown>,
+					request,
 				});
 
 				// Create warn event
@@ -490,6 +514,17 @@ export async function POST(
 					discordSyncStatus: result.success ? 'success' : 'failed',
 					discordSyncError: result.error || '',
 				},
+			});
+
+			void logAdminAction({
+				session,
+				action: 'moderation_sanction.create',
+				summary: `A appliqué une sanction ${action} à ${sanction.targetDiscordUsername ?? '?'}`,
+				entityType: 'moderation_sanction',
+				entityId: sanction.id,
+				entityLabel: `${sanction.targetDiscordUsername ?? '?'} — ${action}`,
+				after: sanction as unknown as Record<string, unknown>,
+				request,
 			});
 
 			const actionLabels: Record<string, string> = {

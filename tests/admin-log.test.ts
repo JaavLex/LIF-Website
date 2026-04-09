@@ -236,6 +236,8 @@ describe('route instrumentation smoke test', () => {
 		'src/app/api/roleplay/units/[id]/route.ts',
 		'src/app/api/roleplay/intelligence/route.ts',
 		'src/app/api/roleplay/intelligence/[id]/route.ts',
+		'src/app/api/moderation/cases/route.ts',
+		'src/app/api/moderation/cases/[id]/route.ts',
 	])('%s imports logAdminAction', async (rel) => {
 		const { readFileSync } = await import('node:fs');
 		const { join } = await import('node:path');
