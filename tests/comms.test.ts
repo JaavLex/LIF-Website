@@ -372,3 +372,17 @@ describe('GET /api/comms/channels ?gm=1', () => {
 		expect(content).toMatch(/viewerIsGhost/);
 	});
 });
+
+describe('GET /api/comms/channels/[id]/messages GM read bypass', () => {
+	it('admins with gm=1 bypass the membership 403', () => {
+		const content = readSrc('app/api/comms/channels/[id]/messages/route.ts');
+		expect(content).toMatch(/searchParams\.get\(['"]gm['"]\)/);
+		expect(content).toContain('checkAdminPermissions');
+	});
+
+	it('strips postedAsGm from response when viewer is not admin', () => {
+		const content = readSrc('app/api/comms/channels/[id]/messages/route.ts');
+		// Admin check before attaching postedAsGm to response items
+		expect(content).toMatch(/postedAsGm[\s\S]{0,200}isAdmin/);
+	});
+});

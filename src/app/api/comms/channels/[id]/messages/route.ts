@@ -9,6 +9,7 @@ import {
 } from '@/lib/comms';
 import { isOnline } from '@/lib/comms-presence';
 import { sendDiscordDM } from '@/lib/moderation';
+import { checkAdminPermissions } from '@/lib/admin';
 
 export async function GET(
 	request: NextRequest,
@@ -26,6 +27,10 @@ export async function GET(
 		return NextResponse.json({ error: eligibility.reason }, { status: 403 });
 	}
 
+	const adminPermissions = session ? await checkAdminPermissions(session) : { isAdmin: false };
+	const isAdminViewer = !!adminPermissions.isAdmin;
+	const gmQuery = request.nextUrl.searchParams.get('gm') === '1';
+
 	const payload = await getPayloadClient();
 	const channel = (await payload
 		.findByID({ collection: 'comms-channels', id: channelId })
@@ -36,7 +41,9 @@ export async function GET(
 	// Verify membership
 	const members: number[] = Array.isArray(channel.members) ? channel.members : [];
 	if (!members.map(Number).includes(eligibility.character.id)) {
-		return NextResponse.json({ error: 'Non membre' }, { status: 403 });
+		if (!(isAdminViewer && gmQuery)) {
+			return NextResponse.json({ error: 'Non membre' }, { status: 403 });
+		}
 	}
 
 	const url = new URL(request.url);
@@ -189,6 +196,8 @@ export async function GET(
 				editedAt: m.editedAt,
 				createdAt: m.createdAt,
 				isOwn: senderId === viewerId,
+				// postedAsGm is only exposed to isAdminViewer — field absent for non-admins
+				...(m.postedAsGm && isAdminViewer ? { postedAsGm: true } : {}),
 			};
 		})
 		.reverse(); // ascending order for display
