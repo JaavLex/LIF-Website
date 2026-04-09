@@ -449,6 +449,35 @@ export async function listChannelsForCharacter(characterId: number) {
 }
 
 /**
+ * GM-mode channel list: returns every channel the character is a member
+ * of (tagged viewerIsGhost: false) PLUS every non-DM channel the character
+ * is NOT a member of (tagged viewerIsGhost: true). DMs are never included
+ * via the bypass — private 1-on-1 conversations stay private even under
+ * GM mode. Caller must enforce admin gating before invoking.
+ */
+export async function listChannelsForGmAdmin(characterId: number) {
+	const payload = await getPayloadClient();
+	const all = await payload.find({
+		collection: 'comms-channels',
+		limit: 500,
+		sort: '-lastMessageAt',
+	});
+
+	const rows = all.docs as any[];
+	const out: any[] = [];
+	for (const ch of rows) {
+		const members: number[] = Array.isArray(ch.members) ? ch.members : [];
+		const isMember = members.map(Number).includes(Number(characterId));
+		if (isMember) {
+			out.push({ ...ch, viewerIsGhost: false });
+		} else if (ch.type !== 'dm') {
+			out.push({ ...ch, viewerIsGhost: true });
+		}
+	}
+	return out;
+}
+
+/**
  * Display-enriched view of a channel.
  *
  * Includes everything the client needs to render a channel row + header

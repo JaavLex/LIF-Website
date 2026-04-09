@@ -347,3 +347,14 @@ describe('GET /api/roleplay/characters/npcs', () => {
 		expect(content).toMatch(/isArchived[\s\S]{0,80}not_equals:\s*true/);
 	});
 });
+
+describe('comms.ts listChannelsForGmAdmin', () => {
+	it('exports listChannelsForGmAdmin that merges member channels and non-DM bypass channels', () => {
+		const content = readSrc('lib/comms.ts');
+		expect(content).toMatch(/export async function listChannelsForGmAdmin/);
+		// Must exclude DMs
+		expect(content).toMatch(/listChannelsForGmAdmin[\s\S]{0,600}'dm'/);
+		// Must tag bypass channels with viewerIsGhost
+		expect(content).toMatch(/viewerIsGhost/);
+	});
+});
