@@ -25,6 +25,14 @@ export const CommsMessages: CollectionConfig = {
 		{ name: 'channelId', type: 'number', required: true, index: true },
 		{ name: 'senderCharacterId', type: 'number', required: true, index: true },
 		{ name: 'senderDiscordId', type: 'text', index: true },
+		{
+			name: 'postedAsGm',
+			type: 'checkbox',
+			defaultValue: false,
+			admin: {
+				description: 'Écrit par un admin en mode MJ (impersonation NPC/cible). Flag d\'audit masqué aux non-admins.',
+			},
+		},
 		{ name: 'isAnonymous', type: 'checkbox', defaultValue: false },
 		{ name: 'body', type: 'textarea' },
 		{

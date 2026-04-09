@@ -308,3 +308,18 @@ describe('PersonnelFilters NPC tab', () => {
 		expect(content).toMatch(/if \(isAdmin\)[\s\S]{0,200}npcs[\s\S]{0,200}label:\s*'PNJ'/);
 	});
 });
+
+describe('CommsMessages postedAsGm field', () => {
+	it('defines a postedAsGm checkbox field', () => {
+		const content = readSrc('collections/CommsMessages.ts');
+		expect(content).toMatch(/name:\s*'postedAsGm'/);
+		expect(content).toMatch(/postedAsGm'[^}]*type:\s*'checkbox'/);
+	});
+
+	it('has a migration for posted_as_gm column', () => {
+		const content = readSrc('migrations/20260409_180000_comms_messages_posted_as_gm.ts');
+		expect(content).toContain('ALTER TABLE "comms_messages"');
+		expect(content).toContain('"posted_as_gm" boolean');
+		expect(content).toContain('DEFAULT false');
+	});
+});

@@ -8,6 +8,7 @@ import * as migration_20260407_150000_backfill_callsigns from './20260407_150000
 import * as migration_20260407_160000_add_main_faction from './20260407_160000_add_main_faction';
 import * as migration_20260407_170000_add_unit_selector_fields from './20260407_170000_add_unit_selector_fields';
 import * as migration_20260407_180000_add_unit_selector_globals from './20260407_180000_add_unit_selector_globals';
+import * as migration_20260409_180000_comms_messages_posted_as_gm from './20260409_180000_comms_messages_posted_as_gm';
 
 export const migrations = [
   {
@@ -59,5 +60,10 @@ export const migrations = [
     up: migration_20260407_180000_add_unit_selector_globals.up,
     down: migration_20260407_180000_add_unit_selector_globals.down,
     name: '20260407_180000_add_unit_selector_globals',
+  },
+  {
+    up: migration_20260409_180000_comms_messages_posted_as_gm.up,
+    down: migration_20260409_180000_comms_messages_posted_as_gm.down,
+    name: '20260409_180000_comms_messages_posted_as_gm',
   },
 ];
