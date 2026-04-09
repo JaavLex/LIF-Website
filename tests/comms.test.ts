@@ -296,3 +296,15 @@ describe('GlobalCommsNotifier /comms-entry reset', () => {
 		expect(branch).toContain('initializedRef.current = false');
 	});
 });
+
+describe('PersonnelFilters NPC tab', () => {
+	it('bucketing logic separates npcs from personnel and targets', () => {
+		const content = readSrc('components/roleplay/PersonnelFilters.tsx');
+		// Derivation rule: NPC = !discordId && !isTarget
+		expect(content).toMatch(/else if \(!c\.discordId\)\s*{?\s*npcs\.push\(c\)/);
+		// Tab union includes 'npcs'
+		expect(content).toMatch(/'personnel'\s*\|\s*'targets'\s*\|\s*'npcs'/);
+		// Tab is admin-gated
+		expect(content).toMatch(/if \(isAdmin\)[\s\S]{0,200}npcs[\s\S]{0,200}label:\s*'PNJ'/);
+	});
+});

@@ -95,7 +95,7 @@ const THREAT_LABELS: Record<string, string> = {
 	critical: 'Critique',
 };
 
-type TabType = 'personnel' | 'targets' | 'my-characters' | 'archives';
+type TabType = 'personnel' | 'targets' | 'npcs' | 'my-characters' | 'archives';
 type GroupByType = 'status' | 'unit' | 'faction';
 
 export function PersonnelFilters({
@@ -130,9 +130,10 @@ export function PersonnelFilters({
 	}, [factions]);
 
 	// Split into tab buckets
-	const { personnel, targets, myCharacters, archives } = useMemo(() => {
+	const { personnel, targets, npcs, myCharacters, archives } = useMemo(() => {
 		const personnel: Character[] = [];
 		const targets: Character[] = [];
+		const npcs: Character[] = [];
 		const myCharacters: Character[] = [];
 		const archives: Character[] = [];
 
@@ -143,6 +144,8 @@ export function PersonnelFilters({
 			}
 			if (c.isTarget) {
 				targets.push(c);
+			} else if (!c.discordId) {
+				npcs.push(c);
 			} else {
 				personnel.push(c);
 			}
@@ -151,7 +154,7 @@ export function PersonnelFilters({
 			}
 		}
 
-		return { personnel, targets, myCharacters, archives };
+		return { personnel, targets, npcs, myCharacters, archives };
 	}, [characters, sessionDiscordId]);
 
 	const getActiveList = () => {
@@ -160,6 +163,8 @@ export function PersonnelFilters({
 				return personnel;
 			case 'targets':
 				return targets;
+			case 'npcs':
+				return npcs;
 			case 'my-characters':
 				return myCharacters;
 			case 'archives':
@@ -212,6 +217,7 @@ export function PersonnelFilters({
 		activeTab,
 		personnel,
 		targets,
+		npcs,
 		myCharacters,
 		archives,
 		search,
@@ -317,6 +323,7 @@ export function PersonnelFilters({
 		});
 	}
 	if (isAdmin) {
+		tabs.push({ key: 'npcs', label: 'PNJ', count: npcs.length });
 		tabs.push({ key: 'archives', label: 'Archives', count: archives.length });
 	}
 
@@ -652,6 +659,7 @@ export function PersonnelFilters({
 				<div className="empty-state">
 					{activeTab === 'personnel' && 'Aucun dossier personnel trouvé.'}
 					{activeTab === 'targets' && 'Aucune cible enregistrée.'}
+					{activeTab === 'npcs' && 'Aucun PNJ enregistré.'}
 					{activeTab === 'my-characters' && "Vous n'avez aucun personnage."}
 					{activeTab === 'archives' && 'Aucun dossier archivé.'}
 				</div>
