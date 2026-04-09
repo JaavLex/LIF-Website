@@ -6,6 +6,7 @@ import UsersTab from '@/components/moderation/UsersTab';
 import CasesTab from '@/components/moderation/CasesTab';
 import TranscriptsTab from '@/components/moderation/TranscriptsTab';
 import CommsTab from '@/components/moderation/CommsTab';
+import AdminLogsTab from '@/components/moderation/AdminLogsTab';
 import type { SessionUser, ModerationUser } from '@/components/moderation/types';
 
 export default function ModerationPage() {
@@ -28,7 +29,7 @@ export default function ModerationPage() {
 
 	// Tab state
 	const [tab, setTab] = useState<
-		'users' | 'cases' | 'transcripts' | 'comms'
+		'users' | 'cases' | 'transcripts' | 'comms' | 'admin-logs'
 	>('users');
 
 	useEffect(() => {
@@ -202,6 +203,14 @@ export default function ModerationPage() {
 						>
 							Comms
 						</button>
+						{adminLevel === 'full' && (
+							<button
+								className={`mod-tab${tab === 'admin-logs' ? ' active' : ''}`}
+								onClick={() => setTab('admin-logs')}
+							>
+								Journal admin
+							</button>
+						)}
 					</div>
 
 					{error && <div className="mod-error">{error}</div>}
@@ -236,6 +245,10 @@ export default function ModerationPage() {
 
 					{tab === 'comms' && (
 						<CommsTab authorized={authorized} onError={setError} />
+					)}
+
+					{tab === 'admin-logs' && adminLevel === 'full' && (
+						<AdminLogsTab authorized={authorized} onError={setError} />
 					)}
 				</div>
 			</div>

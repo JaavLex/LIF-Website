@@ -1934,3 +1934,80 @@ a.mod-comms-message-file:hover {
 		max-height: 280px;
 	}
 }
+
+/* ─── Admin Logs tab ─── */
+.mod-admin-logs { display: flex; flex-direction: column; gap: 12px; }
+.mod-admin-logs__filters {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	padding: 12px;
+	background: rgba(255, 255, 255, 0.03);
+	border-radius: 6px;
+}
+.mod-admin-logs__filters input,
+.mod-admin-logs__filters select {
+	padding: 6px 10px;
+	background: rgba(0, 0, 0, 0.3);
+	border: 1px solid rgba(255, 255, 255, 0.1);
+	color: var(--foreground);
+	border-radius: 4px;
+	font-size: 13px;
+}
+.mod-admin-logs__filters input[type="search"] { flex: 1 1 240px; }
+.mod-admin-logs__list { display: flex; flex-direction: column; gap: 6px; }
+.mod-admin-logs__row {
+	border: 1px solid rgba(255, 255, 255, 0.08);
+	border-radius: 6px;
+	background: rgba(0, 0, 0, 0.25);
+	overflow: hidden;
+}
+.mod-admin-logs__row-head {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	width: 100%;
+	padding: 10px 12px;
+	background: transparent;
+	border: 0;
+	color: var(--foreground);
+	text-align: left;
+	cursor: pointer;
+	font-size: 13px;
+}
+.mod-admin-logs__row-head:hover { background: rgba(255, 255, 255, 0.04); }
+.mod-admin-logs__chev { opacity: 0.5; width: 12px; }
+.mod-admin-logs__time { opacity: 0.7; white-space: nowrap; min-width: 80px; }
+.mod-admin-logs__actor { display: flex; align-items: center; gap: 6px; font-weight: 600; min-width: 140px; }
+.mod-admin-logs__avatar { width: 18px; height: 18px; border-radius: 50%; }
+.mod-admin-logs__chip {
+	padding: 2px 8px;
+	background: rgba(100, 150, 255, 0.15);
+	border: 1px solid rgba(100, 150, 255, 0.3);
+	border-radius: 10px;
+	font-family: monospace;
+	font-size: 11px;
+}
+.mod-admin-logs__summary { flex: 1; opacity: 0.9; }
+.mod-admin-logs__body { padding: 12px; border-top: 1px solid rgba(255, 255, 255, 0.08); font-size: 12px; }
+.mod-admin-logs__entity { margin-bottom: 8px; }
+.mod-admin-logs__entity a { color: #6aa9ff; }
+.mod-admin-logs__diff { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
+.mod-admin-logs__diff th,
+.mod-admin-logs__diff td {
+	padding: 4px 8px;
+	border: 1px solid rgba(255, 255, 255, 0.08);
+	text-align: left;
+	vertical-align: top;
+}
+.mod-admin-logs__diff code { font-family: monospace; font-size: 11px; color: #ddd; word-break: break-all; }
+.mod-admin-logs__metadata {
+	background: rgba(0, 0, 0, 0.4);
+	padding: 8px;
+	border-radius: 4px;
+	font-size: 11px;
+	overflow-x: auto;
+}
+.mod-admin-logs__meta { display: flex; gap: 12px; opacity: 0.6; font-size: 11px; margin-top: 6px; }
+.mod-admin-logs__more { display: flex; justify-content: center; padding: 12px; }
+.mod-empty { padding: 24px; text-align: center; opacity: 0.5; }
