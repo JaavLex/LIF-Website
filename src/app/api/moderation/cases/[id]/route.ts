@@ -661,6 +661,17 @@ export async function POST(
 				id: sanctionId,
 			});
 
+			void logAdminAction({
+				session,
+				action: 'moderation_sanction.delete',
+				summary: `A retiré un avertissement de ${caseDoc.targetDiscordUsername ?? '?'}`,
+				entityType: 'moderation_sanction',
+				entityId: sanctionId,
+				entityLabel: `${caseDoc.targetDiscordUsername ?? '?'} — warn`,
+				before: sanction as unknown as Record<string, unknown>,
+				request,
+			});
+
 			// Recalculate warn count
 			const newWarnCount = await getWarnCount(caseDoc.targetDiscordId);
 			await payload.update({
@@ -728,6 +739,17 @@ export async function POST(
 				}
 
 				await payload.delete({ collection: 'moderation-sanctions', id: sanctionId });
+
+				void logAdminAction({
+					session,
+					action: 'moderation_sanction.delete',
+					summary: `A gracié la sanction ${sanction.type} de ${caseDoc.targetDiscordUsername ?? '?'}`,
+					entityType: 'moderation_sanction',
+					entityId: sanctionId,
+					entityLabel: `${caseDoc.targetDiscordUsername ?? '?'} — ${sanction.type}`,
+					before: sanction as unknown as Record<string, unknown>,
+					request,
+				});
 
 				// Recalculate warn count if it was a warn
 				if (sanction.type === 'warn') {
@@ -801,6 +823,16 @@ export async function POST(
 			// Delete all sanctions
 			for (const s of allSanctions.docs) {
 				await payload.delete({ collection: 'moderation-sanctions', id: s.id });
+				void logAdminAction({
+					session,
+					action: 'moderation_sanction.delete',
+					summary: `A retiré la sanction ${s.type} de ${caseDoc.targetDiscordUsername ?? '?'} (pardon-all)`,
+					entityType: 'moderation_sanction',
+					entityId: s.id,
+					entityLabel: `${caseDoc.targetDiscordUsername ?? '?'} — ${s.type}`,
+					before: s as unknown as Record<string, unknown>,
+					request,
+				});
 			}
 
 			// Reset warn count
