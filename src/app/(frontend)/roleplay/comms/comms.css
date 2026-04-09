@@ -948,7 +948,13 @@
 	flex-direction: column;
 	gap: 0.55rem;
 	position: relative;
+	min-width: 0;
+	box-sizing: border-box;
 }
+
+.comms-composer *,
+.comms-composer *::before,
+.comms-composer *::after { box-sizing: border-box; }
 
 .comms-composer textarea {
 	width: 100%;
@@ -1854,11 +1860,18 @@
 		order: 10;
 		flex: 1 1 100%;
 		width: 100%;
+		max-width: 100%;
+		margin-left: 0;
 		justify-content: center;
 		padding: 0.75rem 1rem;
 		font-size: 0.82rem;
 		letter-spacing: 1.8px;
 		min-height: 48px;
+		min-width: 0;
+	}
+	.comms-composer-row {
+		width: 100%;
+		min-width: 0;
 	}
 	.comms-icon-btn {
 		min-height: 38px;

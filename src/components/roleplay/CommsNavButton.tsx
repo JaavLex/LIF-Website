@@ -92,10 +92,22 @@ export function CommsNavButton() {
 				}
 
 				// Reconcile stale counts: drop entries that no longer reflect
-				// an actual unread mention on the server.
+				// an actual unread mention on the server, AND drop entries
+				// where the viewer has already caught up (seen baseline has
+				// advanced to or past the latest message). Without the
+				// seen-based check, a channel whose latest message is a
+				// mention keeps `lastMessageMentionsViewer: true` forever —
+				// even after the user reads it in /comms — so the badge
+				// would never clear.
 				for (const key of Object.keys(counts)) {
 					const ch = currentById.get(key);
 					if (!ch || !ch.lastMessageMentionsViewer) {
+						delete counts[key];
+						changed = true;
+						continue;
+					}
+					const seenAt = seen[key];
+					if (seenAt && ch.lastMessageAt && seenAt >= ch.lastMessageAt) {
 						delete counts[key];
 						changed = true;
 					}

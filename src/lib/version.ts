@@ -6,9 +6,18 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.6.48',
+  version: '1.6.49',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.6.49',
+      date: '2026-04-08',
+      changes: [
+        'COMMS — Fix bouton `TRANSMETTRE` sorti de l\'écran sur mobile : le composer et sa rangée de boutons manquaient de `min-width: 0` et `box-sizing: border-box`, ce qui laissait le contenu intrinsèque du bouton débordait hors du viewport dans certains cas (marge auto héritée du desktop, wrap partiel). Ajout de `min-width: 0`, `box-sizing: border-box` et `max-width: 100%` sur `.comms-composer`, `.comms-composer-row` et `.comms-send-btn` en mode mobile, plus override explicite de `margin-left: 0` pour neutraliser la règle desktop qui poussait le bouton à droite.',
+        'ROLEPLAY — Refonte visuelle du badge de mention sur le bouton COMMS de `/roleplay`. L\'ancien badge flottait près de la flèche droite (`right: 2.35rem`) et était souvent masqué par l\'animation de hover. Nouveau badge : pastille rouge gradient vertical (top-to-bottom), ancrée au coin supérieur droit de l\'icône radio pour un look notification classique, avec bordure noire 2px pour un contraste fort sur le fond du bouton, anneau de pulse lent non-intrusif, et animation pop à l\'apparition. Position recalée aussi en responsive (≤ 768px) pour suivre l\'icône mobile plus petite.',
+        'ROLEPLAY — Fix badge qui persistait même après lecture des mentions sur `/comms`. La réconciliation du poller `CommsNavButton` comparait uniquement le flag serveur `lastMessageMentionsViewer` — mais ce flag reste `true` tant que le dernier message du canal est une mention, même après que l\'utilisateur l\'a lue. Ajout d\'une condition supplémentaire : si le baseline `comms.seenLastAt.v1` pour ce canal a rattrapé `lastMessageAt`, le compteur est supprimé même si le flag serveur est toujours vrai. Le badge s\'efface donc dès l\'ouverture du canal dans `/comms`, sans attendre qu\'un message non-mention arrive.',
+      ],
+    },
     {
       version: '1.6.48',
       date: '2026-04-08',
