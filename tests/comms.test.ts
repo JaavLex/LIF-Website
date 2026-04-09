@@ -332,3 +332,18 @@ describe('api-auth requireGmAdmin', () => {
 		expect(content).toMatch(/requireGmAdmin[\s\S]{0,500}isAdmin/);
 	});
 });
+
+describe('GET /api/roleplay/characters/npcs', () => {
+	it('is admin-gated via requireGmAdmin', () => {
+		const content = readSrc('app/api/roleplay/characters/npcs/route.ts');
+		expect(content).toContain("from '@/lib/api-auth'");
+		expect(content).toContain('requireGmAdmin');
+		expect(content).toContain('isErrorResponse');
+	});
+
+	it('filters non-archived characters with no discordId', () => {
+		const content = readSrc('app/api/roleplay/characters/npcs/route.ts');
+		expect(content).toMatch(/discordId[\s\S]{0,80}exists:\s*false/);
+		expect(content).toMatch(/isArchived[\s\S]{0,80}not_equals:\s*true/);
+	});
+});
