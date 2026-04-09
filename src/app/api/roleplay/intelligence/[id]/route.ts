@@ -79,8 +79,9 @@ export async function PATCH(
 				entityType: 'intelligence',
 				entityId: docId,
 				entityLabel: (existing as Record<string, any>).title,
-				before: existing,
-				after: doc,
+				before: existing as unknown as Record<string, unknown>,
+				after: doc as unknown as Record<string, unknown>,
+				request,
 			});
 		}
 
@@ -117,13 +118,15 @@ export async function DELETE(
 		await payload.delete({ collection: 'intelligence', id: docId });
 
 		void logAdminAction({
-			session: auth,
+			session: auth.session,
+			permissions: auth.permissions,
 			action: 'intelligence.delete',
 			summary: `A supprimé le rapport de renseignement "${(existing as Record<string, any>).title}"`,
 			entityType: 'intelligence',
 			entityId: docId,
 			entityLabel: (existing as Record<string, any>).title,
-			before: existing,
+			before: existing as unknown as Record<string, unknown>,
+			request,
 		});
 
 		return NextResponse.json({ success: true });
