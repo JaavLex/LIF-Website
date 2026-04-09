@@ -86,15 +86,20 @@ export async function POST(request: NextRequest) {
 					: null,
 		}).catch(() => {});
 
-		void logAdminAction({
-			session,
-			action: 'intelligence.create',
-			summary: `A créé le rapport de renseignement "${fullDoc.title}"`,
-			entityType: 'intelligence',
-			entityId: doc.id as number,
-			entityLabel: fullDoc.title,
-			after: doc,
-		});
+		// Only log when the creator is admin — intel-role-only users
+		// publishing their own reports are not an "admin action".
+		if (isAdmin) {
+			void logAdminAction({
+				session,
+				action: 'intelligence.create',
+				summary: `A créé le rapport de renseignement "${fullDoc.title}"`,
+				entityType: 'intelligence',
+				entityId: doc.id as number,
+				entityLabel: fullDoc.title,
+				after: fullDoc as unknown as Record<string, unknown>,
+				request,
+			});
+		}
 
 		return NextResponse.json({ id: doc.id, doc });
 	} catch (error: any) {
