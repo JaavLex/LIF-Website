@@ -196,3 +196,16 @@ describe('logAdminAction', () => {
 		consoleSpy.mockRestore();
 	});
 });
+
+describe('route instrumentation smoke test', () => {
+	it('characters POST route imports logAdminAction', async () => {
+		const { readFileSync } = await import('node:fs');
+		const { join } = await import('node:path');
+		const src = readFileSync(
+			join(process.cwd(), 'src/app/api/roleplay/characters/route.ts'),
+			'utf8',
+		);
+		expect(src).toMatch(/from '@\/lib\/admin-log'/);
+		expect(src).toMatch(/logAdminAction\s*\(/);
+	});
+});

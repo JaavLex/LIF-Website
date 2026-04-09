@@ -3,6 +3,7 @@ import { getPayloadClient } from '@/lib/payload';
 import { requireSession, isErrorResponse } from '@/lib/api-auth';
 import { checkAdminPermissions } from '@/lib/admin';
 import { notifyNewCharacter } from '@/lib/discord-notify';
+import { logAdminAction } from '@/lib/admin-log';
 import type { Character, Rank, Unit } from '@/payload-types';
 
 export async function POST(request: NextRequest) {
@@ -132,8 +133,9 @@ export async function POST(request: NextRequest) {
 
 		// Send Discord notification (non-blocking) — skip for NPCs / Targets,
 		// they are not real player enrollments and would just spam the channel.
+		let fullDoc: Character | null = null;
 		if (!isNpcCreation) {
-			const fullDoc: Character = await payload.findByID({
+			fullDoc = await payload.findByID({
 				collection: 'characters',
 				id: doc.id,
 				depth: 2,
@@ -145,6 +147,21 @@ export async function POST(request: NextRequest) {
 				rank: typeof fullDoc.rank === 'object' ? fullDoc.rank : null,
 				unit: typeof fullDoc.unit === 'object' ? fullDoc.unit : null,
 			}).catch(() => {});
+		}
+
+		if (isAdmin) {
+			const logDoc = fullDoc ?? doc;
+			const fullName = logDoc.fullName || `${logDoc.firstName} ${logDoc.lastName}`;
+			void logAdminAction({
+				session,
+				action: 'character.create',
+				summary: `A créé le personnage ${fullName}${isNpcCreation ? ' (PNJ)' : ''}`,
+				entityType: 'character',
+				entityId: doc.id,
+				entityLabel: fullName,
+				after: logDoc as unknown as Record<string, unknown>,
+				request,
+			});
 		}
 
 		return NextResponse.json({ id: doc.id, doc });

@@ -4,6 +4,7 @@ import { requireSession, isErrorResponse } from '@/lib/api-auth';
 import { checkAdminPermissions } from '@/lib/admin';
 import { notifyStatusChange } from '@/lib/discord-notify';
 import { generateUniqueCallsign } from '@/lib/callsign';
+import { logAdminAction } from '@/lib/admin-log';
 
 export async function PATCH(
 	request: NextRequest,
@@ -146,6 +147,20 @@ export async function PATCH(
 			}).catch(() => {});
 		}
 
+		if (isAdmin) {
+			void logAdminAction({
+				session,
+				action: 'character.update',
+				summary: `A modifié le personnage ${doc.fullName || doc.firstName}`,
+				entityType: 'character',
+				entityId: doc.id,
+				entityLabel: doc.fullName || `${doc.firstName} ${doc.lastName}`,
+				before: existing as unknown as Record<string, unknown>,
+				after: doc as unknown as Record<string, unknown>,
+				request,
+			});
+		}
+
 		return NextResponse.json({ id: doc.id, doc });
 	} catch (error: any) {
 		console.error('Character update error:', error);
@@ -247,9 +262,26 @@ export async function DELETE(
 			});
 		}
 
+		const deletedSnapshot = await payload.findByID({
+			collection: 'characters',
+			id: characterId,
+		});
+
 		await payload.delete({
 			collection: 'characters',
 			id: characterId,
+		});
+
+		void logAdminAction({
+			session: auth.session,
+			permissions: auth.permissions,
+			action: 'character.delete',
+			summary: `A supprimé le personnage ${deletedSnapshot.fullName || deletedSnapshot.firstName}`,
+			entityType: 'character',
+			entityId: characterId,
+			entityLabel: deletedSnapshot.fullName || `${deletedSnapshot.firstName} ${deletedSnapshot.lastName}`,
+			before: deletedSnapshot as unknown as Record<string, unknown>,
+			request,
 		});
 
 		return NextResponse.json({ success: true });
