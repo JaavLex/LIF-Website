@@ -474,3 +474,12 @@ describe('CommsLayout GM wiring', () => {
 		expect(content).toContain('impersonateCharacterId:');
 	});
 });
+
+describe('MessageComposer GM puppet chip', () => {
+	it('renders puppet chip when gm.enabled', () => {
+		const content = readSrc('components/comms/MessageComposer.tsx');
+		expect(content).toContain("from './useGmMode'");
+		expect(content).toContain('useGmMode()');
+		expect(content).toContain('comms-composer-puppet-chip');
+	});
+});

@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { AttachmentPicker } from './AttachmentPickers';
 import type { CommsMessage } from './CommsLayout';
+import { useGmMode } from './useGmMode';
 
 interface MentionMember {
 	id: number;
@@ -47,6 +48,13 @@ export function MessageComposer({
 	const [attachments, setAttachments] = useState<any[]>([]);
 	const [showPicker, setShowPicker] = useState(false);
 	const [showHints, setShowHints] = useState(false);
+	const gm = useGmMode();
+	const [showPuppetPicker, setShowPuppetPicker] = useState(false);
+	const activePuppetId = gm.overrideCharacterId ?? gm.defaultCharacterId;
+	const activePuppet =
+		gm.npcList && activePuppetId != null
+			? gm.npcList.find((n) => n.id === activePuppetId) || null
+			: null;
 	const textareaRef = useRef<HTMLTextAreaElement>(null);
 	const [mentionState, setMentionState] = useState<{
 		open: boolean;
@@ -433,6 +441,63 @@ export function MessageComposer({
 					<span className="comms-composer-anon-full">Envoyer anonymement</span>
 					<span className="comms-composer-anon-short">Anon</span>
 				</label>
+				{gm.enabled && (
+					<div style={{ position: 'relative' }}>
+						<button
+							type="button"
+							className="comms-composer-puppet-chip"
+							onClick={() => setShowPuppetPicker((v) => !v)}
+							title="Changer de personnage incarné pour ce message"
+							disabled={disabled}
+						>
+							{activePuppet
+								? `MJ · ${activePuppet.callsign || activePuppet.fullName}`
+								: 'MJ · sélectionner…'}
+						</button>
+						{showPuppetPicker && gm.npcList && (
+							<div
+								style={{
+									position: 'absolute',
+									bottom: '100%',
+									left: 0,
+									background: 'rgba(20, 14, 6, 0.97)',
+									border: '1px solid rgba(255,176,32,0.5)',
+									padding: '0.35rem',
+									maxHeight: '240px',
+									overflowY: 'auto',
+									zIndex: 20,
+									minWidth: '220px',
+								}}
+							>
+								{gm.npcList.map((n) => (
+									<button
+										type="button"
+										key={n.id}
+										onClick={() => {
+											gm.setOverride(n.id);
+											setShowPuppetPicker(false);
+										}}
+										style={{
+											display: 'block',
+											width: '100%',
+											textAlign: 'left',
+											background: 'transparent',
+											border: 'none',
+											color: '#f5b94a',
+											padding: '0.25rem 0.5rem',
+											cursor: 'pointer',
+											fontSize: '0.72rem',
+										}}
+									>
+										{n.rankAbbreviation ? `(${n.rankAbbreviation}) ` : ''}
+										{n.fullName}
+										{n.isTarget ? ' — CIBLE' : ''}
+									</button>
+								))}
+							</div>
+						)}
+					</div>
+				)}
 				<button
 					type="submit"
 					className="comms-send-btn comms-icon-btn-with-icon"
