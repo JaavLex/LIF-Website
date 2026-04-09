@@ -258,12 +258,23 @@ function CommsLayoutInner({ character, isAdmin }: { character: ActiveCharacter; 
 
 	const loadMessages = useCallback(async (channelId: number) => {
 		try {
-			const res = await fetch(`/api/comms/channels/${channelId}/messages`);
-			if (!res.ok) return;
+			const url = gm.enabled
+				? `/api/comms/channels/${channelId}/messages?gm=1`
+				: `/api/comms/channels/${channelId}/messages`;
+			const res = await fetch(url);
+			if (!res.ok) {
+				// Clear on failure so stale messages from the previous channel
+				// don't stick when the new channel's fetch errors out (e.g.
+				// ghost channel without gm=1, or transient network error).
+				setMessages([]);
+				return;
+			}
 			const data = await res.json();
 			setMessages(data.messages || []);
-		} catch {}
-	}, []);
+		} catch {
+			setMessages([]);
+		}
+	}, [gm.enabled]);
 
 	const loadTyping = useCallback(async (channelId: number) => {
 		try {
@@ -363,6 +374,9 @@ function CommsLayoutInner({ character, isAdmin }: { character: ActiveCharacter; 
 	useEffect(() => {
 		if (!activeId) return;
 		setReplyingTo(null);
+		// Clear stale messages from the previous channel immediately so the
+		// user never sees the old conversation while the new one is fetching.
+		setMessages([]);
 		// Opening a channel clears its unread mention badge
 		setMentionCounts((c) => {
 			if (!c[activeId]) return c;

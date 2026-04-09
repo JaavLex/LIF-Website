@@ -125,8 +125,8 @@ export function MessageList({
 									</span>
 								)}
 								{m.postedAsGm && (
-									<span className="comms-message-mj-tag" title="Posté en mode MJ (visible aux admins uniquement)">
-										[MJ]
+									<span className="comms-message-mj-tag" title="Posté en mode GM (visible aux admins uniquement)">
+										[GM]
 									</span>
 								)}
 								<span className="comms-message-time">

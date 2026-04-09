@@ -451,10 +451,10 @@ export function MessageComposer({
 							disabled={disabled}
 						>
 							{activePuppet
-								? `MJ · ${activePuppet.callsign || activePuppet.fullName}`
-								: 'MJ · sélectionner…'}
+								? `GM · ${activePuppet.callsign || activePuppet.fullName}`
+								: 'GM · sélectionner…'}
 						</button>
-						{showPuppetPicker && gm.npcList && (
+						{showPuppetPicker && (
 							<div
 								style={{
 									position: 'absolute',
@@ -469,7 +469,22 @@ export function MessageComposer({
 									minWidth: '220px',
 								}}
 							>
-								{gm.npcList.map((n) => (
+								{gm.npcListLoading && (
+									<div style={{ color: '#f5b94a', padding: '0.25rem 0.5rem', fontSize: '0.72rem' }}>
+										Chargement…
+									</div>
+								)}
+								{gm.npcListError && (
+									<div style={{ color: '#ff8080', padding: '0.25rem 0.5rem', fontSize: '0.72rem' }}>
+										{gm.npcListError}
+									</div>
+								)}
+								{gm.npcList && gm.npcList.length === 0 && (
+									<div style={{ color: '#f5b94a', padding: '0.25rem 0.5rem', fontSize: '0.72rem' }}>
+										Aucun PNJ disponible
+									</div>
+								)}
+								{gm.npcList && gm.npcList.map((n) => (
 									<button
 										type="button"
 										key={n.id}

@@ -447,11 +447,11 @@ describe('AdminBar component', () => {
 		expect(content).toContain('useGmMode()');
 	});
 
-	it('renders MJ toggle and picker', () => {
+	it('renders GM toggle and picker', () => {
 		const content = readSrc('components/comms/AdminBar.tsx');
-		expect(content).toContain('MODE MJ');
+		expect(content).toContain('MODE GM');
 		expect(content).toContain('Incarner');
-		expect(content).toContain('Quitter MJ');
+		expect(content).toContain('Quitter GM');
 	});
 });
 

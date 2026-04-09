@@ -22,9 +22,9 @@ export function AdminBar({ isAdmin }: { isAdmin: boolean }) {
 					type="button"
 					className="comms-admin-bar__pill"
 					onClick={() => setEnabled(true)}
-					title="Activer le mode MJ"
+					title="Activer le mode GM"
 				>
-					MJ
+					Activer GM
 				</button>
 			</div>
 		);
@@ -37,7 +37,7 @@ export function AdminBar({ isAdmin }: { isAdmin: boolean }) {
 
 	return (
 		<div className="comms-admin-bar comms-admin-bar--on">
-			<span className="comms-admin-bar__label">MODE MJ</span>
+			<span className="comms-admin-bar__label">MODE GM</span>
 			{active ? (
 				<div className="comms-admin-bar__active">
 					{active.avatarUrl && (
@@ -94,9 +94,9 @@ export function AdminBar({ isAdmin }: { isAdmin: boolean }) {
 				type="button"
 				className="comms-admin-bar__quit"
 				onClick={() => setEnabled(false)}
-				title="Désactiver le mode MJ"
+				title="Désactiver le mode GM"
 			>
-				Quitter MJ
+				Quitter GM
 			</button>
 		</div>
 	);

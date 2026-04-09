@@ -6,9 +6,19 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.6.51',
+  version: '1.6.52',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.6.52',
+      date: '2026-04-09',
+      changes: [
+        'COMMS — Fix messages du canal précédent qui restaient affichés lors d\'un changement de canal vers un canal vide. Deux causes : (1) `loadMessages` retournait silencieusement sur `!res.ok` sans vider `messages`, donc un 403 sur canal ghost (admin sans `?gm=1`) ou une erreur réseau laissait la conversation précédente à l\'écran ; (2) l\'effet d\'ouverture de canal ne remettait pas `messages` à `[]` avant le fetch, ce qui laissait une brève fenêtre où le nouveau canal affichait l\'ancienne conversation. Fix : `setMessages([])` proactif en tête d\'effet + nettoyage sur erreur.',
+        'COMMS — Mode GM : `loadMessages` propage désormais `?gm=1` quand le mode GM est actif, permettant aux admins de lire les messages des canaux ghost sans se heurter au rejet 403 côté serveur. Le changement de canal vers un canal dont l\'admin n\'est pas membre affiche donc bien son contenu au lieu de garder la conversation précédente à l\'écran.',
+        'COMMS — Relabel français du mode MJ vers GM (GameMaster) sur tous les éléments visibles : bouton `MJ` → `Activer GM`, label `MODE MJ` → `MODE GM`, bouton `Quitter MJ` → `Quitter GM`, puce composer `MJ ·` → `GM ·`, tag message `[MJ]` → `[GM]`, titres d\'aide correspondants. Les classes CSS (`comms-message-mj-tag`, etc.) restent inchangées pour éviter un refactor inutile.',
+        'COMMS — Puce GM du composer : le dropdown ouvrait un menu vide si la liste des PNJ n\'était pas encore chargée ou vide, donnant l\'impression que "GM · sélectionner…" ne faisait rien. Ajout d\'états visibles `Chargement…`, `Aucun PNJ disponible`, et affichage de l\'erreur serveur le cas échéant. Le dropdown s\'affiche désormais immédiatement au clic, indépendamment de l\'état de chargement.',
+      ],
+    },
     {
       version: '1.6.51',
       date: '2026-04-09',
