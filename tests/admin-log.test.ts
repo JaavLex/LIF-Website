@@ -1,0 +1,183 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+
+const mockCreate = vi.fn();
+vi.mock('@/lib/payload', () => ({
+	getPayloadClient: async () => ({ create: mockCreate }),
+}));
+
+import {
+	computeDiff,
+	inflateSnapshot,
+	logAdminAction,
+} from '@/lib/admin-log';
+import type { SessionData } from '@/lib/session';
+
+const SESSION: SessionData = {
+	userId: 1,
+	discordId: '1234567890',
+	discordUsername: 'Boris',
+	discordAvatar: 'https://cdn.discordapp.com/avatars/1234567890/abc.png',
+	roles: [],
+};
+
+beforeEach(() => {
+	mockCreate.mockReset();
+	mockCreate.mockResolvedValue({ id: 999 });
+});
+
+describe('computeDiff', () => {
+	it('returns changed fields only', () => {
+		const before = { rank: 'CPL', unit: '1er RCM', name: 'Jean' };
+		const after = { rank: 'SGT', unit: '1er RCM', name: 'Jean' };
+		expect(computeDiff(before, after)).toEqual({
+			rank: { before: 'CPL', after: 'SGT' },
+		});
+	});
+
+	it('skips IGNORED_DIFF_FIELDS', () => {
+		const before = { id: 1, updatedAt: '2026-01-01', rank: 'CPL' };
+		const after = { id: 1, updatedAt: '2026-04-09', rank: 'SGT' };
+		const diff = computeDiff(before, after);
+		expect(diff).not.toHaveProperty('id');
+		expect(diff).not.toHaveProperty('updatedAt');
+		expect(diff).toHaveProperty('rank');
+	});
+
+	it('captures added and removed keys', () => {
+		const before = { a: 1 };
+		const after = { b: 2 };
+		expect(computeDiff(before, after)).toEqual({
+			a: { before: 1, after: undefined },
+			b: { before: undefined, after: 2 },
+		});
+	});
+
+	it('compares nested objects by JSON stringify', () => {
+		const before = { tags: ['a', 'b'] };
+		const after = { tags: ['a', 'b'] };
+		expect(computeDiff(before, after)).toEqual({});
+	});
+
+	it('treats array order changes as a diff', () => {
+		const before = { tags: ['a', 'b'] };
+		const after = { tags: ['b', 'a'] };
+		const diff = computeDiff(before, after);
+		expect(diff).toHaveProperty('tags');
+	});
+});
+
+describe('inflateSnapshot', () => {
+	it('create mode produces before:null, after:value for every field', () => {
+		const doc = { id: 1, updatedAt: 'x', rank: 'CPL', name: 'Jean' };
+		expect(inflateSnapshot(doc, 'create')).toEqual({
+			rank: { before: null, after: 'CPL' },
+			name: { before: null, after: 'Jean' },
+		});
+	});
+
+	it('delete mode produces before:value, after:null for every field', () => {
+		const doc = { id: 1, updatedAt: 'x', rank: 'CPL', name: 'Jean' };
+		expect(inflateSnapshot(doc, 'delete')).toEqual({
+			rank: { before: 'CPL', after: null },
+			name: { before: 'Jean', after: null },
+		});
+	});
+});
+
+describe('logAdminAction', () => {
+	it('writes a full entry for an update with diff', async () => {
+		await logAdminAction({
+			session: SESSION,
+			action: 'character.update',
+			summary: 'A modifié le personnage Jean Dupont',
+			entityType: 'character',
+			entityId: 42,
+			entityLabel: 'Jean Dupont',
+			before: { rank: 'CPL', name: 'Jean' },
+			after: { rank: 'SGT', name: 'Jean' },
+		});
+		expect(mockCreate).toHaveBeenCalledOnce();
+		const call = mockCreate.mock.calls[0][0];
+		expect(call.collection).toBe('admin-logs');
+		expect(call.data.actorDiscordId).toBe('1234567890');
+		expect(call.data.actorDiscordUsername).toBe('Boris');
+		expect(call.data.action).toBe('character.update');
+		expect(call.data.entityId).toBe('42');
+		expect(call.data.diff).toEqual({
+			rank: { before: 'CPL', after: 'SGT' },
+		});
+	});
+
+	it('writes a create entry with inflated snapshot', async () => {
+		await logAdminAction({
+			session: SESSION,
+			action: 'character.create',
+			summary: 'A créé le personnage Jean Dupont',
+			entityType: 'character',
+			entityId: 42,
+			after: { rank: 'CPL', name: 'Jean' },
+		});
+		expect(mockCreate).toHaveBeenCalledOnce();
+		const diff = mockCreate.mock.calls[0][0].data.diff;
+		expect(diff).toEqual({
+			rank: { before: null, after: 'CPL' },
+			name: { before: null, after: 'Jean' },
+		});
+	});
+
+	it('writes a delete entry with inflated snapshot', async () => {
+		await logAdminAction({
+			session: SESSION,
+			action: 'character.delete',
+			summary: 'A supprimé le personnage Jean Dupont',
+			entityType: 'character',
+			entityId: 42,
+			before: { rank: 'CPL', name: 'Jean' },
+		});
+		const diff = mockCreate.mock.calls[0][0].data.diff;
+		expect(diff).toEqual({
+			rank: { before: 'CPL', after: null },
+			name: { before: 'Jean', after: null },
+		});
+	});
+
+	it('writes a non-mutation entry (no diff, metadata only)', async () => {
+		await logAdminAction({
+			session: SESSION,
+			action: 'gm.enter',
+			summary: 'A activé le mode GameMaster',
+			metadata: { channel: 'comms' },
+		});
+		expect(mockCreate).toHaveBeenCalledOnce();
+		const data = mockCreate.mock.calls[0][0].data;
+		expect(data.diff).toBe(null);
+		expect(data.metadata).toEqual({ channel: 'comms' });
+	});
+
+	it('skips the write when an update produced no diff and no metadata', async () => {
+		await logAdminAction({
+			session: SESSION,
+			action: 'character.update',
+			summary: 'no-op',
+			before: { rank: 'CPL' },
+			after: { rank: 'CPL' },
+		});
+		expect(mockCreate).not.toHaveBeenCalled();
+	});
+
+	it('swallows errors from payload.create and never throws', async () => {
+		mockCreate.mockRejectedValueOnce(new Error('db down'));
+		const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+		await expect(
+			logAdminAction({
+				session: SESSION,
+				action: 'character.update',
+				summary: 'x',
+				before: { a: 1 },
+				after: { a: 2 },
+			}),
+		).resolves.toBeUndefined();
+		expect(consoleSpy).toHaveBeenCalledOnce();
+		consoleSpy.mockRestore();
+	});
+});
