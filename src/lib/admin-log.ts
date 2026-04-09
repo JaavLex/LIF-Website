@@ -35,6 +35,15 @@ const IGNORED_DIFF_FIELDS = new Set([
 	'_status',
 ]);
 
+/**
+ * Compare two documents and return only the fields that differ, shaped as
+ * `{ field: { before, after } }`. Used for update operations.
+ *
+ * Comparison is JSON-stringify-based, so arrays and nested objects are
+ * compared by value including element order. If order-stability ever becomes
+ * noisy (e.g. Payload reordering a relationship array on each save), sort
+ * arrays before stringifying — NOT in v1.
+ */
 export function computeDiff(
 	before: Record<string, unknown>,
 	after: Record<string, unknown>,
@@ -49,6 +58,11 @@ export function computeDiff(
 	return diff;
 }
 
+/**
+ * Inflate a single-sided document (create has only `after`, delete has only
+ * `before`) into the same `{ field: { before, after } }` shape used for
+ * updates so the UI can render all three event types uniformly.
+ */
 export function inflateSnapshot(
 	doc: Record<string, unknown>,
 	mode: 'create' | 'delete',

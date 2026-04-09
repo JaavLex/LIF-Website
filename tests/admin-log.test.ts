@@ -165,6 +165,21 @@ describe('logAdminAction', () => {
 		expect(mockCreate).not.toHaveBeenCalled();
 	});
 
+	it('writes when update has no diff but metadata is present', async () => {
+		await logAdminAction({
+			session: SESSION,
+			action: 'character.update',
+			summary: 'annotation only',
+			before: { rank: 'CPL' },
+			after: { rank: 'CPL' },
+			metadata: { note: 'admin override' },
+		});
+		expect(mockCreate).toHaveBeenCalledOnce();
+		const data = mockCreate.mock.calls[0][0].data;
+		expect(data.diff).toEqual({});
+		expect(data.metadata).toEqual({ note: 'admin override' });
+	});
+
 	it('swallows errors from payload.create and never throws', async () => {
 		mockCreate.mockRejectedValueOnce(new Error('db down'));
 		const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
