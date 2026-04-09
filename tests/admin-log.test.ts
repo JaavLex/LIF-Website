@@ -313,6 +313,29 @@ describe('route instrumentation smoke test', () => {
 	});
 });
 
+describe('GET /api/moderation/admin-logs', () => {
+	it('is gated by requireFullAdmin', async () => {
+		const { readFileSync } = await import('node:fs');
+		const { join } = await import('node:path');
+		const src = readFileSync(
+			join(process.cwd(), 'src/app/api/moderation/admin-logs/route.ts'),
+			'utf8',
+		);
+		expect(src).toMatch(/requireFullAdmin/);
+	});
+
+	it('uses cursor pagination on createdAt + id', async () => {
+		const { readFileSync } = await import('node:fs');
+		const { join } = await import('node:path');
+		const src = readFileSync(
+			join(process.cwd(), 'src/app/api/moderation/admin-logs/route.ts'),
+			'utf8',
+		);
+		expect(src).toMatch(/nextCursor/);
+		expect(src).toMatch(/createdAt/);
+	});
+});
+
 describe('admin-log retention cron', () => {
 	it('pruneOnce deletes entries older than 180 days', async () => {
 		const mockDelete = vi.fn().mockResolvedValue({ docs: [] });
