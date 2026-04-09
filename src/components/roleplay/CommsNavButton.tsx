@@ -68,6 +68,13 @@ export function CommsNavButton() {
 				const data = await res.json();
 				const channels: ChannelLite[] = data.channels || [];
 				const seen = readMap(SEEN_KEY) as Record<string, string>;
+				// Snapshot seen BEFORE the increment loop advances its
+				// cursors. The reconcile step below compares against this
+				// snapshot so that we only drop a count when the user has
+				// caught up EXTERNALLY (i.e. /comms wrote seenLastAt on
+				// channel open), not because this very poll just advanced
+				// the cursor to the current lastMessageAt.
+				const seenBefore: Record<string, string> = { ...seen };
 				const counts = readMap(STORAGE_KEY) as Record<string, number>;
 				let changed = false;
 				// Build a lookup of current channels so we can reconcile stale
@@ -106,7 +113,7 @@ export function CommsNavButton() {
 						changed = true;
 						continue;
 					}
-					const seenAt = seen[key];
+					const seenAt = seenBefore[key];
 					if (seenAt && ch.lastMessageAt && seenAt >= ch.lastMessageAt) {
 						delete counts[key];
 						changed = true;

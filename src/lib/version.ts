@@ -6,9 +6,16 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.6.49',
+  version: '1.6.50',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.6.50',
+      date: '2026-04-09',
+      changes: [
+        'ROLEPLAY — Hotfix badge de mention qui ne s\'affichait plus du tout sur le bouton COMMS de `/roleplay`. Le correctif 1.6.49 comparait `seen[key] >= lastMessageAt` dans la boucle de reconciliation, mais la boucle d\'incrémentation située juste au-dessus avançait systématiquement `seen[id] = lastMessageAt` pour chaque canal. Résultat : la reconciliation voyait toujours `seen === lastMessageAt` et supprimait le compteur immédiatement après l\'avoir incrémenté, sur le même poll. Fix : snapshot de `seen` pris AVANT la boucle d\'incrémentation (`seenBefore`), et la reconciliation compare désormais contre cette photo pré-poll. Le compteur n\'est donc nettoyé que si le baseline était DÉJÀ à jour avant ce poll — ce qui n\'arrive que quand `/comms` a écrit seenLastAt sur ouverture de canal.',
+      ],
+    },
     {
       version: '1.6.49',
       date: '2026-04-08',
