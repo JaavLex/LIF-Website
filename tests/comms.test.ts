@@ -386,3 +386,11 @@ describe('GET /api/comms/channels/[id]/messages GM read bypass', () => {
 		expect(content).toMatch(/postedAsGm[\s\S]{0,200}isAdmin/);
 	});
 });
+
+describe('GET /api/roleplay/notifications/pending', () => {
+	it('never includes postedAsGm in response (mod audience is non-admin)', () => {
+		const content = readSrc('app/api/roleplay/notifications/pending/route.ts');
+		// The field must not appear at all in the response mapping
+		expect(content).not.toMatch(/postedAsGm:\s*[^,]/);
+	});
+});
