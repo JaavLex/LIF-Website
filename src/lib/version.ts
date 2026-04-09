@@ -6,9 +6,17 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.6.55',
+  version: '1.6.56',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.6.56',
+      date: '2026-04-09',
+      changes: [
+        'ROLEPLAY — Fix pastille de mentions sur le bouton COMMS qui disparaissait ~12s après l\'arrivée d\'un message, même sans que l\'utilisateur ait lu le canal. Cause : dans `CommsNavButton.tsx`, la boucle de poll avançait inconditionnellement `seen[ch] = ch.lastMessageAt` après avoir incrémenté le compteur, puis l\'étape de réconciliation comparait `seenBefore[key] >= ch.lastMessageAt` — mais au poll suivant, `seenBefore` (un snapshot de `seen` AVANT avance) contenait déjà la valeur avancée par le poll précédent, donc la condition était toujours vraie et le compteur était supprimé. Fix : retirer la réconciliation basée sur `seen`. Le nettoyage du compteur "user a lu" repose désormais exclusivement sur les événements `storage` / `comms-mention-counts-change` déjà dispatchés par `CommsLayout` (à l\'ouverture de /comms et à l\'ouverture d\'un canal), ce qui est le chemin autorisé et ne souffre pas du problème de l\'auto-avance.',
+        'BOT — Durcissement de la résolution de `PUBLIC_BASE_URL` contre les valeurs de loopback. Next.js inline `process.env.NEXT_PUBLIC_*` au MOMENT DU BUILD ; si le `.env` de prod contenait `NEXT_PUBLIC_BASE_URL=http://127.0.0.1:3001` (drift probable par copier-coller depuis la ligne `SITE_URL=http://127.0.0.1:3001` voisine dans `.env.example`), la littérale était gravée dans le bundle serveur et toutes les notifications Discord (`[Voir le dossier]`, etc.) pointaient vers localhost — aucun changement d\'env au runtime ne pouvait défaire cela avant un rebuild. Fix : nouveau helper `isLoopbackBaseUrl` qui rejette `localhost`, `127.0.0.1`, `0.0.0.0` et `[::1]` (case-insensitive) ; la résolution traverse les candidats et retombe sur le fallback codé en dur `https://lif-arma.com` si tous sont loopback. Regression guard dans `tests/constants.test.ts`.',
+      ],
+    },
     {
       version: '1.6.55',
       date: '2026-04-09',

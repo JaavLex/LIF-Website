@@ -20,10 +20,35 @@
 // fallback leaked into Discord notifications and rendered them useless
 // (v1.6.41 fixed the bot slash commands; v1.6.54 finishes the job for all
 // notification builders via this shared constant).
-export const PUBLIC_BASE_URL =
-	process.env.NEXT_PUBLIC_BASE_URL ||
-	process.env.NEXT_PUBLIC_SITE_URL ||
-	'https://lif-arma.com';
+//
+// IMPORTANT: Next.js inlines `process.env.NEXT_PUBLIC_*` at BUILD time. If the
+// prod `.env` happens to hold a local loopback value (copy-paste drift from
+// the adjacent `SITE_URL=http://127.0.0.1:3001` line in `.env.example`), that
+// literal is baked into the server bundle and NO runtime env change can undo
+// it until the next rebuild. To make PUBLIC_BASE_URL self-healing against
+// that failure mode, the resolver rejects any candidate whose host is a
+// loopback / unspecified address and falls through to the next source.
+// Regression fixed in v1.6.56 — see tests/constants.test.ts.
+const isLoopbackBaseUrl = (value: string | undefined): boolean => {
+	if (!value) return true;
+	// Match http(s)://host with optional port/path. Case-insensitive on the
+	// scheme + host. Anything starting with localhost, 127.0.0.1, 0.0.0.0,
+	// or ::1 is rejected as a user-facing link target.
+	return /^https?:\/\/(localhost|127\.0\.0\.1|0\.0\.0\.0|\[::1\])(:|\/|$)/i.test(
+		value,
+	);
+};
+const resolvePublicBaseUrl = (): string => {
+	const candidates = [
+		process.env.NEXT_PUBLIC_BASE_URL,
+		process.env.NEXT_PUBLIC_SITE_URL,
+	];
+	for (const candidate of candidates) {
+		if (!isLoopbackBaseUrl(candidate)) return candidate as string;
+	}
+	return 'https://lif-arma.com';
+};
+export const PUBLIC_BASE_URL = resolvePublicBaseUrl();
 
 // --- Moderation ---
 

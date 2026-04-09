@@ -68,13 +68,6 @@ export function CommsNavButton() {
 				const data = await res.json();
 				const channels: ChannelLite[] = data.channels || [];
 				const seen = readMap(SEEN_KEY) as Record<string, string>;
-				// Snapshot seen BEFORE the increment loop advances its
-				// cursors. The reconcile step below compares against this
-				// snapshot so that we only drop a count when the user has
-				// caught up EXTERNALLY (i.e. /comms wrote seenLastAt on
-				// channel open), not because this very poll just advanced
-				// the cursor to the current lastMessageAt.
-				const seenBefore: Record<string, string> = { ...seen };
 				const counts = readMap(STORAGE_KEY) as Record<string, number>;
 				let changed = false;
 				// Build a lookup of current channels so we can reconcile stale
@@ -99,22 +92,19 @@ export function CommsNavButton() {
 				}
 
 				// Reconcile stale counts: drop entries that no longer reflect
-				// an actual unread mention on the server, AND drop entries
-				// where the viewer has already caught up (seen baseline has
-				// advanced to or past the latest message). Without the
-				// seen-based check, a channel whose latest message is a
-				// mention keeps `lastMessageMentionsViewer: true` forever —
-				// even after the user reads it in /comms — so the badge
-				// would never clear.
+				// an actual unread mention on the server. The "user caught
+				// up" case is NOT handled here — it is handled exclusively
+				// by the storage/custom event listeners below, which fire
+				// when /comms writes an empty mentionCounts map on mount or
+				// clears a specific channel on open. A seen-based reconcile
+				// here is unsound because THIS poller also advances `seen`
+				// unconditionally above, so any check like
+				// `seen[key] >= ch.lastMessageAt` would be true on every
+				// poll AFTER the one that recorded the mention — dropping
+				// the count 12s later even though the user never read it.
 				for (const key of Object.keys(counts)) {
 					const ch = currentById.get(key);
 					if (!ch || !ch.lastMessageMentionsViewer) {
-						delete counts[key];
-						changed = true;
-						continue;
-					}
-					const seenAt = seenBefore[key];
-					if (seenAt && ch.lastMessageAt && seenAt >= ch.lastMessageAt) {
 						delete counts[key];
 						changed = true;
 					}

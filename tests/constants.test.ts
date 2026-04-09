@@ -257,6 +257,39 @@ describe('PUBLIC_BASE_URL', () => {
 		expect(match![0]).not.toMatch(/process\.env\.SITE_URL/);
 	});
 
+	// Regression guard for v1.6.56: if the deployed `.env` held
+	// `NEXT_PUBLIC_BASE_URL=http://127.0.0.1:3001` (a plausible copy-paste
+	// from the adjacent SITE_URL line in `.env.example`), that literal was
+	// baked into the server bundle at build time by Next.js and leaked into
+	// every Discord notification. The resolver now rejects any loopback /
+	// unspecified host and falls through to the public fallback.
+	it('resolver contains a loopback filter covering all local hosts', async () => {
+		const { readFileSync } = await import('node:fs');
+		const { join } = await import('node:path');
+		const src = readFileSync(
+			join(process.cwd(), 'src/lib/constants.ts'),
+			'utf8',
+		);
+		// Scope the check to the resolver region so unrelated matches
+		// elsewhere in the file don't create false positives.
+		const region = src.slice(
+			src.indexOf('isLoopbackBaseUrl'),
+			src.indexOf('export const PUBLIC_BASE_URL'),
+		);
+		expect(region.length).toBeGreaterThan(0);
+		expect(region).toContain('localhost');
+		expect(region).toContain('127.0.0.1');
+		expect(region).toContain('0.0.0.0');
+		expect(region).toContain('::1');
+	});
+
+	it('PUBLIC_BASE_URL is not a loopback at runtime', async () => {
+		const mod = await import('@/lib/constants');
+		expect(mod.PUBLIC_BASE_URL).not.toMatch(
+			/^https?:\/\/(localhost|127\.0\.0\.1|0\.0\.0\.0|\[::1\])/i,
+		);
+	});
+
 	it('no source file reads process.env.SITE_URL as code', async () => {
 		const { readFileSync, readdirSync, statSync } = await import('node:fs');
 		const { join } = await import('node:path');
