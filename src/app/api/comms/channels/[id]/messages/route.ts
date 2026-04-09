@@ -240,11 +240,58 @@ export async function POST(
 		return NextResponse.json({ error: 'Canal introuvable' }, { status: 404 });
 
 	const members: number[] = Array.isArray(channel.members) ? channel.members : [];
-	if (!members.map(Number).includes(eligibility.character.id)) {
+
+	const body = await request.json();
+	const gmMode = body.gmMode === true;
+	const impersonateCharacterId = gmMode ? Number(body.impersonateCharacterId) : null;
+
+	if (!gmMode && !members.map(Number).includes(eligibility.character.id)) {
 		return NextResponse.json({ error: 'Non membre' }, { status: 403 });
 	}
 
-	const body = await request.json();
+	let impersonatedCharacter: any = null;
+	if (gmMode) {
+		const perms = await checkAdminPermissions(session!);
+		if (!perms.isAdmin) {
+			return NextResponse.json(
+				{ error: 'Mode MJ réservé aux administrateurs' },
+				{ status: 403 },
+			);
+		}
+		if (!impersonateCharacterId || Number.isNaN(impersonateCharacterId)) {
+			return NextResponse.json(
+				{ error: 'impersonateCharacterId manquant' },
+				{ status: 400 },
+			);
+		}
+		const pc = await getPayloadClient();
+		impersonatedCharacter = await pc
+			.findByID({
+				collection: 'characters',
+				id: impersonateCharacterId,
+				depth: 0,
+			})
+			.catch(() => null);
+		if (!impersonatedCharacter) {
+			return NextResponse.json(
+				{ error: 'Personnage introuvable' },
+				{ status: 404 },
+			);
+		}
+		if (impersonatedCharacter.discordId) {
+			return NextResponse.json(
+				{ error: 'Impersonation limitée aux PNJ et cibles' },
+				{ status: 400 },
+			);
+		}
+		if (impersonatedCharacter.isArchived) {
+			return NextResponse.json(
+				{ error: 'Personnage archivé' },
+				{ status: 400 },
+			);
+		}
+	}
+
 	const text: string = (body.body || '').toString();
 	const clientAnon = !!body.isAnonymous;
 	const attachments: any[] = Array.isArray(body.attachments) ? body.attachments : [];
@@ -356,8 +403,9 @@ export async function POST(
 		collection: 'comms-messages',
 		data: {
 			channelId,
-			senderCharacterId: eligibility.character.id,
+			senderCharacterId: gmMode ? impersonatedCharacter.id : eligibility.character.id,
 			senderDiscordId: session!.discordId,
+			postedAsGm: gmMode ? true : false,
 			isAnonymous,
 			body: text,
 			attachments,

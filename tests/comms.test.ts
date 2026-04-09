@@ -394,3 +394,28 @@ describe('GET /api/roleplay/notifications/pending', () => {
 		expect(content).not.toMatch(/postedAsGm:\s*[^,]/);
 	});
 });
+
+describe('POST /api/comms/channels/[id]/messages GM impersonation', () => {
+	it('gates gmMode requests with admin check', () => {
+		const content = readSrc('app/api/comms/channels/[id]/messages/route.ts');
+		expect(content).toMatch(/gmMode[\s\S]{0,400}checkAdminPermissions/);
+	});
+
+	it('rejects impersonation of Discord-linked characters', () => {
+		const content = readSrc('app/api/comms/channels/[id]/messages/route.ts');
+		expect(content).toMatch(/impersonateCharacterId[\s\S]{0,600}discordId/);
+		expect(content).toMatch(/Impersonation limitée aux PNJ et cibles/);
+	});
+
+	it('writes postedAsGm true and skips membership check when gmMode', () => {
+		const content = readSrc('app/api/comms/channels/[id]/messages/route.ts');
+		expect(content).toMatch(/postedAsGm:\s*true/);
+		// Membership gate must be conditional on !gmMode
+		expect(content).toMatch(/!gmMode[\s\S]{0,300}Non membre/);
+	});
+
+	it('does not mutate channel.members when gmMode', () => {
+		const content = readSrc('app/api/comms/channels/[id]/messages/route.ts');
+		expect(content).not.toMatch(/members\.push.*impersonate/);
+	});
+});
