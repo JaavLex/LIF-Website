@@ -442,7 +442,7 @@ export function MessageComposer({
 					<span className="comms-composer-anon-short">Anon</span>
 				</label>
 				{gm.enabled && (
-					<div style={{ position: 'relative' }}>
+					<div style={{ position: 'relative', minWidth: 0, flexShrink: 1 }}>
 						<button
 							type="button"
 							className="comms-composer-puppet-chip"

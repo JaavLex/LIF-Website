@@ -316,6 +316,26 @@ function CommsLayoutInner({ character, isAdmin }: { character: ActiveCharacter; 
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [gm.enabled]);
 
+	// Entering /comms = reading. Clear the global mention counter used by
+	// the /roleplay COMMS nav badge on mount so the bubble disappears as soon
+	// as the user lands on this page — regardless of whether they click each
+	// mentioned channel individually. The in-page per-channel badges rebuild
+	// from future polls, so this only affects the cross-page nav bubble.
+	// Runs exactly once on mount to avoid racing with the mentionCounts
+	// persistence useEffect above.
+	const clearedNavOnMountRef = useRef(false);
+	useEffect(() => {
+		if (clearedNavOnMountRef.current) return;
+		clearedNavOnMountRef.current = true;
+		setMentionCounts({});
+		if (typeof window !== 'undefined') {
+			try {
+				window.localStorage.setItem('comms.mentionCounts.v1', '{}');
+				window.dispatchEvent(new CustomEvent('comms-mention-counts-change'));
+			} catch {}
+		}
+	}, []);
+
 	// Hydrate persisted UI state on mount
 	useEffect(() => {
 		if (typeof window === 'undefined') return;

@@ -6,14 +6,23 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.6.54',
+  version: '1.6.55',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.6.55',
+      date: '2026-04-09',
+      changes: [
+        'COMMS — Fix bouton TRANSMETTRE qui sortait encore de l\'écran en mobile, en particulier quand la puce GM (mode admin) était présente sur la rangée. Renforcement des règles de wrapping : `.comms-composer-row` a désormais `width: 100%`, `min-width: 0`, `flex-wrap: wrap` et `max-width: 100%` explicitement, la puce GM (wrappée inline avec `position: relative`) reçoit `min-width: 0` et `flex-shrink: 1`, et le bouton d\'envoi passe en `order: 99` / `flex: 1 1 100%` pour garantir qu\'il wrappe TOUJOURS sous la rangée des autres contrôles quel que soit leur nombre.',
+        'ROLEPLAY — Refonte visuelle de la pastille de mentions sur le bouton COMMS. L\'ancienne était coincée sur l\'icône radio et clippée par `overflow: hidden` du bouton, ce qui coupait l\'anneau de pulse et donnait un rendu confus. Nouveau design : pastille flottante style notification classique, ancrée au coin supérieur droit du bouton lui-même (`top: -9px; right: -9px`), gradient rouge trois stops (`#ff5c5c → #e01818 → #a30d0d`), bordure noire 2px, glow rouge externe, text-shadow sur le chiffre, et `overflow: visible` sur `.rp-nav-btn` pour laisser la pastille et son anneau de pulse déborder. Re-ancrage mobile identique (`top: -8px; right: -8px`).',
+        'ROLEPLAY — Fix pastille qui persistait même après avoir lu les messages dans /comms. Le poller `CommsNavButton` compte les mentions non-lues via localStorage et se rafraîchit lors d\'un `storage` event — mais /comms et /roleplay sont deux routes distinctes, et le flux user "j\'ouvre /comms = j\'ai lu" n\'était pas modélisé : tant que l\'utilisateur ne cliquait pas explicitement le canal concerné, la pastille persistait. Nouveau comportement : à l\'ouverture de /comms, `CommsLayoutInner` efface `comms.mentionCounts.v1` exactement une fois (guard via `useRef`), dispatche l\'événement custom `comms-mention-counts-change`, et les badges par canal se reconstruisent depuis les polls suivants.',
+      ],
+    },
     {
       version: '1.6.54',
       date: '2026-04-09',
       changes: [
-        'BOT — Fix définitif des liens `127.0.0.1:3001` dans les notifications Discord (nouveau dossier, changement de statut, nouvel événement timeline). Le hotfix 1.6.41 n\'avait corrigé QUE `src/bot/index.ts` ; `src/lib/discord-notify.ts` (qui envoie les notifications via l\'API REST Discord depuis les routes Next) utilisait toujours la vieille chaîne `NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || ...`, et comme `SITE_URL=http://127.0.0.1:3001` en production (pour les fetchs internes), tous les boutons `[Voir le dossier]` pointaient vers localhost. Refactor : nouvel export partagé `PUBLIC_BASE_URL` dans `src/lib/constants.ts` qui résout UNIQUEMENT via `NEXT_PUBLIC_BASE_URL` → `NEXT_PUBLIC_SITE_URL` → fallback codé en dur `https://lif-arma.com`. Migration de `discord-notify.ts`, `bot/index.ts` et `api/roleplay/notifications/pending` vers cette constante unique. Regression guard ajoutée dans `tests/constants.test.ts` qui échoue si n\'importe quel fichier source (hors commentaires) lit `process.env.SITE_URL`.',
+        'BOT — Fix définitif des liens `127.0.0.1:3001` dans les notifications Discord (nouveau dossier, changement de statut, nouvel événement timeline). Le hotfix 1.6.41 n\'avait corrigé QUE `src/bot/index.ts` ; `src/lib/discord-notify.ts` (qui envoie les notifications via l\'API REST Discord depuis les routes Next) utilisait toujours la vieille chaîne de fallback vers la variable serveur interne, et comme celle-ci vaut `http://127.0.0.1:3001` en production (pour les fetchs internes), tous les boutons `[Voir le dossier]` pointaient vers localhost. Refactor : nouvel export partagé `PUBLIC_BASE_URL` dans `src/lib/constants.ts` qui résout UNIQUEMENT via `NEXT_PUBLIC_BASE_URL` → `NEXT_PUBLIC_SITE_URL` → fallback codé en dur `https://lif-arma.com`. Migration de `discord-notify.ts`, `bot/index.ts` et `api/roleplay/notifications/pending` vers cette constante unique. Regression guard ajoutée dans `tests/constants.test.ts` qui échoue si un fichier source lit la variable serveur interne hors commentaires.',
       ],
     },
     {
