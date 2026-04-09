@@ -113,14 +113,16 @@ export async function PATCH(
 			// enforce the 500-char minimum on the fields actually present in
 			// the request body — untouched fields are assumed to already
 			// satisfy the rule or belong to a legacy row the admin will fix.
-			if (body.civilianBackground !== undefined) {
+			// Admins bypass the length check entirely (scenario props, legacy
+			// fixes, etc.).
+			if (!isAdmin && body.civilianBackground !== undefined) {
 				const err = validateBackground(
 					body.civilianBackground,
 					'parcours civil',
 				);
 				if (err) return NextResponse.json({ message: err }, { status: 400 });
 			}
-			if (body.militaryBackground !== undefined) {
+			if (!isAdmin && body.militaryBackground !== undefined) {
 				const err = validateBackground(
 					body.militaryBackground,
 					'parcours militaire',
@@ -227,11 +229,13 @@ export async function PATCH(
 					? body.militaryBackground
 					: (existing as any).militaryBackground,
 			);
-			if (
-				finalAvatar &&
-				finalCivCount >= BACKGROUND_MIN_LENGTH &&
-				finalMilCount >= BACKGROUND_MIN_LENGTH
-			) {
+			// Admins bypass the 500-char length part of the gate (but still
+			// need an avatar). Players must hit the full bar.
+			const lengthOk =
+				isAdmin ||
+				(finalCivCount >= BACKGROUND_MIN_LENGTH &&
+					finalMilCount >= BACKGROUND_MIN_LENGTH);
+			if (finalAvatar && lengthOk) {
 				body.requiresImprovements = false;
 				body.improvementReason = null;
 				body.improvementRequestedAt = null;

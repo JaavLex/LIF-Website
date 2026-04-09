@@ -43,16 +43,19 @@ export async function POST(request: NextRequest) {
 		const isNpcCreation = isAdmin && body.isNpc;
 		delete body.isNpc;
 
-		// Player characters (non-NPC) must have a profile picture and substantial
-		// civilian / military backgrounds. NPCs are exempt because admins fill
-		// them out rapidly as props for scenarios.
-		if (!isNpcCreation) {
-			if (!body.avatar) {
-				return NextResponse.json(
-					{ message: 'Une photo de profil est obligatoire.' },
-					{ status: 400 },
-				);
-			}
+		// Player characters (non-NPC) must have a profile picture. NPCs are
+		// exempt because admins fill them out rapidly as props for scenarios.
+		if (!isNpcCreation && !body.avatar) {
+			return NextResponse.json(
+				{ message: 'Une photo de profil est obligatoire.' },
+				{ status: 400 },
+			);
+		}
+
+		// 500-char background minimum is a PLAYER-only rule. Admins can bypass
+		// it (whether creating their own sheet or an NPC) so that quick
+		// scenario props and admin characters are not blocked by lore length.
+		if (!isNpcCreation && !isAdmin) {
 			const civErr = validateBackground(body.civilianBackground, 'parcours civil');
 			if (civErr) {
 				return NextResponse.json({ message: civErr }, { status: 400 });

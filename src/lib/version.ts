@@ -6,9 +6,16 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.6.58',
+  version: '1.6.59',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.6.59',
+      date: '2026-04-09',
+      changes: [
+        'ROLEPLAY — Les admins peuvent désormais bypasser le minimum de 500 caractères sur les parcours civil et militaire. Règle : le plancher de longueur n\'est enforcée QUE pour les joueurs non-admin. (1) Route POST `/api/roleplay/characters` : appels à `validateBackground` déplacés dans une branche `!isNpcCreation && !isAdmin`. Les admins qui créent leur propre personnage ou un PNJ ne sont plus bloqués. La photo de profil reste obligatoire pour toute fiche player-character (la règle admin-bypass ne s\'applique qu\'à la longueur, pas à l\'avatar). (2) Route PATCH `/api/roleplay/characters/[id]` : validation des backgrounds gatée sur `!isAdmin && body.X !== undefined` — un admin qui modifie son propre dossier ou celui d\'un joueur peut laisser les champs courts. (3) Auto-réhabilitation des fiches flaguées `requiresImprovements` : le gate de longueur est bypassé pour les admins éditant leur propre fiche flaguée ; la photo de profil reste exigée. (4) `CharacterForm.tsx` : la pré-validation client-side du submit est gatée sur `!isAdmin`, et le compteur live + le marqueur `*` obligatoire sous chaque textarea ne s\'affichent plus quand l\'utilisateur est admin (la règle ne s\'applique pas à eux, autant ne pas polluer l\'UI avec un compteur inutile). 2 nouveaux tests source-level vérifiant le câblage de l\'exemption admin dans les deux routes. 207 tests au total.',
+      ],
+    },
     {
       version: '1.6.58',
       date: '2026-04-09',

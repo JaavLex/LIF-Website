@@ -186,19 +186,24 @@ export function CharacterForm({
 				setError('Le callsign est obligatoire.');
 				return;
 			}
-			const civCount = backgroundCharCount(form.civilianBackground);
-			if (civCount < BACKGROUND_MIN_LENGTH) {
-				setError(
-					`Le parcours civil doit contenir au moins ${BACKGROUND_MIN_LENGTH} caractères (actuellement ${civCount}).`,
-				);
-				return;
-			}
-			const milCount = backgroundCharCount(form.militaryBackground);
-			if (milCount < BACKGROUND_MIN_LENGTH) {
-				setError(
-					`Le parcours militaire doit contenir au moins ${BACKGROUND_MIN_LENGTH} caractères (actuellement ${milCount}).`,
-				);
-				return;
+			// Admins bypass the 500-char background minimum — the rule is
+			// meant to force players to write lore, not to block admin NPCs or
+			// scenario props or legacy fixes.
+			if (!isAdmin) {
+				const civCount = backgroundCharCount(form.civilianBackground);
+				if (civCount < BACKGROUND_MIN_LENGTH) {
+					setError(
+						`Le parcours civil doit contenir au moins ${BACKGROUND_MIN_LENGTH} caractères (actuellement ${civCount}).`,
+					);
+					return;
+				}
+				const milCount = backgroundCharCount(form.militaryBackground);
+				if (milCount < BACKGROUND_MIN_LENGTH) {
+					setError(
+						`Le parcours militaire doit contenir au moins ${BACKGROUND_MIN_LENGTH} caractères (actuellement ${milCount}).`,
+					);
+					return;
+				}
 			}
 		}
 
@@ -709,24 +714,28 @@ export function CharacterForm({
 
 					{(['civilianBackground', 'militaryBackground'] as const).map(fieldName => {
 						const count = backgroundCharCount(form[fieldName]);
-						const ok = form.isNpc || count >= BACKGROUND_MIN_LENGTH;
+						// Minimum only applies to non-admin, non-NPC player sheets.
+						const enforced = !form.isNpc && !isAdmin;
+						const ok = !enforced || count >= BACKGROUND_MIN_LENGTH;
 						const label =
 							fieldName === 'civilianBackground' ? 'Parcours civil' : 'Parcours militaire';
 						return (
 							<div key={fieldName} style={{ marginBottom: '1rem' }}>
-								<label style={labelStyle}>{label}{form.isNpc ? '' : ' *'}</label>
+								<label style={labelStyle}>{label}{enforced ? ' *' : ''}</label>
 								<textarea
 									name={fieldName}
 									value={form[fieldName]}
 									onChange={handleChange}
 									className="filter-input"
 									style={{ width: '100%', minHeight: '160px', resize: 'vertical' }}
-									placeholder={`Décrivez en détail le ${label.toLowerCase()} du personnage (minimum ${BACKGROUND_MIN_LENGTH} caractères)...`}
+									placeholder={`Décrivez en détail le ${label.toLowerCase()} du personnage${enforced ? ` (minimum ${BACKGROUND_MIN_LENGTH} caractères)` : ''}...`}
 								/>
-								<div style={{ fontSize: '0.7rem', color: ok ? 'var(--muted)' : 'var(--danger)', marginTop: '0.35rem', fontFamily: 'monospace' }}>
-									{count} / {BACKGROUND_MIN_LENGTH} caractères
-									{!ok ? ` — il manque ${BACKGROUND_MIN_LENGTH - count}` : ''}
-								</div>
+								{enforced && (
+									<div style={{ fontSize: '0.7rem', color: ok ? 'var(--muted)' : 'var(--danger)', marginTop: '0.35rem', fontFamily: 'monospace' }}>
+										{count} / {BACKGROUND_MIN_LENGTH} caractères
+										{!ok ? ` — il manque ${BACKGROUND_MIN_LENGTH - count}` : ''}
+									</div>
+								)}
 							</div>
 						);
 					})}
