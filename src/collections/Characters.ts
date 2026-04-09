@@ -377,6 +377,62 @@ export const Characters: CollectionConfig = {
 				position: 'sidebar',
 			},
 		},
+		// Admin-imposed "fiche à améliorer" state. The owner keeps ownership
+		// and game link (biId / isMainCharacter are not cleared), but the
+		// character is forced to dishonourable-discharge until they edit the
+		// sheet to meet the validation rules again.
+		{
+			name: 'requiresImprovements',
+			label: 'Améliorations requises',
+			type: 'checkbox',
+			defaultValue: false,
+			admin: {
+				position: 'sidebar',
+				description:
+					"Défini par un admin via le bouton 'Demander des améliorations'. Se réinitialise automatiquement quand le joueur édite la fiche et satisfait les règles de validation.",
+			},
+			access: {
+				update: ({ req }) => req.user?.role === 'admin',
+			},
+		},
+		{
+			name: 'improvementReason',
+			label: "Raison de la demande d'améliorations",
+			type: 'textarea',
+			admin: {
+				position: 'sidebar',
+				condition: data => data?.requiresImprovements,
+			},
+			access: {
+				update: ({ req }) => req.user?.role === 'admin',
+			},
+		},
+		{
+			name: 'improvementRequestedAt',
+			label: 'Améliorations demandées le',
+			type: 'date',
+			admin: {
+				position: 'sidebar',
+				condition: data => data?.requiresImprovements,
+				readOnly: true,
+			},
+			access: {
+				update: ({ req }) => req.user?.role === 'admin',
+			},
+		},
+		{
+			name: 'improvementRequestedBy',
+			label: 'Améliorations demandées par',
+			type: 'text',
+			admin: {
+				position: 'sidebar',
+				condition: data => data?.requiresImprovements,
+				readOnly: true,
+			},
+			access: {
+				update: ({ req }) => req.user?.role === 'admin',
+			},
+		},
 		{
 			name: 'isTarget',
 			label: 'Cible / Ennemi',

@@ -5,6 +5,12 @@ import { checkAdminPermissions } from '@/lib/admin';
 import { notifyStatusChange } from '@/lib/discord-notify';
 import { generateUniqueCallsign } from '@/lib/callsign';
 import { logAdminAction } from '@/lib/admin-log';
+import {
+	sanitizeCallsign,
+	validateBackground,
+	backgroundCharCount,
+	BACKGROUND_MIN_LENGTH,
+} from '@/lib/character-validation';
 
 export async function PATCH(
 	request: NextRequest,
@@ -58,17 +64,69 @@ export async function PATCH(
 			body.biId = null;
 		}
 
-		// Callsign is mandatory: reject clearing; auto-fill legacy rows missing one
+		// Callsign is mandatory: reject clearing; auto-fill legacy rows missing one.
+		// Sanitize to strip quotes/guillemets so inputs like « le fourbe »
+		// always land as "le fourbe".
 		if (body.callsign !== undefined) {
-			if (typeof body.callsign !== 'string' || !body.callsign.trim()) {
+			if (typeof body.callsign !== 'string') {
 				return NextResponse.json(
 					{ message: 'Le callsign est obligatoire.' },
 					{ status: 400 },
 				);
 			}
-			body.callsign = body.callsign.trim();
+			body.callsign = sanitizeCallsign(body.callsign);
+			if (!body.callsign) {
+				return NextResponse.json(
+					{ message: 'Le callsign est obligatoire.' },
+					{ status: 400 },
+				);
+			}
 		} else if (!existing.callsign) {
 			body.callsign = await generateUniqueCallsign(payload);
+		}
+
+		// Determine whether this character is a real player character (has a
+		// linked Discord account). NPCs / targets are exempt from the mandatory
+		// avatar + 500-char background rules.
+		const isPlayerCharacter = Boolean(existing.discordId);
+
+		if (isPlayerCharacter) {
+			// Avatar is mandatory. Reject an explicit clear and also reject any
+			// edit of a legacy row that has no avatar unless one is being added
+			// in the same request.
+			if (body.avatar === null || body.avatar === '') {
+				return NextResponse.json(
+					{ message: 'Une photo de profil est obligatoire.' },
+					{ status: 400 },
+				);
+			}
+			const willHaveAvatar =
+				body.avatar !== undefined ? body.avatar : (existing as any).avatar;
+			if (!willHaveAvatar) {
+				return NextResponse.json(
+					{ message: 'Une photo de profil est obligatoire.' },
+					{ status: 400 },
+				);
+			}
+
+			// Validate background fields when they are being set. We only
+			// enforce the 500-char minimum on the fields actually present in
+			// the request body — untouched fields are assumed to already
+			// satisfy the rule or belong to a legacy row the admin will fix.
+			if (body.civilianBackground !== undefined) {
+				const err = validateBackground(
+					body.civilianBackground,
+					'parcours civil',
+				);
+				if (err) return NextResponse.json({ message: err }, { status: 400 });
+			}
+			if (body.militaryBackground !== undefined) {
+				const err = validateBackground(
+					body.militaryBackground,
+					'parcours militaire',
+				);
+				if (err) return NextResponse.json({ message: err }, { status: 400 });
+			}
 		}
 
 		// Admin reassign: allow full admins to change linked Discord account
@@ -97,6 +155,14 @@ export async function PATCH(
 			// Unit is chosen at character creation and locked thereafter — only admins can move
 			// a player between units.
 			delete body.unit;
+			// isMainCharacter is only toggleable by admins (via the admin edit form).
+			delete body.isMainCharacter;
+			// Players cannot clear or set the improvement flag directly — only
+			// the automatic clear below, or an admin via the dedicated endpoint.
+			delete body.requiresImprovements;
+			delete body.improvementReason;
+			delete body.improvementRequestedAt;
+			delete body.improvementRequestedBy;
 		}
 
 		// Auto-derive rank from Discord roles unless rankOverride is explicitly enabled.
@@ -123,13 +189,55 @@ export async function PATCH(
 		}
 
 		const oldStatus = existing.status;
+		const wasFlaggedForImprovements = Boolean(
+			(existing as { requiresImprovements?: boolean }).requiresImprovements,
+		);
 
-		// When status changes away from in-service, unlink UUID and remove main character
-		if (body.status && body.status !== 'in-service' && oldStatus === 'in-service') {
+		// When status changes away from in-service, unlink UUID and remove main
+		// character — EXCEPT when the character is currently flagged as
+		// "requires improvements" (dishonourable-discharge imposed by an admin).
+		// In that case we keep biId and isMainCharacter so the owner can fix the
+		// sheet in place and return to in-service without losing their game link.
+		if (
+			body.status &&
+			body.status !== 'in-service' &&
+			oldStatus === 'in-service' &&
+			!wasFlaggedForImprovements
+		) {
 			body.biId = null;
 			body.isMainCharacter = false;
 			body.savedMoney = null;
 			body.lastMoneySyncAt = null;
+		}
+
+		// Auto-clear the improvement flag when the owner edits the sheet and
+		// the resulting state now satisfies the validation rules. Restore the
+		// character to in-service so they stop appearing as dishonourably
+		// discharged.
+		if (wasFlaggedForImprovements && isOwner) {
+			const finalAvatar =
+				body.avatar !== undefined ? body.avatar : (existing as any).avatar;
+			const finalCivCount = backgroundCharCount(
+				body.civilianBackground !== undefined
+					? body.civilianBackground
+					: (existing as any).civilianBackground,
+			);
+			const finalMilCount = backgroundCharCount(
+				body.militaryBackground !== undefined
+					? body.militaryBackground
+					: (existing as any).militaryBackground,
+			);
+			if (
+				finalAvatar &&
+				finalCivCount >= BACKGROUND_MIN_LENGTH &&
+				finalMilCount >= BACKGROUND_MIN_LENGTH
+			) {
+				body.requiresImprovements = false;
+				body.improvementReason = null;
+				body.improvementRequestedAt = null;
+				body.improvementRequestedBy = null;
+				body.status = 'in-service';
+			}
 		}
 
 		const doc = await payload.update({

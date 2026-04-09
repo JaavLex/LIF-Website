@@ -496,6 +496,10 @@ export interface Character {
   classification?: ('public' | 'restricted' | 'classified') | null;
   faction?: string | null;
   isMainCharacter?: boolean | null;
+  requiresImprovements?: boolean | null;
+  improvementReason?: string | null;
+  improvementRequestedAt?: string | null;
+  improvementRequestedBy?: string | null;
   /**
    * Marquer comme cible ou ennemi
    */
@@ -1310,6 +1314,10 @@ export interface CharactersSelect<T extends boolean = true> {
   classification?: T;
   faction?: T;
   isMainCharacter?: T;
+  requiresImprovements?: T;
+  improvementReason?: T;
+  improvementRequestedAt?: T;
+  improvementRequestedBy?: T;
   isTarget?: T;
   targetFaction?: T;
   unit?: T;

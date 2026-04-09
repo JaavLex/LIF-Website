@@ -10,6 +10,7 @@ import * as migration_20260407_170000_add_unit_selector_fields from './20260407_
 import * as migration_20260407_180000_add_unit_selector_globals from './20260407_180000_add_unit_selector_globals';
 import * as migration_20260409_180000_comms_messages_posted_as_gm from './20260409_180000_comms_messages_posted_as_gm';
 import * as migration_20260409_190000_admin_logs from './20260409_190000_admin_logs';
+import * as migration_20260409_200000_add_require_improvements from './20260409_200000_add_require_improvements';
 
 export const migrations = [
   {
@@ -71,5 +72,10 @@ export const migrations = [
     up: migration_20260409_190000_admin_logs.up,
     down: migration_20260409_190000_admin_logs.down,
     name: '20260409_190000_admin_logs',
+  },
+  {
+    up: migration_20260409_200000_add_require_improvements.up,
+    down: migration_20260409_200000_add_require_improvements.down,
+    name: '20260409_200000_add_require_improvements',
   },
 ];

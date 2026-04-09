@@ -4,6 +4,10 @@ import { requireSession, isErrorResponse } from '@/lib/api-auth';
 import { checkAdminPermissions } from '@/lib/admin';
 import { notifyNewCharacter } from '@/lib/discord-notify';
 import { logAdminAction } from '@/lib/admin-log';
+import {
+	sanitizeCallsign,
+	validateBackground,
+} from '@/lib/character-validation';
 import type { Character, Rank, Unit } from '@/payload-types';
 
 export async function POST(request: NextRequest) {
@@ -15,14 +19,22 @@ export async function POST(request: NextRequest) {
 		const body = await request.json();
 		const payload = await getPayloadClient();
 
-		// Callsign is mandatory
-		if (!body.callsign || typeof body.callsign !== 'string' || !body.callsign.trim()) {
+		// Callsign is mandatory — strip quotes/guillemets before validating
+		// so that inputs like « le fourbe » are accepted as "le fourbe" and
+		// never stored with decorative punctuation.
+		if (!body.callsign || typeof body.callsign !== 'string') {
 			return NextResponse.json(
 				{ message: 'Le callsign est obligatoire.' },
 				{ status: 400 },
 			);
 		}
-		body.callsign = body.callsign.trim();
+		body.callsign = sanitizeCallsign(body.callsign);
+		if (!body.callsign) {
+			return NextResponse.json(
+				{ message: 'Le callsign est obligatoire.' },
+				{ status: 400 },
+			);
+		}
 
 		// Check if user is admin (via DB role or Discord roles)
 		const { isAdmin } = await checkAdminPermissions(session);
@@ -30,6 +42,29 @@ export async function POST(request: NextRequest) {
 		// NPC creation: admin can create without discord link
 		const isNpcCreation = isAdmin && body.isNpc;
 		delete body.isNpc;
+
+		// Player characters (non-NPC) must have a profile picture and substantial
+		// civilian / military backgrounds. NPCs are exempt because admins fill
+		// them out rapidly as props for scenarios.
+		if (!isNpcCreation) {
+			if (!body.avatar) {
+				return NextResponse.json(
+					{ message: 'Une photo de profil est obligatoire.' },
+					{ status: 400 },
+				);
+			}
+			const civErr = validateBackground(body.civilianBackground, 'parcours civil');
+			if (civErr) {
+				return NextResponse.json({ message: civErr }, { status: 400 });
+			}
+			const milErr = validateBackground(
+				body.militaryBackground,
+				'parcours militaire',
+			);
+			if (milErr) {
+				return NextResponse.json({ message: milErr }, { status: 400 });
+			}
+		}
 
 		if (!isNpcCreation) {
 			// Ensure discordId matches session for non-NPC

@@ -6,9 +6,16 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.6.57',
+  version: '1.6.58',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.6.58',
+      date: '2026-04-09',
+      changes: [
+        'ROLEPLAY — Validation durcie des fiches personnages. (1) Callsign : les guillemets (« », "", \'\', curly quotes, backticks, accents graves) sont maintenant strippés à la saisie ET côté serveur via le nouveau helper `sanitizeCallsign` dans `src/lib/character-validation.ts` — un callsign comme « le fourbe » est accepté mais stocké comme `le fourbe`. Sanitizer appelé onChange dans `CharacterForm.tsx` et dans les routes POST / PATCH `/api/roleplay/characters`. (2) Parcours civil et militaire : minimum 500 caractères chacun (constante `BACKGROUND_MIN_LENGTH`), validé client-side (compteur live sous chaque textarea, passage au rouge en dessous) et server-side via `validateBackground` qui accepte une string ou un payload Lexical. Appliqué en CREATE (tous les champs) et en PATCH (uniquement sur les champs présents dans la requête, pour ne pas casser les éditions partielles). PNJ exemptés. (3) Photo de profil obligatoire : le serveur refuse toute création player-character sans `avatar`, et refuse tout PATCH qui laisserait la fiche sans avatar (legacy ou effacement explicite). PNJ exemptés. (4) Nouveau bouton admin « Demander des améliorations » sur la fiche personnage (`RequireImprovementsButton`, visible pour admins quand la fiche a un Discord lié) qui ouvre une modale de raison et POST vers `/api/roleplay/characters/[id]/require-improvements`. Le backend force le statut à `dishonourable-discharge`, set le nouveau flag `requiresImprovements` avec `improvementReason` / `improvementRequestedAt` / `improvementRequestedBy`, et DM le propriétaire Discord via `sendDiscordDM` avec la raison + le lien vers la fiche. (5) Bypass critique dans la route PATCH : quand une fiche passe de `in-service` à un autre statut, la logique d\'auto-clear qui vide `biId` / `isMainCharacter` / `savedMoney` est DÉSACTIVÉE si `requiresImprovements` est déjà à true — c\'est la seule exception, demandée explicitement pour que le joueur puisse retravailler sa fiche en place sans perdre sa liaison game-server. (6) Auto-réhabilitation : quand le propriétaire édite sa fiche et que l\'état final satisfait avatar + parcours civil ≥500 + parcours militaire ≥500, le flag `requiresImprovements` est automatiquement effacé, `improvementReason` mis à null, et le statut repasse à `in-service`. (7) Toggle admin `isMainCharacter` exposé dans la section Administration de `CharacterForm` (uniquement en édition) pour que les admins puissent retirer le flag « personnage principal ». La route PATCH strip désormais `isMainCharacter` du body pour les non-admins. (8) Bannière orange « Améliorations requises » affichée sur la fiche quand le flag est actif (visible par owner + admin) avec la raison et le nom de l\'admin qui a demandé. Nouvelle migration `20260409_200000_add_require_improvements` ajoute 4 colonnes idempotemment. 30 nouveaux tests dans `tests/character-validation.test.ts` couvrant le sanitizer, le compteur Lexical-aware, la validation de longueur et le câblage source-level des routes et du formulaire. 205 tests au total.',
+      ],
+    },
     {
       version: '1.6.57',
       date: '2026-04-09',

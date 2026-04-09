@@ -5,6 +5,11 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { textToLexical, lexicalToText } from '@/lib/constants';
+import {
+	sanitizeCallsign,
+	backgroundCharCount,
+	BACKGROUND_MIN_LENGTH,
+} from '@/lib/character-validation';
 
 interface SessionUser {
 	userId: number;
@@ -91,7 +96,7 @@ export function CharacterForm({
 		previousUnit: editData?.previousUnit || '',
 		faction: editData?.faction || 'LIF',
 		unit: lockedUnit?.id || editData?.unit?.id || editData?.unit || '',
-		isMainCharacter: true,
+		isMainCharacter: editData ? Boolean(editData.isMainCharacter) : true,
 		civilianBackground: lexicalToText(editData?.civilianBackground),
 		militaryBackground: lexicalToText(editData?.militaryBackground),
 		legalBackground: lexicalToText(editData?.legalBackground),
@@ -140,6 +145,10 @@ export function CharacterForm({
 		const target = e.target;
 		if (target instanceof HTMLInputElement && target.type === 'checkbox') {
 			setForm(prev => ({ ...prev, [target.name]: target.checked }));
+		} else if (target.name === 'callsign') {
+			// Strip quotes/guillemets as the user types — stays permissive
+			// (sanitize, don't reject) so the field never feels broken.
+			setForm(prev => ({ ...prev, callsign: sanitizeCallsign(target.value) }));
 		} else {
 			setForm(prev => ({ ...prev, [target.name]: target.value }));
 		}
@@ -163,12 +172,42 @@ export function CharacterForm({
 		e.preventDefault();
 		const isNpcMode = isAdmin && form.isNpc;
 		if (!user && !isNpcMode) return;
+
+		// Client-side validation — kept in sync with the server rules in
+		// src/lib/character-validation.ts so players get immediate feedback.
+		const existingAvatarId = editData?.avatar?.id || editData?.avatar || undefined;
+		if (!isNpcMode && !avatarFile && !existingAvatarId) {
+			setError('Une photo de profil est obligatoire.');
+			return;
+		}
+		if (!isNpcMode) {
+			const callsignClean = sanitizeCallsign(form.callsign);
+			if (!callsignClean) {
+				setError('Le callsign est obligatoire.');
+				return;
+			}
+			const civCount = backgroundCharCount(form.civilianBackground);
+			if (civCount < BACKGROUND_MIN_LENGTH) {
+				setError(
+					`Le parcours civil doit contenir au moins ${BACKGROUND_MIN_LENGTH} caractères (actuellement ${civCount}).`,
+				);
+				return;
+			}
+			const milCount = backgroundCharCount(form.militaryBackground);
+			if (milCount < BACKGROUND_MIN_LENGTH) {
+				setError(
+					`Le parcours militaire doit contenir au moins ${BACKGROUND_MIN_LENGTH} caractères (actuellement ${milCount}).`,
+				);
+				return;
+			}
+		}
+
 		setSubmitting(true);
 		setError('');
 
 		try {
 			// Upload avatar if changed
-			let avatarId = editData?.avatar?.id || editData?.avatar || undefined;
+			let avatarId = existingAvatarId;
 			if (avatarFile) {
 				const formData = new FormData();
 				formData.append('file', avatarFile);
@@ -426,7 +465,7 @@ export function CharacterForm({
 					}}
 				>
 					<div>
-						<label style={labelStyle}>Photo du personnage</label>
+						<label style={labelStyle}>Photo du personnage{form.isNpc ? '' : ' *'}</label>
 						<div
 							style={{
 								width: 120,
@@ -668,29 +707,29 @@ export function CharacterForm({
 				>
 					<h2 style={{ color: 'var(--primary)' }}>Parcours</h2>
 
-					<div style={{ marginBottom: '1rem' }}>
-						<label style={labelStyle}>Parcours civil</label>
-						<textarea
-							name="civilianBackground"
-							value={form.civilianBackground}
-							onChange={handleChange}
-							className="filter-input"
-							style={{ width: '100%', minHeight: '100px', resize: 'vertical' }}
-							placeholder="Décrivez le parcours civil du personnage..."
-						/>
-					</div>
-
-					<div style={{ marginBottom: '1rem' }}>
-						<label style={labelStyle}>Parcours militaire</label>
-						<textarea
-							name="militaryBackground"
-							value={form.militaryBackground}
-							onChange={handleChange}
-							className="filter-input"
-							style={{ width: '100%', minHeight: '100px', resize: 'vertical' }}
-							placeholder="Décrivez le parcours militaire du personnage..."
-						/>
-					</div>
+					{(['civilianBackground', 'militaryBackground'] as const).map(fieldName => {
+						const count = backgroundCharCount(form[fieldName]);
+						const ok = form.isNpc || count >= BACKGROUND_MIN_LENGTH;
+						const label =
+							fieldName === 'civilianBackground' ? 'Parcours civil' : 'Parcours militaire';
+						return (
+							<div key={fieldName} style={{ marginBottom: '1rem' }}>
+								<label style={labelStyle}>{label}{form.isNpc ? '' : ' *'}</label>
+								<textarea
+									name={fieldName}
+									value={form[fieldName]}
+									onChange={handleChange}
+									className="filter-input"
+									style={{ width: '100%', minHeight: '160px', resize: 'vertical' }}
+									placeholder={`Décrivez en détail le ${label.toLowerCase()} du personnage (minimum ${BACKGROUND_MIN_LENGTH} caractères)...`}
+								/>
+								<div style={{ fontSize: '0.7rem', color: ok ? 'var(--muted)' : 'var(--danger)', marginTop: '0.35rem', fontFamily: 'monospace' }}>
+									{count} / {BACKGROUND_MIN_LENGTH} caractères
+									{!ok ? ` — il manque ${BACKGROUND_MIN_LENGTH - count}` : ''}
+								</div>
+							</div>
+						);
+					})}
 
 					<div style={{ marginBottom: '1rem' }}>
 						<label style={labelStyle}>Parcours judiciaire</label>
@@ -1307,6 +1346,47 @@ export function CharacterForm({
 								placeholder="Visibles uniquement par les administrateurs..."
 							/>
 						</div>
+
+						{/* Main character toggle (admins can unflag) */}
+						{editData && (
+							<div
+								style={{
+									marginTop: '1rem',
+									paddingTop: '1rem',
+									borderTop: '1px solid var(--border)',
+								}}
+							>
+								<label
+									style={{
+										display: 'flex',
+										alignItems: 'center',
+										gap: '0.5rem',
+										cursor: 'pointer',
+									}}
+								>
+									<input
+										type="checkbox"
+										name="isMainCharacter"
+										checked={form.isMainCharacter}
+										onChange={handleChange}
+									/>
+									<span style={{ fontSize: '0.85rem' }}>
+										Personnage principal
+									</span>
+								</label>
+								<p
+									style={{
+										fontSize: '0.7rem',
+										color: 'var(--muted)',
+										marginTop: '0.25rem',
+										marginLeft: '1.5rem',
+									}}
+								>
+									Décocher pour retirer ce dossier de la liste des personnages
+									principaux du joueur.
+								</p>
+							</div>
+						)}
 
 						{/* Archive section */}
 						<div

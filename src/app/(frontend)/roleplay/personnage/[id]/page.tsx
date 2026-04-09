@@ -10,6 +10,7 @@ import { CharacterTimeline } from '@/components/roleplay/CharacterTimeline';
 import { SyncRankButton } from '@/components/roleplay/SyncRankButton';
 import { AddTimelineEvent } from '@/components/roleplay/AddTimelineEvent';
 import { DeleteCharacterButton } from '@/components/roleplay/DeleteCharacterButton';
+import { RequireImprovementsButton } from '@/components/roleplay/RequireImprovementsButton';
 import { GameMoneySection } from '@/components/roleplay/GameMoneySection';
 import { verifySession } from '@/lib/session';
 import { checkAdminPermissions } from '@/lib/admin';
@@ -291,6 +292,19 @@ export default async function CharacterPage({
 									Modifier
 								</Link>
 							)}
+							{isAdmin && character.discordId && (
+								<RequireImprovementsButton
+									characterId={character.id}
+									characterName={
+										character.fullName ||
+										`${character.firstName} ${character.lastName}`
+									}
+									alreadyFlagged={Boolean(
+										(character as { requiresImprovements?: boolean })
+											.requiresImprovements,
+									)}
+								/>
+							)}
 							{canDelete && (
 								<DeleteCharacterButton
 									characterId={character.id}
@@ -303,6 +317,83 @@ export default async function CharacterPage({
 						</div>
 					)}
 				</div>
+
+				{(character as { requiresImprovements?: boolean }).requiresImprovements &&
+					(isOwner || isAdmin) && (
+						<div
+							role="alert"
+							style={{
+								margin: '1.25rem 0 0.5rem',
+								padding: '1rem 1.25rem',
+								border: '1px solid #d4781e',
+								background:
+									'linear-gradient(90deg, rgba(212,120,30,0.18), rgba(212,120,30,0.04))',
+								color: '#f5c38a',
+								fontSize: '0.85rem',
+								lineHeight: 1.55,
+							}}
+						>
+							<div
+								style={{
+									fontWeight: 700,
+									textTransform: 'uppercase',
+									letterSpacing: '0.08em',
+									marginBottom: '0.4rem',
+									color: '#d4781e',
+									fontSize: '0.75rem',
+								}}
+							>
+								⚠ Améliorations requises sur ce dossier
+							</div>
+							{(character as { improvementReason?: string | null })
+								.improvementReason && (
+								<div
+									style={{
+										whiteSpace: 'pre-wrap',
+										marginBottom: '0.5rem',
+										fontStyle: 'italic',
+										color: '#f5e3c8',
+									}}
+								>
+									«{' '}
+									{
+										(character as { improvementReason?: string | null })
+											.improvementReason
+									}{' '}
+									»
+								</div>
+							)}
+							{(character as { improvementRequestedBy?: string | null })
+								.improvementRequestedBy && (
+								<div style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>
+									Demandé par{' '}
+									<strong>
+										{
+											(character as { improvementRequestedBy?: string | null })
+												.improvementRequestedBy
+										}
+									</strong>
+									{(character as { improvementRequestedAt?: string | null })
+										.improvementRequestedAt && (
+										<>
+											{' '}le{' '}
+											{new Date(
+												(character as { improvementRequestedAt: string })
+													.improvementRequestedAt,
+											).toLocaleDateString('fr-FR')}
+										</>
+									)}
+								</div>
+							)}
+							{isOwner && (
+								<div style={{ marginTop: '0.75rem', fontSize: '0.8rem' }}>
+									Modifiez votre fiche (photo + parcours civil et militaire
+									d&apos;au moins 500 caractères chacun) pour revenir
+									automatiquement au statut <strong>En service</strong>.
+								</div>
+							)}
+						</div>
+					)}
 
 				<div className="character-detail">
 					{/* Sidebar */}
