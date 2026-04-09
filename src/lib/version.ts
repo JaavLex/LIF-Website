@@ -6,9 +6,16 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.6.59',
+  version: '1.6.60',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.6.60',
+      date: '2026-04-09',
+      changes: [
+        'ROLEPLAY — Le compteur de caractères sous les textareas Parcours civil / militaire est désormais TOUJOURS affiché pour les fiches de joueurs (non-PNJ), y compris quand l\'utilisateur est admin. Les admins voient le compteur au format `X / 500 caractères — les admins peuvent contourner cette exigence` en gris, non-bloquant, pour garder la référence visuelle de la règle tout en indiquant clairement qu\'elle ne s\'applique pas à eux. Les joueurs non-admin continuent de voir le compteur passer au rouge avec le nombre de caractères manquants quand ils sont en dessous du minimum.',
+      ],
+    },
     {
       version: '1.6.59',
       date: '2026-04-09',

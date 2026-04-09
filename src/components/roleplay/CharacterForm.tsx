@@ -715,8 +715,11 @@ export function CharacterForm({
 					{(['civilianBackground', 'militaryBackground'] as const).map(fieldName => {
 						const count = backgroundCharCount(form[fieldName]);
 						// Minimum only applies to non-admin, non-NPC player sheets.
+						// Admins still see the counter (for reference) plus a note
+						// reminding them they can bypass the rule.
 						const enforced = !form.isNpc && !isAdmin;
-						const ok = !enforced || count >= BACKGROUND_MIN_LENGTH;
+						const meets = count >= BACKGROUND_MIN_LENGTH;
+						const counterColor = enforced && !meets ? 'var(--danger)' : 'var(--muted)';
 						const label =
 							fieldName === 'civilianBackground' ? 'Parcours civil' : 'Parcours militaire';
 						return (
@@ -728,12 +731,13 @@ export function CharacterForm({
 									onChange={handleChange}
 									className="filter-input"
 									style={{ width: '100%', minHeight: '160px', resize: 'vertical' }}
-									placeholder={`Décrivez en détail le ${label.toLowerCase()} du personnage${enforced ? ` (minimum ${BACKGROUND_MIN_LENGTH} caractères)` : ''}...`}
+									placeholder={`Décrivez en détail le ${label.toLowerCase()} du personnage (minimum ${BACKGROUND_MIN_LENGTH} caractères)...`}
 								/>
-								{enforced && (
-									<div style={{ fontSize: '0.7rem', color: ok ? 'var(--muted)' : 'var(--danger)', marginTop: '0.35rem', fontFamily: 'monospace' }}>
+								{!form.isNpc && (
+									<div style={{ fontSize: '0.7rem', color: counterColor, marginTop: '0.35rem', fontFamily: 'monospace' }}>
 										{count} / {BACKGROUND_MIN_LENGTH} caractères
-										{!ok ? ` — il manque ${BACKGROUND_MIN_LENGTH - count}` : ''}
+										{enforced && !meets && ` — il manque ${BACKGROUND_MIN_LENGTH - count}`}
+										{!enforced && ' — les admins peuvent contourner cette exigence'}
 									</div>
 								)}
 							</div>
