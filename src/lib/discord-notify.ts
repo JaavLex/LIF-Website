@@ -6,6 +6,7 @@ import {
 	INTELLIGENCE_TYPE_LABELS,
 	TIMELINE_TYPE_LABELS,
 	TIMELINE_EMOJIS,
+	PUBLIC_BASE_URL,
 } from './constants';
 
 const DISCORD_API = 'https://discord.com/api/v10';
@@ -49,8 +50,11 @@ async function sendToChannel(channelId: string, embeds: DiscordEmbed[]) {
 	});
 }
 
-const SITE_URL =
-	process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://lif-arma.com';
+// Alias kept to minimize diff noise on the notification builders below.
+// See PUBLIC_BASE_URL in constants.ts for the resolution rules — most
+// importantly, it MUST NOT fall back to process.env.SITE_URL, which is
+// http://127.0.0.1:3001 in production.
+const SITE_URL = PUBLIC_BASE_URL;
 
 export async function notifyNewCharacter(character: {
 	id: number;

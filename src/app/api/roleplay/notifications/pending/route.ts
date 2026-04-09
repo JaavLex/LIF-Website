@@ -1,12 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPayloadClient } from '@/lib/payload';
+import { PUBLIC_BASE_URL } from '@/lib/constants';
 
 const MOD_API_KEY = process.env.GAME_MOD_API_KEY || 'CHANGE_ME_TO_A_SECURE_KEY';
-const PUBLIC_BASE_URL =
-	process.env.NEXT_PUBLIC_BASE_URL ||
-	process.env.NEXT_PUBLIC_SITE_URL ||
-	process.env.SITE_URL ||
-	'';
 
 /**
  * POST /api/roleplay/notifications/pending

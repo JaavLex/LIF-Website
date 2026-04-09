@@ -221,3 +221,67 @@ describe('serialize', () => {
 		expect(input.nested.val).toBe(1);
 	});
 });
+
+// ─── PUBLIC_BASE_URL ───
+//
+// Regression guard for v1.6.54: in production process.env.SITE_URL is set to
+// http://127.0.0.1:3001 for internal server-side fetches. It must NEVER leak
+// into user-facing links (Discord notifications, mod dialogs, etc.) — hence
+// PUBLIC_BASE_URL is the single, shared resolver and must refuse to fall
+// back to SITE_URL. We assert this at the source level (file content) rather
+// than by importing the module, because vitest inherits process.env at
+// import time and mutating it is racy across test files.
+describe('PUBLIC_BASE_URL', () => {
+	it('is exported from constants', async () => {
+		const mod = await import('@/lib/constants');
+		expect(mod).toHaveProperty('PUBLIC_BASE_URL');
+		expect(typeof mod.PUBLIC_BASE_URL).toBe('string');
+		expect(mod.PUBLIC_BASE_URL.length).toBeGreaterThan(0);
+	});
+
+	it('resolver does not fall back to process.env.SITE_URL', async () => {
+		const { readFileSync } = await import('node:fs');
+		const { join } = await import('node:path');
+		const src = readFileSync(
+			join(process.cwd(), 'src/lib/constants.ts'),
+			'utf8',
+		);
+		// Extract the PUBLIC_BASE_URL definition block and verify SITE_URL is
+		// not referenced inside it. We scope the check to that block so
+		// comments elsewhere in the file that MENTION SITE_URL (explaining
+		// why we don't use it) don't trip the assertion.
+		const match = src.match(
+			/export const PUBLIC_BASE_URL\s*=[\s\S]*?;\n/,
+		);
+		expect(match).not.toBeNull();
+		expect(match![0]).not.toMatch(/process\.env\.SITE_URL/);
+	});
+
+	it('no source file reads process.env.SITE_URL as code', async () => {
+		const { readFileSync, readdirSync, statSync } = await import('node:fs');
+		const { join } = await import('node:path');
+		const offenders: string[] = [];
+		const walk = (dir: string) => {
+			for (const name of readdirSync(dir)) {
+				const full = join(dir, name);
+				const st = statSync(full);
+				if (st.isDirectory()) {
+					if (name === 'node_modules' || name === '.next') continue;
+					walk(full);
+					continue;
+				}
+				if (!/\.(ts|tsx|js|mjs)$/.test(name)) continue;
+				const content = readFileSync(full, 'utf8');
+				// Strip single-line and multi-line comments so that doc
+				// comments explaining WHY we don't use SITE_URL don't trip
+				// the guard — we only want to catch actual reads.
+				const stripped = content
+					.replace(/\/\*[\s\S]*?\*\//g, '')
+					.replace(/\/\/[^\n]*/g, '');
+				if (/process\.env\.SITE_URL\b/.test(stripped)) offenders.push(full);
+			}
+		};
+		walk(join(process.cwd(), 'src'));
+		expect(offenders).toEqual([]);
+	});
+});

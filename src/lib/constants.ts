@@ -3,6 +3,28 @@
 // Keep all user-facing labels here to avoid duplication.
 // ============================================
 
+// --- Public base URL ---
+//
+// Use this for any link that ends up in front of a user OUTSIDE the Next.js
+// process (Discord embeds, emails, game mod dialogs, etc.). Resolution order:
+//
+//   1. NEXT_PUBLIC_BASE_URL — the authoritative public domain injected by
+//      Ansible (e.g. "https://lif-arma.com" on prod, "https://dev.lif-arma.com"
+//      on dev). Always set in deployed environments.
+//   2. NEXT_PUBLIC_SITE_URL — legacy name, kept for backward compatibility.
+//   3. Hardcoded "https://lif-arma.com" — last-resort fallback.
+//
+// DO NOT fall back to process.env.SITE_URL here: in production that variable
+// is set to http://127.0.0.1:3001 for server-side health-checks / internal
+// fetches and must never be used for user-facing links. Historically that
+// fallback leaked into Discord notifications and rendered them useless
+// (v1.6.41 fixed the bot slash commands; v1.6.54 finishes the job for all
+// notification builders via this shared constant).
+export const PUBLIC_BASE_URL =
+	process.env.NEXT_PUBLIC_BASE_URL ||
+	process.env.NEXT_PUBLIC_SITE_URL ||
+	'https://lif-arma.com';
+
 // --- Moderation ---
 
 export const MODERATION_REASON_LABELS: Record<string, string> = {

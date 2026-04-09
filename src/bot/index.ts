@@ -14,15 +14,12 @@ import {
 const BOT_TOKEN = process.env.DISCORD_BOT_TOKEN;
 const CLIENT_ID = process.env.DISCORD_CLIENT_ID;
 const GUILD_ID = process.env.DISCORD_GUILD_ID;
-// Public URL used to build clickable links in embeds. We must prefer
-// NEXT_PUBLIC_BASE_URL (the canonical public URL — https://lif-arma.com or
-// https://dev.lif-arma.com) over the legacy SITE_URL, which in production is
-// set to http://127.0.0.1:3001 for internal server-side fetches and would
-// leak as 127.0.0.1 links in Discord embeds.
-const SITE_URL =
-	process.env.NEXT_PUBLIC_BASE_URL ||
-	process.env.NEXT_PUBLIC_SITE_URL ||
-	'https://lif-arma.com';
+// Public URL used to build clickable links in embeds. See PUBLIC_BASE_URL in
+// src/lib/constants.ts for the full reasoning — the short version is that
+// process.env.SITE_URL resolves to http://127.0.0.1:3001 in production for
+// internal fetches and must never leak into user-facing links.
+import { PUBLIC_BASE_URL } from '@/lib/constants';
+const SITE_URL = PUBLIC_BASE_URL;
 const DATABASE_URI = process.env.DATABASE_URI;
 
 if (!BOT_TOKEN || !CLIENT_ID || !GUILD_ID) {

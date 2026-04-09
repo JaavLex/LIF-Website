@@ -6,9 +6,16 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.6.53',
+  version: '1.6.54',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.6.54',
+      date: '2026-04-09',
+      changes: [
+        'BOT — Fix définitif des liens `127.0.0.1:3001` dans les notifications Discord (nouveau dossier, changement de statut, nouvel événement timeline). Le hotfix 1.6.41 n\'avait corrigé QUE `src/bot/index.ts` ; `src/lib/discord-notify.ts` (qui envoie les notifications via l\'API REST Discord depuis les routes Next) utilisait toujours la vieille chaîne `NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || ...`, et comme `SITE_URL=http://127.0.0.1:3001` en production (pour les fetchs internes), tous les boutons `[Voir le dossier]` pointaient vers localhost. Refactor : nouvel export partagé `PUBLIC_BASE_URL` dans `src/lib/constants.ts` qui résout UNIQUEMENT via `NEXT_PUBLIC_BASE_URL` → `NEXT_PUBLIC_SITE_URL` → fallback codé en dur `https://lif-arma.com`. Migration de `discord-notify.ts`, `bot/index.ts` et `api/roleplay/notifications/pending` vers cette constante unique. Regression guard ajoutée dans `tests/constants.test.ts` qui échoue si n\'importe quel fichier source (hors commentaires) lit `process.env.SITE_URL`.',
+      ],
+    },
     {
       version: '1.6.53',
       date: '2026-04-09',
