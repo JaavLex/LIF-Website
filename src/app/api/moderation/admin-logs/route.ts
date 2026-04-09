@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import type { Where } from 'payload';
 import { getPayloadClient } from '@/lib/payload';
 import { requireFullAdmin, isErrorResponse } from '@/lib/api-auth';
 
@@ -23,7 +24,7 @@ export async function GET(request: NextRequest) {
 	);
 
 	// Build the Payload `where` clause incrementally.
-	const and: Record<string, unknown>[] = [];
+	const and: Where[] = [];
 	if (actor) and.push({ actorDiscordId: { equals: actor } });
 	if (action) and.push({ action: { equals: action } });
 	if (entityType) and.push({ entityType: { equals: entityType } });
@@ -74,7 +75,7 @@ export async function GET(request: NextRequest) {
 		}
 	}
 
-	const where = and.length > 0 ? { and } : {};
+	const where: Where = and.length > 0 ? { and } : {};
 
 	const payload = await getPayloadClient();
 	const result = await payload.find({
