@@ -454,3 +454,23 @@ describe('AdminBar component', () => {
 		expect(content).toContain('Quitter MJ');
 	});
 });
+
+describe('CommsLayout GM wiring', () => {
+	it('wraps return in GmModeProvider', () => {
+		const content = readSrc('components/comms/CommsLayout.tsx');
+		expect(content).toContain("from './useGmMode'");
+		expect(content).toContain('GmModeProvider');
+		expect(content).toContain('<AdminBar');
+	});
+
+	it('loadChannels appends ?gm=1 when enabled', () => {
+		const content = readSrc('components/comms/CommsLayout.tsx');
+		expect(content).toMatch(/\/api\/comms\/channels[\s\S]{0,200}\?gm=1/);
+	});
+
+	it('handleSend includes gmMode and impersonateCharacterId when enabled', () => {
+		const content = readSrc('components/comms/CommsLayout.tsx');
+		expect(content).toContain('gmMode:');
+		expect(content).toContain('impersonateCharacterId:');
+	});
+});

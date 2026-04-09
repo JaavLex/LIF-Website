@@ -41,7 +41,7 @@ export function ChannelList({
 							return (
 							<div
 								key={ch.id}
-								className={`comms-channel-item${activeId === ch.id ? ' active' : ''}${mentionCount > 0 ? ' has-mentions' : ''}`}
+								className={`comms-channel-item${activeId === ch.id ? ' active' : ''}${mentionCount > 0 ? ' has-mentions' : ''}${(ch as any).viewerIsGhost ? ' is-ghost' : ''}`}
 								data-type={ch.type}
 								onClick={() => onSelect(ch.id)}
 							>

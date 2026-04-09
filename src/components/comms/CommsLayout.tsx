@@ -33,6 +33,8 @@ import { CharacterProfileModal } from './CharacterProfileModal';
 import { IntelPreviewModal } from './IntelPreviewModal';
 import { CommsTutorial } from './CommsTutorial';
 import { HelpCircle } from 'lucide-react';
+import { GmModeProvider, useGmMode } from './useGmMode';
+import { AdminBar } from './AdminBar';
 
 export interface CommsChannelDisplayMember {
 	id: number;
@@ -59,6 +61,7 @@ export interface CommsChannel {
 	anonForCharacterId?: number | null;
 	isAnonForViewer?: boolean;
 	isAnonInitiatedByViewer?: boolean;
+	viewerIsGhost?: boolean;
 }
 
 export interface CommsMessage {
@@ -83,7 +86,8 @@ export interface CommsMessage {
 	isOwn: boolean;
 }
 
-export function CommsLayout({ character }: { character: ActiveCharacter }) {
+function CommsLayoutInner({ character, isAdmin }: { character: ActiveCharacter; isAdmin: boolean }) {
+	const gm = useGmMode();
 	const searchParams = useSearchParams();
 	const requestedChannelId = (() => {
 		const v = searchParams?.get('channel');
@@ -141,7 +145,10 @@ export function CommsLayout({ character }: { character: ActiveCharacter }) {
 
 	const loadChannels = useCallback(async () => {
 		try {
-			const res = await fetch('/api/comms/channels');
+			const url = gm.enabled
+				? '/api/comms/channels?gm=1'
+				: '/api/comms/channels';
+			const res = await fetch(url);
 			if (!res.ok) return;
 			const data = await res.json();
 			const newChannels: CommsChannel[] = data.channels || [];
@@ -246,7 +253,7 @@ export function CommsLayout({ character }: { character: ActiveCharacter }) {
 				} catch {}
 			}
 		} catch {}
-	}, [activeId, requestedChannelId]);
+	}, [activeId, requestedChannelId, gm.enabled]);
 
 	const loadMessages = useCallback(async (channelId: number) => {
 		try {
@@ -291,6 +298,11 @@ export function CommsLayout({ character }: { character: ActiveCharacter }) {
 		checkEligibility();
 		loadChannels().then(() => setLoading(false));
 	}, [checkEligibility, loadChannels]);
+
+	useEffect(() => {
+		loadChannels();
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [gm.enabled]);
 
 	// Hydrate persisted UI state on mount
 	useEffect(() => {
@@ -417,12 +429,17 @@ export function CommsLayout({ character }: { character: ActiveCharacter }) {
 		replyToMessageId?: number | null;
 	}) {
 		if (!activeId) return;
+		const effectiveId = gm.effectiveCharacterId;
+		const requestBody = gm.enabled && effectiveId != null
+			? { ...payload, gmMode: true, impersonateCharacterId: effectiveId }
+			: payload;
 		const res = await fetch(`/api/comms/channels/${activeId}/messages`, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify(payload),
+			body: JSON.stringify(requestBody),
 		});
 		if (res.ok) {
+			gm.clearOverride();
 			loadMessages(activeId);
 			loadChannels();
 		} else {
@@ -498,6 +515,8 @@ export function CommsLayout({ character }: { character: ActiveCharacter }) {
 					← Retour
 				</Link>
 			</div>
+
+			<AdminBar isAdmin={isAdmin} />
 
 			<div className="comms-profile-bar" data-tutorial-comms="profile-bar">
 				<div className="comms-profile-bar-avatar">
@@ -844,5 +863,13 @@ export function CommsLayout({ character }: { character: ActiveCharacter }) {
 				</div>
 			)}
 		</div>
+	);
+}
+
+export function CommsLayout(props: { character: ActiveCharacter; isAdmin: boolean }) {
+	return (
+		<GmModeProvider>
+			<CommsLayoutInner {...props} />
+		</GmModeProvider>
 	);
 }

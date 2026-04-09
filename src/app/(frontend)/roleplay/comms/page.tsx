@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { verifySession } from '@/lib/session';
 import { checkCommsEligibility } from '@/lib/comms';
+import { checkAdminPermissions } from '@/lib/admin';
 import { CommsLayout } from '@/components/comms/CommsLayout';
 import './comms.css';
 
@@ -71,5 +72,7 @@ export default async function CommsPage() {
 		);
 	}
 
-	return <CommsLayout character={eligibility.character} />;
+	const adminPerms = await checkAdminPermissions(session);
+
+	return <CommsLayout character={eligibility.character} isAdmin={adminPerms.isAdmin} />;
 }
