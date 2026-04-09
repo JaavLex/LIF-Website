@@ -6,9 +6,16 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.6.60',
+  version: '1.6.61',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.6.61',
+      date: '2026-04-09',
+      changes: [
+        'ROLEPLAY — Fix modale « Demander des améliorations » qui passait derrière le texte et les boutons de la fiche personnage. Cause : la modale était rendue inline à l\'intérieur de `char-dossier-hero-actions`, un conteneur qui participe à un stacking context (transform / filter quelque part dans la chaîne parente), donc le `z-index: 1000` du dialog était piégé dans ce contexte local et ne pouvait pas passer par-dessus les éléments frères rendus plus tard dans la page. Fix : `RequireImprovementsButton` utilise désormais `createPortal` pour rendre la modale directement dans `document.body`, ce qui la fait échapper à tous les stacking contexts parents. Z-index poussé à `2147483000` (top of the integer range) en ceinture-et-bretelles. Bonus UX : lock du scroll de `body` pendant que la modale est ouverte, `backdrop-filter: blur(4px)` sur l\'overlay, fermeture au clavier via `Escape` (désactivée pendant la soumission). Guard SSR via `useState(mounted)` pour ne toucher `document` qu\'après le mount client.',
+      ],
+    },
     {
       version: '1.6.60',
       date: '2026-04-09',

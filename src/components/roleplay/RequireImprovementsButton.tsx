@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
 
 /**
@@ -25,6 +26,28 @@ export function RequireImprovementsButton({
 	const [reason, setReason] = useState('');
 	const [submitting, setSubmitting] = useState(false);
 	const [error, setError] = useState('');
+	const [mounted, setMounted] = useState(false);
+
+	// Portal target is only safe to access after the component mounts on the
+	// client — SSR has no `document`.
+	useEffect(() => {
+		setMounted(true);
+	}, []);
+
+	// Close on Escape + lock body scroll while the modal is open.
+	useEffect(() => {
+		if (!open) return;
+		const onKey = (e: KeyboardEvent) => {
+			if (e.key === 'Escape' && !submitting) setOpen(false);
+		};
+		window.addEventListener('keydown', onKey);
+		const prevOverflow = document.body.style.overflow;
+		document.body.style.overflow = 'hidden';
+		return () => {
+			window.removeEventListener('keydown', onKey);
+			document.body.style.overflow = prevOverflow;
+		};
+	}, [open, submitting]);
 
 	const handleSubmit = async () => {
 		const trimmed = reason.trim();
@@ -91,7 +114,7 @@ export function RequireImprovementsButton({
 				{alreadyFlagged ? 'Améliorations en cours' : 'Demander des améliorations'}
 			</button>
 
-			{open && (
+			{open && mounted && createPortal(
 				<div
 					role="dialog"
 					aria-modal="true"
@@ -99,10 +122,12 @@ export function RequireImprovementsButton({
 						position: 'fixed',
 						inset: 0,
 						background: 'rgba(0, 0, 0, 0.75)',
+						backdropFilter: 'blur(4px)',
+						WebkitBackdropFilter: 'blur(4px)',
 						display: 'flex',
 						alignItems: 'center',
 						justifyContent: 'center',
-						zIndex: 1000,
+						zIndex: 2147483000,
 						padding: '1rem',
 					}}
 					onClick={e => {
@@ -217,7 +242,8 @@ export function RequireImprovementsButton({
 							</button>
 						</div>
 					</div>
-				</div>
+				</div>,
+				document.body,
 			)}
 		</>
 	);
