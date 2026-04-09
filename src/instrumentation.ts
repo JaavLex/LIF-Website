@@ -3,5 +3,9 @@ export async function register() {
 	if (process.env.NEXT_RUNTIME === 'nodejs') {
 		const { startGameSyncCron } = await import('@/lib/game-sync-cron');
 		startGameSyncCron();
+		const { startAdminLogRetentionCron } = await import(
+			'@/lib/admin-log-retention-cron'
+		);
+		startAdminLogRetentionCron();
 	}
 }

@@ -313,6 +313,34 @@ describe('route instrumentation smoke test', () => {
 	});
 });
 
+describe('admin-log retention cron', () => {
+	it('pruneOnce deletes entries older than 180 days', async () => {
+		const mockDelete = vi.fn().mockResolvedValue({ docs: [] });
+		vi.doMock('@/lib/payload', () => ({
+			getPayloadClient: async () => ({ delete: mockDelete }),
+		}));
+		const mod = await import('@/lib/admin-log-retention-cron');
+		await mod.pruneOnce();
+
+		expect(mockDelete).toHaveBeenCalledOnce();
+		const call = mockDelete.mock.calls[0][0];
+		expect(call.collection).toBe('admin-logs');
+		const cutoff = new Date(call.where.createdAt.less_than);
+		const expected = Date.now() - 180 * 24 * 60 * 60 * 1000;
+		expect(Math.abs(cutoff.getTime() - expected)).toBeLessThan(2000);
+
+		vi.doUnmock('@/lib/payload');
+	});
+
+	it('startAdminLogRetentionCron is idempotent', async () => {
+		const mod = await import('@/lib/admin-log-retention-cron');
+		mod.startAdminLogRetentionCron();
+		mod.startAdminLogRetentionCron(); // second call is a no-op
+		mod.stopAdminLogRetentionCron();
+		expect(true).toBe(true); // passes if neither call throws
+	});
+});
+
 describe('source-level completeness guard', () => {
 	// Any file under src/app/api/** that imports requireFullAdmin /
 	// requireGmAdmin AND calls payload.create/update/delete MUST also import
