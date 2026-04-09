@@ -6,9 +6,16 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.6.56',
+  version: '1.6.57',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.6.57',
+      date: '2026-04-09',
+      changes: [
+        'MODÉRATION — Nouveau 5ᵉ onglet "Journal admin" réservé aux administrateurs complets. Capture automatiquement TOUTES les actions admin (création/modification/suppression de personnages, événements timeline, factions, unités, renseignements, dossiers de modération, sanctions, canaux et messages comms, reset trésorerie) avec snapshot `{before, after}` JSON complet. Journalise aussi les événements non-mutation : `gm.enter`/`gm.exit` via nouveau endpoint `POST /api/comms/gm/toggle` appelé fire-and-forget depuis `useGmMode.setEnabled`, `gm.impersonate` quand un admin poste en tant que PNJ/cible, et `character.link.admin_override` quand un admin force le `biId` d\'un personnage. UI : liste reverse-chrono avec filtres (acteur, action, type d\'entité, dates), recherche debouncée sur résumé + nom d\'entité, pagination cursor `(createdAt, id)` base64url, lignes expansibles avec diff tabulaire champ-par-champ. Endpoints : `GET /api/moderation/admin-logs` (full-admin-only) + `GET /api/moderation/admin-logs/facets` (cache 60s). Rétention 180 jours via nouveau cron `admin-log-retention-cron` démarré depuis `instrumentation.ts` aux côtés de `game-sync-cron` (démarrage retardé 60s, idempotent contre HMR). Collection Payload `admin-logs` cachée de l\'admin UI, accès DB gated sur `isFullAdmin`. Garde de complétude source-level dans `tests/admin-log.test.ts` qui walke `src/app/api/**` et échoue CI si une route `requireFullAdmin`/`requireGmAdmin` avec mutation Payload n\'importe pas `@/lib/admin-log`. Helper `logAdminAction` fire-and-forget : ne jette JAMAIS, swallow errors via console.error — une écriture d\'audit ratée ne doit jamais casser l\'action qu\'elle enregistre. 175 tests.',
+      ],
+    },
     {
       version: '1.6.56',
       date: '2026-04-09',
