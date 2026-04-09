@@ -434,3 +434,23 @@ describe('useGmMode context', () => {
 		expect(content).toContain('overrideCharacterId ?? defaultCharacterId');
 	});
 });
+
+describe('AdminBar component', () => {
+	it('is admin-gated via isAdmin prop', () => {
+		const content = readSrc('components/comms/AdminBar.tsx');
+		expect(content).toMatch(/if \(!isAdmin\)\s*return null/);
+	});
+
+	it('uses useGmMode context', () => {
+		const content = readSrc('components/comms/AdminBar.tsx');
+		expect(content).toContain("from './useGmMode'");
+		expect(content).toContain('useGmMode()');
+	});
+
+	it('renders MJ toggle and picker', () => {
+		const content = readSrc('components/comms/AdminBar.tsx');
+		expect(content).toContain('MODE MJ');
+		expect(content).toContain('Incarner');
+		expect(content).toContain('Quitter MJ');
+	});
+});

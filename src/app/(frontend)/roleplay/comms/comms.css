@@ -2050,3 +2050,134 @@
 		--cc-panel-glass: rgba(12, 22, 14, 0.92);
 	}
 }
+
+/* === Admin bar (GM mode) === */
+.comms-admin-bar {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	padding: 0.4rem 1rem;
+	background: rgba(255, 176, 32, 0.08);
+	border-bottom: 1px solid rgba(255, 176, 32, 0.35);
+	font-size: 0.78rem;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	color: #f5b94a;
+	min-height: 32px;
+}
+.comms-admin-bar--on {
+	background: rgba(255, 176, 32, 0.18);
+}
+.comms-admin-bar__label {
+	font-weight: 700;
+	letter-spacing: 0.08em;
+}
+.comms-admin-bar__pill,
+.comms-admin-bar__quit,
+.comms-admin-bar__swap {
+	margin-left: auto;
+	background: rgba(255, 176, 32, 0.2);
+	color: #f5b94a;
+	border: 1px solid rgba(255, 176, 32, 0.55);
+	padding: 0.25rem 0.65rem;
+	border-radius: 3px;
+	font-family: inherit;
+	font-size: 0.72rem;
+	text-transform: uppercase;
+	cursor: pointer;
+	transition: background 120ms ease;
+}
+.comms-admin-bar__pill:hover,
+.comms-admin-bar__quit:hover,
+.comms-admin-bar__swap:hover {
+	background: rgba(255, 176, 32, 0.32);
+}
+.comms-admin-bar__quit {
+	background: rgba(255, 60, 60, 0.15);
+	border-color: rgba(255, 60, 60, 0.5);
+	color: #ff8080;
+}
+.comms-admin-bar__quit:hover {
+	background: rgba(255, 60, 60, 0.28);
+}
+.comms-admin-bar__active {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+.comms-admin-bar__avatar {
+	width: 22px;
+	height: 22px;
+	border-radius: 50%;
+	object-fit: cover;
+	border: 1px solid rgba(255, 176, 32, 0.55);
+}
+.comms-admin-bar__picker {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	flex: 1 1 auto;
+}
+.comms-admin-bar__select {
+	background: rgba(0, 0, 0, 0.45);
+	color: #f5b94a;
+	border: 1px solid rgba(255, 176, 32, 0.45);
+	padding: 0.22rem 0.4rem;
+	font-family: inherit;
+	font-size: 0.75rem;
+	text-transform: uppercase;
+	max-width: 320px;
+}
+.comms-admin-bar__error {
+	color: #ff8080;
+}
+.comms-admin-bar__swap {
+	margin-left: 0.35rem;
+}
+
+/* Ghost channel dot */
+.comms-channel-item.is-ghost .comms-channel-name::after {
+	content: '';
+	display: inline-block;
+	width: 6px;
+	height: 6px;
+	border-radius: 50%;
+	background: #f5b94a;
+	margin-left: 0.45rem;
+	vertical-align: middle;
+	box-shadow: 0 0 4px rgba(255, 176, 32, 0.6);
+}
+
+/* MJ tag in message list */
+.comms-message-mj-tag {
+	display: inline-block;
+	background: rgba(255, 176, 32, 0.18);
+	color: #f5b94a;
+	border: 1px solid rgba(255, 176, 32, 0.55);
+	padding: 0 0.35rem;
+	margin-left: 0.35rem;
+	font-size: 0.6rem;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	border-radius: 2px;
+}
+
+/* Composer puppet chip */
+.comms-composer-puppet-chip {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4rem;
+	background: rgba(255, 176, 32, 0.14);
+	border: 1px solid rgba(255, 176, 32, 0.5);
+	color: #f5b94a;
+	padding: 0.2rem 0.55rem;
+	border-radius: 3px;
+	font-size: 0.7rem;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	margin-right: 0.5rem;
+	cursor: pointer;
+}
+.comms-composer-puppet-chip:hover {
+	background: rgba(255, 176, 32, 0.22);
+}
