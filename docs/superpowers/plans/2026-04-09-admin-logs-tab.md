@@ -65,7 +65,7 @@
 **Files:**
 - Create: `src/collections/AdminLogs.ts`
 - Modify: `src/payload.config.ts:8-23` (import block), `src/payload.config.ts:42-59` (collections array)
-- Create: `src/migrations/20260409_180000_admin_logs.ts` (or raw SQL fallback — see step 6)
+- Create: `src/migrations/20260409_190000_admin_logs.ts` (or raw SQL fallback — see step 6)
 
 - [ ] **Step 1: Create the AdminLogs collection file**
 
@@ -191,7 +191,7 @@ If the command fails (common on this codebase because Payload bootstrap is slow)
 Run: `npx payload migrate:create admin_logs`
 Expected: a new file in `src/migrations/` containing `up`/`down` functions with the `admin_logs` table DDL.
 
-If that command fails or produces a destructive schema diff (drizzle sometimes wants to recreate unrelated tables), author the migration by hand. Create `src/migrations/20260409_180000_admin_logs.ts` with this exact content:
+If that command fails or produces a destructive schema diff (drizzle sometimes wants to recreate unrelated tables), author the migration by hand. Create `src/migrations/20260409_190000_admin_logs.ts` with this exact content:
 
 ```ts
 import { MigrateUpArgs, MigrateDownArgs, sql } from '@payloadcms/db-postgres';
@@ -240,8 +240,8 @@ npx payload migrate
 OR if `payload migrate` tries to recreate unrelated tables, apply the SQL manually via psql:
 
 ```bash
-psql $DATABASE_URI -f src/migrations/20260409_180000_admin_logs.sql
-psql $DATABASE_URI -c "INSERT INTO payload_migrations (name, batch) VALUES ('20260409_180000_admin_logs', (SELECT COALESCE(MAX(batch),0)+1 FROM payload_migrations));"
+psql $DATABASE_URI -f src/migrations/20260409_190000_admin_logs.sql
+psql $DATABASE_URI -c "INSERT INTO payload_migrations (name, batch) VALUES ('20260409_190000_admin_logs', (SELECT COALESCE(MAX(batch),0)+1 FROM payload_migrations));"
 ```
 
 (The `.sql` file will be exported from the migration's `up()` body — do this only if the ts migration route fails.)
@@ -254,7 +254,7 @@ Expected: PASS — 136/136 (no new tests yet, existing suite still green after s
 - [ ] **Step 8: Commit**
 
 ```bash
-git add src/collections/AdminLogs.ts src/payload.config.ts src/lib/payload-access.ts src/migrations/20260409_180000_admin_logs.ts src/payload-types.ts
+git add src/collections/AdminLogs.ts src/payload.config.ts src/lib/payload-access.ts src/migrations/20260409_190000_admin_logs.ts src/payload-types.ts
 git commit -m "feat(admin-logs): add AdminLogs Payload collection + migration
 
 Collection is hidden from Payload /admin sidebar, read-only for full
@@ -2504,7 +2504,7 @@ npx payload migrate
 psql $DATABASE_URI -c '\d admin_logs'
 ```
 
-If `payload migrate` tries to recreate unrelated tables (a known gotcha per CLAUDE.md), apply the SQL fragment from `src/migrations/20260409_180000_admin_logs.ts` manually via psql, then mark it applied:
+If `payload migrate` tries to recreate unrelated tables (a known gotcha per CLAUDE.md), apply the SQL fragment from `src/migrations/20260409_190000_admin_logs.ts` manually via psql, then mark it applied:
 
 ```bash
 psql $DATABASE_URI <<'SQL'
@@ -2531,7 +2531,7 @@ CREATE INDEX IF NOT EXISTS "admin_logs_action_idx" ON "admin_logs" ("action");
 CREATE INDEX IF NOT EXISTS "admin_logs_entity_type_idx" ON "admin_logs" ("entity_type");
 CREATE INDEX IF NOT EXISTS "admin_logs_created_at_idx" ON "admin_logs" ("created_at");
 INSERT INTO payload_migrations (name, batch) VALUES (
-	'20260409_180000_admin_logs',
+	'20260409_190000_admin_logs',
 	(SELECT COALESCE(MAX(batch), 0) + 1 FROM payload_migrations)
 );
 SQL
