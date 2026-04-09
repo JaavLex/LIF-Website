@@ -18,7 +18,9 @@ const CALLSIGN_QUOTE_CHARS =
 
 /**
  * Strip all quote-like characters from a callsign and collapse whitespace.
- * Does NOT enforce emptiness — callers decide how to handle an empty result.
+ * Trailing whitespace is removed — use this at submit/server time, NOT on
+ * every keystroke (a trailing space is a legitimate intermediate state
+ * while the user is typing a multi-word callsign like "le fourbe").
  */
 export function sanitizeCallsign(raw: string): string {
 	if (!raw) return '';
@@ -26,6 +28,22 @@ export function sanitizeCallsign(raw: string): string {
 		.replace(CALLSIGN_QUOTE_CHARS, '')
 		.replace(/\s+/g, ' ')
 		.trim();
+}
+
+/**
+ * Live, keystroke-safe variant of {@link sanitizeCallsign}. Strips the
+ * forbidden quote characters and normalizes repeated whitespace into a
+ * single space, but PRESERVES a single trailing space so the user can
+ * type a multi-word callsign without the space disappearing on every
+ * keypress. The final trim happens in {@link sanitizeCallsign} on submit.
+ */
+export function sanitizeCallsignLive(raw: string): string {
+	if (!raw) return '';
+	const noQuotes = raw.replace(CALLSIGN_QUOTE_CHARS, '');
+	// Collapse runs of whitespace to a single space, preserving leading /
+	// trailing single space. Then drop any leading space so the field never
+	// *starts* with whitespace.
+	return noQuotes.replace(/\s+/g, ' ').replace(/^\s+/, '');
 }
 
 /**

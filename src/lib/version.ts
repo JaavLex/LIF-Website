@@ -6,9 +6,16 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.6.61',
+  version: '1.6.62',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.6.62',
+      date: '2026-04-09',
+      changes: [
+        'ROLEPLAY — Fix saisie d\'un callsign multi-mots comme « le fourbe ». Bug : le sanitizer appelé dans `CharacterForm.handleChange` était `sanitizeCallsign`, qui fait un `.trim()` final — donc dès que l\'utilisateur tapait l\'espace après « le », le trim l\'effaçait immédiatement et il était impossible d\'arriver à taper le second mot. Fix : nouveau helper `sanitizeCallsignLive` dans `src/lib/character-validation.ts`, utilisé UNIQUEMENT dans le onChange du formulaire. Il strip toujours les guillemets, collapse les runs de whitespace en un seul espace, drop le whitespace en tête (pour que le champ ne commence jamais par un espace) mais PRÉSERVE un éventuel espace en queue — l\'utilisateur peut donc taper « le » puis espace puis continuer « fourbe » sans jamais voir l\'espace disparaître. Le trim final est toujours effectué côté submit via `sanitizeCallsign` et côté serveur dans les routes POST / PATCH, donc la valeur persistée reste propre. Nouveaux tests : suite dédiée `sanitizeCallsignLive` (preserves trailing space, preserves internal spaces, still strips quotes, drops leading whitespace, collapses runs), plus un guard sur `sanitizeCallsign` confirmant que les callsigns multi-mots comme « le fourbe », « Eagle 01 » et « Alpha Bravo Charlie » sont acceptés tels quels.',
+      ],
+    },
     {
       version: '1.6.61',
       date: '2026-04-09',

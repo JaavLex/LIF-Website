@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { textToLexical, lexicalToText } from '@/lib/constants';
 import {
 	sanitizeCallsign,
+	sanitizeCallsignLive,
 	backgroundCharCount,
 	BACKGROUND_MIN_LENGTH,
 } from '@/lib/character-validation';
@@ -146,9 +147,12 @@ export function CharacterForm({
 		if (target instanceof HTMLInputElement && target.type === 'checkbox') {
 			setForm(prev => ({ ...prev, [target.name]: target.checked }));
 		} else if (target.name === 'callsign') {
-			// Strip quotes/guillemets as the user types — stays permissive
-			// (sanitize, don't reject) so the field never feels broken.
-			setForm(prev => ({ ...prev, callsign: sanitizeCallsign(target.value) }));
+			// Live sanitize: strip quotes/guillemets, collapse double spaces,
+			// but preserve a single trailing space so the user can type
+			// multi-word callsigns like "le fourbe" without losing the space
+			// between the words on every keystroke. Final trim happens on
+			// submit in handleSubmit via sanitizeCallsign.
+			setForm(prev => ({ ...prev, callsign: sanitizeCallsignLive(target.value) }));
 		} else {
 			setForm(prev => ({ ...prev, [target.name]: target.value }));
 		}

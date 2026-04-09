@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
 	sanitizeCallsign,
+	sanitizeCallsignLive,
 	backgroundCharCount,
 	validateBackground,
 	BACKGROUND_MIN_LENGTH,
@@ -37,6 +38,12 @@ describe('sanitizeCallsign', () => {
 		expect(sanitizeCallsign('  le    fourbe  ')).toBe('le fourbe');
 	});
 
+	it('preserves single internal spaces (multi-word callsigns are legal)', () => {
+		expect(sanitizeCallsign('le fourbe')).toBe('le fourbe');
+		expect(sanitizeCallsign('Eagle 01')).toBe('Eagle 01');
+		expect(sanitizeCallsign('Alpha Bravo Charlie')).toBe('Alpha Bravo Charlie');
+	});
+
 	it('returns empty string for empty / whitespace-only / quotes-only input', () => {
 		expect(sanitizeCallsign('')).toBe('');
 		expect(sanitizeCallsign('   ')).toBe('');
@@ -50,6 +57,37 @@ describe('sanitizeCallsign', () => {
 
 	it('preserves accented Latin characters (the point of French RP callsigns)', () => {
 		expect(sanitizeCallsign('Égide')).toBe('Égide');
+	});
+});
+
+describe('sanitizeCallsignLive', () => {
+	it('preserves a trailing space so users can type multi-word callsigns', () => {
+		// Regression: the submit-time sanitizer trims, which wiped the space
+		// on every keystroke and made "le fourbe" impossible to type.
+		expect(sanitizeCallsignLive('le ')).toBe('le ');
+		expect(sanitizeCallsignLive('le fourbe ')).toBe('le fourbe ');
+	});
+
+	it('preserves internal single spaces mid-typing', () => {
+		expect(sanitizeCallsignLive('le fourbe')).toBe('le fourbe');
+		expect(sanitizeCallsignLive('Alpha Bravo')).toBe('Alpha Bravo');
+	});
+
+	it('still strips quote characters while typing', () => {
+		expect(sanitizeCallsignLive('« le fourbe »')).toBe('le fourbe ');
+		expect(sanitizeCallsignLive('"Ghost"')).toBe('Ghost');
+	});
+
+	it('drops leading whitespace (field should never start with a space)', () => {
+		expect(sanitizeCallsignLive('   le fourbe')).toBe('le fourbe');
+	});
+
+	it('collapses runs of internal whitespace to a single space', () => {
+		expect(sanitizeCallsignLive('le    fourbe')).toBe('le fourbe');
+	});
+
+	it('returns empty string for empty input', () => {
+		expect(sanitizeCallsignLive('')).toBe('');
 	});
 });
 
@@ -121,11 +159,23 @@ describe('Character routes wire validation', () => {
 		expect(src).toContain('photo de profil est obligatoire');
 	});
 
+	it('POST route bypasses 500-char background rule for admins', () => {
+		const src = readSrc('app/api/roleplay/characters/route.ts');
+		// Validation call must be inside a !isAdmin branch so admins skip it.
+		expect(src).toMatch(/!isNpcCreation && !isAdmin[\s\S]*validateBackground/);
+	});
+
 	it('PATCH /api/roleplay/characters/[id] uses the same validators', () => {
 		const src = readSrc('app/api/roleplay/characters/[id]/route.ts');
 		expect(src).toContain('sanitizeCallsign');
 		expect(src).toContain('validateBackground');
 		expect(src).toContain('photo de profil est obligatoire');
+	});
+
+	it('PATCH route bypasses 500-char background rule for admins', () => {
+		const src = readSrc('app/api/roleplay/characters/[id]/route.ts');
+		expect(src).toMatch(/!isAdmin && body\.civilianBackground/);
+		expect(src).toMatch(/!isAdmin && body\.militaryBackground/);
 	});
 
 	it('PATCH route strips isMainCharacter for non-admins', () => {
