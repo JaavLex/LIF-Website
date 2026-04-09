@@ -21,6 +21,7 @@ import { ModerationSanctions } from './collections/ModerationSanctions';
 import { BankHistory } from './collections/BankHistory';
 import { CommsChannels } from './collections/CommsChannels';
 import { CommsMessages } from './collections/CommsMessages';
+import { AdminLogs } from './collections/AdminLogs';
 import { AdminDashboard } from './globals/AdminDashboard';
 import { Homepage } from './globals/Homepage';
 import { Navigation } from './globals/Navigation';
@@ -56,6 +57,7 @@ export default buildConfig({
 		BankHistory,
 		CommsChannels,
 		CommsMessages,
+		AdminLogs,
 	],
 	globals: [Homepage, Navigation, AdminDashboard, Roleplay],
 	editor: lexicalEditor(),

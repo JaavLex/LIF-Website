@@ -83,6 +83,7 @@ export interface Config {
     'bank-history': BankHistory;
     'comms-channels': CommsChannel;
     'comms-messages': CommsMessage;
+    'admin-logs': AdminLog;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -106,6 +107,7 @@ export interface Config {
     'bank-history': BankHistorySelect<false> | BankHistorySelect<true>;
     'comms-channels': CommsChannelsSelect<false> | CommsChannelsSelect<true>;
     'comms-messages': CommsMessagesSelect<false> | CommsMessagesSelect<true>;
+    'admin-logs': AdminLogsSelect<false> | AdminLogsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -372,6 +374,8 @@ export interface Post {
   createdAt: string;
 }
 /**
+ * Personnages joueurs (liés à un compte Discord) ET PNJ / Cibles. Pour créer un PNJ ou une Cible : laissez « Discord ID » et « Discord Username » VIDES, cochez « Cible / Ennemi » si applicable et choisissez la faction cible. Le matricule est généré automatiquement. Aucun BI ID n'est requis pour un PNJ.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "characters".
  */
@@ -502,7 +506,13 @@ export interface Character {
   targetFaction?: string | null;
   unit?: (number | null) | Unit;
   superiorOfficer?: (number | null) | Character;
+  /**
+   * Laissez vide pour un PNJ / Cible. Renseigné automatiquement quand un joueur crée son personnage via le site.
+   */
   discordId?: string | null;
+  /**
+   * Laissez vide pour un PNJ / Cible.
+   */
   discordUsername?: string | null;
   /**
    * UUID Bohemia Interactive du joueur (visible dans le profil joueur en jeu)
@@ -585,6 +595,27 @@ export interface Unit {
    * Couleur hex pour l'affichage
    */
   color?: string | null;
+  /**
+   * Marque cette unité comme principale sous la faction principale (Cerberus, Spectre…). Affichée dans le sélecteur de création de personnage.
+   */
+  isMain?: boolean | null;
+  /**
+   * Affiché sur la carte de cette unité dans la fenêtre de choix d'unité (création de personnage). Si vide, un texte par défaut sera utilisé.
+   */
+  selectorTagline?: string | null;
+  /**
+   * Paragraphe affiché sur la carte de cette unité dans le sélecteur de création de personnage. Si vide, un texte par défaut sera utilisé.
+   */
+  selectorPitch?: string | null;
+  /**
+   * 3 à 5 traits courts affichés en liste à puces sur la carte du sélecteur (ex : « Combat conventionnel », « Service actif »).
+   */
+  selectorTraits?:
+    | {
+        label: string;
+        id?: string | null;
+      }[]
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -597,6 +628,9 @@ export interface Faction {
   name: string;
   slug: string;
   type?: ('allied' | 'neutral' | 'hostile') | null;
+  /**
+   * Marque cette faction comme la faction principale (LIF). Affichée en vedette sur la page roleplay.
+   */
   isMainFaction?: boolean | null;
   description?: {
     root: {
@@ -843,6 +877,10 @@ export interface CommsMessage {
   channelId: number;
   senderCharacterId: number;
   senderDiscordId?: string | null;
+  /**
+   * Écrit par un admin en mode MJ (impersonation NPC/cible). Flag d'audit masqué aux non-admins.
+   */
+  postedAsGm?: boolean | null;
   isAnonymous?: boolean | null;
   body?: string | null;
   /**
@@ -877,6 +915,44 @@ export interface CommsMessage {
   deletedAt?: string | null;
   deletedBy?: string | null;
   senderIp?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "admin-logs".
+ */
+export interface AdminLog {
+  id: number;
+  actorDiscordId: string;
+  actorDiscordUsername: string;
+  actorDiscordAvatar?: string | null;
+  actorAdminLevel?: string | null;
+  action: string;
+  summary: string;
+  entityType?: string | null;
+  entityId?: string | null;
+  entityLabel?: string | null;
+  diff?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  metadata?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  ip?: string | null;
+  userAgent?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -967,6 +1043,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'comms-messages';
         value: number | CommsMessage;
+      } | null)
+    | ({
+        relationTo: 'admin-logs';
+        value: number | AdminLog;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -1289,6 +1369,15 @@ export interface UnitsSelect<T extends boolean = true> {
   commander?: T;
   parentFaction?: T;
   color?: T;
+  isMain?: T;
+  selectorTagline?: T;
+  selectorPitch?: T;
+  selectorTraits?:
+    | T
+    | {
+        label?: T;
+        id?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1300,6 +1389,7 @@ export interface FactionsSelect<T extends boolean = true> {
   name?: T;
   slug?: T;
   type?: T;
+  isMainFaction?: T;
   description?: T;
   logo?: T;
   color?: T;
@@ -1437,6 +1527,7 @@ export interface CommsMessagesSelect<T extends boolean = true> {
   channelId?: T;
   senderCharacterId?: T;
   senderDiscordId?: T;
+  postedAsGm?: T;
   isAnonymous?: T;
   body?: T;
   attachments?: T;
@@ -1446,6 +1537,27 @@ export interface CommsMessagesSelect<T extends boolean = true> {
   deletedAt?: T;
   deletedBy?: T;
   senderIp?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "admin-logs_select".
+ */
+export interface AdminLogsSelect<T extends boolean = true> {
+  actorDiscordId?: T;
+  actorDiscordUsername?: T;
+  actorDiscordAvatar?: T;
+  actorAdminLevel?: T;
+  action?: T;
+  summary?: T;
+  entityType?: T;
+  entityId?: T;
+  entityLabel?: T;
+  diff?: T;
+  metadata?: T;
+  ip?: T;
+  userAgent?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1790,6 +1902,27 @@ export interface Roleplay {
    * Mis à jour automatiquement lors de chaque synchronisation.
    */
   lastGlobalMoneySync?: string | null;
+  unitSelectorEyebrow?: string | null;
+  unitSelectorTitleLine1?: string | null;
+  unitSelectorTitleLine2?: string | null;
+  unitSelectorTitleLine3?: string | null;
+  /**
+   * Le mot « Légion » sera automatiquement remplacé par le nom de la faction principale si défini.
+   */
+  unitSelectorBrief?: string | null;
+  unitSelectorWarning?: string | null;
+  /**
+   * Le nom de la faction principale est automatiquement ajouté après ce texte.
+   */
+  unitSelectorFooter?: string | null;
+  unitSelectorRailLabel?: string | null;
+  mainFactionBadge?: string | null;
+  mainFactionSubtitleAllied?: string | null;
+  mainFactionSubtitleHostile?: string | null;
+  mainFactionSubtitleNeutral?: string | null;
+  mainFactionCta?: string | null;
+  mainUnitsStripLabel?: string | null;
+  mainUnitsCardEyebrow?: string | null;
   moderationEnabled?: boolean | null;
   /**
    * Salon Discord où les résultats des actions de modération sont envoyés. Configuré via /moderation-channel du bot.
@@ -2001,6 +2134,21 @@ export interface RoleplaySelect<T extends boolean = true> {
   gameServerSavePath?: T;
   gameSyncInterval?: T;
   lastGlobalMoneySync?: T;
+  unitSelectorEyebrow?: T;
+  unitSelectorTitleLine1?: T;
+  unitSelectorTitleLine2?: T;
+  unitSelectorTitleLine3?: T;
+  unitSelectorBrief?: T;
+  unitSelectorWarning?: T;
+  unitSelectorFooter?: T;
+  unitSelectorRailLabel?: T;
+  mainFactionBadge?: T;
+  mainFactionSubtitleAllied?: T;
+  mainFactionSubtitleHostile?: T;
+  mainFactionSubtitleNeutral?: T;
+  mainFactionCta?: T;
+  mainUnitsStripLabel?: T;
+  mainUnitsCardEyebrow?: T;
   moderationEnabled?: T;
   moderationLogChannelId?: T;
   moderationReasons?:
