@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSession } from '@/lib/api-auth';
+import { getSession, requireGmAdmin, isErrorResponse } from '@/lib/api-auth';
 import {
 	checkCommsEligibility,
 	syncAutoChannelsForCharacter,
 	syncAllAutoChannels,
 	listChannelsForCharacter,
+	listChannelsForGmAdmin,
 	enrichChannelsForDisplay,
+	EnrichedChannel,
 	COMMS_LIMITS,
 } from '@/lib/comms';
 import { getPayloadClient } from '@/lib/payload';
@@ -22,7 +24,15 @@ export async function GET(request: NextRequest) {
 	// Full sync of all factions/units (cached 30s in-memory)
 	await syncAllAutoChannels();
 
-	const channels = await listChannelsForCharacter(eligibility.character.id);
+	const gmMode = request.nextUrl.searchParams.get('gm') === '1';
+	if (gmMode) {
+		const authResult = await requireGmAdmin(request);
+		if (isErrorResponse(authResult)) return authResult;
+	}
+
+	const channels = gmMode
+		? await listChannelsForGmAdmin(eligibility.character.id)
+		: await listChannelsForCharacter(eligibility.character.id);
 
 	// Batch fetch last message per channel
 	const payload = await getPayloadClient();
@@ -46,11 +56,12 @@ export async function GET(request: NextRequest) {
 		}
 	}
 
-	const enriched = await enrichChannelsForDisplay(
+	const enriched: EnrichedChannel[] = await enrichChannelsForDisplay(
 		channels,
 		eligibility.character.id,
 		lastMessageMap,
 	);
+	// enriched[].viewerIsGhost is true for GM bypass channels (not a member)
 
 	return NextResponse.json({
 		character: eligibility.character,

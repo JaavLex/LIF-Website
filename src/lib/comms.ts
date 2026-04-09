@@ -509,6 +509,7 @@ export interface EnrichedChannel {
 	anonForCharacterId?: number | null;
 	isAnonForViewer: boolean;
 	isAnonInitiatedByViewer: boolean;
+	viewerIsGhost?: boolean;
 }
 
 /**
@@ -657,6 +658,7 @@ export async function enrichChannelsForDisplay(
 			anonForCharacterId,
 			isAnonForViewer,
 			isAnonInitiatedByViewer,
+			viewerIsGhost: !!(ch as any).viewerIsGhost,
 		};
 	});
 }

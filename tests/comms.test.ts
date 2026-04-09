@@ -358,3 +358,17 @@ describe('comms.ts listChannelsForGmAdmin', () => {
 		expect(content).toMatch(/viewerIsGhost/);
 	});
 });
+
+describe('GET /api/comms/channels ?gm=1', () => {
+	it('branches on gm=1 query param using listChannelsForGmAdmin', () => {
+		const content = readSrc('app/api/comms/channels/route.ts');
+		expect(content).toMatch(/searchParams\.get\(['"]gm['"]\)/);
+		expect(content).toContain('listChannelsForGmAdmin');
+		expect(content).toContain('requireGmAdmin');
+	});
+
+	it('preserves viewerIsGhost on enriched channels', () => {
+		const content = readSrc('app/api/comms/channels/route.ts');
+		expect(content).toMatch(/viewerIsGhost/);
+	});
+});
