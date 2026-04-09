@@ -419,3 +419,18 @@ describe('POST /api/comms/channels/[id]/messages GM impersonation', () => {
 		expect(content).not.toMatch(/members\.push.*impersonate/);
 	});
 });
+
+describe('useGmMode context', () => {
+	it('exports GmModeProvider and useGmMode', () => {
+		const content = readSrc('components/comms/useGmMode.tsx');
+		expect(content).toContain('export function GmModeProvider');
+		expect(content).toContain('export function useGmMode');
+	});
+
+	it('fetches the npc list on enable and exposes effectiveCharacterId', () => {
+		const content = readSrc('components/comms/useGmMode.tsx');
+		expect(content).toContain("'/api/roleplay/characters/npcs'");
+		expect(content).toContain('effectiveCharacterId');
+		expect(content).toContain('overrideCharacterId ?? defaultCharacterId');
+	});
+});
