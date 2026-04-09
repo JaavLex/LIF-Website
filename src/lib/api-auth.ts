@@ -64,6 +64,28 @@ export async function requireAdmin(
 }
 
 /**
+ * Session + admin gate specifically for GameMaster-mode endpoints.
+ * Identical to requireAdmin but returns a GM-specific French error so
+ * clients can distinguish and surface appropriately.
+ */
+export async function requireGmAdmin(
+	request?: NextRequest,
+): Promise<AdminContext | NextResponse> {
+	const session = await getSession(request);
+	if (!session) return unauthorized();
+
+	const permissions = await checkAdminPermissions(session);
+	if (!permissions.isAdmin) {
+		return NextResponse.json(
+			{ error: 'Mode MJ réservé aux administrateurs' },
+			{ status: 403 },
+		);
+	}
+
+	return { session, permissions };
+}
+
+/**
  * Require full admin permissions. Returns a NextResponse error or the admin context.
  */
 export async function requireFullAdmin(

@@ -323,3 +323,12 @@ describe('CommsMessages postedAsGm field', () => {
 		expect(content).toContain('DEFAULT false');
 	});
 });
+
+describe('api-auth requireGmAdmin', () => {
+	it('exports a requireGmAdmin helper that returns AdminContext or NextResponse', () => {
+		const content = readSrc('lib/api-auth.ts');
+		expect(content).toMatch(/export async function requireGmAdmin/);
+		expect(content).toMatch(/requireGmAdmin[\s\S]{0,500}checkAdminPermissions/);
+		expect(content).toMatch(/requireGmAdmin[\s\S]{0,500}isAdmin/);
+	});
+});
