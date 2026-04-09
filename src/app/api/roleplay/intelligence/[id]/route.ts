@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getPayloadClient } from '@/lib/payload';
 import { requireSession, requireAdmin, isErrorResponse } from '@/lib/api-auth';
 import { checkAdminPermissions } from '@/lib/admin';
+import { logAdminAction } from '@/lib/admin-log';
 
 export async function GET(
 	_request: NextRequest,
@@ -70,6 +71,19 @@ export async function PATCH(
 			data: body,
 		});
 
+		if (isAdmin) {
+			void logAdminAction({
+				session,
+				action: 'intelligence.update',
+				summary: `A modifié le rapport de renseignement "${(existing as Record<string, any>).title}"`,
+				entityType: 'intelligence',
+				entityId: docId,
+				entityLabel: (existing as Record<string, any>).title,
+				before: existing,
+				after: doc,
+			});
+		}
+
 		return NextResponse.json({ id: doc.id, doc });
 	} catch (error: unknown) {
 		console.error('Intelligence update error:', error);
@@ -93,7 +107,25 @@ export async function DELETE(
 
 	try {
 		const payload = await getPayloadClient();
+
+		const existing = await payload.findByID({
+			collection: 'intelligence',
+			id: docId,
+			depth: 0,
+		});
+
 		await payload.delete({ collection: 'intelligence', id: docId });
+
+		void logAdminAction({
+			session: auth,
+			action: 'intelligence.delete',
+			summary: `A supprimé le rapport de renseignement "${(existing as Record<string, any>).title}"`,
+			entityType: 'intelligence',
+			entityId: docId,
+			entityLabel: (existing as Record<string, any>).title,
+			before: existing,
+		});
+
 		return NextResponse.json({ success: true });
 	} catch (error: unknown) {
 		const message = error instanceof Error ? error.message : 'Erreur lors de la suppression';

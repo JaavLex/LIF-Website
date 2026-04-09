@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getPayloadClient } from '@/lib/payload';
 import { requireSession, isErrorResponse } from '@/lib/api-auth';
 import { notifyNewIntelligence } from '@/lib/discord-notify';
+import { logAdminAction } from '@/lib/admin-log';
 import type { Intelligence, Roleplay } from '@/payload-types';
 
 export async function GET() {
@@ -84,6 +85,16 @@ export async function POST(request: NextRequest) {
 					? fullDoc.postedBy
 					: null,
 		}).catch(() => {});
+
+		void logAdminAction({
+			session,
+			action: 'intelligence.create',
+			summary: `A créé le rapport de renseignement "${fullDoc.title}"`,
+			entityType: 'intelligence',
+			entityId: doc.id as number,
+			entityLabel: fullDoc.title,
+			after: doc,
+		});
 
 		return NextResponse.json({ id: doc.id, doc });
 	} catch (error: any) {
