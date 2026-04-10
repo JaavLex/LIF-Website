@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSession } from '@/lib/api-auth';
 import { checkAdminPermissions } from '@/lib/admin';
-import payload from 'payload';
+import { getPayloadClient } from '@/lib/payload';
 
 /** Parse coordinates in "XXXXX / ZZZZZ" format */
 const COORD_RE = /^(\d{3,5})\s*\/\s*(\d{3,5})$/;
@@ -15,6 +15,7 @@ export async function GET(request: NextRequest) {
 
   const admin = await checkAdminPermissions(session);
 
+  const payload = await getPayloadClient();
   const result = await payload.find({
     collection: 'intelligence',
     where: {

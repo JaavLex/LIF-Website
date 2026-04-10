@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSession, requireAdmin } from '@/lib/api-auth';
-import payload from 'payload';
+import { getPayloadClient } from '@/lib/payload';
 
 export async function GET(request: NextRequest) {
   const all = request.nextUrl.searchParams.get('all');
+
+  const payload = await getPayloadClient();
 
   // If ?all=1 (admin unit list for placement dropdown), return all units
   if (all === '1') {
@@ -62,6 +64,7 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ error: 'unitId, hqX, hqZ requis' }, { status: 400 });
   }
 
+  const payload = await getPayloadClient();
   await payload.update({
     collection: 'units',
     id: unitId,

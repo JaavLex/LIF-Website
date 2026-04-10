@@ -83,10 +83,10 @@ const GridOverlay = L.GridLayer.extend({
   },
 });
 
-export function createGridOverlay(): L.GridLayer {
+export function createGridOverlay(pane = 'overlayPane'): L.GridLayer {
   return new (GridOverlay as any)({
     tileSize: 256,
     opacity: 1,
-    pane: 'overlayPane',
+    pane,
   });
 }

@@ -179,12 +179,18 @@ export default function TacticalMap() {
     });
 
     map.setView([0, 0], -1);
+
+    // Create a custom pane for grid so it renders above the image overlay
+    map.createPane('gridPane');
+    map.getPane('gridPane')!.style.zIndex = '450';
+    map.getPane('gridPane')!.style.pointerEvents = 'none';
+
     markersLayerRef.current = L.layerGroup().addTo(map);
     hqLayerRef.current = L.layerGroup().addTo(map);
     intelLayerRef.current = L.layerGroup().addTo(map);
 
     // Add grid overlay
-    const gridLayer = createGridOverlay();
+    const gridLayer = createGridOverlay('gridPane');
     gridLayer.addTo(map);
     gridLayerRef.current = gridLayer;
 
