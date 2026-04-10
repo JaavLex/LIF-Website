@@ -142,7 +142,7 @@ export default function TacticalMap() {
   const markersLayerRef = useRef<L.LayerGroup | null>(null);
   const hqLayerRef = useRef<L.LayerGroup | null>(null);
   const intelLayerRef = useRef<L.LayerGroup | null>(null);
-  const gridLayerRef = useRef<L.GridLayer | null>(null);
+  const gridLayerRef = useRef<L.LayerGroup | null>(null);
   const currentTerrainRef = useRef<string | null>(null);
   const [state, setState] = useState<MapStateResponse | null>(null);
   const [cursorCoords, setCursorCoords] = useState<{ x: number; z: number } | null>(null);
@@ -183,19 +183,9 @@ export default function TacticalMap() {
 
     map.setView([0, 0], -1);
 
-    // Create a custom pane for grid so it renders above the image overlay
-    map.createPane('gridPane');
-    map.getPane('gridPane')!.style.zIndex = '450';
-    map.getPane('gridPane')!.style.pointerEvents = 'none';
-
     markersLayerRef.current = L.layerGroup().addTo(map);
     hqLayerRef.current = L.layerGroup().addTo(map);
     intelLayerRef.current = L.layerGroup().addTo(map);
-
-    // Add grid overlay
-    const gridLayer = createGridOverlay('gridPane');
-    gridLayer.addTo(map);
-    gridLayerRef.current = gridLayer;
 
     map.on('mousemove', (e: L.LeafletMouseEvent) => {
       setCursorCoords({ x: Math.round(e.latlng.lng), z: Math.round(e.latlng.lat) });
@@ -344,9 +334,17 @@ export default function TacticalMap() {
 
     if (state.mapImageUrl) {
       imageLayerRef.current = L.imageOverlay(state.mapImageUrl, bounds).addTo(map);
-      // Ensure grid + markers stay above image
-      gridLayerRef.current?.bringToFront();
     }
+
+    // Create or recreate the grid overlay with correct bounds
+    if (gridLayerRef.current) {
+      map.removeLayer(gridLayerRef.current);
+    }
+    const gridLayer = createGridOverlay(map, {
+      minX: ox, minZ: oz, maxX: ox + sizeX, maxZ: oz + sizeZ,
+    });
+    gridLayer.addTo(map);
+    gridLayerRef.current = gridLayer;
 
     if (!currentTerrainRef.current) {
       const saved = localStorage.getItem('lif-map-view');

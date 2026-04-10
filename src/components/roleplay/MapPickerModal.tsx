@@ -65,7 +65,12 @@ export default function MapPickerModal({ open, onClose, onPick, initialCoords }:
         }
 
         // Add grid overlay
-        createGridOverlay().addTo(map);
+        if (terrain) {
+          createGridOverlay(map, {
+            minX: ox, minZ: oz,
+            maxX: ox + terrain.sizeX, maxZ: oz + terrain.sizeZ,
+          }).addTo(map);
+        }
 
         // Place initial marker if coords provided
         if (initialCoords) {

@@ -423,6 +423,23 @@
   opacity: 0.8;
 }
 
+/* ---- GRID LABELS ---- */
+
+.grid-label {
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.grid-label span {
+  font-family: 'Courier New', monospace;
+  font-size: 9px;
+  line-height: 1.2;
+  color: rgba(0, 255, 65, 0.55);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
 /* ---- HQ MARKERS ---- */
 
 .hq-map-icon-inner {
