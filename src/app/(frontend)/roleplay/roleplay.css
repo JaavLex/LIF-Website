@@ -9599,11 +9599,27 @@
   letter-spacing: 0.05em;
 }
 
-/* ---- PIP-BOY DARK GREEN MAP TINT ---- */
-/* Crush to dark green monochrome — Fallout terminal aesthetic */
+/* ---- PIP-BOY PHOSPHOR SCREEN ---- */
+/* Convert map to grayscale, then a green overlay maps brightness → green intensity */
 
 .leaflet-image-layer {
-  filter: saturate(0) brightness(0.45) sepia(1) hue-rotate(80deg) contrast(1.4);
+  filter: grayscale(1) contrast(1.3) brightness(0.9);
+}
+
+.leaflet-overlay-pane {
+  position: relative;
+}
+
+/* Green phosphor overlay — blends with the grayscale image via multiply.
+   White (bright) stays green, dark stays near-black. True monochrome shader. */
+.leaflet-overlay-pane::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: #14e03c;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+  z-index: 1;
 }
 
 /* ---- MAP PIN ICON ---- */
