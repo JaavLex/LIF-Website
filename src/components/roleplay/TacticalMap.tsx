@@ -95,19 +95,21 @@ export default function TacticalMap() {
     markersLayerRef.current = L.layerGroup().addTo(map);
 
     map.on('mousemove', (e: L.LeafletMouseEvent) => {
-      setCursorCoords({ x: Math.round(e.latlng.lng), z: Math.round(-e.latlng.lat) });
+      setCursorCoords({ x: Math.round(e.latlng.lng), z: Math.round(e.latlng.lat) });
     });
 
     map.on('mouseout', () => {
       setCursorCoords(null);
     });
 
+    // Clear stale views from old coordinate system (lat=-Z → lat=Z migration)
     const savedView = localStorage.getItem('lif-map-view');
     if (savedView) {
       try {
-        const { lat, lng, zoom } = JSON.parse(savedView);
-        map.setView([lat, lng], zoom);
-      } catch { /* ignore corrupt data */ }
+        const { lat, lng, zoom, v } = JSON.parse(savedView);
+        if (v === 2) map.setView([lat, lng], zoom);
+        else localStorage.removeItem('lif-map-view');
+      } catch { localStorage.removeItem('lif-map-view'); }
     }
 
     map.on('moveend', () => {
@@ -116,6 +118,7 @@ export default function TacticalMap() {
         lat: center.lat,
         lng: center.lng,
         zoom: map.getZoom(),
+        v: 2,
       }));
     });
 
@@ -176,7 +179,7 @@ export default function TacticalMap() {
         imageLayerRef.current = null;
       }
 
-      const bounds: L.LatLngBoundsExpression = [[0, 0], [-sizeZ, sizeX]];
+      const bounds: L.LatLngBoundsExpression = [[0, 0], [sizeZ, sizeX]];
 
       if (state.mapImageUrl) {
         imageLayerRef.current = L.imageOverlay(state.mapImageUrl, bounds).addTo(map);
@@ -245,7 +248,7 @@ export default function TacticalMap() {
     markersLayer.clearLayers();
 
     for (const player of state.players) {
-      const marker = L.marker([-player.z, player.x], {
+      const marker = L.marker([player.z, player.x], {
         icon: createPlayerIcon(player.faction),
       });
 
@@ -361,8 +364,8 @@ export default function TacticalMap() {
       <div className="map-footer">
         <span>
           {cursorCoords
-            ? `Coordonnées: X: ${cursorCoords.x}  Z: ${cursorCoords.z}`
-            : 'Coordonnées: ---'}
+            ? `Coordonnées: ${String(Math.floor(cursorCoords.x / 100)).padStart(3, '0')} / ${String(Math.floor(cursorCoords.z / 100)).padStart(3, '0')}`
+            : 'Coordonnées: --- / ---'}
         </span>
         <span>
           {state?.terrain
