@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeAll, beforeEach } from 'vitest';
+import { NextRequest } from 'next/server';
 import { getMapState, updateMapState } from '@/lib/map-state';
 
 beforeAll(() => {
@@ -70,7 +71,7 @@ describe('POST /api/roleplay/map/sync', () => {
 describe('GET /api/roleplay/map/state', () => {
   it('returns empty state when no sync has occurred', async () => {
     const { GET } = await import('@/app/api/roleplay/map/state/route');
-    const req = new Request('http://localhost/api/roleplay/map/state');
+    const req = new NextRequest('http://localhost/api/roleplay/map/state');
     const res = await GET(req as any);
     expect(res.status).toBe(200);
     const body = await res.json();
@@ -90,7 +91,7 @@ describe('GET /api/roleplay/map/state', () => {
       lastSyncAt: new Date('2026-04-10T15:00:00Z'),
     });
     const { GET } = await import('@/app/api/roleplay/map/state/route');
-    const req = new Request('http://localhost/api/roleplay/map/state');
+    const req = new NextRequest('http://localhost/api/roleplay/map/state');
     const res = await GET(req as any);
     expect(res.status).toBe(200);
     const body = await res.json();
