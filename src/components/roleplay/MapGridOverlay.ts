@@ -16,8 +16,8 @@ function formatLabel(meters: number): string {
 }
 
 const LINE_STYLE: L.PolylineOptions = {
-  color: 'rgba(0, 255, 65, 0.3)',
-  weight: 1,
+  color: 'rgba(0, 255, 65, 0.45)',
+  weight: 2,
   interactive: false,
 };
 
@@ -77,8 +77,8 @@ export function createGridOverlay(
           icon: L.divIcon({
             className: 'grid-label',
             html: `<span>${formatLabel(x)}<br/>${formatLabel(z)}</span>`,
-            iconSize: [60, 24],
-            iconAnchor: [-2, 12],
+            iconSize: [70, 28],
+            iconAnchor: [-3, 14],
           }),
           interactive: false,
         });

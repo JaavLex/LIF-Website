@@ -9586,10 +9586,31 @@
 
 .grid-label span {
   font-family: 'Courier New', monospace;
-  font-size: 9px;
-  line-height: 1.2;
-  color: rgba(0, 255, 65, 0.55);
+  font-size: 11px;
+  font-weight: bold;
+  line-height: 1.3;
+  color: rgba(0, 255, 65, 0.75);
   white-space: nowrap;
   pointer-events: none;
+  text-shadow: 0 0 4px rgba(0, 0, 0, 0.9), 0 0 8px rgba(0, 0, 0, 0.6);
+}
+
+/* ---- NIGHT VISION MAP TINT ---- */
+/* Apply green thermal/NVG look to all map image overlays */
+
+.leaflet-image-layer {
+  filter: saturate(0.3) brightness(0.7) sepia(0.6) hue-rotate(70deg) contrast(1.2);
+}
+
+/* ---- MAP PIN ICON ---- */
+
+.map-pin-icon {
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.map-pin-icon svg {
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.8)) drop-shadow(0 0 8px rgba(0, 255, 65, 0.4));
 }
 

@@ -5,6 +5,16 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { formatGrid } from '@/lib/constants';
 
+const PIN_ICON = L.divIcon({
+  className: 'map-pin-icon',
+  html: `<svg viewBox="0 0 24 36" width="24" height="36" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 24 12 24s12-15 12-24C24 5.4 18.6 0 12 0z" fill="#ff4444" fill-opacity="0.9"/>
+    <circle cx="12" cy="12" r="5" fill="#1a0505" stroke="#ff4444" stroke-width="1"/>
+  </svg>`,
+  iconSize: [24, 36],
+  iconAnchor: [12, 36],
+});
+
 interface PositionPreviewModalProps {
   coords: { x: number; z: number; label?: string };
   onClose: () => void;
@@ -49,7 +59,7 @@ export default function PositionPreviewModal({ coords, onClose }: PositionPrevie
         }
 
         // Add marker at the shared position
-        const marker = L.marker([coords.z, coords.x]);
+        const marker = L.marker([coords.z, coords.x], { icon: PIN_ICON });
         marker.addTo(map);
         marker.bindPopup(
           `<div style="font-size:0.85rem;">

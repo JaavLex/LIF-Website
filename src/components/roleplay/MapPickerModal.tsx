@@ -6,6 +6,16 @@ import 'leaflet/dist/leaflet.css';
 import { createGridOverlay } from './MapGridOverlay';
 import { formatGrid } from '@/lib/constants';
 
+const PIN_ICON = L.divIcon({
+  className: 'map-pin-icon',
+  html: `<svg viewBox="0 0 24 36" width="24" height="36" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 24 12 24s12-15 12-24C24 5.4 18.6 0 12 0z" fill="#00ff41" fill-opacity="0.9"/>
+    <circle cx="12" cy="12" r="5" fill="#060a04" stroke="#00ff41" stroke-width="1"/>
+  </svg>`,
+  iconSize: [24, 36],
+  iconAnchor: [12, 36],
+});
+
 interface MapPickerModalProps {
   open: boolean;
   onClose: () => void;
@@ -75,6 +85,7 @@ export default function MapPickerModal({ open, onClose, onPick, initialCoords }:
         if (initialCoords) {
           const marker = L.marker([initialCoords.z, initialCoords.x], {
             draggable: true,
+            icon: PIN_ICON,
           });
           marker.addTo(map);
           marker.on('dragend', () => {
@@ -100,7 +111,7 @@ export default function MapPickerModal({ open, onClose, onPick, initialCoords }:
           if (markerRef.current) {
             markerRef.current.setLatLng([z, x]);
           } else {
-            const marker = L.marker([z, x], { draggable: true });
+            const marker = L.marker([z, x], { draggable: true, icon: PIN_ICON });
             marker.addTo(map!);
             marker.on('dragend', () => {
               const pos = marker.getLatLng();
