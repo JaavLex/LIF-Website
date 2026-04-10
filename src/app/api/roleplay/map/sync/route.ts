@@ -23,7 +23,6 @@ export async function POST(request: NextRequest) {
     },
     players: Array.isArray(players)
       ? players.map((p: Record<string, unknown>) => ({
-          name: String(p.name || ''),
           biId: String(p.biId || ''),
           x: Number(p.x || 0),
           z: Number(p.z || 0),

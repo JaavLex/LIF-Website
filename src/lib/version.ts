@@ -6,9 +6,16 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.8.0',
+  version: '1.8.1',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.8.1',
+      date: '2026-04-10',
+      changes: [
+        'CARTE TACTIQUE — Noms des joueurs résolus depuis les fiches personnage (biId) au lieu du nom en jeu.',
+      ],
+    },
     {
       version: '1.8.0',
       date: '2026-04-10',

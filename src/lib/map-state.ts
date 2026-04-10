@@ -5,7 +5,6 @@ export interface MapTerrain {
 }
 
 export interface MapPlayer {
-  name: string;
   biId: string;
   x: number;
   z: number;

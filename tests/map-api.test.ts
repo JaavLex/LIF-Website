@@ -52,7 +52,7 @@ describe('POST /api/roleplay/map/sync', () => {
         apiKey: 'test-api-key',
         terrain: { name: 'Merak', sizeX: 8192, sizeZ: 8192 },
         players: [
-          { name: 'Player1', biId: 'abc-123', x: 1234.5, z: 5678.9, faction: 'US' },
+          { biId: 'abc-123', x: 1234.5, z: 5678.9, faction: 'US' },
         ],
         gameMarkers: [],
       }),
@@ -85,7 +85,7 @@ describe('GET /api/roleplay/map/state', () => {
     updateMapState({
       terrain: { name: 'Merak', sizeX: 8192, sizeZ: 8192 },
       players: [
-        { name: 'Player1', biId: 'abc', x: 100, z: 200, faction: 'US' },
+        { biId: 'abc', x: 100, z: 200, faction: 'US' },
       ],
       gameMarkers: [],
       lastSyncAt: new Date('2026-04-10T15:00:00Z'),

@@ -3,6 +3,7 @@ import { getMapState } from '@/lib/map-state';
 import { getTerrainMeta } from '@/lib/terrain-meta';
 import { getSession } from '@/lib/api-auth';
 import { checkAdminPermissions } from '@/lib/admin';
+import { getPayloadClient } from '@/lib/payload';
 import fs from 'fs';
 import path from 'path';
 
@@ -47,9 +48,41 @@ export async function GET(request: NextRequest) {
     }
   }
 
+  // Resolve player names from character sheets linked by biId
+  let players: { name: string; biId: string; x: number; z: number; faction: string }[] = [];
+  if (isAdmin && state.players.length > 0) {
+    const biIds = state.players.map(p => p.biId).filter(Boolean);
+    const nameMap = new Map<string, string>();
+
+    if (biIds.length > 0) {
+      try {
+        const payload = await getPayloadClient();
+        const result = await payload.find({
+          collection: 'characters',
+          where: { biId: { in: biIds } },
+          limit: biIds.length,
+          depth: 0,
+        });
+        for (const doc of result.docs) {
+          if (doc.biId) {
+            nameMap.set(doc.biId, (doc.fullName as string) || 'Unknown');
+          }
+        }
+      } catch { /* fallback to Unknown */ }
+    }
+
+    players = state.players.map(p => ({
+      name: nameMap.get(p.biId) || 'Unknown',
+      biId: p.biId,
+      x: p.x,
+      z: p.z,
+      faction: p.faction,
+    }));
+  }
+
   return NextResponse.json({
     terrain,
-    players: isAdmin ? state.players : [],
+    players,
     gameMarkers: state.gameMarkers,
     lastSyncAt: state.lastSyncAt ? state.lastSyncAt.toISOString() : null,
     mapImageUrl,
