@@ -1,30 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin, isErrorResponse } from '@/lib/api-auth';
+import { readTerrainMeta, writeTerrainMeta } from '@/lib/terrain-meta';
 import fs from 'fs';
 import path from 'path';
 
 const MAPS_DIR = path.join(process.cwd(), 'public', 'maps');
-const META_PATH = path.join(MAPS_DIR, '_terrains.json');
 const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20 MB
-
-interface TerrainMeta {
-  [name: string]: { sizeX: number; sizeZ: number };
-}
-
-function readMeta(): TerrainMeta {
-  if (!fs.existsSync(META_PATH)) return {};
-  try { return JSON.parse(fs.readFileSync(META_PATH, 'utf-8')); } catch { return {}; }
-}
-
-function writeMeta(meta: TerrainMeta) {
-  if (!fs.existsSync(MAPS_DIR)) fs.mkdirSync(MAPS_DIR, { recursive: true });
-  fs.writeFileSync(META_PATH, JSON.stringify(meta, null, 2));
-}
-
-export function getTerrainMeta(name: string): { sizeX: number; sizeZ: number } | null {
-  const meta = readMeta();
-  return meta[name] || null;
-}
 
 export async function POST(request: NextRequest) {
   const auth = await requireAdmin(request);
@@ -73,9 +54,9 @@ export async function POST(request: NextRequest) {
   fs.writeFileSync(filePath, buffer);
 
   // Save terrain dimensions
-  const meta = readMeta();
+  const meta = readTerrainMeta();
   meta[safeName] = { sizeX, sizeZ };
-  writeMeta(meta);
+  writeTerrainMeta(meta);
 
   return NextResponse.json({ ok: true, url: `/maps/${safeName}.png` });
 }

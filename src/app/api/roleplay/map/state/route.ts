@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getMapState } from '@/lib/map-state';
-import { getTerrainMeta } from '../upload/route';
+import { getTerrainMeta } from '@/lib/terrain-meta';
 import fs from 'fs';
 import path from 'path';
 
