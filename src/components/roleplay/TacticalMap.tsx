@@ -37,8 +37,7 @@ interface MapStateResponse {
 }
 
 function formatGrid(meters: number): string {
-  const grid = Math.floor(meters / 10);
-  return String(grid).padStart(4, '0');
+  return String(Math.floor(meters)).padStart(5, '0');
 }
 
 const FACTION_COLORS: Record<string, string> = {
@@ -479,7 +478,7 @@ export default function TacticalMap() {
         <span>
           {cursorCoords
             ? `Coordonnées: ${formatGrid(cursorCoords.x)} / ${formatGrid(cursorCoords.z)}`
-            : 'Coordonnées: ---- / ----'}
+            : 'Coordonnées: ----- / -----'}
         </span>
         <span>
           {state?.terrain
