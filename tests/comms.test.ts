@@ -193,6 +193,12 @@ describe('@everyone parsing in messages POST handler', () => {
 		expect(content).toMatch(/mentionIds\.includes/);
 	});
 
+	it('uses impersonated character id as sender when in GM mode', () => {
+		const content = readSrc('app/api/comms/channels/[id]/messages/route.ts');
+		// The senderId for @everyone exclusion must use impersonatedCharacter.id in gmMode
+		expect(content).toMatch(/gmMode\s*\?\s*Number\(impersonatedCharacter\.id\)/);
+	});
+
 	it('skips offline Discord DM fanout when @everyone is set', () => {
 		const content = readSrc('app/api/comms/channels/[id]/messages/route.ts');
 		// The offline-DM loop must be guarded by !isEveryoneMention.
@@ -417,6 +423,12 @@ describe('POST /api/comms/channels/[id]/messages GM impersonation', () => {
 	it('does not mutate channel.members when gmMode', () => {
 		const content = readSrc('app/api/comms/channels/[id]/messages/route.ts');
 		expect(content).not.toMatch(/members\.push.*impersonate/);
+	});
+
+	it('uses impersonated character name for DM notifications in GM mode', () => {
+		const content = readSrc('app/api/comms/channels/[id]/messages/route.ts');
+		// senderName must use impersonatedCharacter.fullName when gmMode
+		expect(content).toMatch(/gmMode\s*\?\s*impersonatedCharacter\.fullName/);
 	});
 });
 

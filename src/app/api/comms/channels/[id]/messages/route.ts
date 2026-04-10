@@ -339,7 +339,7 @@ export async function POST(
 	let isEveryoneMention = false;
 	if (String(channel.type) !== 'dm' && EVERYONE_RE.test(text)) {
 		isEveryoneMention = true;
-		const senderId = Number(eligibility.character.id);
+		const senderId = gmMode ? Number(impersonatedCharacter.id) : Number(eligibility.character.id);
 		for (const m of members) {
 			const n = Number(m);
 			if (!Number.isFinite(n)) continue;
@@ -464,7 +464,7 @@ export async function POST(
 				});
 				const senderName = isAnonymous
 					? '[ANONYME]'
-					: eligibility.character.fullName;
+					: gmMode ? impersonatedCharacter.fullName : eligibility.character.fullName;
 				const channelLabel = (channel as any).name || `#${channelId}`;
 				const snippet = (text || '').slice(0, 200);
 				for (const c of result.docs as any[]) {
