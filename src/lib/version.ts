@@ -6,9 +6,16 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.6.66',
+  version: '1.6.67',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.6.67',
+      date: '2026-04-10',
+      changes: [
+        'TRÉSORERIE — Correction de la réinitialisation du graphique (les données n\'étaient pas supprimées). Granularité du graphique affinée à la minute au lieu du jour.',
+      ],
+    },
     {
       version: '1.6.66',
       date: '2026-04-10',
