@@ -65,7 +65,7 @@ export async function PATCH(request: NextRequest) {
   await payload.update({
     collection: 'units',
     id: unitId,
-    data: { hqX, hqZ },
+    data: { hqX, hqZ } as any,
   });
 
   return NextResponse.json({ success: true });
