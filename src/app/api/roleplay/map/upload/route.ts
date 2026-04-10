@@ -4,7 +4,27 @@ import fs from 'fs';
 import path from 'path';
 
 const MAPS_DIR = path.join(process.cwd(), 'public', 'maps');
+const META_PATH = path.join(MAPS_DIR, '_terrains.json');
 const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20 MB
+
+interface TerrainMeta {
+  [name: string]: { sizeX: number; sizeZ: number };
+}
+
+function readMeta(): TerrainMeta {
+  if (!fs.existsSync(META_PATH)) return {};
+  try { return JSON.parse(fs.readFileSync(META_PATH, 'utf-8')); } catch { return {}; }
+}
+
+function writeMeta(meta: TerrainMeta) {
+  if (!fs.existsSync(MAPS_DIR)) fs.mkdirSync(MAPS_DIR, { recursive: true });
+  fs.writeFileSync(META_PATH, JSON.stringify(meta, null, 2));
+}
+
+export function getTerrainMeta(name: string): { sizeX: number; sizeZ: number } | null {
+  const meta = readMeta();
+  return meta[name] || null;
+}
 
 export async function POST(request: NextRequest) {
   const auth = await requireAdmin(request);
@@ -13,6 +33,8 @@ export async function POST(request: NextRequest) {
   const formData = await request.formData();
   const terrainName = formData.get('terrainName');
   const file = formData.get('file');
+  const sizeXStr = formData.get('sizeX');
+  const sizeZStr = formData.get('sizeZ');
 
   if (!terrainName || typeof terrainName !== 'string') {
     return NextResponse.json({ error: 'Nom du terrain requis' }, { status: 400 });
@@ -30,6 +52,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Fichier trop volumineux (max 20 Mo)' }, { status: 400 });
   }
 
+  const sizeX = Number(sizeXStr);
+  const sizeZ = Number(sizeZStr);
+  if (!sizeX || !sizeZ || sizeX <= 0 || sizeZ <= 0) {
+    return NextResponse.json({ error: 'Dimensions du terrain requises (sizeX, sizeZ en mètres)' }, { status: 400 });
+  }
+
   // Sanitize terrain name: only allow alphanumeric, dash, underscore
   const safeName = terrainName.replace(/[^a-zA-Z0-9_-]/g, '');
   if (!safeName) {
@@ -43,6 +71,11 @@ export async function POST(request: NextRequest) {
   const buffer = Buffer.from(await file.arrayBuffer());
   const filePath = path.join(MAPS_DIR, `${safeName}.png`);
   fs.writeFileSync(filePath, buffer);
+
+  // Save terrain dimensions
+  const meta = readMeta();
+  meta[safeName] = { sizeX, sizeZ };
+  writeMeta(meta);
 
   return NextResponse.json({ ok: true, url: `/maps/${safeName}.png` });
 }

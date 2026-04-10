@@ -306,6 +306,15 @@
   padding-bottom: 0.5rem;
 }
 
+.map-upload-row {
+  display: flex;
+  gap: 0.6rem;
+}
+
+.map-upload-row .map-upload-field {
+  flex: 1;
+}
+
 .map-upload-field {
   display: flex;
   flex-direction: column;
@@ -319,7 +328,8 @@
   opacity: 0.55;
 }
 
-.map-upload-field input[type="text"] {
+.map-upload-field input[type="text"],
+.map-upload-field input[type="number"] {
   background: rgba(0, 0, 0, 0.5);
   border: 1px solid rgba(0, 255, 65, 0.25);
   color: #00ff41;
@@ -330,7 +340,8 @@
   transition: border-color 0.15s ease;
 }
 
-.map-upload-field input[type="text"]:focus {
+.map-upload-field input[type="text"]:focus,
+.map-upload-field input[type="number"]:focus {
   border-color: rgba(0, 255, 65, 0.5);
 }
 

@@ -73,6 +73,8 @@ export default function TacticalMap() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [showUpload, setShowUpload] = useState(false);
   const [uploadTerrainName, setUploadTerrainName] = useState('');
+  const [uploadSizeX, setUploadSizeX] = useState('');
+  const [uploadSizeZ, setUploadSizeZ] = useState('');
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [uploadStatus, setUploadStatus] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -199,19 +201,23 @@ export default function TacticalMap() {
       .catch(() => {});
   }, []);
 
-  // Pre-fill terrain name from state
+  // Pre-fill terrain info from state
   useEffect(() => {
-    if (state?.terrain?.name && !uploadTerrainName) {
-      setUploadTerrainName(state.terrain.name);
+    if (state?.terrain) {
+      if (!uploadTerrainName) setUploadTerrainName(state.terrain.name);
+      if (!uploadSizeX) setUploadSizeX(String(state.terrain.sizeX));
+      if (!uploadSizeZ) setUploadSizeZ(String(state.terrain.sizeZ));
     }
-  }, [state?.terrain?.name, uploadTerrainName]);
+  }, [state?.terrain, uploadTerrainName, uploadSizeX, uploadSizeZ]);
 
   async function handleUpload() {
-    if (!uploadFile || !uploadTerrainName) return;
+    if (!uploadFile || !uploadTerrainName || !uploadSizeX || !uploadSizeZ) return;
     setUploading(true);
     setUploadStatus(null);
     const formData = new FormData();
     formData.append('terrainName', uploadTerrainName);
+    formData.append('sizeX', uploadSizeX);
+    formData.append('sizeZ', uploadSizeZ);
     formData.append('file', uploadFile);
     try {
       const res = await fetch('/api/roleplay/map/upload', { method: 'POST', body: formData });
@@ -310,6 +316,26 @@ export default function TacticalMap() {
                 placeholder="Ex: Eden"
               />
             </label>
+            <div className="map-upload-row">
+              <label className="map-upload-field">
+                <span>Taille X (m)</span>
+                <input
+                  type="number"
+                  value={uploadSizeX}
+                  onChange={e => setUploadSizeX(e.target.value)}
+                  placeholder="Ex: 8192"
+                />
+              </label>
+              <label className="map-upload-field">
+                <span>Taille Z (m)</span>
+                <input
+                  type="number"
+                  value={uploadSizeZ}
+                  onChange={e => setUploadSizeZ(e.target.value)}
+                  placeholder="Ex: 8192"
+                />
+              </label>
+            </div>
             <label className="map-upload-field">
               <span>Image (PNG)</span>
               <input
@@ -322,7 +348,7 @@ export default function TacticalMap() {
               type="button"
               className="map-upload-btn"
               onClick={handleUpload}
-              disabled={uploading || !uploadFile || !uploadTerrainName}
+              disabled={uploading || !uploadFile || !uploadTerrainName || !uploadSizeX || !uploadSizeZ}
             >
               {uploading ? 'Envoi...' : 'Envoyer'}
             </button>
