@@ -41,8 +41,8 @@ const GridOverlay = L.GridLayer.extend({
     const minZ = Math.floor(se.lat / spacing) * spacing;
     const maxZ = Math.ceil(nw.lat / spacing) * spacing;
 
-    ctx.strokeStyle = 'rgba(0, 255, 65, 0.12)';
-    ctx.lineWidth = 0.5;
+    ctx.strokeStyle = 'rgba(0, 255, 65, 0.35)';
+    ctx.lineWidth = 1;
 
     // Draw vertical lines (constant X)
     for (let x = minX; x <= maxX; x += spacing) {
@@ -65,7 +65,7 @@ const GridOverlay = L.GridLayer.extend({
     // Draw labels at intersections near tile edges
     const labelFontSize = Math.max(8, Math.min(11, 8 + zoom));
     ctx.font = `${labelFontSize}px 'Courier New', monospace`;
-    ctx.fillStyle = 'rgba(0, 255, 65, 0.35)';
+    ctx.fillStyle = 'rgba(0, 255, 65, 0.6)';
     ctx.textBaseline = 'top';
 
     for (let x = minX; x <= maxX; x += spacing) {

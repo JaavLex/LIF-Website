@@ -49,12 +49,18 @@ export async function POST(request: NextRequest) {
     fs.mkdirSync(MAPS_DIR, { recursive: true });
   }
 
+  // Remove any existing map PNGs before writing the new one (single-map policy)
+  const existingPngs = fs.readdirSync(MAPS_DIR).filter(f => f.endsWith('.png'));
+  for (const old of existingPngs) {
+    fs.unlinkSync(path.join(MAPS_DIR, old));
+  }
+
   const buffer = Buffer.from(await file.arrayBuffer());
   const filePath = path.join(MAPS_DIR, `${safeName}.png`);
   fs.writeFileSync(filePath, buffer);
 
-  // Save terrain dimensions
-  const meta = readTerrainMeta();
+  // Save terrain dimensions (clear old entries)
+  const meta: Record<string, any> = {};
   meta[safeName] = { sizeX, sizeZ };
   writeTerrainMeta(meta);
 

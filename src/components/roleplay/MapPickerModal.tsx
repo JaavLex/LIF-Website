@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import '@/app/(frontend)/roleplay/map/map.css';
 import { createGridOverlay } from './MapGridOverlay';
 import { formatGrid } from '@/lib/constants';
 

@@ -87,30 +87,33 @@ function createPlayerIcon(faction: string): L.DivIcon {
   });
 }
 
-const INTEL_TYPE_SYMBOLS: Record<string, string> = {
-  observation: '👁',
-  interception: '⚡',
-  reconnaissance: '🔭',
-  infiltration: '🗡',
-  sigint: '📡',
-  humint: '👤',
-  other: '📌',
+const INTEL_TYPE_SVGS: Record<string, string> = {
+  observation: `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`,
+  interception: `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>`,
+  reconnaissance: `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>`,
+  infiltration: `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L15 8H9L12 2Z"/><line x1="12" y1="8" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>`,
+  sigint: `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20V16"/></svg>`,
+  humint: `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`,
+  other: `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>`,
 };
 
 function createIntelIcon(type: string): L.DivIcon {
-  const symbol = INTEL_TYPE_SYMBOLS[type] || INTEL_TYPE_SYMBOLS.other;
+  const svg = INTEL_TYPE_SVGS[type] || INTEL_TYPE_SVGS.other;
   return L.divIcon({
     className: 'intel-map-icon',
-    html: `<div class="intel-map-icon-inner">${symbol}</div>`,
+    html: `<div class="intel-map-icon-inner">${svg}</div>`,
     iconSize: [24, 24],
     iconAnchor: [12, 12],
   });
 }
 
-function createHQIcon(color: string): L.DivIcon {
+function createHQIcon(color: string, insigniaUrl: string | null): L.DivIcon {
+  const content = insigniaUrl
+    ? `<img src="${insigniaUrl}" alt="" style="width:22px;height:22px;object-fit:contain;" />`
+    : `<svg viewBox="0 0 24 24" width="16" height="16" fill="${color}" stroke="none"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15" stroke="${color}" stroke-width="2"/></svg>`;
   return L.divIcon({
     className: 'hq-map-icon',
-    html: `<div class="hq-map-icon-inner" style="border-color: ${color}; box-shadow: 0 0 10px ${color}88;">⚑</div>`,
+    html: `<div class="hq-map-icon-inner" style="border-color: ${color}; box-shadow: 0 0 10px ${color}88;">${content}</div>`,
     iconSize: [28, 28],
     iconAnchor: [14, 14],
   });
@@ -507,7 +510,7 @@ export default function TacticalMap() {
 
     for (const hq of unitHQs) {
       const marker = L.marker([hq.hqZ, hq.hqX], {
-        icon: createHQIcon(hq.color),
+        icon: createHQIcon(hq.color, hq.insigniaUrl),
       });
 
       const insigniaHtml = hq.insigniaUrl
