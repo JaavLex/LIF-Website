@@ -72,7 +72,7 @@ export default function PositionPreviewModal({ coords, onClose }: PositionPrevie
         mapRef.current = map;
         setLoading(false);
 
-        setTimeout(() => map?.invalidateSize(), 100);
+        [100, 300, 600].forEach(ms => setTimeout(() => map?.invalidateSize(), ms));
       } catch {
         setLoading(false);
       }
@@ -91,7 +91,7 @@ export default function PositionPreviewModal({ coords, onClose }: PositionPrevie
       <div
         className="comms-modal"
         onClick={e => e.stopPropagation()}
-        style={{ width: '90vw', maxWidth: '700px', height: '60vh', display: 'flex', flexDirection: 'column' }}
+        style={{ width: '95vw', maxWidth: '900px', height: '80vh', maxHeight: '750px', display: 'flex', flexDirection: 'column' }}
       >
         <h2 style={{ color: 'var(--primary)', margin: 0, fontSize: '0.9rem' }}>
           Position: {coords.label || `${formatGrid(coords.x)} / ${formatGrid(coords.z)}`}

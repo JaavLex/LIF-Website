@@ -500,10 +500,23 @@ export default function TacticalMap() {
     }
   }, [state?.players, showPlayers]);
 
+  // Remove HQ handler
+  const removeHQ = useCallback(async (unitId: number) => {
+    try {
+      const res = await fetch('/api/roleplay/map/units', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ unitId }),
+      });
+      if (res.ok) fetchUnitHQs();
+    } catch { /* ignore */ }
+  }, [fetchUnitHQs]);
+
   // Update HQ markers
   useEffect(() => {
     const layer = hqLayerRef.current;
-    if (!layer) return;
+    const map = mapRef.current;
+    if (!layer || !map) return;
     layer.clearLayers();
 
     for (const hq of unitHQs) {
@@ -515,6 +528,10 @@ export default function TacticalMap() {
         ? `<img src="${hq.insigniaUrl}" alt="" style="width:40px;height:40px;object-fit:contain;margin-bottom:4px;" />`
         : '';
 
+      const removeBtn = isAdmin
+        ? `<button class="hq-remove-btn" data-unit-id="${hq.id}">Retirer QG</button>`
+        : '';
+
       marker.bindPopup(
         `<div class="hq-popup">
           ${insigniaHtml}
@@ -522,13 +539,19 @@ export default function TacticalMap() {
           ${hq.factionName ? `<div class="hq-popup-faction">${escapeHtml(hq.factionName)}</div>` : ''}
           ${hq.commanderName ? `<div class="hq-popup-commander">CMD: ${escapeHtml(hq.commanderName)}</div>` : ''}
           <div class="hq-popup-coords">${formatGrid(hq.hqX)} / ${formatGrid(hq.hqZ)}</div>
+          ${removeBtn}
         </div>`,
         { className: 'map-custom-popup' },
       );
 
+      marker.on('popupopen', () => {
+        const btn = document.querySelector(`.hq-remove-btn[data-unit-id="${hq.id}"]`);
+        if (btn) btn.addEventListener('click', () => removeHQ(hq.id));
+      });
+
       layer.addLayer(marker);
     }
-  }, [unitHQs]);
+  }, [unitHQs, isAdmin, removeHQ]);
 
   // Update intel markers
   useEffect(() => {

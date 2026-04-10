@@ -9600,11 +9600,11 @@
 }
 
 /* ---- PIP-BOY PHOSPHOR SCREEN ---- */
-/* Compressed dynamic range: lift shadows, pull down highlights,
-   so everything sits in a readable mid-green band. */
+/* Green monochrome: terrain details (mountains, coastlines) stay visible.
+   Higher contrast so land stands out from sea, elevation is readable. */
 
 .leaflet-image-layer {
-  filter: grayscale(1) contrast(0.5) brightness(0.85) sepia(1) hue-rotate(70deg) saturate(1.8);
+  filter: grayscale(1) contrast(0.8) brightness(0.75) sepia(1) hue-rotate(70deg) saturate(2);
 }
 
 /* ---- MAP PIN ICON ---- */

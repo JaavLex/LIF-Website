@@ -510,6 +510,27 @@
   opacity: 0.55;
 }
 
+.hq-remove-btn {
+  display: block;
+  margin-top: 6px;
+  padding: 3px 8px;
+  background: rgba(255, 68, 68, 0.15);
+  color: #ff4444;
+  border: 1px solid rgba(255, 68, 68, 0.4);
+  font-family: 'Courier New', monospace;
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  width: 100%;
+}
+
+.hq-remove-btn:hover {
+  background: rgba(255, 68, 68, 0.3);
+  border-color: rgba(255, 68, 68, 0.7);
+}
+
 .intel-popup-type {
   font-size: 0.65rem;
   opacity: 0.6;

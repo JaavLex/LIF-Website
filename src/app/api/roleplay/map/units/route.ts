@@ -73,3 +73,24 @@ export async function PATCH(request: NextRequest) {
 
   return NextResponse.json({ success: true });
 }
+
+export async function DELETE(request: NextRequest) {
+  const guard = await requireAdmin(request);
+  if (guard instanceof NextResponse) return guard;
+
+  const body = await request.json();
+  const { unitId } = body;
+
+  if (!unitId) {
+    return NextResponse.json({ error: 'unitId requis' }, { status: 400 });
+  }
+
+  const payload = await getPayloadClient();
+  await payload.update({
+    collection: 'units',
+    id: unitId,
+    data: { hqX: null, hqZ: null } as any,
+  });
+
+  return NextResponse.json({ success: true });
+}
