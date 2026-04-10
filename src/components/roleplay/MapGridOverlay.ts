@@ -15,18 +15,17 @@ function formatLabel(meters: number): string {
   return String(Math.floor(meters)).padStart(5, '0');
 }
 
+// Pip-Boy dark green grid lines
 const LINE_STYLE: L.PolylineOptions = {
-  color: 'rgba(0, 255, 65, 0.45)',
+  color: '#1a3a1a',
   weight: 2,
+  opacity: 0.7,
   interactive: false,
 };
 
 /**
  * Creates a grid overlay as an L.LayerGroup containing polylines and labels.
  * Redraws on zoom change to adjust grid density.
- *
- * @param map The Leaflet map instance
- * @param bounds The world-coordinate bounds [minZ, minX] to [maxZ, maxX]
  */
 export function createGridOverlay(
   map: L.Map,
@@ -49,36 +48,30 @@ export function createGridOverlay(
 
     // Vertical lines (constant X)
     for (let x = startX; x <= endX; x += spacing) {
-      const line = L.polyline(
-        [[minZ, x], [maxZ, x]],
-        LINE_STYLE,
-      );
-      group.addLayer(line);
+      group.addLayer(L.polyline([[minZ, x], [maxZ, x]], LINE_STYLE));
     }
 
     // Horizontal lines (constant Z)
     for (let z = startZ; z <= endZ; z += spacing) {
-      const line = L.polyline(
-        [[z, minX], [z, maxX]],
-        LINE_STYLE,
-      );
-      group.addLayer(line);
+      group.addLayer(L.polyline([[z, minX], [z, maxX]], LINE_STYLE));
     }
 
-    // Labels at intersections — use DivIcon markers
-    // Only show labels at coarser intervals to avoid clutter
+    // Labels at intersections
+    // At fine zoom show labels less often to avoid clutter
     const labelSpacing = spacing < 100 ? spacing * 5 : spacing;
     const labelStartX = Math.ceil(minX / labelSpacing) * labelSpacing;
     const labelStartZ = Math.ceil(minZ / labelSpacing) * labelSpacing;
 
     for (let x = labelStartX; x <= maxX; x += labelSpacing) {
       for (let z = labelStartZ; z <= maxZ; z += labelSpacing) {
+        // Offset label to bottom-right of intersection so it sits INSIDE the cell,
+        // not on top of the grid lines
         const label = L.marker([z, x], {
           icon: L.divIcon({
             className: 'grid-label',
             html: `<span>${formatLabel(x)}<br/>${formatLabel(z)}</span>`,
             iconSize: [70, 28],
-            iconAnchor: [-3, 14],
+            iconAnchor: [-5, -4],
           }),
           interactive: false,
         });
@@ -90,12 +83,11 @@ export function createGridOverlay(
   draw();
   map.on('zoomend', draw);
 
-  // Clean up listener when layer is removed
   group.on('remove', () => {
     map.off('zoomend', draw);
   });
   group.on('add', () => {
-    map.off('zoomend', draw); // avoid double-binding
+    map.off('zoomend', draw);
     map.on('zoomend', draw);
     draw();
   });
