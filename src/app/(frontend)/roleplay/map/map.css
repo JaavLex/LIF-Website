@@ -277,6 +277,33 @@
   border-color: rgba(0, 255, 65, 0.55);
 }
 
+.map-admin-btn.active {
+  background: rgba(0, 255, 65, 0.15);
+  border-color: rgba(0, 255, 65, 0.7);
+}
+
+.map-calibrate-info {
+  font-size: 0.75rem;
+  opacity: 0.7;
+  padding: 0.3rem 0;
+}
+
+.map-calibrate-hint {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 800;
+  background: rgba(12, 15, 10, 0.92);
+  border: 1px solid rgba(0, 255, 65, 0.4);
+  padding: 0.6rem 1rem;
+  font-family: 'Courier New', monospace;
+  font-size: 0.75rem;
+  color: #00ff41;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  animation: blink 1.5s step-end infinite;
+}
+
 /* ---- UPLOAD PANEL ---- */
 
 .map-upload-panel {

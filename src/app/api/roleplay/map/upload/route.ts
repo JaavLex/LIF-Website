@@ -76,6 +76,28 @@ export async function GET(request: NextRequest) {
   return NextResponse.json({ maps: files });
 }
 
+export async function PATCH(request: NextRequest) {
+  const auth = await requireAdmin(request);
+  if (isErrorResponse(auth)) return auth;
+
+  const { terrainName, offsetX, offsetZ } = await request.json();
+  if (!terrainName || typeof terrainName !== 'string') {
+    return NextResponse.json({ error: 'Nom du terrain requis' }, { status: 400 });
+  }
+
+  const safeName = terrainName.replace(/[^a-zA-Z0-9_-]/g, '');
+  const meta = readTerrainMeta();
+  if (!meta[safeName]) {
+    return NextResponse.json({ error: 'Terrain inconnu' }, { status: 404 });
+  }
+
+  meta[safeName].offsetX = Number(offsetX) || 0;
+  meta[safeName].offsetZ = Number(offsetZ) || 0;
+  writeTerrainMeta(meta);
+
+  return NextResponse.json({ ok: true, offsetX: meta[safeName].offsetX, offsetZ: meta[safeName].offsetZ });
+}
+
 export async function DELETE(request: NextRequest) {
   const auth = await requireAdmin(request);
   if (isErrorResponse(auth)) return auth;

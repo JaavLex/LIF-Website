@@ -32,6 +32,13 @@ interface MapStateResponse {
   gameMarkers: MapGameMarker[];
   lastSyncAt: string | null;
   mapImageUrl: string | null;
+  offsetX: number;
+  offsetZ: number;
+}
+
+function formatGrid(meters: number): string {
+  const grid = Math.floor(meters / 10);
+  return String(grid).padStart(4, '0');
 }
 
 const FACTION_COLORS: Record<string, string> = {
@@ -78,6 +85,11 @@ export default function TacticalMap() {
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [uploadStatus, setUploadStatus] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [calibrating, setCalibrating] = useState(false);
+  const [calibrateClick, setCalibrateClick] = useState<{ mapX: number; mapZ: number } | null>(null);
+  const [calibrateRealX, setCalibrateRealX] = useState('');
+  const [calibrateRealZ, setCalibrateRealZ] = useState('');
+  const offsetRef = useRef<{ x: number; z: number }>({ x: 0, z: 0 });
 
   // Initialize Leaflet map
   useEffect(() => {
@@ -166,35 +178,36 @@ export default function TacticalMap() {
     };
   }, []);
 
-  // Update map image when terrain changes
+  // Update map image when terrain or offsets change
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !state?.terrain) return;
 
     const { name, sizeX, sizeZ } = state.terrain;
+    const ox = state.offsetX || 0;
+    const oz = state.offsetZ || 0;
+    offsetRef.current = { x: ox, z: oz };
 
-    if (currentTerrainRef.current !== name || !imageLayerRef.current) {
-      if (imageLayerRef.current) {
-        map.removeLayer(imageLayerRef.current);
-        imageLayerRef.current = null;
-      }
-
-      const bounds: L.LatLngBoundsExpression = [[0, 0], [sizeZ, sizeX]];
-
-      if (state.mapImageUrl) {
-        imageLayerRef.current = L.imageOverlay(state.mapImageUrl, bounds).addTo(map);
-      }
-
-      if (!currentTerrainRef.current) {
-        const saved = localStorage.getItem('lif-map-view');
-        if (!saved) {
-          map.fitBounds(bounds);
-        }
-      }
-
-      currentTerrainRef.current = name;
+    if (imageLayerRef.current) {
+      map.removeLayer(imageLayerRef.current);
+      imageLayerRef.current = null;
     }
-  }, [state?.terrain, state?.mapImageUrl]);
+
+    const bounds: L.LatLngBoundsExpression = [[oz, ox], [oz + sizeZ, ox + sizeX]];
+
+    if (state.mapImageUrl) {
+      imageLayerRef.current = L.imageOverlay(state.mapImageUrl, bounds).addTo(map);
+    }
+
+    if (!currentTerrainRef.current) {
+      const saved = localStorage.getItem('lif-map-view');
+      if (!saved) {
+        map.fitBounds(bounds);
+      }
+    }
+
+    currentTerrainRef.current = name;
+  }, [state?.terrain, state?.mapImageUrl, state?.offsetX, state?.offsetZ]);
 
   // Check admin status
   useEffect(() => {
@@ -238,6 +251,55 @@ export default function TacticalMap() {
       setUploadStatus('Erreur réseau');
     }
     setUploading(false);
+  }
+
+  // Calibration click handler
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+
+    function onCalibClick(e: L.LeafletMouseEvent) {
+      setCalibrateClick({ mapX: Math.round(e.latlng.lng), mapZ: Math.round(e.latlng.lat) });
+    }
+
+    if (calibrating) {
+      map.getContainer().style.cursor = 'crosshair';
+      map.on('click', onCalibClick);
+    } else {
+      map.getContainer().style.cursor = '';
+      map.off('click', onCalibClick);
+      setCalibrateClick(null);
+    }
+
+    return () => {
+      map.off('click', onCalibClick);
+      map.getContainer().style.cursor = '';
+    };
+  }, [calibrating]);
+
+  async function handleCalibrate() {
+    if (!calibrateClick || !state?.terrain) return;
+    const realX = Number(calibrateRealX);
+    const realZ = Number(calibrateRealZ);
+    if (isNaN(realX) || isNaN(realZ)) return;
+
+    const newOffsetX = offsetRef.current.x + (realX - calibrateClick.mapX);
+    const newOffsetZ = offsetRef.current.z + (realZ - calibrateClick.mapZ);
+
+    try {
+      const res = await fetch('/api/roleplay/map/upload', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ terrainName: state.terrain.name, offsetX: newOffsetX, offsetZ: newOffsetZ }),
+      });
+      if (res.ok) {
+        setCalibrating(false);
+        setCalibrateClick(null);
+        setCalibrateRealX('');
+        setCalibrateRealZ('');
+        currentTerrainRef.current = null;
+      }
+    } catch { /* ignore */ }
   }
 
   // Update player markers
@@ -289,13 +351,24 @@ export default function TacticalMap() {
             </span>
           )}
           {isAdmin && (
-            <button
-              type="button"
-              className="map-admin-btn"
-              onClick={() => setShowUpload(v => !v)}
-            >
-              {showUpload ? '✕' : 'Carte'}
-            </button>
+            <>
+              <button
+                type="button"
+                className="map-admin-btn"
+                onClick={() => setShowUpload(v => !v)}
+              >
+                {showUpload ? '✕' : 'Carte'}
+              </button>
+              {state?.mapImageUrl && (
+                <button
+                  type="button"
+                  className={`map-admin-btn ${calibrating ? 'active' : ''}`}
+                  onClick={() => setCalibrating(v => !v)}
+                >
+                  {calibrating ? '✕ Calibrer' : 'Calibrer'}
+                </button>
+              )}
+            </>
           )}
         </div>
       </div>
@@ -358,14 +431,55 @@ export default function TacticalMap() {
             {uploadStatus && <span className="map-upload-status">{uploadStatus}</span>}
           </div>
         )}
+        {calibrating && calibrateClick && (
+          <div className="map-upload-panel">
+            <div className="map-upload-title">Calibration</div>
+            <div className="map-calibrate-info">
+              Point cliqué: {formatGrid(calibrateClick.mapX)} / {formatGrid(calibrateClick.mapZ)}
+            </div>
+            <div className="map-upload-row">
+              <label className="map-upload-field">
+                <span>Vrai X (m)</span>
+                <input
+                  type="number"
+                  value={calibrateRealX}
+                  onChange={e => setCalibrateRealX(e.target.value)}
+                  placeholder="Ex: 3500"
+                />
+              </label>
+              <label className="map-upload-field">
+                <span>Vrai Z (m)</span>
+                <input
+                  type="number"
+                  value={calibrateRealZ}
+                  onChange={e => setCalibrateRealZ(e.target.value)}
+                  placeholder="Ex: 4200"
+                />
+              </label>
+            </div>
+            <button
+              type="button"
+              className="map-upload-btn"
+              onClick={handleCalibrate}
+              disabled={!calibrateRealX || !calibrateRealZ}
+            >
+              Appliquer
+            </button>
+          </div>
+        )}
+        {calibrating && !calibrateClick && (
+          <div className="map-calibrate-hint">
+            Cliquez sur un point connu de la carte
+          </div>
+        )}
         <div ref={mapContainerRef} style={{ width: '100%', height: '100%' }} />
       </div>
 
       <div className="map-footer">
         <span>
           {cursorCoords
-            ? `Coordonnées: ${String(Math.floor(cursorCoords.x / 100)).padStart(3, '0')} / ${String(Math.floor(cursorCoords.z / 100)).padStart(3, '0')}`
-            : 'Coordonnées: --- / ---'}
+            ? `Coordonnées: ${formatGrid(cursorCoords.x)} / ${formatGrid(cursorCoords.z)}`
+            : 'Coordonnées: ---- / ----'}
         </span>
         <span>
           {state?.terrain
