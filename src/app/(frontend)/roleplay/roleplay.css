@@ -5660,6 +5660,7 @@
 .char-card.status-retired                  { --char-color: var(--muted); }
 .char-card.status-honourable-discharge     { --char-color: #7aa05a; }
 .char-card.status-dishonourable-discharge  { --char-color: #8b5a3a; }
+.char-card.status-sheet-incomplete         { --char-color: #d4781e; }
 .char-card.is-target                       { --char-color: var(--danger); }
 
 .char-card::before {
@@ -6854,6 +6855,7 @@
 .personnel-group.group-status-retired                 { --group-color: var(--muted); }
 .personnel-group.group-status-honourable-discharge    { --group-color: #7aa05a; }
 .personnel-group.group-status-dishonourable-discharge { --group-color: #8b5a3a; }
+.personnel-group.group-status-sheet-incomplete        { --group-color: #d4781e; }
 .personnel-group.group-icon-faction                   { --group-color: var(--accent); }
 .personnel-group.group-icon-unit                      { --group-color: var(--primary); }
 

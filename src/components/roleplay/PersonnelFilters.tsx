@@ -10,6 +10,13 @@ import {
 	Flag,
 	Activity,
 	LayoutGrid,
+	Skull,
+	HelpCircle,
+	Armchair,
+	Award,
+	ShieldOff,
+	Crosshair,
+	FileWarning,
 } from 'lucide-react';
 
 interface Character {
@@ -28,6 +35,7 @@ interface Character {
 	discordId?: string;
 	targetFaction?: string;
 	threatLevel?: string;
+	requiresImprovements?: boolean;
 	discordUsername?: string;
 	avatar?: { url: string } | null;
 	rank?: {
@@ -75,17 +83,30 @@ const STATUS_LABELS: Record<string, string> = {
 	retired: 'Retraité',
 	'honourable-discharge': 'Réformé (H)',
 	'dishonourable-discharge': 'Réformé (DH)',
+	'sheet-incomplete': 'Fiche incomplète',
 	executed: 'Exécuté',
 };
 
 const STATUS_ORDER: Record<string, number> = {
 	'in-service': 0,
-	mia: 1,
-	retired: 2,
-	'honourable-discharge': 3,
-	'dishonourable-discharge': 4,
-	kia: 5,
-	executed: 6,
+	'sheet-incomplete': 1,
+	mia: 2,
+	retired: 3,
+	'honourable-discharge': 4,
+	'dishonourable-discharge': 5,
+	kia: 6,
+	executed: 7,
+};
+
+const STATUS_ICONS: Record<string, typeof Activity> = {
+	'in-service': Activity,
+	kia: Skull,
+	mia: HelpCircle,
+	retired: Armchair,
+	'honourable-discharge': Award,
+	'dishonourable-discharge': ShieldOff,
+	'sheet-incomplete': FileWarning,
+	executed: Crosshair,
 };
 
 const THREAT_LABELS: Record<string, string> = {
@@ -250,11 +271,12 @@ export function PersonnelFilters({
 			let sortKey = 0;
 
 			if (groupBy === 'status') {
-				key = `s-${c.status}`;
-				label = STATUS_LABELS[c.status] || c.status;
+				const displayStatus = c.requiresImprovements ? 'sheet-incomplete' : c.status;
+				key = `s-${displayStatus}`;
+				label = STATUS_LABELS[displayStatus] || displayStatus;
 				fallbackIcon = 'status';
-				statusKey = c.status;
-				sortKey = STATUS_ORDER[c.status] ?? 99;
+				statusKey = displayStatus;
+				sortKey = STATUS_ORDER[displayStatus] ?? 99;
 			} else if (groupBy === 'unit') {
 				const u = typeof c.unit === 'object' && c.unit ? c.unit : null;
 				key = u ? `u-${u.id}` : 'u-none';
@@ -484,9 +506,10 @@ export function PersonnelFilters({
 									<Shield size={14} strokeWidth={1.6} />
 								) : group.fallbackIcon === 'faction' ? (
 									<Flag size={14} strokeWidth={1.6} />
-								) : (
-									<Activity size={14} strokeWidth={1.6} />
-								)}
+								) : (() => {
+									const StatusIcon = (group.statusKey && STATUS_ICONS[group.statusKey]) || Activity;
+									return <StatusIcon size={14} strokeWidth={1.6} />;
+								})()}
 							</span>
 							<span className="personnel-group-label">{group.label}</span>
 							<span className="personnel-group-line" />
@@ -521,7 +544,7 @@ export function PersonnelFilters({
 											<Link
 												key={character.id}
 												href={`/roleplay/personnage/${character.id}`}
-												className={`char-card status-${character.status}${character.isTarget ? ' is-target' : ''}${character.isMainCharacter ? ' is-main' : ''}`}
+												className={`char-card status-${character.requiresImprovements ? 'sheet-incomplete' : character.status}${character.isTarget ? ' is-target' : ''}${character.isMainCharacter ? ' is-main' : ''}`}
 												data-status={character.status}
 												data-classification={character.classification}
 											>

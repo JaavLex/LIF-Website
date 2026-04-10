@@ -6,9 +6,16 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.6.64',
+  version: '1.6.65',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.6.65',
+      date: '2026-04-10',
+      changes: [
+        'ROLEPLAY — Icônes distinctes par statut dans le groupement « Statut » de la liste du personnel : En service (heartbeat), MIA (point d\'interrogation), Retraité (fauteuil), Réformé H (médaille), Réformé DH (bouclier brisé), KIA (crâne), Exécuté (crosshair), Fiche incomplète (fichier warning). Nouveau groupe « Fiche incomplète » (orange #d4781e) pour les personnages avec requiresImprovements=true, séparés du groupe Réformé DH.',
+      ],
+    },
     {
       version: '1.6.64',
       date: '2026-04-10',
