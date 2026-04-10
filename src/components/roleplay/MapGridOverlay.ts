@@ -30,7 +30,8 @@ const GridOverlay = L.GridLayer.extend({
     const spacing = getGridSpacing(zoom);
 
     // Compute world-coordinate bounds for this tile
-    const nwPoint = coords.scaleBy(size);
+    // coords is a plain {x, y, z} object, not an L.Point — must wrap it
+    const nwPoint = L.point(coords.x, coords.y).scaleBy(size);
     const sePoint = nwPoint.add(size);
     const nw = map.unproject(nwPoint, coords.z);
     const se = map.unproject(sePoint, coords.z);
