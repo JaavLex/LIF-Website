@@ -6,6 +6,95 @@ import { sendDiscordDM } from '@/lib/moderation';
 import { PUBLIC_BASE_URL } from '@/lib/constants';
 
 /**
+ * DELETE /api/roleplay/characters/[id]/require-improvements
+ *
+ * Admin action: cancel a pending improvement request. Clears the flag and
+ * restores the character to in-service status.
+ */
+export async function DELETE(
+	request: NextRequest,
+	{ params }: { params: Promise<{ id: string }> },
+) {
+	const { id } = await params;
+	const auth = await requireAdmin(request);
+	if (isErrorResponse(auth)) return auth;
+	const { session } = auth;
+
+	const characterId = parseInt(id, 10);
+	if (isNaN(characterId)) {
+		return NextResponse.json({ message: 'ID invalide' }, { status: 400 });
+	}
+
+	try {
+		const payload = await getPayloadClient();
+		const existing = await payload.findByID({
+			collection: 'characters',
+			id: characterId,
+		});
+		if (!existing) {
+			return NextResponse.json({ message: 'Personnage non trouvé' }, { status: 404 });
+		}
+		if (!existing.requiresImprovements) {
+			return NextResponse.json(
+				{ message: 'Ce dossier n\'a pas de demande d\'améliorations en cours.' },
+				{ status: 400 },
+			);
+		}
+
+		const doc = await payload.update({
+			collection: 'characters',
+			id: characterId,
+			data: {
+				requiresImprovements: false,
+				improvementReason: null,
+				improvementRequestedAt: null,
+				improvementRequestedBy: null,
+				status: 'in-service',
+			},
+		});
+
+		const fullName = doc.fullName || `${doc.firstName} ${doc.lastName}`;
+
+		// Notify the character owner that the request was cancelled
+		if (existing.discordId) {
+			const dmContent = [
+				`**La demande d'améliorations sur votre dossier « ${fullName} » a été annulée.**`,
+				'',
+				`Un administrateur (${session.discordUsername || 'Admin'}) a annulé la demande d'améliorations. Votre personnage est de nouveau **en service**.`,
+			].join('\n');
+
+			try {
+				await sendDiscordDM(existing.discordId, dmContent);
+			} catch (err) {
+				console.error('[cancel-improvements] DM failed:', err);
+			}
+		}
+
+		void logAdminAction({
+			session,
+			permissions: auth.permissions,
+			action: 'character.cancel_improvements',
+			summary: `A annulé la demande d'améliorations sur le dossier ${fullName}`,
+			entityType: 'character',
+			entityId: characterId,
+			entityLabel: fullName,
+			before: existing as unknown as Record<string, unknown>,
+			after: doc as unknown as Record<string, unknown>,
+			metadata: {},
+			request,
+		});
+
+		return NextResponse.json({ success: true });
+	} catch (error: any) {
+		console.error('cancel-improvements error:', error);
+		return NextResponse.json(
+			{ message: error.message || "Erreur lors de l'annulation" },
+			{ status: 500 },
+		);
+	}
+}
+
+/**
  * POST /api/roleplay/characters/[id]/require-improvements
  *
  * Admin action: flag a character sheet as "requires improvements". The

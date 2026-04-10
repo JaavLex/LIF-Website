@@ -6,9 +6,16 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.6.62',
+  version: '1.6.63',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.6.63',
+      date: '2026-04-10',
+      changes: [
+        'ROLEPLAY — Les admins peuvent désormais annuler une demande d\'améliorations sur une fiche personnage. Le bouton « Améliorations en cours » ouvre maintenant une modale de confirmation au lieu d\'être inactif. L\'annulation restaure le personnage au statut « En service », efface les champs d\'amélioration, et envoie un DM Discord au joueur pour le notifier. Nouvel endpoint DELETE /api/roleplay/characters/[id]/require-improvements avec logging admin.',
+      ],
+    },
     {
       version: '1.6.62',
       date: '2026-04-09',

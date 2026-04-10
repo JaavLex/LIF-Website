@@ -25,6 +25,7 @@ export function RequireImprovementsButton({
 	const [open, setOpen] = useState(false);
 	const [reason, setReason] = useState('');
 	const [submitting, setSubmitting] = useState(false);
+	const [cancelling, setCancelling] = useState(false);
 	const [error, setError] = useState('');
 	const [mounted, setMounted] = useState(false);
 
@@ -38,7 +39,7 @@ export function RequireImprovementsButton({
 	useEffect(() => {
 		if (!open) return;
 		const onKey = (e: KeyboardEvent) => {
-			if (e.key === 'Escape' && !submitting) setOpen(false);
+			if (e.key === 'Escape' && !submitting && !cancelling) setOpen(false);
 		};
 		window.addEventListener('keydown', onKey);
 		const prevOverflow = document.body.style.overflow;
@@ -47,7 +48,28 @@ export function RequireImprovementsButton({
 			window.removeEventListener('keydown', onKey);
 			document.body.style.overflow = prevOverflow;
 		};
-	}, [open, submitting]);
+	}, [open, submitting, cancelling]);
+
+	const handleCancel = async () => {
+		setCancelling(true);
+		setError('');
+		try {
+			const res = await fetch(
+				`/api/roleplay/characters/${characterId}/require-improvements`,
+				{ method: 'DELETE' },
+			);
+			if (!res.ok) {
+				const data = await res.json().catch(() => ({}));
+				throw new Error(data.message || "Erreur lors de l'annulation");
+			}
+			setOpen(false);
+			router.refresh();
+		} catch (err: any) {
+			setError(err.message || 'Erreur');
+		} finally {
+			setCancelling(false);
+		}
+	};
 
 	const handleSubmit = async () => {
 		const trimmed = reason.trim();
@@ -131,7 +153,7 @@ export function RequireImprovementsButton({
 						padding: '1rem',
 					}}
 					onClick={e => {
-						if (e.target === e.currentTarget && !submitting) setOpen(false);
+						if (e.target === e.currentTarget && !submitting && !cancelling) setOpen(false);
 					}}
 				>
 					<div
@@ -153,7 +175,9 @@ export function RequireImprovementsButton({
 								textTransform: 'uppercase',
 							}}
 						>
-							Demander des améliorations
+							{alreadyFlagged
+								? 'Annuler la demande d\'améliorations'
+								: 'Demander des améliorations'}
 						</h2>
 						<p
 							style={{
@@ -164,32 +188,42 @@ export function RequireImprovementsButton({
 						>
 							Dossier concerné : <strong>{characterName}</strong>
 						</p>
-						<p style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>
-							Le personnage sera marqué comme <strong>réformé sans honneur</strong>{' '}
-							et le joueur recevra un DM Discord avec votre raison. Le statut
-							reviendra automatiquement à « En service » dès que le joueur modifiera
-							sa fiche pour respecter les règles (photo + parcours civil et
-							militaire d&apos;au moins 500 caractères chacun).
-						</p>
-						<label
-							style={{
-								display: 'block',
-								fontSize: '0.8rem',
-								color: 'var(--muted)',
-								marginTop: '1rem',
-								marginBottom: '0.35rem',
-							}}
-						>
-							Raison (envoyée au joueur)
-						</label>
-						<textarea
-							value={reason}
-							onChange={e => setReason(e.target.value)}
-							disabled={submitting}
-							className="filter-input"
-							style={{ width: '100%', minHeight: '140px', resize: 'vertical' }}
-							placeholder="Exemple : Votre parcours militaire est trop court, merci de détailler vos précédentes affectations et missions..."
-						/>
+						{alreadyFlagged ? (
+							<p style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>
+								La demande d&apos;améliorations sera annulée et le personnage
+								reviendra au statut <strong>En service</strong>. Le joueur sera
+								notifié par DM Discord.
+							</p>
+						) : (
+							<>
+								<p style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>
+									Le personnage sera marqué comme <strong>réformé sans honneur</strong>{' '}
+									et le joueur recevra un DM Discord avec votre raison. Le statut
+									reviendra automatiquement à « En service » dès que le joueur modifiera
+									sa fiche pour respecter les règles (photo + parcours civil et
+									militaire d&apos;au moins 500 caractères chacun).
+								</p>
+								<label
+									style={{
+										display: 'block',
+										fontSize: '0.8rem',
+										color: 'var(--muted)',
+										marginTop: '1rem',
+										marginBottom: '0.35rem',
+									}}
+								>
+									Raison (envoyée au joueur)
+								</label>
+								<textarea
+									value={reason}
+									onChange={e => setReason(e.target.value)}
+									disabled={submitting}
+									className="filter-input"
+									style={{ width: '100%', minHeight: '140px', resize: 'vertical' }}
+									placeholder="Exemple : Votre parcours militaire est trop court, merci de détailler vos précédentes affectations et missions..."
+								/>
+							</>
+						)}
 						{error && (
 							<div
 								style={{
@@ -215,31 +249,53 @@ export function RequireImprovementsButton({
 							<button
 								type="button"
 								onClick={() => setOpen(false)}
-								disabled={submitting}
+								disabled={submitting || cancelling}
 								className="session-btn"
 								style={{ padding: '0.6rem 1.2rem' }}
 							>
-								Annuler
+								Fermer
 							</button>
-							<button
-								type="button"
-								onClick={handleSubmit}
-								disabled={submitting || !reason.trim()}
-								style={{
-									padding: '0.6rem 1.2rem',
-									background: '#d4781e',
-									color: '#000',
-									border: 'none',
-									fontWeight: 600,
-									cursor: submitting ? 'wait' : 'pointer',
-									opacity: submitting || !reason.trim() ? 0.6 : 1,
-									textTransform: 'uppercase' as const,
-									letterSpacing: '0.04em',
-									fontSize: '0.85rem',
-								}}
-							>
-								{submitting ? 'Envoi...' : 'Envoyer la demande'}
-							</button>
+							{alreadyFlagged ? (
+								<button
+									type="button"
+									onClick={handleCancel}
+									disabled={cancelling}
+									style={{
+										padding: '0.6rem 1.2rem',
+										background: '#d4781e',
+										color: '#000',
+										border: 'none',
+										fontWeight: 600,
+										cursor: cancelling ? 'wait' : 'pointer',
+										opacity: cancelling ? 0.6 : 1,
+										textTransform: 'uppercase' as const,
+										letterSpacing: '0.04em',
+										fontSize: '0.85rem',
+									}}
+								>
+									{cancelling ? 'Annulation...' : 'Confirmer l\'annulation'}
+								</button>
+							) : (
+								<button
+									type="button"
+									onClick={handleSubmit}
+									disabled={submitting || !reason.trim()}
+									style={{
+										padding: '0.6rem 1.2rem',
+										background: '#d4781e',
+										color: '#000',
+										border: 'none',
+										fontWeight: 600,
+										cursor: submitting ? 'wait' : 'pointer',
+										opacity: submitting || !reason.trim() ? 0.6 : 1,
+										textTransform: 'uppercase' as const,
+										letterSpacing: '0.04em',
+										fontSize: '0.85rem',
+									}}
+								>
+									{submitting ? 'Envoi...' : 'Envoyer la demande'}
+								</button>
+							)}
 						</div>
 					</div>
 				</div>,
