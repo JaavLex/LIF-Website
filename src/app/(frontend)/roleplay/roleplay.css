@@ -9600,11 +9600,11 @@
 }
 
 /* ---- PIP-BOY PHOSPHOR SCREEN ---- */
-/* Grayscale → sepia (amber) → hue-rotate to green → darken.
-   Bright map areas become bright green, dark areas stay near-black. */
+/* Compressed dynamic range: lift shadows, pull down highlights,
+   so everything sits in a readable mid-green band. */
 
 .leaflet-image-layer {
-  filter: grayscale(1) sepia(1) brightness(0.6) hue-rotate(70deg) saturate(2.5) contrast(1.6);
+  filter: grayscale(1) contrast(0.5) brightness(0.85) sepia(1) hue-rotate(70deg) saturate(1.8);
 }
 
 /* ---- MAP PIN ICON ---- */
