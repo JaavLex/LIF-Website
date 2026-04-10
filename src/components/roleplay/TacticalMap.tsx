@@ -53,9 +53,9 @@ function createPlayerIcon(faction: string): L.DivIcon {
       width: 10px;
       height: 10px;
       background: ${color};
-      border: 1px solid rgba(255,255,255,0.4);
+      border: 1px solid rgba(255,255,255,0.3);
       border-radius: 50%;
-      box-shadow: 0 0 6px ${color};
+      box-shadow: 0 0 8px ${color}, 0 0 16px ${color}44;
     "></div>`,
     iconSize: [10, 10],
     iconAnchor: [5, 5],
@@ -70,6 +70,12 @@ export default function TacticalMap() {
   const currentTerrainRef = useRef<string | null>(null);
   const [state, setState] = useState<MapStateResponse | null>(null);
   const [cursorCoords, setCursorCoords] = useState<{ x: number; z: number } | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [showUpload, setShowUpload] = useState(false);
+  const [uploadTerrainName, setUploadTerrainName] = useState('');
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [uploadStatus, setUploadStatus] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
 
   // Initialize Leaflet map
   useEffect(() => {
@@ -185,6 +191,46 @@ export default function TacticalMap() {
     }
   }, [state?.terrain, state?.mapImageUrl]);
 
+  // Check admin status
+  useEffect(() => {
+    fetch('/api/auth/admin-check')
+      .then(res => res.ok ? res.json() : null)
+      .then(data => { if (data?.isAdmin) setIsAdmin(true); })
+      .catch(() => {});
+  }, []);
+
+  // Pre-fill terrain name from state
+  useEffect(() => {
+    if (state?.terrain?.name && !uploadTerrainName) {
+      setUploadTerrainName(state.terrain.name);
+    }
+  }, [state?.terrain?.name, uploadTerrainName]);
+
+  async function handleUpload() {
+    if (!uploadFile || !uploadTerrainName) return;
+    setUploading(true);
+    setUploadStatus(null);
+    const formData = new FormData();
+    formData.append('terrainName', uploadTerrainName);
+    formData.append('file', uploadFile);
+    try {
+      const res = await fetch('/api/roleplay/map/upload', { method: 'POST', body: formData });
+      if (res.ok) {
+        setUploadStatus('Image envoyée');
+        setUploadFile(null);
+        setShowUpload(false);
+        // Force re-render of image overlay by resetting terrain ref
+        currentTerrainRef.current = null;
+      } else {
+        const data = await res.json();
+        setUploadStatus(data.error || 'Erreur');
+      }
+    } catch {
+      setUploadStatus('Erreur réseau');
+    }
+    setUploading(false);
+  }
+
   // Update player markers
   useEffect(() => {
     const markersLayer = markersLayerRef.current;
@@ -233,6 +279,15 @@ export default function TacticalMap() {
               Dernière sync: {timeSinceSync < 60 ? `${timeSinceSync}s` : `${Math.floor(timeSinceSync / 60)}m`}
             </span>
           )}
+          {isAdmin && (
+            <button
+              type="button"
+              className="map-admin-btn"
+              onClick={() => setShowUpload(v => !v)}
+            >
+              {showUpload ? '✕' : 'Carte'}
+            </button>
+          )}
         </div>
       </div>
 
@@ -241,6 +296,37 @@ export default function TacticalMap() {
           <div className="map-no-data">
             <span>Aucune donnée reçue</span>
             <span className="blinking">En attente de synchronisation du serveur...</span>
+          </div>
+        )}
+        {showUpload && (
+          <div className="map-upload-panel">
+            <div className="map-upload-title">Upload image terrain</div>
+            <label className="map-upload-field">
+              <span>Terrain</span>
+              <input
+                type="text"
+                value={uploadTerrainName}
+                onChange={e => setUploadTerrainName(e.target.value)}
+                placeholder="Ex: Eden"
+              />
+            </label>
+            <label className="map-upload-field">
+              <span>Image (PNG)</span>
+              <input
+                type="file"
+                accept="image/png"
+                onChange={e => setUploadFile(e.target.files?.[0] || null)}
+              />
+            </label>
+            <button
+              type="button"
+              className="map-upload-btn"
+              onClick={handleUpload}
+              disabled={uploading || !uploadFile || !uploadTerrainName}
+            >
+              {uploading ? 'Envoi...' : 'Envoyer'}
+            </button>
+            {uploadStatus && <span className="map-upload-status">{uploadStatus}</span>}
           </div>
         )}
         <div ref={mapContainerRef} style={{ width: '100%', height: '100%' }} />

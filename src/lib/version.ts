@@ -6,9 +6,16 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.6.65',
+  version: '1.7.0',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.7.0',
+      date: '2026-04-10',
+      changes: [
+        'CARTE TACTIQUE — Refonte complète du design : correction des textes invisibles (z-index, hauteur, fond opaque), nouveau style HUD militaire avec accents verts, points de statut live/stale corrigés, panneau admin upload amélioré, contrôles Leaflet affinés, layout responsive mobile.',
+      ],
+    },
     {
       version: '1.6.65',
       date: '2026-04-10',
