@@ -56,10 +56,6 @@ export async function POST(request: NextRequest) {
 		// it (whether creating their own sheet or an NPC) so that quick
 		// scenario props and admin characters are not blocked by lore length.
 		if (!isNpcCreation && !isAdmin) {
-			const civErr = validateBackground(body.civilianBackground, 'parcours civil');
-			if (civErr) {
-				return NextResponse.json({ message: civErr }, { status: 400 });
-			}
 			const milErr = validateBackground(
 				body.militaryBackground,
 				'parcours militaire',

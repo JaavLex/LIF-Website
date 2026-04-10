@@ -387,8 +387,8 @@ export default async function CharacterPage({
 							)}
 							{isOwner && (
 								<div style={{ marginTop: '0.75rem', fontSize: '0.8rem' }}>
-									Modifiez votre fiche (photo + parcours civil et militaire
-									d&apos;au moins 500 caractères chacun) pour revenir
+									Modifiez votre fiche (photo + parcours militaire
+									d&apos;au moins 500 caractères) pour revenir
 									automatiquement au statut <strong>En service</strong>.
 								</div>
 							)}

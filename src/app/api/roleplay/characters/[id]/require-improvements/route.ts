@@ -183,7 +183,7 @@ export async function POST(
 			'**Raison :**',
 			`> ${reason.replace(/\n/g, '\n> ')}`,
 			'',
-			`Votre personnage est actuellement marqué comme **réformé sans honneur** et le restera jusqu\'à ce que vous modifiez le dossier pour qu\'il respecte les règles de validation (photo de profil obligatoire, parcours civil et militaire d\'au moins 500 caractères chacun).`,
+			`Votre personnage est actuellement marqué comme **réformé sans honneur** et le restera jusqu\'à ce que vous modifiez le dossier pour qu\'il respecte les règles de validation (photo de profil obligatoire, parcours militaire d\'au moins 500 caractères).`,
 			'',
 			`Modifier le dossier : ${sheetUrl}`,
 		].join('\n');

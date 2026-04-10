@@ -172,9 +172,8 @@ describe('Character routes wire validation', () => {
 		expect(src).toContain('photo de profil est obligatoire');
 	});
 
-	it('PATCH route bypasses 500-char background rule for admins', () => {
+	it('PATCH route bypasses 500-char military background rule for admins', () => {
 		const src = readSrc('app/api/roleplay/characters/[id]/route.ts');
-		expect(src).toMatch(/!isAdmin && body\.civilianBackground/);
 		expect(src).toMatch(/!isAdmin && body\.militaryBackground/);
 	});
 

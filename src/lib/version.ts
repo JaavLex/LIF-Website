@@ -6,9 +6,16 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.6.63',
+  version: '1.6.64',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.6.64',
+      date: '2026-04-10',
+      changes: [
+        'ROLEPLAY — Suppression du minimum de 500 caractères sur le parcours civil. Seul le parcours militaire conserve cette exigence. Mis à jour : routes POST et PATCH, formulaire client, logique d\'auto-réhabilitation des fiches flaguées, messages Discord et bannières UI.',
+      ],
+    },
     {
       version: '1.6.63',
       date: '2026-04-10',

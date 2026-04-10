@@ -194,13 +194,6 @@ export function CharacterForm({
 			// meant to force players to write lore, not to block admin NPCs or
 			// scenario props or legacy fixes.
 			if (!isAdmin) {
-				const civCount = backgroundCharCount(form.civilianBackground);
-				if (civCount < BACKGROUND_MIN_LENGTH) {
-					setError(
-						`Le parcours civil doit contenir au moins ${BACKGROUND_MIN_LENGTH} caractères (actuellement ${civCount}).`,
-					);
-					return;
-				}
 				const milCount = backgroundCharCount(form.militaryBackground);
 				if (milCount < BACKGROUND_MIN_LENGTH) {
 					setError(
@@ -716,26 +709,33 @@ export function CharacterForm({
 				>
 					<h2 style={{ color: 'var(--primary)' }}>Parcours</h2>
 
-					{(['civilianBackground', 'militaryBackground'] as const).map(fieldName => {
-						const count = backgroundCharCount(form[fieldName]);
-						// Minimum only applies to non-admin, non-NPC player sheets.
-						// Admins still see the counter (for reference) plus a note
-						// reminding them they can bypass the rule.
+					<div style={{ marginBottom: '1rem' }}>
+						<label style={labelStyle}>Parcours civil</label>
+						<textarea
+							name="civilianBackground"
+							value={form.civilianBackground}
+							onChange={handleChange}
+							className="filter-input"
+							style={{ width: '100%', minHeight: '160px', resize: 'vertical' }}
+							placeholder="Décrivez le parcours civil du personnage..."
+						/>
+					</div>
+
+					{(() => {
+						const count = backgroundCharCount(form.militaryBackground);
 						const enforced = !form.isNpc && !isAdmin;
 						const meets = count >= BACKGROUND_MIN_LENGTH;
 						const counterColor = enforced && !meets ? 'var(--danger)' : 'var(--muted)';
-						const label =
-							fieldName === 'civilianBackground' ? 'Parcours civil' : 'Parcours militaire';
 						return (
-							<div key={fieldName} style={{ marginBottom: '1rem' }}>
-								<label style={labelStyle}>{label}{enforced ? ' *' : ''}</label>
+							<div style={{ marginBottom: '1rem' }}>
+								<label style={labelStyle}>Parcours militaire{enforced ? ' *' : ''}</label>
 								<textarea
-									name={fieldName}
-									value={form[fieldName]}
+									name="militaryBackground"
+									value={form.militaryBackground}
 									onChange={handleChange}
 									className="filter-input"
 									style={{ width: '100%', minHeight: '160px', resize: 'vertical' }}
-									placeholder={`Décrivez en détail le ${label.toLowerCase()} du personnage (minimum ${BACKGROUND_MIN_LENGTH} caractères)...`}
+									placeholder={`Décrivez en détail le parcours militaire du personnage (minimum ${BACKGROUND_MIN_LENGTH} caractères)...`}
 								/>
 								{!form.isNpc && (
 									<div style={{ fontSize: '0.7rem', color: counterColor, marginTop: '0.35rem', fontFamily: 'monospace' }}>
@@ -746,7 +746,7 @@ export function CharacterForm({
 								)}
 							</div>
 						);
-					})}
+					})()}
 
 					<div style={{ marginBottom: '1rem' }}>
 						<label style={labelStyle}>Parcours judiciaire</label>

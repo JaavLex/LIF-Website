@@ -200,8 +200,8 @@ export function RequireImprovementsButton({
 									Le personnage sera marqué comme <strong>réformé sans honneur</strong>{' '}
 									et le joueur recevra un DM Discord avec votre raison. Le statut
 									reviendra automatiquement à « En service » dès que le joueur modifiera
-									sa fiche pour respecter les règles (photo + parcours civil et
-									militaire d&apos;au moins 500 caractères chacun).
+									sa fiche pour respecter les règles (photo + parcours
+									militaire d&apos;au moins 500 caractères).
 								</p>
 								<label
 									style={{
