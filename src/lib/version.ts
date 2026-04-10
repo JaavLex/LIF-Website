@@ -6,9 +6,16 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.6.65',
+  version: '1.6.66',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.6.66',
+      date: '2026-04-10',
+      changes: [
+        'COMMS — Correction du @everyone en mode MJ (impersonation PNJ/cible) : les mentions sont désormais correctement attribuées au personnage incarné.',
+      ],
+    },
     {
       version: '1.6.65',
       date: '2026-04-10',
