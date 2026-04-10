@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import '@/app/(frontend)/roleplay/map/map.css';
 import { createGridOverlay } from './MapGridOverlay';
 import { formatGrid } from '@/lib/constants';
 
@@ -114,8 +113,22 @@ export default function MapPickerModal({ open, onClose, onPick, initialCoords }:
         mapRef.current = map;
         setLoading(false);
 
-        // Fix for Leaflet in modal (container size may not be ready)
-        setTimeout(() => map?.invalidateSize(), 100);
+        // Leaflet in modals needs repeated invalidateSize — container may not
+        // have layout dimensions immediately after dynamic import + render
+        const timers = [100, 300, 600].map(ms =>
+          setTimeout(() => map?.invalidateSize(), ms),
+        );
+
+        // Also watch for the container actually getting a size
+        const ro = new ResizeObserver(() => map?.invalidateSize());
+        if (containerRef.current) ro.observe(containerRef.current);
+
+        const cleanup = () => {
+          timers.forEach(clearTimeout);
+          ro.disconnect();
+        };
+        // Store cleanup on the map for the teardown
+        (map as any)._pickerCleanup = cleanup;
       } catch {
         setLoading(false);
       }
@@ -123,6 +136,7 @@ export default function MapPickerModal({ open, onClose, onPick, initialCoords }:
 
     return () => {
       if (map) {
+        (map as any)._pickerCleanup?.();
         map.remove();
         mapRef.current = null;
         markerRef.current = null;

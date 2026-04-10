@@ -9433,3 +9433,163 @@
   .dossier-block-title { font-size: 0.85rem; letter-spacing: 2px; }
 }
 
+/* ============================
+   MAP PICKER MODAL
+   (shared across roleplay pages)
+   ============================ */
+
+.map-picker-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.map-picker-modal {
+  width: 90vw;
+  max-width: 900px;
+  height: 80vh;
+  max-height: 700px;
+  display: flex;
+  flex-direction: column;
+  background: rgba(12, 15, 10, 0.98);
+  border: 1px solid rgba(0, 255, 65, 0.35);
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 255, 65, 0.06);
+  font-family: 'Courier New', monospace;
+  color: #00ff41;
+}
+
+.map-picker-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.6rem 1rem;
+  border-bottom: 1px solid rgba(0, 255, 65, 0.25);
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  letter-spacing: 0.12em;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+.map-picker-close {
+  background: transparent;
+  border: 1px solid rgba(0, 255, 65, 0.3);
+  color: #00ff41;
+  font-family: 'Courier New', monospace;
+  cursor: pointer;
+  padding: 0.15rem 0.5rem;
+  font-size: 0.8rem;
+}
+
+.map-picker-close:hover {
+  background: rgba(0, 255, 65, 0.1);
+}
+
+.map-picker-map-container {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+.map-picker-map-container .leaflet-container {
+  background: #060a04;
+  width: 100%;
+  height: 100%;
+}
+
+.map-picker-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  border-top: 1px solid rgba(0, 255, 65, 0.25);
+  flex-shrink: 0;
+  gap: 1rem;
+}
+
+.map-picker-coords {
+  font-size: 0.75rem;
+  opacity: 0.7;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.map-picker-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.map-picker-btn {
+  background: rgba(12, 15, 10, 0.9);
+  color: #00ff41;
+  border: 1px solid rgba(0, 255, 65, 0.35);
+  padding: 0.35rem 0.8rem;
+  font-family: 'Courier New', monospace;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  cursor: pointer;
+  letter-spacing: 0.06em;
+  transition: all 0.15s ease;
+}
+
+.map-picker-btn:hover:not(:disabled) {
+  background: rgba(0, 255, 65, 0.1);
+  border-color: rgba(0, 255, 65, 0.55);
+}
+
+.map-picker-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.map-picker-btn-primary {
+  background: rgba(0, 255, 65, 0.1);
+  border-color: rgba(0, 255, 65, 0.5);
+}
+
+.map-picker-btn-primary:hover:not(:disabled) {
+  background: rgba(0, 255, 65, 0.2);
+  border-color: rgba(0, 255, 65, 0.7);
+}
+
+/* Leaflet overrides inside picker */
+.map-picker-modal .leaflet-control-zoom a {
+  background: rgba(12, 15, 10, 0.92) !important;
+  color: #00ff41 !important;
+  border: 1px solid rgba(0, 255, 65, 0.3) !important;
+  font-size: 16px !important;
+  width: 30px !important;
+  height: 30px !important;
+  line-height: 28px !important;
+}
+
+.map-picker-modal .leaflet-control-zoom {
+  border: none !important;
+}
+
+.map-picker-modal .leaflet-control-attribution {
+  display: none !important;
+}
+
+/* ---- GRID LABELS ---- */
+
+.grid-label {
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.grid-label span {
+  font-family: 'Courier New', monospace;
+  font-size: 9px;
+  line-height: 1.2;
+  color: rgba(0, 255, 65, 0.55);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
