@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Reply, ArrowRight, FileText, Newspaper } from 'lucide-react';
+import { Reply, ArrowRight, FileText, Newspaper, MapPin } from 'lucide-react';
 import { SafeMarkdown } from '@/lib/safe-markdown';
 import type { CommsMessage } from './CommsLayout';
 import { AnonymousAvatar } from './AnonymousAvatar';
@@ -18,6 +18,7 @@ export function MessageList({
 	onEdit,
 	onOpenCharacter,
 	onOpenIntel,
+	onOpenPosition,
 	onReply,
 	viewerId,
 }: {
@@ -26,6 +27,7 @@ export function MessageList({
 	onEdit: (id: number, body: string) => void;
 	onOpenCharacter: (id: number) => void;
 	onOpenIntel: (id: number) => void;
+	onOpenPosition?: (meta: { x: number; z: number; label?: string }) => void;
 	onReply?: (message: CommsMessage) => void;
 	viewerId?: number;
 }) {
@@ -211,6 +213,7 @@ export function MessageList({
 													att={att}
 													onOpenCharacter={onOpenCharacter}
 													onOpenIntel={onOpenIntel}
+													onOpenPosition={onOpenPosition}
 												/>
 											))}
 										</div>
@@ -229,11 +232,40 @@ function AttachmentCard({
 	att,
 	onOpenCharacter,
 	onOpenIntel,
+	onOpenPosition,
 }: {
 	att: any;
 	onOpenCharacter: (id: number) => void;
 	onOpenIntel: (id: number) => void;
+	onOpenPosition?: (meta: { x: number; z: number; label?: string }) => void;
 }) {
+	if (att.kind === 'position') {
+		return (
+			<button
+				type="button"
+				className="comms-attachment comms-attachment-button"
+				onClick={() => onOpenPosition?.(att.meta)}
+			>
+				<MapPin size={14} style={{ color: 'var(--primary)', flexShrink: 0 }} />
+				<span style={{ color: 'var(--primary)' }}>POSITION</span>
+				<span style={{ color: 'var(--text)' }}>
+					{att.meta?.label || `${att.meta?.x ?? '?'} / ${att.meta?.z ?? '?'}`}
+				</span>
+				<span
+					style={{
+						color: 'var(--muted)',
+						marginLeft: 'auto',
+						fontSize: '0.7rem',
+						display: 'flex',
+						alignItems: 'center',
+						gap: '0.2rem',
+					}}
+				>
+					Voir <ArrowRight size={11} />
+				</span>
+			</button>
+		);
+	}
 	if (att.kind === 'character') {
 		return (
 			<button

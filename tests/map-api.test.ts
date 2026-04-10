@@ -80,7 +80,7 @@ describe('GET /api/roleplay/map/state', () => {
     expect(body.lastSyncAt).toBeNull();
   });
 
-  it('returns current state after sync', async () => {
+  it('returns terrain but hides players from non-admin', async () => {
     updateMapState({
       terrain: { name: 'Merak', sizeX: 8192, sizeZ: 8192 },
       players: [
@@ -95,7 +95,8 @@ describe('GET /api/roleplay/map/state', () => {
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.terrain.name).toBe('Merak');
-    expect(body.players).toHaveLength(1);
-    expect(body.players[0].name).toBe('Player1');
+    // Non-admin (no session) should not see players
+    expect(body.players).toHaveLength(0);
+    expect(body.isAdmin).toBe(false);
   });
 });

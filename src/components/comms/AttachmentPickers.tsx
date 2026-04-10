@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import MapPickerModal from '@/components/roleplay/MapPickerModalLoader';
+import { formatGrid } from '@/lib/constants';
 
 export function AttachmentPicker({
 	onClose,
@@ -9,7 +11,7 @@ export function AttachmentPicker({
 	onClose: () => void;
 	onPick: (att: any) => void;
 }) {
-	const [tab, setTab] = useState<'character' | 'intel' | 'media'>('media');
+	const [tab, setTab] = useState<'character' | 'intel' | 'media' | 'position'>('media');
 
 	return (
 		<div className="comms-modal-backdrop" onClick={onClose}>
@@ -34,10 +36,17 @@ export function AttachmentPicker({
 					>
 						Renseignement
 					</button>
+					<button
+						className={`comms-modal-btn${tab === 'position' ? ' primary' : ''}`}
+						onClick={() => setTab('position')}
+					>
+						Position
+					</button>
 				</div>
 				{tab === 'media' && <MediaPicker onPick={onPick} />}
 				{tab === 'character' && <CharacterPicker onPick={onPick} />}
 				{tab === 'intel' && <IntelPicker onPick={onPick} />}
+				{tab === 'position' && <PositionPicker onPick={onPick} />}
 				<div className="comms-modal-actions">
 					<button className="comms-modal-btn" onClick={onClose}>
 						Fermer
@@ -217,6 +226,91 @@ function IntelPicker({ onPick }: { onPick: (att: any) => void }) {
 					</div>
 				))}
 			</div>
+		</div>
+	);
+}
+
+function PositionPicker({ onPick }: { onPick: (att: any) => void }) {
+	const [coordX, setCoordX] = useState('');
+	const [coordZ, setCoordZ] = useState('');
+	const [showMapPicker, setShowMapPicker] = useState(false);
+
+	function handleManualPick() {
+		const x = parseInt(coordX, 10);
+		const z = parseInt(coordZ, 10);
+		if (isNaN(x) || isNaN(z)) return;
+		onPick({
+			kind: 'position',
+			refId: 0,
+			meta: { x, z, label: `${formatGrid(x)} / ${formatGrid(z)}` },
+		});
+	}
+
+	return (
+		<div>
+			<p style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>
+				Partager une position sur la carte tactique.
+			</p>
+			<div style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-end', marginTop: '0.5rem' }}>
+				<div style={{ flex: 1 }}>
+					<label style={{ fontSize: '0.7rem', color: 'var(--muted)', display: 'block', marginBottom: '0.2rem' }}>
+						X (mètres)
+					</label>
+					<input
+						className="comms-search-input"
+						type="number"
+						value={coordX}
+						onChange={e => setCoordX(e.target.value)}
+						placeholder="00000"
+					/>
+				</div>
+				<div style={{ flex: 1 }}>
+					<label style={{ fontSize: '0.7rem', color: 'var(--muted)', display: 'block', marginBottom: '0.2rem' }}>
+						Z (mètres)
+					</label>
+					<input
+						className="comms-search-input"
+						type="number"
+						value={coordZ}
+						onChange={e => setCoordZ(e.target.value)}
+						placeholder="00000"
+					/>
+				</div>
+				<button
+					type="button"
+					className="comms-modal-btn primary"
+					onClick={handleManualPick}
+					disabled={!coordX || !coordZ}
+					style={{ whiteSpace: 'nowrap' }}
+				>
+					Joindre
+				</button>
+			</div>
+			<div style={{ marginTop: '0.75rem', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '0.75rem' }}>
+				<button
+					type="button"
+					className="comms-modal-btn primary"
+					onClick={() => setShowMapPicker(true)}
+					style={{ width: '100%' }}
+				>
+					Choisir sur la carte
+				</button>
+			</div>
+			{showMapPicker && (
+				<MapPickerModal
+					open={showMapPicker}
+					onClose={() => setShowMapPicker(false)}
+					onPick={(coords) => {
+						setShowMapPicker(false);
+						onPick({
+							kind: 'position',
+							refId: 0,
+							meta: { x: coords.x, z: coords.z, label: coords.formatted },
+						});
+					}}
+					initialCoords={null}
+				/>
+			)}
 		</div>
 	);
 }

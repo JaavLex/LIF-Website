@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { RichTextRenderer } from './RichTextRenderer';
 import { INTELLIGENCE_TYPE_LABELS, textToLexical } from '@/lib/constants';
+import MapPickerModal from './MapPickerModalLoader';
 
 const TYPE_LABELS = INTELLIGENCE_TYPE_LABELS;
 
@@ -93,6 +94,8 @@ export function IntelligenceList({
 		{ file: File; caption: string }[]
 	>([]);
 	const [deletingId, setDeletingId] = useState<number | null>(null);
+	const [showMapPicker, setShowMapPicker] = useState(false);
+	const [showEditMapPicker, setShowEditMapPicker] = useState(false);
 
 	const handleDelete = async (id: number) => {
 		if (!confirm('Supprimer définitivement ce rapport de renseignement ?')) return;
@@ -491,16 +494,38 @@ export function IntelligenceList({
 						>
 							<div>
 								<label style={labelStyle}>Coordonnées</label>
-								<input
-									type="text"
-									value={form.coordinates}
-									onChange={e =>
-										setForm(f => ({ ...f, coordinates: e.target.value }))
-									}
-									className="filter-input"
-									style={{ width: '100%' }}
-									placeholder="Ex: 48.8566, 2.3522"
-								/>
+								<div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+									<input
+										type="text"
+										value={form.coordinates}
+										onChange={e =>
+											setForm(f => ({ ...f, coordinates: e.target.value }))
+										}
+										className="filter-input"
+										style={{ flex: 1 }}
+										placeholder="Ex: 00123 / 04567"
+									/>
+									<button
+										type="button"
+										onClick={() => setShowMapPicker(true)}
+										style={{
+											background: 'none',
+											border: '1px solid var(--primary)',
+											color: 'var(--primary)',
+											padding: '0.35rem 0.6rem',
+											cursor: 'pointer',
+											display: 'flex',
+											alignItems: 'center',
+											gap: '0.3rem',
+											fontSize: '0.75rem',
+											whiteSpace: 'nowrap',
+										}}
+										title="Choisir sur la carte"
+									>
+										<MapPin size={14} />
+										Carte
+									</button>
+								</div>
 							</div>
 							<div>
 								<label style={labelStyle}>Rapporté par</label>
@@ -1013,18 +1038,41 @@ export function IntelligenceList({
 												>
 													<div>
 														<label style={labelStyle}>Coordonnées</label>
-														<input
-															type="text"
-															value={editForm.coordinates}
-															onChange={e =>
-																setEditForm(f => ({
-																	...f,
-																	coordinates: e.target.value,
-																}))
-															}
-															className="filter-input"
-															style={{ width: '100%' }}
-														/>
+														<div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+															<input
+																type="text"
+																value={editForm.coordinates}
+																onChange={e =>
+																	setEditForm(f => ({
+																		...f,
+																		coordinates: e.target.value,
+																	}))
+																}
+																className="filter-input"
+																style={{ flex: 1 }}
+																placeholder="Ex: 00123 / 04567"
+															/>
+															<button
+																type="button"
+																onClick={() => setShowEditMapPicker(true)}
+																style={{
+																	background: 'none',
+																	border: '1px solid var(--primary)',
+																	color: 'var(--primary)',
+																	padding: '0.35rem 0.6rem',
+																	cursor: 'pointer',
+																	display: 'flex',
+																	alignItems: 'center',
+																	gap: '0.3rem',
+																	fontSize: '0.75rem',
+																	whiteSpace: 'nowrap',
+																}}
+																title="Choisir sur la carte"
+															>
+																<MapPin size={14} />
+																Carte
+															</button>
+														</div>
 													</div>
 													<div>
 														<label style={labelStyle}>Rapporté par</label>
@@ -1355,6 +1403,28 @@ export function IntelligenceList({
 						/>
 					</div>
 				</div>
+			)}
+			{showMapPicker && (
+				<MapPickerModal
+					open={showMapPicker}
+					onClose={() => setShowMapPicker(false)}
+					onPick={(coords) => {
+						setForm(f => ({ ...f, coordinates: coords.formatted }));
+						setShowMapPicker(false);
+					}}
+					initialCoords={null}
+				/>
+			)}
+			{showEditMapPicker && (
+				<MapPickerModal
+					open={showEditMapPicker}
+					onClose={() => setShowEditMapPicker(false)}
+					onPick={(coords) => {
+						setEditForm(f => ({ ...f, coordinates: coords.formatted }));
+						setShowEditMapPicker(false);
+					}}
+					initialCoords={null}
+				/>
 			)}
 		</div>
 	);

@@ -366,8 +366,13 @@ export async function POST(
 
 	// Validate attachment shape
 	for (const a of attachments) {
-		if (!a || !a.kind || !['character', 'intel', 'media'].includes(a.kind)) {
+		if (!a || !a.kind || !['character', 'intel', 'media', 'position'].includes(a.kind)) {
 			return NextResponse.json({ error: 'Pièce jointe invalide' }, { status: 400 });
+		}
+		if (a.kind === 'position') {
+			if (typeof a.meta?.x !== 'number' || typeof a.meta?.z !== 'number') {
+				return NextResponse.json({ error: 'Coordonnées de position invalides' }, { status: 400 });
+			}
 		}
 		if (a.kind === 'intel') {
 			// Verify the user can read this intel (classification check)

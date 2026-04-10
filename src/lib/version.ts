@@ -6,9 +6,16 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.7.0',
+  version: '1.8.0',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.8.0',
+      date: '2026-04-10',
+      changes: [
+        'CARTE TACTIQUE — Grille dynamique qui se précise au zoom, marqueurs QG d\'unité (admin), marqueurs de renseignement par type sur la carte, sélecteur de position sur carte pour les rapports intel, partage de position dans les comms, visibilité joueurs réservée aux admins.',
+      ],
+    },
     {
       version: '1.7.0',
       date: '2026-04-10',

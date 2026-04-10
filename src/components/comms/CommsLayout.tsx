@@ -31,6 +31,8 @@ import { NewGroupModal } from './NewGroupModal';
 import { MembersPanel } from './MembersPanel';
 import { CharacterProfileModal } from './CharacterProfileModal';
 import { IntelPreviewModal } from './IntelPreviewModal';
+import dynamic from 'next/dynamic';
+const PositionPreviewModal = dynamic(() => import('./PositionPreviewModal'), { ssr: false });
 import { CommsTutorial } from './CommsTutorial';
 import { HelpCircle } from 'lucide-react';
 import { GmModeProvider, useGmMode } from './useGmMode';
@@ -107,6 +109,7 @@ function CommsLayoutInner({ character, isAdmin }: { character: ActiveCharacter; 
 	const [showMembers, setShowMembers] = useState(false);
 	const [profileCharacterId, setProfileCharacterId] = useState<number | null>(null);
 	const [previewIntelId, setPreviewIntelId] = useState<number | null>(null);
+	const [positionPreview, setPositionPreview] = useState<{ x: number; z: number; label?: string } | null>(null);
 	const [mobileShowMain, setMobileShowMain] = useState(false);
 	const [replyingTo, setReplyingTo] = useState<CommsMessage | null>(null);
 	const [channelMembers, setChannelMembers] = useState<
@@ -741,6 +744,7 @@ function CommsLayoutInner({ character, isAdmin }: { character: ActiveCharacter; 
 								onEdit={handleEdit}
 								onOpenCharacter={(id) => setProfileCharacterId(id)}
 								onOpenIntel={(id) => setPreviewIntelId(id)}
+								onOpenPosition={(meta) => setPositionPreview(meta)}
 								onReply={(m) => setReplyingTo(m)}
 								viewerId={character.id}
 							/>
@@ -869,6 +873,13 @@ function CommsLayoutInner({ character, isAdmin }: { character: ActiveCharacter; 
 				<IntelPreviewModal
 					intelId={previewIntelId}
 					onClose={() => setPreviewIntelId(null)}
+				/>
+			)}
+
+			{positionPreview !== null && (
+				<PositionPreviewModal
+					coords={positionPreview}
+					onClose={() => setPositionPreview(null)}
 				/>
 			)}
 

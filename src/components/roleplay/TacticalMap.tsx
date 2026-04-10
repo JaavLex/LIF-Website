@@ -1,8 +1,10 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { createGridOverlay } from './MapGridOverlay';
+import { formatGrid, escapeHtml } from '@/lib/constants';
 
 interface MapTerrain {
   name: string;
@@ -26,6 +28,26 @@ interface MapGameMarker {
   type: string;
 }
 
+interface UnitHQ {
+  id: number;
+  name: string;
+  color: string;
+  hqX: number;
+  hqZ: number;
+  insigniaUrl: string | null;
+  commanderName: string | null;
+  factionName: string | null;
+}
+
+interface IntelMarker {
+  id: number;
+  title: string;
+  type: string;
+  classification: string;
+  x: number;
+  z: number;
+}
+
 interface MapStateResponse {
   terrain: MapTerrain | null;
   players: MapPlayer[];
@@ -34,10 +56,7 @@ interface MapStateResponse {
   mapImageUrl: string | null;
   offsetX: number;
   offsetZ: number;
-}
-
-function formatGrid(meters: number): string {
-  return String(Math.floor(meters)).padStart(5, '0');
+  isAdmin?: boolean;
 }
 
 const FACTION_COLORS: Record<string, string> = {
@@ -68,15 +87,65 @@ function createPlayerIcon(faction: string): L.DivIcon {
   });
 }
 
+const INTEL_TYPE_SYMBOLS: Record<string, string> = {
+  observation: '👁',
+  interception: '⚡',
+  reconnaissance: '🔭',
+  infiltration: '🗡',
+  sigint: '📡',
+  humint: '👤',
+  other: '📌',
+};
+
+function createIntelIcon(type: string): L.DivIcon {
+  const symbol = INTEL_TYPE_SYMBOLS[type] || INTEL_TYPE_SYMBOLS.other;
+  return L.divIcon({
+    className: 'intel-map-icon',
+    html: `<div class="intel-map-icon-inner">${symbol}</div>`,
+    iconSize: [24, 24],
+    iconAnchor: [12, 12],
+  });
+}
+
+function createHQIcon(color: string): L.DivIcon {
+  return L.divIcon({
+    className: 'hq-map-icon',
+    html: `<div class="hq-map-icon-inner" style="border-color: ${color}; box-shadow: 0 0 10px ${color}88;">⚑</div>`,
+    iconSize: [28, 28],
+    iconAnchor: [14, 14],
+  });
+}
+
+const INTEL_TYPE_LABELS: Record<string, string> = {
+  observation: 'Observation',
+  interception: 'Interception',
+  reconnaissance: 'Reconnaissance',
+  infiltration: 'Infiltration',
+  sigint: 'SIGINT',
+  humint: 'HUMINT',
+  other: 'Autre',
+};
+
+const CLASSIFICATION_COLORS: Record<string, string> = {
+  public: '#00ff41',
+  restricted: '#ffaa00',
+  classified: '#ff4444',
+};
+
 export default function TacticalMap() {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const imageLayerRef = useRef<L.ImageOverlay | null>(null);
   const markersLayerRef = useRef<L.LayerGroup | null>(null);
+  const hqLayerRef = useRef<L.LayerGroup | null>(null);
+  const intelLayerRef = useRef<L.LayerGroup | null>(null);
+  const gridLayerRef = useRef<L.GridLayer | null>(null);
   const currentTerrainRef = useRef<string | null>(null);
   const [state, setState] = useState<MapStateResponse | null>(null);
   const [cursorCoords, setCursorCoords] = useState<{ x: number; z: number } | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [showPlayers, setShowPlayers] = useState(true);
+  const [showGrid, setShowGrid] = useState(true);
   const [showUpload, setShowUpload] = useState(false);
   const [uploadTerrainName, setUploadTerrainName] = useState('');
   const [uploadSizeX, setUploadSizeX] = useState('');
@@ -89,6 +158,13 @@ export default function TacticalMap() {
   const [calibrateRealX, setCalibrateRealX] = useState('');
   const [calibrateRealZ, setCalibrateRealZ] = useState('');
   const offsetRef = useRef<{ x: number; z: number }>({ x: 0, z: 0 });
+  // Unit HQ state
+  const [unitHQs, setUnitHQs] = useState<UnitHQ[]>([]);
+  const [placingHQ, setPlacingHQ] = useState(false);
+  const [hqUnitList, setHqUnitList] = useState<{ id: number; name: string }[]>([]);
+  const [selectedHQUnit, setSelectedHQUnit] = useState<string>('');
+  // Intel markers state
+  const [intelMarkers, setIntelMarkers] = useState<IntelMarker[]>([]);
 
   // Initialize Leaflet map
   useEffect(() => {
@@ -104,6 +180,13 @@ export default function TacticalMap() {
 
     map.setView([0, 0], -1);
     markersLayerRef.current = L.layerGroup().addTo(map);
+    hqLayerRef.current = L.layerGroup().addTo(map);
+    intelLayerRef.current = L.layerGroup().addTo(map);
+
+    // Add grid overlay
+    const gridLayer = createGridOverlay();
+    gridLayer.addTo(map);
+    gridLayerRef.current = gridLayer;
 
     map.on('mousemove', (e: L.LeafletMouseEvent) => {
       setCursorCoords({ x: Math.round(e.latlng.lng), z: Math.round(e.latlng.lat) });
@@ -141,6 +224,18 @@ export default function TacticalMap() {
     };
   }, []);
 
+  // Toggle grid visibility
+  useEffect(() => {
+    const map = mapRef.current;
+    const grid = gridLayerRef.current;
+    if (!map || !grid) return;
+    if (showGrid) {
+      if (!map.hasLayer(grid)) grid.addTo(map);
+    } else {
+      if (map.hasLayer(grid)) map.removeLayer(grid);
+    }
+  }, [showGrid]);
+
   // Poll for state (visibility-aware: 5s when visible, 30s when hidden)
   useEffect(() => {
     let active = true;
@@ -152,6 +247,7 @@ export default function TacticalMap() {
         if (res.ok && active) {
           const data: MapStateResponse = await res.json();
           setState(data);
+          if (data.isAdmin) setIsAdmin(true);
         }
       } catch { /* network error, retry next cycle */ }
     }
@@ -177,6 +273,49 @@ export default function TacticalMap() {
     };
   }, []);
 
+  // Fetch unit HQs
+  const fetchUnitHQs = useCallback(async () => {
+    try {
+      const res = await fetch('/api/roleplay/map/units');
+      if (res.ok) {
+        const data = await res.json();
+        setUnitHQs(data.units || []);
+      }
+    } catch { /* ignore */ }
+  }, []);
+
+  useEffect(() => {
+    fetchUnitHQs();
+    const interval = setInterval(fetchUnitHQs, 60_000);
+    return () => clearInterval(interval);
+  }, [fetchUnitHQs]);
+
+  // Fetch intel markers
+  const fetchIntelMarkers = useCallback(async () => {
+    try {
+      const res = await fetch('/api/roleplay/map/intel');
+      if (res.ok) {
+        const data = await res.json();
+        setIntelMarkers(data.markers || []);
+      }
+    } catch { /* ignore */ }
+  }, []);
+
+  useEffect(() => {
+    fetchIntelMarkers();
+    const interval = setInterval(fetchIntelMarkers, 30_000);
+    return () => clearInterval(interval);
+  }, [fetchIntelMarkers]);
+
+  // Fetch admin unit list for HQ placement
+  useEffect(() => {
+    if (!isAdmin) return;
+    fetch('/api/roleplay/map/units?all=1')
+      .then(res => res.ok ? res.json() : null)
+      .then(data => { if (data?.allUnits) setHqUnitList(data.allUnits); })
+      .catch(() => {});
+  }, [isAdmin]);
+
   // Update map image when terrain or offsets change
   useEffect(() => {
     const map = mapRef.current;
@@ -196,6 +335,8 @@ export default function TacticalMap() {
 
     if (state.mapImageUrl) {
       imageLayerRef.current = L.imageOverlay(state.mapImageUrl, bounds).addTo(map);
+      // Ensure grid + markers stay above image
+      gridLayerRef.current?.bringToFront();
     }
 
     if (!currentTerrainRef.current) {
@@ -207,14 +348,6 @@ export default function TacticalMap() {
 
     currentTerrainRef.current = name;
   }, [state?.terrain, state?.mapImageUrl, state?.offsetX, state?.offsetZ]);
-
-  // Check admin status
-  useEffect(() => {
-    fetch('/api/auth/admin-check')
-      .then(res => res.ok ? res.json() : null)
-      .then(data => { if (data?.isAdmin) setIsAdmin(true); })
-      .catch(() => {});
-  }, []);
 
   // Pre-fill terrain info from state
   useEffect(() => {
@@ -240,7 +373,6 @@ export default function TacticalMap() {
         setUploadStatus('Image envoyée');
         setUploadFile(null);
         setShowUpload(false);
-        // Force re-render of image overlay by resetting terrain ref
         currentTerrainRef.current = null;
       } else {
         const data = await res.json();
@@ -276,6 +408,41 @@ export default function TacticalMap() {
     };
   }, [calibrating]);
 
+  // HQ placement click handler
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+
+    async function onHQClick(e: L.LeafletMouseEvent) {
+      const unitId = Number(selectedHQUnit);
+      if (!unitId) return;
+      const hqX = Math.round(e.latlng.lng);
+      const hqZ = Math.round(e.latlng.lat);
+      try {
+        const res = await fetch('/api/roleplay/map/units', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ unitId, hqX, hqZ }),
+        });
+        if (res.ok) {
+          setPlacingHQ(false);
+          setSelectedHQUnit('');
+          fetchUnitHQs();
+        }
+      } catch { /* ignore */ }
+    }
+
+    if (placingHQ && selectedHQUnit) {
+      map.getContainer().style.cursor = 'crosshair';
+      map.on('click', onHQClick);
+    }
+
+    return () => {
+      map.off('click', onHQClick);
+      if (!calibrating) map.getContainer().style.cursor = '';
+    };
+  }, [placingHQ, selectedHQUnit, calibrating, fetchUnitHQs]);
+
   async function handleCalibrate() {
     if (!calibrateClick || !state?.terrain) return;
     const realX = Number(calibrateRealX);
@@ -308,6 +475,8 @@ export default function TacticalMap() {
 
     markersLayer.clearLayers();
 
+    if (!showPlayers) return;
+
     for (const player of state.players) {
       const marker = L.marker([player.z, player.x], {
         icon: createPlayerIcon(player.faction),
@@ -322,7 +491,66 @@ export default function TacticalMap() {
 
       markersLayer.addLayer(marker);
     }
-  }, [state?.players]);
+  }, [state?.players, showPlayers]);
+
+  // Update HQ markers
+  useEffect(() => {
+    const layer = hqLayerRef.current;
+    if (!layer) return;
+    layer.clearLayers();
+
+    for (const hq of unitHQs) {
+      const marker = L.marker([hq.hqZ, hq.hqX], {
+        icon: createHQIcon(hq.color),
+      });
+
+      const insigniaHtml = hq.insigniaUrl
+        ? `<img src="${hq.insigniaUrl}" alt="" style="width:40px;height:40px;object-fit:contain;margin-bottom:4px;" />`
+        : '';
+
+      marker.bindPopup(
+        `<div class="hq-popup">
+          ${insigniaHtml}
+          <div class="hq-popup-name">${escapeHtml(hq.name)}</div>
+          ${hq.factionName ? `<div class="hq-popup-faction">${escapeHtml(hq.factionName)}</div>` : ''}
+          ${hq.commanderName ? `<div class="hq-popup-commander">CMD: ${escapeHtml(hq.commanderName)}</div>` : ''}
+          <div class="hq-popup-coords">${formatGrid(hq.hqX)} / ${formatGrid(hq.hqZ)}</div>
+        </div>`,
+        { className: 'map-custom-popup' },
+      );
+
+      layer.addLayer(marker);
+    }
+  }, [unitHQs]);
+
+  // Update intel markers
+  useEffect(() => {
+    const layer = intelLayerRef.current;
+    if (!layer) return;
+    layer.clearLayers();
+
+    for (const intel of intelMarkers) {
+      const marker = L.marker([intel.z, intel.x], {
+        icon: createIntelIcon(intel.type),
+      });
+
+      const classColor = CLASSIFICATION_COLORS[intel.classification] || '#00ff41';
+      const typeLabel = INTEL_TYPE_LABELS[intel.type] || intel.type;
+
+      marker.bindPopup(
+        `<div class="intel-popup">
+          <div class="intel-popup-type">${escapeHtml(typeLabel)}</div>
+          <div class="intel-popup-title">${escapeHtml(intel.title)}</div>
+          <div class="intel-popup-class" style="color:${classColor}">[${escapeHtml(intel.classification.toUpperCase())}]</div>
+          <div class="intel-popup-coords">${formatGrid(intel.x)} / ${formatGrid(intel.z)}</div>
+          <a href="/roleplay/renseignement#intel-${intel.id}" class="intel-popup-link">Voir le rapport</a>
+        </div>`,
+        { className: 'map-custom-popup' },
+      );
+
+      layer.addLayer(marker);
+    }
+  }, [intelMarkers]);
 
   const timeSinceSync = state?.lastSyncAt
     ? Math.round((Date.now() - new Date(state.lastSyncAt).getTime()) / 1000)
@@ -341,7 +569,9 @@ export default function TacticalMap() {
           <span>
             <span className={isStale ? 'stale-dot' : 'live-dot'} />
             {isLive
-              ? `${state?.players.length || 0} opérateur${(state?.players.length || 0) !== 1 ? 's' : ''}`
+              ? isAdmin
+                ? `${state?.players.length || 0} opérateur${(state?.players.length || 0) !== 1 ? 's' : ''}`
+                : 'En ligne'
               : 'Hors ligne'}
           </span>
           {timeSinceSync !== null && (
@@ -349,8 +579,22 @@ export default function TacticalMap() {
               Dernière sync: {timeSinceSync < 60 ? `${timeSinceSync}s` : `${Math.floor(timeSinceSync / 60)}m`}
             </span>
           )}
+          <button
+            type="button"
+            className={`map-admin-btn ${showGrid ? 'active' : ''}`}
+            onClick={() => setShowGrid(v => !v)}
+          >
+            Grille
+          </button>
           {isAdmin && (
             <>
+              <button
+                type="button"
+                className={`map-admin-btn ${showPlayers ? 'active' : ''}`}
+                onClick={() => setShowPlayers(v => !v)}
+              >
+                Joueurs
+              </button>
               <button
                 type="button"
                 className="map-admin-btn"
@@ -362,17 +606,24 @@ export default function TacticalMap() {
                 <button
                   type="button"
                   className={`map-admin-btn ${calibrating ? 'active' : ''}`}
-                  onClick={() => setCalibrating(v => !v)}
+                  onClick={() => { setCalibrating(v => !v); setPlacingHQ(false); setSelectedHQUnit(''); }}
                 >
                   {calibrating ? '✕ Calibrer' : 'Calibrer'}
                 </button>
               )}
+              <button
+                type="button"
+                className={`map-admin-btn ${placingHQ ? 'active' : ''}`}
+                onClick={() => { setPlacingHQ(v => !v); setCalibrating(false); if (placingHQ) setSelectedHQUnit(''); }}
+              >
+                {placingHQ ? '✕ QG' : 'Placer QG'}
+              </button>
             </>
           )}
         </div>
       </div>
 
-      <div className={`map-container ${!state?.mapImageUrl ? 'map-grid-fallback' : ''}`}>
+      <div className="map-container">
         {!state?.terrain && (
           <div className="map-no-data">
             <span>Aucune donnée reçue</span>
@@ -428,6 +679,29 @@ export default function TacticalMap() {
               {uploading ? 'Envoi...' : 'Envoyer'}
             </button>
             {uploadStatus && <span className="map-upload-status">{uploadStatus}</span>}
+          </div>
+        )}
+        {placingHQ && (
+          <div className="map-upload-panel">
+            <div className="map-upload-title">Placer un QG d&apos;unité</div>
+            <label className="map-upload-field">
+              <span>Unité</span>
+              <select
+                value={selectedHQUnit}
+                onChange={e => setSelectedHQUnit(e.target.value)}
+                className="map-upload-field-select"
+              >
+                <option value="">— Sélectionner —</option>
+                {hqUnitList.map(u => (
+                  <option key={u.id} value={u.id}>{u.name}</option>
+                ))}
+              </select>
+            </label>
+            {selectedHQUnit && (
+              <div className="map-calibrate-hint" style={{ position: 'static', animation: 'none', opacity: 0.7 }}>
+                Cliquez sur la carte pour placer le QG
+              </div>
+            )}
           </div>
         )}
         {calibrating && calibrateClick && (

@@ -67,6 +67,24 @@ export const Units: CollectionConfig = {
 			},
 		},
 		{
+			name: 'hqX',
+			label: 'Position QG — X (mètres)',
+			type: 'number',
+			admin: {
+				position: 'sidebar',
+				description: 'Coordonnée X du QG sur la carte tactique',
+			},
+		},
+		{
+			name: 'hqZ',
+			label: 'Position QG — Z (mètres)',
+			type: 'number',
+			admin: {
+				position: 'sidebar',
+				description: 'Coordonnée Z du QG sur la carte tactique',
+			},
+		},
+		{
 			name: 'isMain',
 			label: 'Unité principale',
 			type: 'checkbox',

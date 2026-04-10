@@ -181,6 +181,16 @@ export function formatDurationLong(seconds: number): string {
 	return `${Math.floor(seconds / 86400)} jours`;
 }
 
+/** Format meters to 5-digit zero-padded grid coordinate (1m precision) */
+export function formatGrid(meters: number): string {
+	return String(Math.floor(meters)).padStart(5, '0');
+}
+
+/** Escape HTML entities to prevent XSS in Leaflet popup strings */
+export function escapeHtml(str: string): string {
+	return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
 // --- Lexical rich text utilities ---
 
 /** Convert Lexical JSON to plain text for display/editing */

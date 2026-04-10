@@ -399,7 +399,7 @@ export function MessageComposer({
 							}}
 						>
 							<span>
-								{a.kind.toUpperCase()}: {a.meta?.fullName || a.meta?.title || a.meta?.filename}
+								{a.kind.toUpperCase()}: {a.meta?.fullName || a.meta?.title || a.meta?.label || a.meta?.filename}
 							</span>
 							<button
 								type="button"

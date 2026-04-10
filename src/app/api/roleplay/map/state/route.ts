@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getMapState } from '@/lib/map-state';
 import { getTerrainMeta } from '@/lib/terrain-meta';
+import { getSession } from '@/lib/api-auth';
+import { checkAdminPermissions } from '@/lib/admin';
 import fs from 'fs';
 import path from 'path';
 
@@ -8,6 +10,11 @@ const MAPS_DIR = path.join(process.cwd(), 'public', 'maps');
 
 export async function GET(request: NextRequest) {
   const state = getMapState();
+
+  // Only admins can see player positions
+  const session = await getSession(request);
+  const admin = session ? await checkAdminPermissions(session) : null;
+  const isAdmin = admin?.isAdmin ?? false;
 
   let terrain = state.terrain;
   let mapImageUrl: string | null = null;
@@ -42,11 +49,12 @@ export async function GET(request: NextRequest) {
 
   return NextResponse.json({
     terrain,
-    players: state.players,
+    players: isAdmin ? state.players : [],
     gameMarkers: state.gameMarkers,
     lastSyncAt: state.lastSyncAt ? state.lastSyncAt.toISOString() : null,
     mapImageUrl,
     offsetX,
     offsetZ,
+    isAdmin,
   });
 }
