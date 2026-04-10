@@ -152,16 +152,19 @@ export default function OrgBankStats({ isAdmin }: { isAdmin?: boolean }) {
 		// Show at most 7 date labels
 		const maxLabels = Math.min(7, history.length);
 		const step = Math.max(1, Math.floor(history.length / maxLabels));
+		const formatLabel = (d: string) => {
+			const day = d.slice(8, 10), month = d.slice(5, 7);
+			const time = d.length > 10 ? d.slice(11, 16) : '';
+			return time ? `${day}/${month} ${time}` : `${day}/${month}`;
+		};
 		for (let i = 0; i < history.length; i += step) {
 			const x = padLeft + (i / (history.length - 1)) * graphW;
-			const parts = history[i].date.split('-');
-			ctx.fillText(`${parts[2]}/${parts[1]}`, x, h - padBottom + 16);
+			ctx.fillText(formatLabel(history[i].date), x, h - padBottom + 16);
 		}
 		// Always show last date
 		if ((history.length - 1) % step !== 0) {
 			const x = padLeft + graphW;
-			const parts = history[history.length - 1].date.split('-');
-			ctx.fillText(`${parts[2]}/${parts[1]}`, x, h - padBottom + 16);
+			ctx.fillText(formatLabel(history[history.length - 1].date), x, h - padBottom + 16);
 		}
 	}, [stats]);
 

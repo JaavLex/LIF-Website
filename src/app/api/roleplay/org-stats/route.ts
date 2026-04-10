@@ -93,14 +93,14 @@ export async function GET() {
 					}
 				}
 
-				// Group by day — keep last data point per day
-				const dayMap = new Map<string, number>();
+				// Group by sync cycle (minute granularity) — keep last data point per minute
+				const minuteMap = new Map<string, number>();
 				for (const dp of dataPoints) {
-					const dayKey = dp.date.toISOString().slice(0, 10);
-					dayMap.set(dayKey, dp.total);
+					const minuteKey = dp.date.toISOString().slice(0, 16);
+					minuteMap.set(minuteKey, dp.total);
 				}
 
-				history = Array.from(dayMap.entries())
+				history = Array.from(minuteMap.entries())
 					.sort((a, b) => a[0].localeCompare(b[0]))
 					.map(([date, total]) => ({ date, total }));
 			}
@@ -125,18 +125,12 @@ export async function DELETE(request: NextRequest) {
 	try {
 		const payload = await getPayloadClient();
 
-		// Delete all bank-history records
-		const allHistory = await payload.find({
+		// Delete all bank-history records (bulk delete)
+		const deleteResult = await payload.delete({
 			collection: 'bank-history',
-			limit: 0,
-			depth: 0,
+			where: { id: { exists: true } },
 		});
-
-		let deleted = 0;
-		for (const entry of allHistory.docs) {
-			await payload.delete({ collection: 'bank-history', id: entry.id });
-			deleted++;
-		}
+		const deleted = Array.isArray(deleteResult.docs) ? deleteResult.docs.length : 0;
 
 		// Reset savedMoney on all characters
 		const allChars = await payload.find({
