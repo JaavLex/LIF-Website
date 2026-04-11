@@ -12,18 +12,23 @@ const MAPS_DIR = path.join(process.cwd(), 'public', 'maps');
 export async function GET(request: NextRequest) {
   const state = getMapState();
 
-  // Admins always see player positions; non-admins only if the global toggle is on
+  // Admins always see player positions; non-admins only if the global toggle is on.
+  // The global is fetched lazily — only when we actually have players AND the
+  // caller isn't already an admin — to avoid hitting Payload on every poll.
   const session = await getSession(request);
   const admin = session ? await checkAdminPermissions(session) : null;
   const isAdmin = admin?.isAdmin ?? false;
 
-  let publicPlayerPositions = false;
-  try {
-    const payload = await getPayloadClient();
-    const rp = await payload.findGlobal({ slug: 'roleplay' });
-    publicPlayerPositions = Boolean((rp as { publicPlayerPositions?: boolean }).publicPlayerPositions);
-  } catch { /* fallback: keep default false */ }
-  const canSeePlayers = isAdmin || publicPlayerPositions;
+  let canSeePlayers = isAdmin;
+  if (!canSeePlayers && state.players.length > 0) {
+    try {
+      const payload = await getPayloadClient();
+      const rp = await payload.findGlobal({ slug: 'roleplay' });
+      canSeePlayers = Boolean(
+        (rp as { publicPlayerPositions?: boolean }).publicPlayerPositions,
+      );
+    } catch { /* fallback: keep false */ }
+  }
 
   let terrain = state.terrain;
   let mapImageUrl: string | null = null;

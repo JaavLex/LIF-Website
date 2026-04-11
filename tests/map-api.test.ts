@@ -1,6 +1,15 @@
-import { describe, it, expect, beforeAll, beforeEach } from 'vitest';
+import { describe, it, expect, beforeAll, beforeEach, vi } from 'vitest';
 import { NextRequest } from 'next/server';
 import { getMapState, updateMapState } from '@/lib/map-state';
+
+// Stub Payload client so the state route doesn't try to open a real Postgres
+// connection when reading the Roleplay global's publicPlayerPositions flag.
+vi.mock('@/lib/payload', () => ({
+  getPayloadClient: async () => ({
+    findGlobal: async () => ({ publicPlayerPositions: false }),
+    find: async () => ({ docs: [] }),
+  }),
+}));
 
 beforeAll(() => {
   process.env.MAP_API_KEY = 'test-api-key';
