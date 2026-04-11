@@ -23,6 +23,18 @@ interface MapPlayer {
   unitColor: string | null;
   unitName: string | null;
   callsign: string | null;
+  trail?: Array<{ x: number; z: number; t: number }>;
+}
+
+interface SOSAlert {
+  id: string;
+  biId: string | null;
+  name: string;
+  faction: string | null;
+  x: number;
+  z: number;
+  triggeredAt: number;
+  expiresAt: number;
 }
 
 interface MapPOI {
@@ -71,6 +83,8 @@ interface MapStateResponse {
   offsetX: number;
   offsetZ: number;
   isAdmin?: boolean;
+  publicPlayerPositions?: boolean;
+  sosAlerts?: SOSAlert[];
 }
 
 const FACTION_COLORS: Record<string, string> = {
@@ -502,6 +516,13 @@ export default function TacticalMap() {
   const [poiName, setPoiName] = useState('');
   // Legend
   const [showLegend, setShowLegend] = useState(true);
+  // Heat trails + SOS layers
+  const trailsLayerRef = useRef<L.LayerGroup | null>(null);
+  const sosLayerRef = useRef<L.LayerGroup | null>(null);
+  const [showTrails, setShowTrails] = useState(true);
+  // Admin: live toggle for the publicPlayerPositions global
+  const [publicPositions, setPublicPositions] = useState(false);
+  const [togglingPublic, setTogglingPublic] = useState(false);
 
   // Initialize Leaflet map
   useEffect(() => {
@@ -517,10 +538,13 @@ export default function TacticalMap() {
 
     map.setView([0, 0], -1);
 
+    // Order matters for stacking: trails under markers, sos on top
+    trailsLayerRef.current = L.layerGroup().addTo(map);
     markersLayerRef.current = L.layerGroup().addTo(map);
     hqLayerRef.current = L.layerGroup().addTo(map);
     intelLayerRef.current = L.layerGroup().addTo(map);
     poiLayerRef.current = L.layerGroup().addTo(map);
+    sosLayerRef.current = L.layerGroup().addTo(map);
 
     map.on('mousemove', (e: L.LeafletMouseEvent) => {
       setCursorCoords({ x: Math.round(e.latlng.lng), z: Math.round(e.latlng.lat) });
@@ -582,6 +606,9 @@ export default function TacticalMap() {
           const data: MapStateResponse = await res.json();
           setState(data);
           if (data.isAdmin) setIsAdmin(true);
+          if (typeof data.publicPlayerPositions === 'boolean') {
+            setPublicPositions(data.publicPlayerPositions);
+          }
         }
       } catch { /* network error, retry next cycle */ }
     }
@@ -606,6 +633,25 @@ export default function TacticalMap() {
       document.removeEventListener('visibilitychange', handleVisibility);
     };
   }, []);
+
+  // Admin: toggle publicPlayerPositions on the Roleplay global
+  const togglePublicPositions = useCallback(async () => {
+    setTogglingPublic(true);
+    const next = !publicPositions;
+    // Optimistic update
+    setPublicPositions(next);
+    try {
+      const res = await fetch('/api/roleplay/map/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ publicPlayerPositions: next }),
+      });
+      if (!res.ok) setPublicPositions(!next); // revert on failure
+    } catch {
+      setPublicPositions(!next);
+    }
+    setTogglingPublic(false);
+  }, [publicPositions]);
 
   // Fetch unit HQs
   const fetchUnitHQs = useCallback(async () => {
@@ -979,6 +1025,79 @@ export default function TacticalMap() {
     }
   }, [state?.players, showPlayers]);
 
+  // Render fading heat trails
+  useEffect(() => {
+    const layer = trailsLayerRef.current;
+    if (!layer || !state) return;
+    layer.clearLayers();
+    if (!showTrails || !showPlayers) return;
+
+    for (const player of state.players) {
+      const trail = player.trail;
+      if (!trail || trail.length < 2) continue;
+      const color = player.unitColor || '#7aff7a';
+      // Build segments with fading opacity from oldest to newest
+      for (let i = 1; i < trail.length; i++) {
+        const a = trail[i - 1];
+        const b = trail[i];
+        // Newer segments are more opaque
+        const alpha = 0.12 + 0.58 * (i / (trail.length - 1));
+        const segment = L.polyline(
+          [[a.z, a.x], [b.z, b.x]],
+          {
+            color,
+            weight: 2.5,
+            opacity: alpha,
+            interactive: false,
+            lineCap: 'round',
+          },
+        );
+        layer.addLayer(segment);
+      }
+      // Connect last trail point to current live position
+      const last = trail[trail.length - 1];
+      if (last.x !== player.x || last.z !== player.z) {
+        layer.addLayer(
+          L.polyline(
+            [[last.z, last.x], [player.z, player.x]],
+            { color, weight: 2.5, opacity: 0.75, interactive: false, lineCap: 'round' },
+          ),
+        );
+      }
+    }
+  }, [state?.players, showTrails, showPlayers]);
+
+  // Render SOS pulsing alert markers
+  useEffect(() => {
+    const layer = sosLayerRef.current;
+    if (!layer) return;
+    layer.clearLayers();
+    const alerts = state?.sosAlerts;
+    if (!alerts || alerts.length === 0) return;
+
+    for (const alert of alerts) {
+      const icon = L.divIcon({
+        className: 'sos-marker-icon',
+        html: `<div class="sos-pulse"><span class="sos-pulse-ring"></span><span class="sos-pulse-ring sos-pulse-ring-2"></span><span class="sos-pulse-core">!</span></div>`,
+        iconSize: [44, 44],
+        iconAnchor: [22, 22],
+      });
+      const m = L.marker([alert.z, alert.x], { icon, zIndexOffset: 1000 });
+      m.bindTooltip(
+        `<div class="sos-tip"><div class="sos-tip-label">SOS</div><div class="sos-tip-name">${escapeHtml(
+          alert.name,
+        )}</div></div>`,
+        {
+          permanent: true,
+          direction: 'top',
+          offset: [0, -18],
+          className: 'sos-marker-tooltip',
+        },
+      );
+      layer.addLayer(m);
+    }
+  }, [state?.sosAlerts]);
+
   // Remove HQ handler
   const removeHQ = useCallback(async (unitId: number) => {
     try {
@@ -1113,6 +1232,22 @@ export default function TacticalMap() {
               </button>
               <button
                 type="button"
+                className={`map-admin-btn ${publicPositions ? 'active' : ''}`}
+                onClick={togglePublicPositions}
+                disabled={togglingPublic}
+                title="Rendre les positions des joueurs visibles pour tous les utilisateurs"
+              >
+                {publicPositions ? '● Public' : '○ Public'}
+              </button>
+              <button
+                type="button"
+                className={`map-admin-btn ${showTrails ? 'active' : ''}`}
+                onClick={() => setShowTrails(v => !v)}
+              >
+                Traces
+              </button>
+              <button
+                type="button"
                 className="map-admin-btn"
                 onClick={() => setShowUpload(v => !v)}
               >
@@ -1240,6 +1375,7 @@ export default function TacticalMap() {
                 <option value="bar">Bar / Pub</option>
                 <option value="shop">Magasin</option>
                 <option value="gas">Station-service</option>
+                <option value="city">Ville</option>
               </select>
             </label>
             <label className="map-upload-field">

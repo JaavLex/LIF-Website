@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Reply, ArrowRight, FileText, Newspaper, MapPin } from 'lucide-react';
+import { Reply, ArrowRight, FileText, Newspaper, MapPin, Navigation, Siren } from 'lucide-react';
 import { SafeMarkdown } from '@/lib/safe-markdown';
 import type { CommsMessage } from './CommsLayout';
 import { AnonymousAvatar } from './AnonymousAvatar';
@@ -27,7 +27,7 @@ export function MessageList({
 	onEdit: (id: number, body: string) => void;
 	onOpenCharacter: (id: number) => void;
 	onOpenIntel: (id: number) => void;
-	onOpenPosition?: (meta: { x: number; z: number; label?: string }) => void;
+	onOpenPosition?: (meta: { x: number; z: number; label?: string; source?: string }) => void;
 	onReply?: (message: CommsMessage) => void;
 	viewerId?: number;
 }) {
@@ -237,17 +237,24 @@ function AttachmentCard({
 	att: any;
 	onOpenCharacter: (id: number) => void;
 	onOpenIntel: (id: number) => void;
-	onOpenPosition?: (meta: { x: number; z: number; label?: string }) => void;
+	onOpenPosition?: (meta: { x: number; z: number; label?: string; source?: string }) => void;
 }) {
 	if (att.kind === 'position') {
+		const source: string | undefined = att.meta?.source;
+		const isGps = source === 'gps';
+		const isSos = source === 'sos';
+		const accent = isSos ? '#ff5757' : isGps ? '#7aff9a' : 'var(--primary)';
+		const Icon = isSos ? Siren : isGps ? Navigation : MapPin;
+		const label = isSos ? 'SOS' : isGps ? 'MA POSITION' : 'POSITION';
 		return (
 			<button
 				type="button"
-				className="comms-attachment comms-attachment-button"
-				onClick={() => onOpenPosition?.(att.meta)}
+				className={`comms-attachment comms-attachment-button ${isSos ? 'comms-attachment-sos' : ''}`}
+				onClick={() => onOpenPosition?.({ ...att.meta, source })}
+				style={isSos ? { borderColor: '#ff3030' } : undefined}
 			>
-				<MapPin size={14} style={{ color: 'var(--primary)', flexShrink: 0 }} />
-				<span style={{ color: 'var(--primary)' }}>POSITION</span>
+				<Icon size={14} style={{ color: accent, flexShrink: 0 }} />
+				<span style={{ color: accent, fontWeight: isSos ? 900 : undefined }}>{label}</span>
 				<span style={{ color: 'var(--text)' }}>
 					{att.meta?.label || `${att.meta?.x ?? '?'} / ${att.meta?.z ?? '?'}`}
 				</span>

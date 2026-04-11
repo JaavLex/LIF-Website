@@ -262,6 +262,7 @@ function PositionPicker({ onPick }: { onPick: (att: any) => void }) {
 						x: data.x,
 						z: data.z,
 						label: `${formatGrid(data.x)} / ${formatGrid(data.z)}`,
+						source: 'gps',
 					},
 				});
 			} else {

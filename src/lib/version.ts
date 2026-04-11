@@ -6,9 +6,22 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.10.0',
+  version: '1.11.0',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.11.0',
+      date: '2026-04-11',
+      changes: [
+        'CARTE — Traces de chaleur : l\'historique des positions des opérateurs est affiché sous forme de polylignes dégradées (couleur de l\'unité). Bouton « Traces » pour basculer.',
+        'CARTE — Bouton admin « Public » directement dans la barre d\'outils pour activer/désactiver la visibilité des positions pour tous les utilisateurs (plus besoin de passer par Payload).',
+        'CARTE — Alertes SOS pulsantes en rouge avec le nom de l\'opérateur en détresse, durée de vie de 5 minutes.',
+        'COMMS — Nouveau bouton SOS dans le compositeur de messages : signale la détresse sur la carte + envoie un message @everyone dans la salle de la faction avec la position actuelle. Double-clic pour confirmer (évite les déclenchements accidentels).',
+        'COMMS — L\'aperçu de position affiche maintenant les POIs, villes, QG et renseignements en référence, avec grille et limites de carte.',
+        'COMMS — Distinction visuelle entre position partagée (rouge), ma position (vert — via GPS), et signal SOS (alerte rouge pulsante).',
+        'COMMS — Le bouton « Place POI » inclut maintenant l\'option « Ville » dans la liste.',
+      ],
+    },
     {
       version: '1.10.0',
       date: '2026-04-11',

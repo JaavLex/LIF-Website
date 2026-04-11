@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getMapState } from '@/lib/map-state';
+import { getMapState, getTrail, getActiveSOSAlerts } from '@/lib/map-state';
 import { getTerrainMeta } from '@/lib/terrain-meta';
 import { getSession } from '@/lib/api-auth';
 import { checkAdminPermissions } from '@/lib/admin';
@@ -19,14 +19,19 @@ export async function GET(request: NextRequest) {
   const admin = session ? await checkAdminPermissions(session) : null;
   const isAdmin = admin?.isAdmin ?? false;
 
+  // Fetch the toggle. Admins always see their own state.publicPlayerPositions
+  // (so the admin UI can reflect/flip it); non-admins only see players when
+  // the flag is on — and only when there are players worth fetching for.
+  let publicPlayerPositions = false;
   let canSeePlayers = isAdmin;
-  if (!canSeePlayers && state.players.length > 0) {
+  if (isAdmin || state.players.length > 0) {
     try {
       const payload = await getPayloadClient();
       const rp = await payload.findGlobal({ slug: 'roleplay' });
-      canSeePlayers = Boolean(
+      publicPlayerPositions = Boolean(
         (rp as { publicPlayerPositions?: boolean }).publicPlayerPositions,
       );
+      if (publicPlayerPositions) canSeePlayers = true;
     } catch { /* fallback: keep false */ }
   }
 
@@ -73,6 +78,7 @@ export async function GET(request: NextRequest) {
     unitColor: string | null;
     unitName: string | null;
     callsign: string | null;
+    trail: Array<{ x: number; z: number; t: number }>;
   };
   let players: ResolvedPlayer[] = [];
   if (canSeePlayers && state.players.length > 0) {
@@ -136,6 +142,7 @@ export async function GET(request: NextRequest) {
         unitColor: info?.unitColor ?? null,
         unitName: info?.unitName ?? null,
         callsign: info?.callsign ?? null,
+        trail: getTrail(p.biId),
       };
     });
   }
@@ -149,5 +156,7 @@ export async function GET(request: NextRequest) {
     offsetX,
     offsetZ,
     isAdmin,
+    publicPlayerPositions,
+    sosAlerts: getActiveSOSAlerts(),
   });
 }

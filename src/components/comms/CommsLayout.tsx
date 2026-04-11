@@ -109,7 +109,7 @@ function CommsLayoutInner({ character, isAdmin }: { character: ActiveCharacter; 
 	const [showMembers, setShowMembers] = useState(false);
 	const [profileCharacterId, setProfileCharacterId] = useState<number | null>(null);
 	const [previewIntelId, setPreviewIntelId] = useState<number | null>(null);
-	const [positionPreview, setPositionPreview] = useState<{ x: number; z: number; label?: string } | null>(null);
+	const [positionPreview, setPositionPreview] = useState<{ x: number; z: number; label?: string; source?: string } | null>(null);
 	const [mobileShowMain, setMobileShowMain] = useState(false);
 	const [replyingTo, setReplyingTo] = useState<CommsMessage | null>(null);
 	const [channelMembers, setChannelMembers] = useState<

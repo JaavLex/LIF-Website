@@ -8,6 +8,7 @@ import {
 	HelpCircle,
 	Paperclip,
 	Send,
+	Siren,
 } from 'lucide-react';
 import { AttachmentPicker } from './AttachmentPickers';
 import type { CommsMessage } from './CommsLayout';
@@ -48,6 +49,36 @@ export function MessageComposer({
 	const [attachments, setAttachments] = useState<any[]>([]);
 	const [showPicker, setShowPicker] = useState(false);
 	const [showHints, setShowHints] = useState(false);
+	const [sosState, setSosState] = useState<'idle' | 'confirming' | 'sending' | 'error'>(
+		'idle',
+	);
+	const [sosError, setSosError] = useState<string | null>(null);
+
+	async function triggerSOS() {
+		setSosState('sending');
+		setSosError(null);
+		try {
+			const res = await fetch('/api/roleplay/map/sos', { method: 'POST' });
+			const data = await res.json().catch(() => ({}));
+			if (!res.ok) {
+				setSosError(data?.message || 'Signal échoué');
+				setSosState('error');
+				setTimeout(() => {
+					setSosState('idle');
+					setSosError(null);
+				}, 3500);
+				return;
+			}
+			setSosState('idle');
+		} catch {
+			setSosError('Erreur réseau');
+			setSosState('error');
+			setTimeout(() => {
+				setSosState('idle');
+				setSosError(null);
+			}, 3500);
+		}
+	}
 	const gm = useGmMode();
 	const [showPuppetPicker, setShowPuppetPicker] = useState(false);
 	const activePuppetId = gm.overrideCharacterId ?? gm.defaultCharacterId;
@@ -430,6 +461,37 @@ export function MessageComposer({
 				>
 					<Paperclip size={14} />
 					<span>Pièce jointe</span>
+				</button>
+				<button
+					type="button"
+					className={`comms-sos-btn ${sosState === 'confirming' ? 'comms-sos-btn-confirm' : ''} ${sosState === 'error' ? 'comms-sos-btn-error' : ''}`}
+					onClick={() => {
+						if (sosState === 'confirming') triggerSOS();
+						else if (sosState === 'idle') {
+							setSosState('confirming');
+							setTimeout(() => {
+								setSosState(s => (s === 'confirming' ? 'idle' : s));
+							}, 4000);
+						}
+					}}
+					disabled={disabled || sosState === 'sending'}
+					title={
+						sosError ||
+						(sosState === 'confirming'
+							? 'Cliquez à nouveau pour confirmer le SOS'
+							: 'Déclencher un signal de détresse SOS')
+					}
+				>
+					<Siren size={14} />
+					<span>
+						{sosState === 'sending'
+							? 'ÉMISSION…'
+							: sosState === 'confirming'
+								? 'CONFIRMER'
+								: sosState === 'error'
+									? sosError || 'ÉCHEC'
+									: 'SOS'}
+					</span>
 				</button>
 				<label className="comms-composer-anon-label">
 					<input

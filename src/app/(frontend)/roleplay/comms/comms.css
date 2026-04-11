@@ -2293,3 +2293,61 @@
 .comms-composer-puppet-chip:hover {
 	background: rgba(255, 176, 32, 0.22);
 }
+
+/* ─── SOS distress button ─── */
+
+.comms-sos-btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.35rem;
+	background: rgba(255, 30, 30, 0.08);
+	border: 1px solid rgba(255, 60, 60, 0.55);
+	color: #ff7a7a;
+	padding: 0.35rem 0.65rem;
+	border-radius: 3px;
+	font-size: 0.68rem;
+	font-family: 'Courier New', monospace;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+	cursor: pointer;
+	transition: all 0.15s ease;
+	margin-right: 0.4rem;
+}
+
+.comms-sos-btn:hover:not(:disabled) {
+	background: rgba(255, 30, 30, 0.2);
+	border-color: #ff3030;
+	color: #ffb0b0;
+	box-shadow: 0 0 10px rgba(255, 30, 30, 0.45);
+}
+
+.comms-sos-btn:disabled {
+	opacity: 0.55;
+	cursor: not-allowed;
+}
+
+.comms-sos-btn-confirm {
+	background: #ff2020 !important;
+	color: #fff !important;
+	border-color: #fff !important;
+	animation: comms-sos-confirm-flash 0.6s ease-in-out infinite;
+	box-shadow: 0 0 14px rgba(255, 20, 20, 0.8);
+}
+
+@keyframes comms-sos-confirm-flash {
+	0%, 100% {
+		background: #ff2020;
+		box-shadow: 0 0 14px rgba(255, 20, 20, 0.8);
+	}
+	50% {
+		background: #b20000;
+		box-shadow: 0 0 22px rgba(255, 20, 20, 1);
+	}
+}
+
+.comms-sos-btn-error {
+	background: rgba(60, 0, 0, 0.6) !important;
+	color: #ffbbbb !important;
+	border-color: #aa3333 !important;
+}
