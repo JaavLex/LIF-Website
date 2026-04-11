@@ -20,15 +20,22 @@ const INTEL_CLASS_COLORS: Record<string, string> = {
 };
 
 function makePinIcon(variant: 'shared' | 'gps' | 'sos') {
-	const fill =
-		variant === 'sos' ? '#ff2b2b' : variant === 'gps' ? '#7aff9a' : '#ff4444';
-	const core = variant === 'sos' ? '#200' : variant === 'gps' ? '#052010' : '#1a0505';
+	if (variant === 'sos') {
+		// Match the tactical map's pulsing SOS alert so the preview feels like
+		// the same object, not a static pin.
+		return L.divIcon({
+			className: 'sos-marker-icon',
+			html: `<div class="sos-pulse"><span class="sos-pulse-ring"></span><span class="sos-pulse-ring sos-pulse-ring-2"></span><span class="sos-pulse-core">!</span></div>`,
+			iconSize: [44, 44],
+			iconAnchor: [22, 22],
+		});
+	}
+	const fill = variant === 'gps' ? '#7aff9a' : '#ff4444';
+	const core = variant === 'gps' ? '#052010' : '#1a0505';
 	const cls =
-		variant === 'sos'
-			? 'map-pin-icon map-pin-sos'
-			: variant === 'gps'
-				? 'map-pin-icon map-pin-gps'
-				: 'map-pin-icon';
+		variant === 'gps'
+			? 'map-pin-icon map-pin-gps'
+			: 'map-pin-icon';
 	return L.divIcon({
 		className: cls,
 		html: `<svg viewBox="0 0 24 36" width="28" height="42" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -269,7 +276,22 @@ export default function PositionPreviewModal({ coords, onClose }: PositionPrevie
 						letterSpacing: variant === 'sos' ? '0.15em' : undefined,
 					}}
 				>
-					{title}: {coords.label || `${formatGrid(coords.x)} / ${formatGrid(coords.z)}`}
+					{title}
+					{coords.label && coords.label !== `${formatGrid(coords.x)} / ${formatGrid(coords.z)}`
+						? ` — ${coords.label}`
+						: ''}
+					<span
+						style={{
+							marginLeft: '0.6rem',
+							opacity: 0.75,
+							fontSize: '0.72rem',
+							letterSpacing: '0.08em',
+							fontFamily: "'Courier New', monospace",
+							color: variant === 'sos' ? '#ffbdbd' : undefined,
+						}}
+					>
+						{formatGrid(coords.x)} / {formatGrid(coords.z)}
+					</span>
 				</h2>
 				<div
 					style={{

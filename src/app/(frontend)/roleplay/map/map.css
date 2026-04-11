@@ -819,106 +819,156 @@
   }
 }
 
-/* ---- SOS pulsing alert marker ---- */
+/* ---- Operator roster popover ---- */
 
-.sos-marker-icon {
-  background: transparent !important;
-  border: none !important;
-}
-
-.sos-pulse {
+.map-operator-count-wrap {
   position: relative;
-  width: 44px;
-  height: 44px;
-  display: grid;
-  place-items: center;
-  pointer-events: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
 }
 
-.sos-pulse-ring {
+.map-operator-count-btn {
+  background: transparent;
+  border: none;
+  border-bottom: 1px dashed rgba(0, 255, 65, 0.5);
+  color: inherit;
+  font: inherit;
+  padding: 0 0 1px 0;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.map-operator-count-btn:hover {
+  color: #c4ffcf;
+  border-bottom-color: #00ff41;
+  text-shadow: 0 0 6px rgba(0, 255, 65, 0.45);
+}
+
+.map-operator-roster {
   position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  border: 2px solid #ff2b2b;
-  background: rgba(255, 30, 30, 0.18);
-  animation: sos-ring-pulse 1.6s ease-out infinite;
-  transform-origin: center;
-}
-
-.sos-pulse-ring-2 {
-  animation-delay: 0.8s;
-}
-
-@keyframes sos-ring-pulse {
-  0% {
-    transform: scale(0.35);
-    opacity: 1;
-    border-color: #ff5757;
-  }
-  70% {
-    opacity: 0.15;
-  }
-  100% {
-    transform: scale(1.9);
-    opacity: 0;
-    border-color: #ff2b2b;
-  }
-}
-
-.sos-pulse-core {
-  position: relative;
-  z-index: 2;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: radial-gradient(circle, #ff5757 0%, #b30000 80%);
-  color: #fff;
-  font-family: 'Georgia', serif;
-  font-weight: 900;
-  font-size: 14px;
-  display: grid;
-  place-items: center;
+  top: calc(100% + 0.5rem);
+  left: 0;
+  z-index: 1500;
+  min-width: 280px;
+  max-width: 360px;
+  max-height: 60vh;
+  overflow-y: auto;
+  background: rgba(4, 10, 4, 0.97);
+  border: 1px solid rgba(0, 255, 65, 0.45);
   box-shadow:
-    0 0 10px rgba(255, 60, 60, 0.9),
-    0 0 22px rgba(255, 0, 0, 0.55),
-    inset 0 0 6px rgba(0, 0, 0, 0.45);
-  animation: sos-core-flash 1s ease-in-out infinite;
-}
-
-@keyframes sos-core-flash {
-  0%, 100% { filter: brightness(1); }
-  50% { filter: brightness(1.6); }
-}
-
-.leaflet-tooltip.sos-marker-tooltip {
-  background: rgba(20, 0, 0, 0.92);
-  border: 1px solid #ff2b2b;
-  border-radius: 2px;
-  padding: 0.3rem 0.55rem;
-  box-shadow: 0 0 14px rgba(255, 30, 30, 0.55);
-  color: #ffdada;
-}
-
-.leaflet-tooltip.sos-marker-tooltip::before {
-  border-top-color: #ff2b2b !important;
-}
-
-.sos-tip-label {
-  font-family: 'Georgia', serif;
-  font-size: 0.6rem;
-  letter-spacing: 0.22em;
-  color: #ff5757;
-  text-transform: uppercase;
-  font-weight: 900;
-}
-
-.sos-tip-name {
+    0 10px 30px rgba(0, 0, 0, 0.75),
+    0 0 18px rgba(0, 255, 65, 0.12);
   font-family: 'Courier New', monospace;
-  font-size: 0.75rem;
-  color: #fff;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  margin-top: 2px;
+  color: #c4ffcf;
+  animation: op-roster-in 0.18s ease-out;
 }
 
-/* City label tooltip styles live in roleplay.css so they're available on both /roleplay/map and /roleplay/comms */
+@keyframes op-roster-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.map-operator-roster-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.45rem 0.7rem;
+  border-bottom: 1px solid rgba(0, 255, 65, 0.25);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: #7aff9a;
+  background: rgba(0, 255, 65, 0.04);
+}
+
+.map-operator-roster-close {
+  background: transparent;
+  border: 1px solid rgba(0, 255, 65, 0.3);
+  color: #7aff9a;
+  padding: 0.05rem 0.35rem;
+  font-size: 0.7rem;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.map-operator-roster-close:hover {
+  background: rgba(0, 255, 65, 0.12);
+}
+
+.map-operator-roster-list {
+  list-style: none;
+  margin: 0;
+  padding: 0.3rem 0;
+}
+
+.map-operator-roster-item {
+  display: grid;
+  grid-template-columns: 10px 1fr auto;
+  grid-template-rows: auto auto;
+  column-gap: 0.5rem;
+  row-gap: 0.1rem;
+  padding: 0.4rem 0.7rem;
+  border-bottom: 1px dashed rgba(0, 255, 65, 0.12);
+  font-size: 0.74rem;
+  align-items: start;
+}
+
+.map-operator-roster-item:last-child {
+  border-bottom: none;
+}
+
+.map-operator-roster-dot {
+  grid-row: 1 / span 2;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-top: 5px;
+  box-shadow: 0 0 6px currentColor;
+}
+
+.map-operator-roster-name {
+  grid-column: 2;
+  grid-row: 1;
+  color: #eafff0;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.map-operator-roster-link {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px dotted rgba(0, 255, 65, 0.35);
+  transition: all 0.15s ease;
+}
+
+.map-operator-roster-link:hover {
+  color: #7aff9a;
+  border-bottom-color: #7aff9a;
+}
+
+.map-operator-roster-callsign {
+  grid-column: 3;
+  grid-row: 1;
+  color: #9ae0b0;
+  font-size: 0.68rem;
+  font-style: italic;
+  white-space: nowrap;
+}
+
+.map-operator-roster-unit {
+  grid-column: 2 / -1;
+  grid-row: 2;
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  opacity: 0.85;
+}
+
+/* SOS marker + city label tooltip styles live in roleplay.css so they're available on both /roleplay/map and /roleplay/comms */

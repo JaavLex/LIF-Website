@@ -2203,6 +2203,7 @@
 /* Per-button accent variants */
 .rp-nav-btn--lore  { --rp-nav-accent: #c9a040; }
 .rp-nav-btn--comms { --rp-nav-accent: var(--primary); }
+.rp-nav-btn--map   { --rp-nav-accent: #5cd6a0; }
 .rp-nav-btn--mod   { --rp-nav-accent: #d93030; }
 
 @media (max-width: 768px) {
@@ -9977,5 +9978,106 @@
 }
 .leaflet-tooltip.city-label-tooltip::before {
   display: none;
+}
+
+/* ─── SOS pulsing alert marker (shared /roleplay/map + /roleplay/comms preview) ─── */
+.sos-marker-icon {
+  background: transparent !important;
+  border: none !important;
+}
+
+.sos-pulse {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  pointer-events: auto;
+}
+
+.sos-pulse-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid #ff2b2b;
+  background: rgba(255, 30, 30, 0.18);
+  animation: sos-ring-pulse 1.6s ease-out infinite;
+  transform-origin: center;
+}
+
+.sos-pulse-ring-2 {
+  animation-delay: 0.8s;
+}
+
+@keyframes sos-ring-pulse {
+  0% {
+    transform: scale(0.35);
+    opacity: 1;
+    border-color: #ff5757;
+  }
+  70% {
+    opacity: 0.15;
+  }
+  100% {
+    transform: scale(1.9);
+    opacity: 0;
+    border-color: #ff2b2b;
+  }
+}
+
+.sos-pulse-core {
+  position: relative;
+  z-index: 2;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #ff5757 0%, #b30000 80%);
+  color: #fff;
+  font-family: 'Georgia', serif;
+  font-weight: 900;
+  font-size: 14px;
+  display: grid;
+  place-items: center;
+  box-shadow:
+    0 0 10px rgba(255, 60, 60, 0.9),
+    0 0 22px rgba(255, 0, 0, 0.55),
+    inset 0 0 6px rgba(0, 0, 0, 0.45);
+  animation: sos-core-flash 1s ease-in-out infinite;
+}
+
+@keyframes sos-core-flash {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.6); }
+}
+
+.leaflet-tooltip.sos-marker-tooltip {
+  background: rgba(20, 0, 0, 0.92);
+  border: 1px solid #ff2b2b;
+  border-radius: 2px;
+  padding: 0.3rem 0.55rem;
+  box-shadow: 0 0 14px rgba(255, 30, 30, 0.55);
+  color: #ffdada;
+}
+
+.leaflet-tooltip.sos-marker-tooltip::before {
+  border-top-color: #ff2b2b !important;
+}
+
+.sos-tip-label {
+  font-family: 'Georgia', serif;
+  font-size: 0.6rem;
+  letter-spacing: 0.22em;
+  color: #ff5757;
+  text-transform: uppercase;
+  font-weight: 900;
+}
+
+.sos-tip-name {
+  font-family: 'Courier New', monospace;
+  font-size: 0.75rem;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-top: 2px;
 }
 

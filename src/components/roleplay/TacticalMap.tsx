@@ -523,6 +523,8 @@ export default function TacticalMap() {
   // Admin: live toggle for the publicPlayerPositions global
   const [publicPositions, setPublicPositions] = useState(false);
   const [togglingPublic, setTogglingPublic] = useState(false);
+  // Operator roster popover (click on the header count to open)
+  const [showOperatorList, setShowOperatorList] = useState(false);
 
   // Initialize Leaflet map
   useEffect(() => {
@@ -1194,13 +1196,77 @@ export default function TacticalMap() {
           {state?.terrain && (
             <span>Terrain: {state.terrain.name}</span>
           )}
-          <span>
+          <span className="map-operator-count-wrap">
             <span className={isStale ? 'stale-dot' : 'live-dot'} />
-            {isLive
-              ? isAdmin
-                ? `${state?.players.length || 0} opérateur${(state?.players.length || 0) !== 1 ? 's' : ''}`
-                : 'En ligne'
-              : 'Hors ligne'}
+            {isLive ? (
+              isAdmin || (publicPositions && (state?.players.length || 0) > 0) ? (
+                <button
+                  type="button"
+                  className="map-operator-count-btn"
+                  onClick={() => setShowOperatorList(v => !v)}
+                  title="Afficher la liste des opérateurs en ligne"
+                >
+                  {state?.players.length || 0} opérateur{(state?.players.length || 0) !== 1 ? 's' : ''}
+                </button>
+              ) : (
+                <span>En ligne</span>
+              )
+            ) : (
+              <span>Hors ligne</span>
+            )}
+            {showOperatorList && (state?.players.length || 0) > 0 && (
+              <div className="map-operator-roster" onClick={e => e.stopPropagation()}>
+                <div className="map-operator-roster-head">
+                  <span>Opérateurs en ligne</span>
+                  <button
+                    type="button"
+                    className="map-operator-roster-close"
+                    onClick={() => setShowOperatorList(false)}
+                    aria-label="Fermer"
+                  >
+                    ✕
+                  </button>
+                </div>
+                <ul className="map-operator-roster-list">
+                  {(state?.players || [])
+                    .slice()
+                    .sort((a, b) => (a.name || '').localeCompare(b.name || ''))
+                    .map(p => (
+                      <li key={p.biId} className="map-operator-roster-item">
+                        <span
+                          className="map-operator-roster-dot"
+                          style={{ background: p.unitColor || '#7aff7a' }}
+                        />
+                        <span className="map-operator-roster-name">
+                          {p.characterId ? (
+                            <a
+                              href={`/roleplay/personnage/${p.characterId}`}
+                              className="map-operator-roster-link"
+                            >
+                              {p.name}
+                            </a>
+                          ) : (
+                            p.name
+                          )}
+                        </span>
+                        {p.callsign && (
+                          <span className="map-operator-roster-callsign">
+                            « {p.callsign} »
+                          </span>
+                        )}
+                        {p.unitName && (
+                          <span
+                            className="map-operator-roster-unit"
+                            style={{ color: p.unitColor || '#9aa' }}
+                          >
+                            {p.unitName}
+                          </span>
+                        )}
+                      </li>
+                    ))}
+                </ul>
+              </div>
+            )}
           </span>
           {timeSinceSync !== null && (
             <span>

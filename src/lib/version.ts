@@ -6,9 +6,21 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.11.1',
+  version: '1.12.0',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.12.0',
+      date: '2026-04-11',
+      changes: [
+        'ROLEPLAY — Nouveau bouton « Carte tactique » dans le cluster de navigation du /roleplay.',
+        'CARTE — Le compteur d\'opérateurs dans l\'entête est maintenant cliquable et ouvre une liste déroulante avec noms, indicatifs, unités et liens vers les fiches personnages.',
+        'COMMS — L\'aperçu de position affiche désormais les coordonnées dans le titre (en plus du label), même pour les signaux SOS.',
+        'COMMS — Le marqueur SOS dans l\'aperçu utilise maintenant la même animation pulsante que sur la carte tactique.',
+        'COMMS — Les cartes de pièces jointes de position affichent systématiquement les coordonnées brutes à côté du label.',
+        'COMMS — Les styles SOS sont maintenant chargés sur /comms (auparavant uniquement sur /map, le marqueur n\'apparaissait pas dans l\'aperçu).',
+      ],
+    },
     {
       version: '1.11.1',
       date: '2026-04-11',

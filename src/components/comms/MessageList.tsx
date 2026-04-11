@@ -255,8 +255,17 @@ function AttachmentCard({
 			>
 				<Icon size={14} style={{ color: accent, flexShrink: 0 }} />
 				<span style={{ color: accent, fontWeight: isSos ? 900 : undefined }}>{label}</span>
-				<span style={{ color: 'var(--text)' }}>
-					{att.meta?.label || `${att.meta?.x ?? '?'} / ${att.meta?.z ?? '?'}`}
+				{att.meta?.label && att.meta.label !== `${att.meta?.x ?? '?'} / ${att.meta?.z ?? '?'}` && (
+					<span style={{ color: 'var(--text)' }}>{att.meta.label}</span>
+				)}
+				<span
+					style={{
+						color: 'var(--muted)',
+						fontFamily: "'Courier New', monospace",
+						fontSize: '0.72rem',
+					}}
+				>
+					{att.meta?.x ?? '?'} / {att.meta?.z ?? '?'}
 				</span>
 				<span
 					style={{

@@ -2,7 +2,7 @@ import { getPayloadClient } from '@/lib/payload';
 import { serialize } from '@/lib/constants';
 import Link from 'next/link';
 import Image from 'next/image';
-import { BookOpen, Scale } from 'lucide-react';
+import { BookOpen, Scale, Map as MapIcon } from 'lucide-react';
 import { cookies } from 'next/headers';
 import { PersonnelFilters } from '@/components/roleplay/PersonnelFilters';
 import { SessionBar } from '@/components/roleplay/SessionBar';
@@ -233,6 +233,19 @@ export default async function RoleplayPage({
 					</Link>
 				)}
 				<CommsNavButton />
+				<Link href="/roleplay/map" className="rp-nav-btn rp-nav-btn--map">
+					<span className="rp-nav-btn__bar" aria-hidden="true" />
+					<span className="rp-nav-btn__icon" aria-hidden="true">
+						<MapIcon size={18} strokeWidth={2.2} />
+					</span>
+					<span className="rp-nav-btn__text">
+						<span className="rp-nav-btn__code">CMD-04 // TACTIQUE</span>
+						<span className="rp-nav-btn__label">Carte tactique</span>
+					</span>
+					<span className="rp-nav-btn__arrow" aria-hidden="true">
+						→
+					</span>
+				</Link>
 				{isAdmin && (
 					<Link href="/moderation" className="rp-nav-btn rp-nav-btn--mod">
 						<span className="rp-nav-btn__bar" aria-hidden="true" />
