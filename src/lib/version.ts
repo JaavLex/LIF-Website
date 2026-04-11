@@ -6,14 +6,21 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.8.5',
+  version: '1.8.6',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.8.6',
+      date: '2026-04-11',
+      changes: [
+        'TRÉSORERIE — Correction erreur d\'hydratation React #418 (retour à useEffect, suppression du placeholder).',
+      ],
+    },
     {
       version: '1.8.5',
       date: '2026-04-11',
       changes: [
-        'TRÉSORERIE — Diagnostic renforcé du graphique : trace complète du fetch, useLayoutEffect pour garantir l\'attache des refs avant redraw.',
+        'TRÉSORERIE — Diagnostic renforcé du graphique : trace complète du fetch.',
       ],
     },
     {

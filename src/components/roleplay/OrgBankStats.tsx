@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useLayoutEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 
 interface OrgStats {
 	totalMoney: number;
@@ -190,8 +190,7 @@ export default function OrgBankStats({ isAdmin }: { isAdmin?: boolean }) {
 		}
 	}, [stats]);
 
-	useLayoutEffect(() => {
-		// useLayoutEffect fires synchronously after DOM commit, so refs are attached.
+	useEffect(() => {
 		// rAF defers one frame so flex/grid parents finalize width.
 		const raf = requestAnimationFrame(drawGraph);
 		window.addEventListener('resize', drawGraph);
@@ -207,18 +206,7 @@ export default function OrgBankStats({ isAdmin }: { isAdmin?: boolean }) {
 		};
 	}, [drawGraph]);
 
-	if (!stats) {
-		return (
-			<div className="org-stats-section">
-				<div className="org-stats-header">
-					<div className="org-stats-big-number">
-						<span className="org-stats-currency">$</span>
-						<span className="org-stats-amount">…</span>
-					</div>
-				</div>
-			</div>
-		);
-	}
+	if (!stats) return null;
 
 	const formatted = stats.totalMoney.toLocaleString('fr-FR');
 
