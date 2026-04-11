@@ -6,9 +6,16 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.8.2',
+  version: '1.8.3',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.8.3',
+      date: '2026-04-11',
+      changes: [
+        'TRÉSORERIE — Correctif du graphique qui ne s\'affichait pas pour certains utilisateurs (cache navigateur). Les erreurs de chargement sont désormais visibles dans la console.',
+      ],
+    },
     {
       version: '1.8.2',
       date: '2026-04-11',

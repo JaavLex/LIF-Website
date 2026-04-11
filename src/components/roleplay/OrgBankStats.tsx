@@ -15,10 +15,13 @@ export default function OrgBankStats({ isAdmin }: { isAdmin?: boolean }) {
 	const containerRef = useRef<HTMLDivElement>(null);
 
 	useEffect(() => {
-		fetch('/api/roleplay/org-stats')
-			.then(r => r.json())
+		fetch('/api/roleplay/org-stats', { cache: 'no-store' })
+			.then(r => {
+				if (!r.ok) throw new Error(`org-stats ${r.status}`);
+				return r.json();
+			})
 			.then(setStats)
-			.catch(() => {});
+			.catch(err => console.error('[OrgBankStats] fetch failed', err));
 	}, []);
 
 	const drawGraph = useCallback(() => {

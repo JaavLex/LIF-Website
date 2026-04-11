@@ -106,14 +106,24 @@ export async function GET() {
 			}
 		}
 
-		return NextResponse.json({
-			totalMoney,
-			memberCount: linkedCharacterIds.size,
-			history,
-		});
+		return NextResponse.json(
+			{
+				totalMoney,
+				memberCount: linkedCharacterIds.size,
+				history,
+			},
+			{
+				headers: {
+					'Cache-Control': 'no-store, no-cache, must-revalidate',
+				},
+			},
+		);
 	} catch (error) {
 		console.error('Org stats error:', error);
-		return NextResponse.json({ totalMoney: 0, memberCount: 0, history: [] });
+		return NextResponse.json(
+			{ totalMoney: 0, memberCount: 0, history: [] },
+			{ headers: { 'Cache-Control': 'no-store' } },
+		);
 	}
 }
 
