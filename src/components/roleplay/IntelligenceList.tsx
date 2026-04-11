@@ -15,6 +15,8 @@ import {
 	Flag,
 	UserCircle2,
 	Loader2,
+	FolderOpen,
+	Map as MapIcon,
 } from 'lucide-react';
 import { RichTextRenderer } from './RichTextRenderer';
 import { INTELLIGENCE_TYPE_LABELS, textToLexical } from '@/lib/constants';
@@ -854,12 +856,33 @@ export function IntelligenceList({
 									<div className="intel-card-actions">
 										<Link
 											href={`/roleplay/renseignement/${report.id}`}
-											className="session-btn"
-											style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem' }}
+											className="intel-action intel-action--open"
 											onClick={e => e.stopPropagation()}
 										>
-											📄 Ouvrir
+											<span className="intel-action-icon" aria-hidden>
+												<FolderOpen size={14} strokeWidth={1.9} />
+											</span>
+											<span className="intel-action-label">Ouvrir</span>
+											<span className="intel-action-code" aria-hidden>01</span>
 										</Link>
+										{(() => {
+											const m = report.coordinates?.match(/^(\d{3,5})\s*\/\s*(\d{3,5})$/);
+											if (!m) return null;
+											const href = `/roleplay/map?focus=${m[1]},${m[2]}&label=${encodeURIComponent(report.title)}`;
+											return (
+												<Link
+													href={href}
+													className="intel-action intel-action--map"
+													onClick={e => e.stopPropagation()}
+												>
+													<span className="intel-action-icon" aria-hidden>
+														<MapIcon size={14} strokeWidth={1.9} />
+													</span>
+													<span className="intel-action-label">Voir sur la carte</span>
+													<span className="intel-action-code" aria-hidden>04</span>
+												</Link>
+											);
+										})()}
 										{canEditReport(report) && editingId !== report.id && (
 											<button
 												type="button"
@@ -867,10 +890,13 @@ export function IntelligenceList({
 													e.stopPropagation();
 													startEditing(report);
 												}}
-												className="session-btn"
-												style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem' }}
+												className="intel-action intel-action--edit"
 											>
-												✏️ Modifier
+												<span className="intel-action-icon" aria-hidden>
+													<Edit2 size={13} strokeWidth={1.9} />
+												</span>
+												<span className="intel-action-label">Modifier</span>
+												<span className="intel-action-code" aria-hidden>02</span>
 											</button>
 										)}
 										{isAdmin && (
@@ -881,15 +907,19 @@ export function IntelligenceList({
 													handleDelete(report.id);
 												}}
 												disabled={deletingId === report.id}
-												className="session-btn"
-												style={{
-													padding: '0.35rem 0.75rem',
-													fontSize: '0.8rem',
-													color: 'var(--danger)',
-													borderColor: 'var(--danger)',
-												}}
+												className="intel-action intel-action--delete"
 											>
-												{deletingId === report.id ? '⏳' : '🗑️ Supprimer'}
+												<span className="intel-action-icon" aria-hidden>
+													{deletingId === report.id ? (
+														<Loader2 size={13} strokeWidth={2} className="intel-action-spin" />
+													) : (
+														<Trash2 size={13} strokeWidth={1.9} />
+													)}
+												</span>
+												<span className="intel-action-label">
+													{deletingId === report.id ? 'Suppression…' : 'Supprimer'}
+												</span>
+												<span className="intel-action-code" aria-hidden>!!</span>
 											</button>
 										)}
 									</div>

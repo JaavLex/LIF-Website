@@ -6,13 +6,15 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.13.1',
+  version: '1.13.2',
   creator: 'JaavLex',
   changelog: [
     {
-      version: '1.13.1',
+      version: '1.13.2',
       date: '2026-04-11',
       changes: [
+        'RENS — Refonte des boutons d\'action sur les aperçus (Ouvrir / Modifier / Supprimer) : design monospace avec icônes Lucide, codes CMD numérotés, accents colorés par type d\'action et micro-animations au survol.',
+        'RENS — Nouveau bouton « Voir sur la carte » directement sur les cartes d\'aperçu dans /roleplay (en plus de la page détail), visible uniquement quand les coordonnées sont au bon format.',
         'CARTE — Calibration : champ unique « Coordonnées Reforger » acceptant le format zéro-paddé « 03500, 02100 » (avec virgule, slash ou espace), cohérent avec le format affiché partout ailleurs sur la carte.',
       ],
     },

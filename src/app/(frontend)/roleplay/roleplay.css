@@ -6169,8 +6169,150 @@
 .intel-card-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-top: 0.25rem;
+  gap: 0.55rem;
+  margin-top: 0.4rem;
+  padding-top: 0.65rem;
+  border-top: 1px dashed color-mix(in srgb, var(--intel-color) 30%, transparent);
+}
+
+/* ─── Intel action buttons (open / map / edit / delete) ─────── */
+.intel-action {
+  --ia-accent: var(--intel-color, #d8b46a);
+  --ia-bg: rgba(0, 0, 0, 0.55);
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.38rem 0.7rem 0.38rem 0.55rem;
+  background: var(--ia-bg);
+  border: 1px solid color-mix(in srgb, var(--ia-accent) 40%, transparent);
+  border-left: 3px solid var(--ia-accent);
+  color: var(--foreground);
+  font-family: 'Courier New', monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+  overflow: hidden;
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease,
+    color 0.2s ease;
+}
+
+.intel-action::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    110deg,
+    color-mix(in srgb, var(--ia-accent) 12%, transparent) 0%,
+    transparent 45%,
+    transparent 100%
+  );
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+
+.intel-action:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: var(--ia-accent);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--ia-accent) 40%, transparent),
+    0 10px 22px -16px color-mix(in srgb, var(--ia-accent) 80%, transparent);
+  color: color-mix(in srgb, var(--ia-accent) 25%, var(--foreground));
+}
+
+.intel-action:hover::before {
+  opacity: 1;
+}
+
+.intel-action:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.intel-action:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.intel-action-icon {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  color: var(--ia-accent);
+  background: rgba(4, 8, 4, 0.6);
+  border: 1px solid color-mix(in srgb, var(--ia-accent) 35%, transparent);
+  flex-shrink: 0;
+  transition: background 0.2s ease, transform 0.22s ease;
+}
+
+.intel-action:hover .intel-action-icon {
+  background: color-mix(in srgb, var(--ia-accent) 18%, rgba(4, 8, 4, 0.6));
+}
+
+.intel-action--open:hover .intel-action-icon { transform: rotate(-6deg); }
+.intel-action--map:hover .intel-action-icon { transform: scale(1.08); }
+.intel-action--edit:hover .intel-action-icon { transform: translate(-1px, -1px); }
+.intel-action--delete:hover .intel-action-icon { transform: rotate(6deg); }
+
+.intel-action-label {
+  position: relative;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.intel-action-code {
+  position: relative;
+  padding: 0.08rem 0.28rem;
+  font-size: 0.56rem;
+  letter-spacing: 0.12em;
+  color: color-mix(in srgb, var(--ia-accent) 75%, var(--muted));
+  background: rgba(4, 8, 4, 0.55);
+  border: 1px dashed color-mix(in srgb, var(--ia-accent) 30%, transparent);
+  opacity: 0.8;
+}
+
+/* Open — neutral intel color */
+.intel-action--open {
+  --ia-accent: var(--intel-color, #d8b46a);
+}
+
+/* Map — phosphor green, stands out as the "go somewhere" CTA */
+.intel-action--map {
+  --ia-accent: #5cd6a0;
+}
+.intel-action--map .intel-action-code {
+  color: #5cd6a0;
+}
+
+/* Edit — soft amber */
+.intel-action--edit {
+  --ia-accent: #f5b94a;
+}
+
+/* Delete — danger red */
+.intel-action--delete {
+  --ia-accent: #ff5757;
+}
+.intel-action--delete:hover:not(:disabled) {
+  box-shadow:
+    0 0 0 1px rgba(255, 87, 87, 0.55),
+    0 10px 24px -16px rgba(255, 87, 87, 0.7);
+}
+
+.intel-action-spin {
+  animation: intel-action-spin 0.9s linear infinite;
+}
+@keyframes intel-action-spin {
+  to { transform: rotate(360deg); }
 }
 
 @media (max-width: 600px) {
