@@ -24,23 +24,27 @@ interface OrgStats {
 export default function OrgBankStats({ isAdmin }: { isAdmin?: boolean }) {
 	const [stats, setStats] = useState<OrgStats | null>(null);
 	const [resetting, setResetting] = useState(false);
+	const [refreshing, setRefreshing] = useState(false);
 	const canvasRef = useRef<HTMLCanvasElement>(null);
 	const containerRef = useRef<HTMLDivElement>(null);
 
-	useEffect(() => {
-		console.log('[OrgBankStats] mount, fetching stats');
-		fetch('/api/roleplay/org-stats', { cache: 'no-store' })
-			.then(r => {
-				console.log('[OrgBankStats] response', r.status, r.ok);
-				if (!r.ok) throw new Error(`org-stats ${r.status}`);
-				return r.json();
-			})
-			.then(data => {
-				console.log('[OrgBankStats] data', data);
-				setStats(data);
-			})
-			.catch(err => console.error('[OrgBankStats] fetch failed', err));
+	const loadStats = useCallback(async () => {
+		setRefreshing(true);
+		try {
+			const r = await fetch('/api/roleplay/org-stats', { cache: 'no-store' });
+			if (!r.ok) throw new Error(`org-stats ${r.status}`);
+			const data = await r.json();
+			setStats(data);
+		} catch (err) {
+			console.error('[OrgBankStats] fetch failed', err);
+		} finally {
+			setRefreshing(false);
+		}
 	}, []);
+
+	useEffect(() => {
+		loadStats();
+	}, [loadStats]);
 
 	const drawGraph = useCallback(() => {
 		const canvas = canvasRef.current;
@@ -262,6 +266,32 @@ export default function OrgBankStats({ isAdmin }: { isAdmin?: boolean }) {
 
 	return (
 		<div className="org-stats-section">
+			<button
+				type="button"
+				className={`org-stats-refresh${refreshing ? ' is-spinning' : ''}`}
+				onClick={loadStats}
+				disabled={refreshing}
+				aria-label="Rafraîchir le graphique"
+				title="Rafraîchir"
+			>
+				<svg
+					width="14"
+					height="14"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					strokeWidth="2.25"
+					strokeLinecap="square"
+					strokeLinejoin="miter"
+					aria-hidden
+				>
+					<path d="M3 12a9 9 0 0 1 15.5-6.3L21 8" />
+					<path d="M21 3v5h-5" />
+					<path d="M21 12a9 9 0 0 1-15.5 6.3L3 16" />
+					<path d="M3 21v-5h5" />
+				</svg>
+				<span className="org-stats-refresh-label">SYNC</span>
+			</button>
 			<div className="org-stats-header">
 				<div className="org-stats-big-number">
 					<span className="org-stats-currency">$</span>

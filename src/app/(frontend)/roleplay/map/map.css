@@ -168,6 +168,11 @@
   overflow: hidden;
   border-left: 1px solid rgba(0, 255, 65, 0.08);
   border-right: 1px solid rgba(0, 255, 65, 0.08);
+  /* Trap Leaflet's internal z-indexes (panes go up to 800, scan-lines ::after
+     goes to 1000) inside this container's own stacking context, so the
+     operator roster popover in .map-header (z-index 10) is not painted under
+     the map. */
+  isolation: isolate;
 }
 
 /* CRT scan lines — subtle, NON-blocking */

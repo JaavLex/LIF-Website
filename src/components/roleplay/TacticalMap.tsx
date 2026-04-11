@@ -1185,7 +1185,7 @@ export default function TacticalMap() {
           <div class="intel-popup-title">${escapeHtml(intel.title)}</div>
           <div class="intel-popup-class" style="color:${classColor}">[${escapeHtml(intel.classification.toUpperCase())}]</div>
           <div class="intel-popup-coords">${formatGrid(intel.x)} / ${formatGrid(intel.z)}</div>
-          <a href="/roleplay/renseignement#intel-${intel.id}" class="intel-popup-link">Voir le rapport</a>
+          <a href="/roleplay/renseignement/${intel.id}" class="intel-popup-link">Voir le rapport</a>
         </div>`,
         { className: 'map-custom-popup' },
       );

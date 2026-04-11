@@ -828,6 +828,22 @@ export function IntelligenceList({
 																		setModalImage(m.file!.url);
 																	}}
 																/>
+															) : m.file.mimeType?.startsWith('video/') ? (
+																<video
+																	src={m.file.url}
+																	controls
+																	preload="metadata"
+																	style={{ width: '100%', maxHeight: '200px', background: '#000' }}
+																	onClick={e => e.stopPropagation()}
+																/>
+															) : m.file.mimeType?.startsWith('audio/') ? (
+																<audio
+																	src={m.file.url}
+																	controls
+																	preload="metadata"
+																	style={{ width: '100%' }}
+																	onClick={e => e.stopPropagation()}
+																/>
 															) : (
 																<a
 																	href={m.file.url}
@@ -1264,7 +1280,7 @@ export function IntelligenceList({
 														onClick={() => {
 															const input = document.createElement('input');
 															input.type = 'file';
-															input.accept = 'image/*,.pdf,.doc,.docx';
+															input.accept = 'image/*,video/*,audio/*,.pdf,.doc,.docx';
 															input.multiple = true;
 															input.onchange = () => {
 																if (input.files) {

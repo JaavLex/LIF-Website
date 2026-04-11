@@ -6,9 +6,21 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.13.7',
+  version: '1.13.8',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.13.8',
+      date: '2026-04-11',
+      changes: [
+        'RENSEIGNEMENTS — Prise en charge des vidéos et fichiers audio à la création/modification d\'un rapport : lecteur intégré dans la carte et sur la page du rapport.',
+        'CARTE — Correction du lien « Voir le rapport » sur les marqueurs de renseignement qui pointait vers une ancre inexistante au lieu de la page détaillée.',
+        'DISCORD — La notification de nouveau rapport de renseignement inclut désormais un lien direct vers le rapport concerné.',
+        'FORMULAIRES — Correction du texte blanc sur fond blanc dans les menus déroulants (option dark forcée pour rester lisible sur le thème de l\'OS).',
+        'CARTE — Correction supplémentaire : la liste des opérateurs en ligne passait toujours sous la carte (les calques Leaflet dépassaient le z-index de l\'entête) ; isolation stricte du stacking context de la carte.',
+        'FINANCES — Bouton de rafraîchissement sur le panneau des revenus contractuels amassés pour recharger le graphique sans recharger la page.',
+      ],
+    },
     {
       version: '1.13.7',
       date: '2026-04-11',

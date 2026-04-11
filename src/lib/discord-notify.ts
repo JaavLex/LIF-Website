@@ -103,7 +103,7 @@ export async function notifyNewIntelligence(report: {
 	await sendToChannel(channelId, [
 		{
 			title: `🔍 Nouveau rapport de renseignement`,
-			description: `**${report.title}**`,
+			description: `**${report.title}**\n\n[Voir le rapport](${SITE_URL}/roleplay/renseignement/${report.id})`,
 			color: 0x8b4513,
 			fields: [
 				{ name: 'Type', value: typeName, inline: true },

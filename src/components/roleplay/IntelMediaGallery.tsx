@@ -25,7 +25,7 @@ export function IntelMediaGallery({ media }: { media: MediaItem[] }) {
 						key={i}
 						style={{
 							border: '1px solid var(--border)',
-							background: 'var(--bg)',
+							background: 'var(--background)',
 							overflow: 'hidden',
 						}}
 					>
@@ -45,6 +45,14 @@ export function IntelMediaGallery({ media }: { media: MediaItem[] }) {
 								unoptimized
 								onClick={() => setModalImage(m.file.url)}
 							/>
+						) : m.file.mimeType?.startsWith('video/') ? (
+							<video
+								controls
+								preload="metadata"
+								style={{ width: '100%', maxHeight: '500px', background: '#000', display: 'block' }}
+							>
+								<source src={m.file.url} type={m.file.mimeType} />
+							</video>
 						) : m.file.mimeType?.startsWith('audio/') ? (
 							<div style={{ padding: '1rem' }}>
 								<audio controls style={{ width: '100%' }} preload="metadata">
