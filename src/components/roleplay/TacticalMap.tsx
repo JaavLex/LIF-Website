@@ -28,7 +28,7 @@ interface MapPlayer {
 interface MapPOI {
   id: number;
   name: string;
-  type: 'bar' | 'shop' | 'gas';
+  type: 'bar' | 'shop' | 'gas' | 'city';
   description: string | null;
   x: number;
   z: number;
@@ -178,6 +178,7 @@ const POI_META: Record<MapPOI['type'], { color: string; label: string }> = {
   bar: { color: '#e08b46', label: 'Bar / Pub' },
   shop: { color: '#4ab3e3', label: 'Magasin' },
   gas: { color: '#ecc958', label: 'Station-service' },
+  city: { color: '#d8f3c4', label: 'Ville' },
 };
 
 // Inner glyphs centered around (14,14) inside 28×28
@@ -200,6 +201,20 @@ const POI_INNER_SVG: Record<MapPOI['type'], string> = {
     <path d="M15.5 12 L17.2 13.7 V18.2 Q17.2 19.2 18.2 19.2 Q19.2 19.2 19.2 18.2 V14.5 L18.2 13" fill="none" stroke-width="1.1"/>
     <circle cx="18.2" cy="12.6" r="0.55"/>
   </g>`,
+  // city skyline (building cluster)
+  city: `<g fill="currentColor" stroke="currentColor" stroke-width="0.3" stroke-linejoin="round">
+    <rect x="7.5" y="14" width="4" height="7"/>
+    <rect x="12" y="10" width="4.5" height="11"/>
+    <rect x="17" y="12.5" width="3.5" height="8.5"/>
+    <rect x="13" y="11.5" width="1" height="1" fill="#0a0e0a" stroke="none"/>
+    <rect x="14.5" y="11.5" width="1" height="1" fill="#0a0e0a" stroke="none"/>
+    <rect x="13" y="14" width="1" height="1" fill="#0a0e0a" stroke="none"/>
+    <rect x="14.5" y="14" width="1" height="1" fill="#0a0e0a" stroke="none"/>
+    <rect x="8.5" y="15.5" width="0.9" height="0.9" fill="#0a0e0a" stroke="none"/>
+    <rect x="9.8" y="15.5" width="0.9" height="0.9" fill="#0a0e0a" stroke="none"/>
+    <rect x="17.8" y="14" width="0.9" height="0.9" fill="#0a0e0a" stroke="none"/>
+    <rect x="19" y="14" width="0.9" height="0.9" fill="#0a0e0a" stroke="none"/>
+  </g>`,
 };
 
 function poiMarkerHTML(type: MapPOI['type']): string {
@@ -210,6 +225,8 @@ function poiMarkerHTML(type: MapPOI['type']): string {
     shape = `<polygon points="14,2 26,14 14,26 2,14" fill="rgba(8,12,8,0.88)" stroke="${meta.color}" stroke-width="1.8" stroke-linejoin="round"/>`;
   } else if (type === 'shop') {
     shape = `<rect x="3" y="3" width="22" height="22" fill="rgba(8,12,8,0.88)" stroke="${meta.color}" stroke-width="1.8"/>`;
+  } else if (type === 'city') {
+    shape = `<circle cx="14" cy="14" r="12" fill="rgba(8,12,8,0.88)" stroke="${meta.color}" stroke-width="1.8"/>`;
   } else {
     shape = `<polygon points="14,1 25,8 25,20 14,27 3,20 3,8" fill="rgba(8,12,8,0.88)" stroke="${meta.color}" stroke-width="1.8" stroke-linejoin="round"/>`;
   }
@@ -388,6 +405,9 @@ function LegendPOI({ type }: { type: MapPOI['type'] }) {
           {type === 'gas' && (
             <polygon points="14,1 25,8 25,20 14,27 3,20 3,8" fill="rgba(8,12,8,0.88)" stroke={meta.color} strokeWidth="1.8" strokeLinejoin="round"/>
           )}
+          {type === 'city' && (
+            <circle cx="14" cy="14" r="12" fill="rgba(8,12,8,0.88)" stroke={meta.color} strokeWidth="1.8"/>
+          )}
           <g color={meta.color}><POIInner type={type} /></g>
         </svg>
       </div>
@@ -413,12 +433,30 @@ function POIInner({ type }: { type: MapPOI['type'] }) {
       </g>
     );
   }
+  if (type === 'gas') {
+    return (
+      <g fill="currentColor" stroke="currentColor" strokeWidth="0.4">
+        <rect x="9.5" y="10" width="6" height="11.5" rx="0.6"/>
+        <rect x="10.5" y="11.2" width="4" height="3" fill="#0a0e0a" stroke="none"/>
+        <path d="M15.5 12 L17.2 13.7 V18.2 Q17.2 19.2 18.2 19.2 Q19.2 19.2 19.2 18.2 V14.5 L18.2 13" fill="none" strokeWidth="1.1"/>
+        <circle cx="18.2" cy="12.6" r="0.55"/>
+      </g>
+    );
+  }
+  // city
   return (
-    <g fill="currentColor" stroke="currentColor" strokeWidth="0.4">
-      <rect x="9.5" y="10" width="6" height="11.5" rx="0.6"/>
-      <rect x="10.5" y="11.2" width="4" height="3" fill="#0a0e0a" stroke="none"/>
-      <path d="M15.5 12 L17.2 13.7 V18.2 Q17.2 19.2 18.2 19.2 Q19.2 19.2 19.2 18.2 V14.5 L18.2 13" fill="none" strokeWidth="1.1"/>
-      <circle cx="18.2" cy="12.6" r="0.55"/>
+    <g fill="currentColor" stroke="currentColor" strokeWidth="0.3" strokeLinejoin="round">
+      <rect x="7.5" y="14" width="4" height="7"/>
+      <rect x="12" y="10" width="4.5" height="11"/>
+      <rect x="17" y="12.5" width="3.5" height="8.5"/>
+      <rect x="13" y="11.5" width="1" height="1" fill="#0a0e0a" stroke="none"/>
+      <rect x="14.5" y="11.5" width="1" height="1" fill="#0a0e0a" stroke="none"/>
+      <rect x="13" y="14" width="1" height="1" fill="#0a0e0a" stroke="none"/>
+      <rect x="14.5" y="14" width="1" height="1" fill="#0a0e0a" stroke="none"/>
+      <rect x="8.5" y="15.5" width="0.9" height="0.9" fill="#0a0e0a" stroke="none"/>
+      <rect x="9.8" y="15.5" width="0.9" height="0.9" fill="#0a0e0a" stroke="none"/>
+      <rect x="17.8" y="14" width="0.9" height="0.9" fill="#0a0e0a" stroke="none"/>
+      <rect x="19" y="14" width="0.9" height="0.9" fill="#0a0e0a" stroke="none"/>
     </g>
   );
 }
@@ -642,6 +680,15 @@ export default function TacticalMap() {
       const meta = POI_META[poi.type];
       const marker = L.marker([poi.z, poi.x], { icon: createPOIIcon(poi.type) });
 
+      if (poi.type === 'city') {
+        marker.bindTooltip(poi.name, {
+          permanent: true,
+          direction: 'right',
+          offset: [14, 0],
+          className: 'city-label-tooltip',
+        });
+      }
+
       const removeBtn = isAdmin
         ? `<button class="poi-remove-btn" data-poi-id="${poi.id}">Supprimer</button>`
         : '';
@@ -726,6 +773,12 @@ export default function TacticalMap() {
     if (state.mapImageUrl) {
       imageLayerRef.current = L.imageOverlay(state.mapImageUrl, bounds).addTo(map);
     }
+
+    // Restrict pan & zoom so users can't drift outside the map
+    const latLngBounds = L.latLngBounds([oz, ox], [oz + sizeZ, ox + sizeX]);
+    map.setMaxBounds(latLngBounds.pad(0.05));
+    const fitZoom = map.getBoundsZoom(latLngBounds, false);
+    map.setMinZoom(Math.max(-3, fitZoom - 1));
 
     // Create or recreate the grid overlay with correct bounds
     if (gridLayerRef.current) {

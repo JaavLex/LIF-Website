@@ -4,7 +4,7 @@ import { getPayloadClient } from '@/lib/payload';
 
 export const dynamic = 'force-dynamic';
 
-const VALID_TYPES = new Set(['bar', 'shop', 'gas']);
+const VALID_TYPES = new Set(['bar', 'shop', 'gas', 'city']);
 
 export async function GET() {
 	try {

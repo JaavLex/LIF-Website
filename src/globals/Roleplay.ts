@@ -419,6 +419,16 @@ export const Roleplay: GlobalConfig = {
 									'Mis à jour automatiquement lors de chaque synchronisation.',
 							},
 						},
+							{
+								name: 'publicPlayerPositions',
+								label: 'Positions des joueurs publiques sur la carte',
+								type: 'checkbox',
+								defaultValue: false,
+								admin: {
+									description:
+										'Si activé, tous les utilisateurs voient les positions des joueurs en temps réel sur la carte tactique.',
+								},
+							},
 					],
 				},
 				{

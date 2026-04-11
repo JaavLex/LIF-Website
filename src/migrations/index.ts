@@ -12,6 +12,7 @@ import * as migration_20260409_180000_comms_messages_posted_as_gm from './202604
 import * as migration_20260409_190000_admin_logs from './20260409_190000_admin_logs';
 import * as migration_20260409_200000_add_require_improvements from './20260409_200000_add_require_improvements';
 import * as migration_20260411_120000_map_poi from './20260411_120000_map_poi';
+import * as migration_20260411_130000_add_public_player_positions from './20260411_130000_add_public_player_positions';
 
 export const migrations = [
   {
@@ -83,5 +84,10 @@ export const migrations = [
     up: migration_20260411_120000_map_poi.up,
     down: migration_20260411_120000_map_poi.down,
     name: '20260411_120000_map_poi',
+  },
+  {
+    up: migration_20260411_130000_add_public_player_positions.up,
+    down: migration_20260411_130000_add_public_player_positions.down,
+    name: '20260411_130000_add_public_player_positions',
   },
 ];

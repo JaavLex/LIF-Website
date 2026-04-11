@@ -16,6 +16,20 @@ const PIN_ICON = L.divIcon({
   iconAnchor: [12, 36],
 });
 
+const POI_COLORS: Record<string, string> = {
+  bar: '#e08b46',
+  shop: '#4ab3e3',
+  gas: '#ecc958',
+  city: '#d8f3c4',
+};
+
+const INTEL_CLASS_COLORS: Record<string, string> = {
+  public: '#00ff41',
+  confidential: '#ffdd55',
+  secret: '#ff7a45',
+  topsecret: '#ff3838',
+};
+
 interface MapPickerModalProps {
   open: boolean;
   onClose: () => void;
@@ -79,7 +93,80 @@ export default function MapPickerModal({ open, onClose, onPick, initialCoords }:
             minX: ox, minZ: oz,
             maxX: ox + terrain.sizeX, maxZ: oz + terrain.sizeZ,
           }).addTo(map);
+
+          // Restrict pan & zoom so the view can't drift outside the map
+          const latLngBounds = L.latLngBounds([
+            [oz, ox],
+            [oz + terrain.sizeZ, ox + terrain.sizeX],
+          ]);
+          map.setMaxBounds(latLngBounds.pad(0.05));
+          const fitZoom = map.getBoundsZoom(latLngBounds, false);
+          map.setMinZoom(Math.max(-3, fitZoom - 1));
         }
+
+        // Fetch & render read-only reference overlays (POIs, HQs, intel)
+        const overlayLayer = L.layerGroup().addTo(map);
+        Promise.allSettled([
+          fetch('/api/roleplay/map/poi').then(r => r.ok ? r.json() : null),
+          fetch('/api/roleplay/map/units').then(r => r.ok ? r.json() : null),
+          fetch('/api/roleplay/map/intel').then(r => r.ok ? r.json() : null),
+        ]).then(results => {
+          const [poiRes, hqRes, intelRes] = results;
+          // POIs
+          if (poiRes.status === 'fulfilled' && poiRes.value?.pois) {
+            for (const poi of poiRes.value.pois as Array<{ name: string; type: string; x: number; z: number }>) {
+              const color = POI_COLORS[poi.type] || '#9fe870';
+              const cm = L.circleMarker([poi.z, poi.x], {
+                radius: poi.type === 'city' ? 7 : 5,
+                color,
+                weight: 2,
+                fillColor: '#0a0e0a',
+                fillOpacity: 0.85,
+                interactive: true,
+              });
+              if (poi.type === 'city') {
+                cm.bindTooltip(poi.name, {
+                  permanent: true,
+                  direction: 'right',
+                  offset: [8, 0],
+                  className: 'city-label-tooltip',
+                });
+              } else {
+                cm.bindTooltip(poi.name, { direction: 'top' });
+              }
+              overlayLayer.addLayer(cm);
+            }
+          }
+          // HQs
+          if (hqRes.status === 'fulfilled' && hqRes.value?.units) {
+            for (const hq of hqRes.value.units as Array<{ name: string; color: string; hqX: number; hqZ: number }>) {
+              const cm = L.circleMarker([hq.hqZ, hq.hqX], {
+                radius: 9,
+                color: hq.color || '#00ff41',
+                weight: 2.5,
+                fillColor: '#0a0e0a',
+                fillOpacity: 0.8,
+              });
+              cm.bindTooltip(`QG — ${hq.name}`, { direction: 'top' });
+              overlayLayer.addLayer(cm);
+            }
+          }
+          // Intel
+          if (intelRes.status === 'fulfilled' && intelRes.value?.markers) {
+            for (const intel of intelRes.value.markers as Array<{ title?: string; type: string; classification: string; x: number; z: number }>) {
+              const color = INTEL_CLASS_COLORS[intel.classification] || '#00ff41';
+              const cm = L.circleMarker([intel.z, intel.x], {
+                radius: 4,
+                color,
+                weight: 1.6,
+                fillColor: color,
+                fillOpacity: 0.55,
+              });
+              cm.bindTooltip(intel.title || intel.type, { direction: 'top' });
+              overlayLayer.addLayer(cm);
+            }
+          }
+        }).catch(() => { /* overlays optional */ });
 
         // Place initial marker if coords provided
         if (initialCoords) {

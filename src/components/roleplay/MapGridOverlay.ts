@@ -40,19 +40,21 @@ export function createGridOverlay(
 
     const { minX, minZ, maxX, maxZ } = bounds;
 
-    // Snap to grid
-    const startX = Math.floor(minX / spacing) * spacing;
-    const endX = Math.ceil(maxX / spacing) * spacing;
-    const startZ = Math.floor(minZ / spacing) * spacing;
-    const endZ = Math.ceil(maxZ / spacing) * spacing;
+    // Snap to grid — clamp INSIDE bounds so lines never draw outside map
+    const startX = Math.ceil(minX / spacing) * spacing;
+    const endX = Math.floor(maxX / spacing) * spacing;
+    const startZ = Math.ceil(minZ / spacing) * spacing;
+    const endZ = Math.floor(maxZ / spacing) * spacing;
 
     // Vertical lines (constant X)
     for (let x = startX; x <= endX; x += spacing) {
+      if (x < minX || x > maxX) continue;
       group.addLayer(L.polyline([[minZ, x], [maxZ, x]], LINE_STYLE));
     }
 
     // Horizontal lines (constant Z)
     for (let z = startZ; z <= endZ; z += spacing) {
+      if (z < minZ || z > maxZ) continue;
       group.addLayer(L.polyline([[z, minX], [z, maxX]], LINE_STYLE));
     }
 
@@ -62,8 +64,9 @@ export function createGridOverlay(
     const labelStartX = Math.ceil(minX / labelSpacing) * labelSpacing;
     const labelStartZ = Math.ceil(minZ / labelSpacing) * labelSpacing;
 
-    for (let x = labelStartX; x <= maxX; x += labelSpacing) {
-      for (let z = labelStartZ; z <= maxZ; z += labelSpacing) {
+    for (let x = labelStartX; x < maxX; x += labelSpacing) {
+      for (let z = labelStartZ; z < maxZ; z += labelSpacing) {
+        if (x < minX || z < minZ) continue;
         // Offset label to bottom-right of intersection so it sits INSIDE the cell,
         // not on top of the grid lines
         const label = L.marker([z, x], {

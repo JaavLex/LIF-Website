@@ -6,9 +6,21 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.9.3',
+  version: '1.10.0',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.10.0',
+      date: '2026-04-11',
+      changes: [
+        'CARTE — Nouveau type de POI « Ville » avec étiquette permanente affichée sur la carte.',
+        'CARTE — La grille ne déborde plus des limites du terrain (lignes et étiquettes clippées à l\'intérieur).',
+        'CARTE — Le zoom arrière et le panoramique sont limités : les utilisateurs ne peuvent plus sortir de la carte.',
+        'CARTE — Option globale « Positions des joueurs publiques » (onglet Serveur de Jeu) : permet d\'exposer les positions à tous les utilisateurs.',
+        'COMMS — Le sélecteur de position affiche maintenant les POIs, villes, QG et marqueurs de renseignement existants comme référence.',
+        'COMMS — Nouveau bouton « Envoyer ma position actuelle » qui récupère la position en jeu via le biId lié. Affiche « Non déployé » si le joueur n\'est pas sur le serveur.',
+      ],
+    },
     {
       version: '1.9.3',
       date: '2026-04-11',

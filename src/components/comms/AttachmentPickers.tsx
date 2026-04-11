@@ -234,6 +234,8 @@ function PositionPicker({ onPick }: { onPick: (att: any) => void }) {
 	const [coordX, setCoordX] = useState('');
 	const [coordZ, setCoordZ] = useState('');
 	const [showMapPicker, setShowMapPicker] = useState(false);
+	const [myPosLoading, setMyPosLoading] = useState(false);
+	const [myPosError, setMyPosError] = useState<string | null>(null);
 
 	function handleManualPick() {
 		const x = parseInt(coordX, 10);
@@ -244,6 +246,31 @@ function PositionPicker({ onPick }: { onPick: (att: any) => void }) {
 			refId: 0,
 			meta: { x, z, label: `${formatGrid(x)} / ${formatGrid(z)}` },
 		});
+	}
+
+	async function handleSendMyLocation() {
+		setMyPosLoading(true);
+		setMyPosError(null);
+		try {
+			const res = await fetch('/api/roleplay/map/my-position');
+			const data = await res.json();
+			if (data?.deployed) {
+				onPick({
+					kind: 'position',
+					refId: 0,
+					meta: {
+						x: data.x,
+						z: data.z,
+						label: `${formatGrid(data.x)} / ${formatGrid(data.z)}`,
+					},
+				});
+			} else {
+				setMyPosError('Non déployé');
+			}
+		} catch {
+			setMyPosError('Non déployé');
+		}
+		setMyPosLoading(false);
 	}
 
 	return (
@@ -286,7 +313,7 @@ function PositionPicker({ onPick }: { onPick: (att: any) => void }) {
 					Joindre
 				</button>
 			</div>
-			<div style={{ marginTop: '0.75rem', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '0.75rem' }}>
+			<div style={{ marginTop: '0.75rem', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
 				<button
 					type="button"
 					className="comms-modal-btn primary"
@@ -295,6 +322,20 @@ function PositionPicker({ onPick }: { onPick: (att: any) => void }) {
 				>
 					Choisir sur la carte
 				</button>
+				<button
+					type="button"
+					className="comms-modal-btn"
+					onClick={handleSendMyLocation}
+					disabled={myPosLoading}
+					style={{ width: '100%' }}
+				>
+					{myPosLoading ? 'Localisation…' : 'Envoyer ma position actuelle'}
+				</button>
+				{myPosError && (
+					<div style={{ fontSize: '0.75rem', color: '#ff7a45', textAlign: 'center' }}>
+						{myPosError}
+					</div>
+				)}
 			</div>
 			{showMapPicker && (
 				<MapPickerModal

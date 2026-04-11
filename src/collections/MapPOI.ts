@@ -31,6 +31,7 @@ export const MapPOI: CollectionConfig = {
 				{ label: 'Bar / Pub', value: 'bar' },
 				{ label: 'Magasin', value: 'shop' },
 				{ label: 'Station-service', value: 'gas' },
+				{ label: 'Ville', value: 'city' },
 			],
 		},
 		{

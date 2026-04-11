@@ -818,3 +818,5 @@
     padding: 0.35rem 0.8rem;
   }
 }
+
+/* City label tooltip styles live in roleplay.css so they're available on both /roleplay/map and /roleplay/comms */
