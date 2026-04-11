@@ -1794,12 +1794,18 @@
 	}
 
 	/* Single-column layout, full bleed, no horizontal margin.
-	 * `flex: 1 1 auto` + `min-height: 0` lets the layout consume the
-	 * remaining vertical space below the profile/disclaimer bars so
-	 * the sticky header and composer are bounded and the message list
-	 * actually scrolls. */
+	 * `flex: 1 1 auto` + `min-height: 0` on this grid lets it consume
+	 * the remaining vertical space below the profile/disclaimer bars.
+	 * CRITICAL: `grid-template-rows: minmax(0, 1fr)` forces the single
+	 * row to honour the container height — without it, a channel with
+	 * many messages makes .comms-main grow past its grid cell, which
+	 * breaks .comms-message-list's internal scroll (the whole page
+	 * starts scrolling instead) and causes the sticky channel header
+	 * to detach from its background, leaving messages bleeding through
+	 * the back button. */
 	.comms-layout {
 		grid-template-columns: 1fr;
+		grid-template-rows: minmax(0, 1fr);
 		margin: 0.35rem 0 0;
 		border-left: none;
 		border-right: none;
@@ -1842,20 +1848,20 @@
 	.comms-channel-meta { font-size: 0.74rem; }
 
 	/* Main header — slim bar with channel name + essential controls.
-	 * The sticky header sits above the scrolling message list, so its
-	 * background must be fully opaque (messages would otherwise bleed
-	 * through the translucent panel colour and eat the back button). */
+	 * Fully opaque background + isolated stacking context so nothing
+	 * from the scrolling message list can paint over it. No
+	 * position: sticky needed — the grid row is bounded so the
+	 * header naturally stays pinned at the top of .comms-main while
+	 * .comms-message-list scrolls internally below it. */
 	.comms-main-header {
 		padding: 0.35rem 0.55rem;
 		gap: 0.35rem;
-		position: sticky;
-		top: 0;
-		z-index: 5;
 		min-height: 0;
 		background: #0a1410;
-		backdrop-filter: blur(14px) saturate(140%);
-		-webkit-backdrop-filter: blur(14px) saturate(140%);
+		z-index: 5;
+		isolation: isolate;
 		box-shadow: 0 2px 14px rgba(0, 0, 0, 0.55), 0 1px 0 var(--cc-line);
+		flex-shrink: 0;
 	}
 	.comms-main-header h2 {
 		font-size: 0.82rem;
