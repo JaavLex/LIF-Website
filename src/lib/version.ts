@@ -6,9 +6,17 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.13.2',
+  version: '1.13.3',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.13.3',
+      date: '2026-04-11',
+      changes: [
+        'CARTE — Correction d\'un crash 500 sur /roleplay/map en production (colonnes units.hq_x / hq_z manquantes en base) via l\'ajout d\'une migration Payload.',
+        'CARTE — Suppression de l\'espace vide de 80px au-dessus de la carte tactique en production (l\'espace reste réservé en dev pour la bannière d\'environnement).',
+      ],
+    },
     {
       version: '1.13.2',
       date: '2026-04-11',

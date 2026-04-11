@@ -13,6 +13,7 @@ import * as migration_20260409_190000_admin_logs from './20260409_190000_admin_l
 import * as migration_20260409_200000_add_require_improvements from './20260409_200000_add_require_improvements';
 import * as migration_20260411_120000_map_poi from './20260411_120000_map_poi';
 import * as migration_20260411_130000_add_public_player_positions from './20260411_130000_add_public_player_positions';
+import * as migration_20260411_140000_add_unit_hq_coords from './20260411_140000_add_unit_hq_coords';
 
 export const migrations = [
   {
@@ -89,5 +90,10 @@ export const migrations = [
     up: migration_20260411_130000_add_public_player_positions.up,
     down: migration_20260411_130000_add_public_player_positions.down,
     name: '20260411_130000_add_public_player_positions',
+  },
+  {
+    up: migration_20260411_140000_add_unit_hq_coords.up,
+    down: migration_20260411_140000_add_unit_hq_coords.down,
+    name: '20260411_140000_add_unit_hq_coords',
   },
 ];

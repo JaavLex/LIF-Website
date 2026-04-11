@@ -6,7 +6,8 @@
 .tactical-map-page {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 80px);
+  height: calc(100vh - var(--dev-banner-h, 0px));
+  margin-top: calc(-80px + var(--dev-banner-h, 0px));
   font-family: 'Courier New', 'Lucida Console', Monaco, monospace;
   position: relative;
   z-index: 1;
