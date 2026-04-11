@@ -42,7 +42,8 @@
 	/* === Shell ============================================================= */
 	display: flex;
 	flex-direction: column;
-	height: calc(100vh - 4rem);
+	height: calc(100vh - var(--dev-banner-h, 0px));
+	margin-top: calc(-80px + var(--dev-banner-h, 0px));
 	min-height: 0;
 	overflow: hidden;
 	position: relative;
@@ -1682,7 +1683,7 @@
 /* Mobile ================================================================== */
 @media (max-width: 768px) {
 	.comms-page {
-		height: 100dvh;
+		height: calc(100dvh - var(--dev-banner-h, 0px));
 		display: flex;
 		flex-direction: column;
 		min-height: 0;

@@ -6,9 +6,16 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.13.3',
+  version: '1.13.4',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.13.4',
+      date: '2026-04-11',
+      changes: [
+        'COMMS — Suppression du même espace vide de 80px au-dessus de l\'interface /roleplay/comms en production (cohérent avec la carte tactique).',
+      ],
+    },
     {
       version: '1.13.3',
       date: '2026-04-11',
