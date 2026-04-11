@@ -6,9 +6,16 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.9.2',
+  version: '1.9.3',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.9.3',
+      date: '2026-04-11',
+      changes: [
+        'CARTE — Légende centrée verticalement sur le bord droit (hors du chemin des contrôles Leaflet).',
+      ],
+    },
     {
       version: '1.9.2',
       date: '2026-04-11',

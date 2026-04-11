@@ -606,8 +606,9 @@
 
 .map-legend {
   position: absolute;
-  top: 12px;
+  top: 50%;
   right: 12px;
+  transform: translateY(-50%);
   z-index: 500;
   background: rgba(8, 12, 8, 0.92);
   border: 1px solid rgba(0, 255, 65, 0.35);
@@ -615,8 +616,8 @@
   font-family: 'Courier New', monospace;
   color: #d6ffd6;
   font-size: 0.68rem;
-  max-width: 200px;
-  max-height: calc(100% - 24px);
+  width: 200px;
+  max-height: calc(100% - 80px);
   overflow-y: auto;
   box-shadow: 0 4px 18px rgba(0, 0, 0, 0.55), 0 0 10px rgba(0, 255, 65, 0.08);
   backdrop-filter: blur(2px);
