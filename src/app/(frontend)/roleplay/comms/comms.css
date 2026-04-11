@@ -69,6 +69,14 @@
 
 .comms-page > * { position: relative; z-index: 1; }
 
+/* Return link row (desktop) */
+.comms-return-bar {
+	padding: 0.75rem 1rem 0.5rem;
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+}
+
 /* =============================================================================
    PROFILE BAR — operator ID plate suspended on the HUD
    ============================================================================= */
@@ -1674,56 +1682,129 @@
 /* Mobile ================================================================== */
 @media (max-width: 768px) {
 	.comms-page {
-		height: calc(100dvh - 4rem);
+		height: 100dvh;
+		display: flex;
+		flex-direction: column;
+		min-height: 0;
 	}
 
-	/* Compact profile bar — everything wraps, all buttons icon-only */
+	/* Return link row is redundant on mobile — the bottom-tab nav is the
+	   primary back affordance. Free the vertical space. */
+	.comms-return-bar { display: none; }
+
+	/* GM / admin bar — compact strip */
+	.comms-admin-bar {
+		padding: 0.2rem 0.6rem;
+		gap: 0.4rem;
+		min-height: 0;
+		font-size: 0.62rem;
+		flex-wrap: wrap;
+	}
+	.comms-admin-bar__label {
+		font-size: 0.6rem;
+	}
+	.comms-admin-bar__pill,
+	.comms-admin-bar__quit,
+	.comms-admin-bar__swap {
+		padding: 0.15rem 0.45rem;
+		font-size: 0.6rem;
+	}
+	.comms-admin-bar__avatar {
+		width: 18px;
+		height: 18px;
+	}
+	.comms-admin-bar__select {
+		padding: 0.15rem 0.3rem;
+		font-size: 0.65rem;
+		max-width: 140px;
+	}
+
+	/* Compact profile bar — single row, tiny avatar, no wrap */
 	.comms-profile-bar {
-		margin: 0.5rem 0.5rem 0;
-		padding: 0.55rem 0.7rem;
-		gap: 0.6rem;
-		border-left-width: 3px;
+		margin: 0.35rem 0.4rem 0;
+		padding: 0.35rem 0.55rem;
+		gap: 0.5rem;
+		border-left-width: 2px;
+		flex-wrap: nowrap;
+		min-width: 0;
 	}
 	.comms-profile-bar::after { display: none; }
 	.comms-profile-bar-avatar {
-		width: 40px;
-		height: 40px;
+		width: 30px;
+		height: 30px;
+		flex-shrink: 0;
+	}
+	.comms-profile-bar-info {
+		min-width: 0;
+		flex: 1 1 auto;
+		overflow: hidden;
 	}
 	.comms-profile-bar-name {
-		font-size: 0.95rem;
-		letter-spacing: 0.7px;
+		font-size: 0.78rem;
+		letter-spacing: 0.4px;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	.comms-profile-bar-name .rank-icon {
+		width: 14px;
+		height: 14px;
 	}
 	.comms-profile-bar-meta {
-		font-size: 0.68rem;
-		gap: 0.35rem;
+		font-size: 0.6rem;
+		gap: 0.3rem;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		line-height: 1.2;
+	}
+	.comms-profile-bar-meta .affil-icon {
+		width: 12px;
+		height: 12px;
 	}
 	.comms-profile-bar-spacer { display: none; }
 
-	/* Sons mute + help buttons: icon-only on mobile, still tappable */
+	/* Sons mute + help buttons: icon-only on mobile, still tappable but smaller */
 	.comms-profile-mute-btn span,
 	.comms-profile-help-btn span {
 		display: none;
 	}
 	.comms-profile-mute-btn,
 	.comms-profile-help-btn {
-		padding: 0.45rem;
-		min-width: 38px;
-		min-height: 38px;
+		padding: 0.3rem;
+		min-width: 30px;
+		min-height: 30px;
+		flex-shrink: 0;
 		justify-content: center;
 	}
 
+	/* Disclaimer banner — slim pill, single short line */
 	.comms-disclaimer-banner {
-		margin: 0.5rem 0.5rem 0;
-		padding: 0.6rem 0.75rem;
-		font-size: 0.74rem;
+		margin: 0.3rem 0.4rem 0;
+		padding: 0.35rem 0.55rem;
+		font-size: 0.62rem;
+		gap: 0.4rem;
+		line-height: 1.25;
+	}
+	.comms-disclaimer-banner strong { font-size: 0.6rem; }
+	.comms-disclaimer-close {
+		min-width: 24px;
+		min-height: 24px;
+		padding: 0.2rem;
 	}
 
-	/* Single-column layout, full bleed, no horizontal margin */
+	/* Single-column layout, full bleed, no horizontal margin.
+	 * `flex: 1 1 auto` + `min-height: 0` lets the layout consume the
+	 * remaining vertical space below the profile/disclaimer bars so
+	 * the sticky header and composer are bounded and the message list
+	 * actually scrolls. */
 	.comms-layout {
 		grid-template-columns: 1fr;
-		margin: 0.5rem 0 0;
+		margin: 0.35rem 0 0;
 		border-left: none;
 		border-right: none;
+		flex: 1 1 auto;
+		min-height: 0;
 	}
 	/* Hide HUD corner brackets on mobile (the layout is full-bleed) */
 	.comms-layout::before,
@@ -1760,34 +1841,40 @@
 	.comms-channel-preview,
 	.comms-channel-meta { font-size: 0.74rem; }
 
-	/* Main header — drastically simpler on mobile */
+	/* Main header — slim bar with channel name + essential controls */
 	.comms-main-header {
-		padding: 0.65rem 0.8rem;
-		gap: 0.5rem;
+		padding: 0.35rem 0.55rem;
+		gap: 0.35rem;
 		position: sticky;
 		top: 0;
 		z-index: 5;
+		min-height: 0;
 	}
 	.comms-main-header h2 {
-		font-size: 1rem;
-		letter-spacing: 1px;
+		font-size: 0.82rem;
+		letter-spacing: 0.6px;
 		flex: 1;
+		min-width: 0;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
 	}
 	.comms-main-header-meta {
-		gap: 0.35rem;
+		gap: 0.25rem;
+		font-size: 0.62rem;
 	}
 	/* Hide TYPE label on mobile (redundant with channel stripe) */
 	.comms-main-header-meta > span:first-child { display: none; }
 	/* Hide Members button on mobile — it's in the bottom tab bar */
 	.comms-header-members-btn { display: none !important; }
-	/* Leave/Close button — icon only on mobile */
+	/* Leave/Close button — icon only on mobile, compact */
 	.comms-header-leave-btn span {
 		display: none;
 	}
 	.comms-header-leave-btn {
-		padding: 0.45rem;
-		min-width: 38px;
-		min-height: 38px;
+		padding: 0.3rem;
+		min-width: 30px;
+		min-height: 30px;
 		justify-content: center;
 	}
 
@@ -1795,27 +1882,29 @@
 		display: inline-flex !important;
 		align-items: center;
 		justify-content: center;
-		width: 40px;
-		height: 40px;
+		width: 32px;
+		height: 32px;
 		padding: 0;
 		flex-shrink: 0;
 	}
 
-	/* Message list */
+	/* Message list — give it as much vertical space as possible */
 	.comms-message-list {
-		padding: 0.85rem 0.75rem 0.5rem;
-		gap: 0.55rem;
+		padding: 0.5rem 0.55rem 0.4rem;
+		gap: 0.4rem;
+		flex: 1 1 auto;
+		min-height: 0;
 	}
 	.comms-message {
-		padding: 0.55rem 0.5rem;
-		gap: 0.55rem;
+		padding: 0.45rem 0.45rem;
+		gap: 0.5rem;
 	}
 	.comms-message-avatar {
-		width: 38px;
-		height: 38px;
+		width: 34px;
+		height: 34px;
 	}
-	.comms-message-sender { font-size: 0.88rem; }
-	.comms-message-time { font-size: 0.66rem; }
+	.comms-message-sender { font-size: 0.85rem; }
+	.comms-message-time { font-size: 0.64rem; }
 
 	/* On mobile, message actions are always visible (no hover) */
 	.comms-message-actions {
@@ -1828,27 +1917,27 @@
 		min-height: 34px;
 	}
 
-	/* Composer — respects safe-area-inset */
+	/* Composer — compact to preserve reading zone */
 	.comms-composer {
-		padding: 0.7rem 0.75rem;
-		gap: 0.5rem;
+		padding: 0.4rem 0.5rem calc(0.4rem + env(safe-area-inset-bottom, 0px) / 2);
+		gap: 0.35rem;
 	}
 	.comms-composer textarea {
 		font-size: 16px; /* defeat iOS auto-zoom */
-		min-height: 60px;
+		min-height: 38px;
+		padding: 0.45rem 0.6rem;
 	}
 
-	/* Composer row buttons: give everything breathing room.
-	 * The send button is forced onto its own full-width line so the
-	 * "TRANSMETTRE" CTA is always reachable regardless of how the
-	 * attach / anon controls wrap on narrow viewports. */
+	/* Composer row: attach / anon / puppet / send share one row when possible.
+	 * Send button wraps to its own row only when the others push it off. */
 	.comms-composer-row {
-		gap: 0.45rem;
-		row-gap: 0.55rem;
+		gap: 0.35rem;
+		row-gap: 0.4rem;
 		width: 100%;
 		max-width: 100%;
 		min-width: 0;
 		flex-wrap: wrap;
+		align-items: center;
 	}
 	.comms-composer-attach-btn {
 		flex-shrink: 1;
@@ -1858,8 +1947,8 @@
 	.comms-composer-anon-full { display: none; }
 	.comms-composer-anon-short { display: inline; }
 	.comms-composer-anon-label {
-		font-size: 0.78rem;
-		gap: 0.3rem;
+		font-size: 0.7rem;
+		gap: 0.25rem;
 		flex-shrink: 1;
 		min-width: 0;
 	}
@@ -1867,32 +1956,29 @@
 		flex-shrink: 1;
 		min-width: 0;
 		max-width: 100%;
+		font-size: 0.68rem;
 	}
-	/* The send button claims its own full row on mobile. flex-basis 100%
-	 * combined with order: 99 guarantees it wraps below every other control
-	 * regardless of how many are present (attach, anon, GM chip, …). */
+	/* Send button: compact, sits inline with the other controls, pushed
+	 * to the right edge via margin-left auto. Wraps naturally if the row
+	 * runs out of horizontal room. */
 	.comms-send-btn {
-		order: 99;
-		flex: 1 1 100%;
-		flex-basis: 100%;
-		width: 100%;
-		max-width: 100%;
-		margin-left: 0;
-		margin-right: 0;
+		margin-left: auto;
 		justify-content: center;
-		padding: 0.75rem 1rem;
-		font-size: 0.82rem;
-		letter-spacing: 1.8px;
-		min-height: 48px;
-		min-width: 0;
+		padding: 0.5rem 0.85rem;
+		font-size: 0.74rem;
+		letter-spacing: 1.2px;
+		min-height: 36px;
+		min-width: 90px;
+		flex: 0 0 auto;
 	}
 	.comms-icon-btn {
-		min-height: 38px;
-		padding: 0.45rem 0.65rem;
+		min-height: 32px;
+		padding: 0.35rem 0.55rem;
+		font-size: 0.72rem;
 	}
 	.comms-icon-btn-square {
-		min-width: 40px;
-		min-height: 40px;
+		min-width: 34px;
+		min-height: 34px;
 	}
 
 	/* MOBILE BOTTOM TAB BAR */
@@ -1904,8 +1990,8 @@
 		-webkit-backdrop-filter: var(--cc-backdrop-blur);
 		border-top: 1px solid var(--cc-line);
 		box-shadow: 0 -2px 20px rgba(0, 0, 0, 0.5);
-		padding: 0.3rem 0.35rem calc(0.3rem + env(safe-area-inset-bottom, 0px));
-		gap: 0.3rem;
+		padding: 0.15rem 0.3rem calc(0.15rem + env(safe-area-inset-bottom, 0px));
+		gap: 0.25rem;
 		z-index: 6;
 	}
 	.comms-mobile-tab {
@@ -1914,16 +2000,16 @@
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
-		gap: 0.15rem;
-		padding: 0.5rem 0.4rem;
-		min-height: 54px;
+		gap: 0.1rem;
+		padding: 0.3rem 0.3rem;
+		min-height: 44px;
 		background: transparent;
 		border: 1px solid transparent;
 		color: var(--cc-text-soft);
 		font-family: var(--font-heading, 'Rajdhani', sans-serif);
-		font-size: 0.65rem;
+		font-size: 0.58rem;
 		font-weight: 700;
-		letter-spacing: 1.5px;
+		letter-spacing: 1.2px;
 		text-transform: uppercase;
 		cursor: pointer;
 		transition: all 0.12s;

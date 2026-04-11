@@ -541,14 +541,7 @@ function CommsLayoutInner({ character, isAdmin }: { character: ActiveCharacter; 
 
 	return (
 		<div className="comms-page">
-			<div
-				style={{
-					padding: '0.75rem 1rem 0.5rem',
-					display: 'flex',
-					gap: '0.75rem',
-					alignItems: 'center',
-				}}
-			>
+			<div className="comms-return-bar">
 				<Link href="/roleplay" className="retour-link">
 					← Retour
 				</Link>
