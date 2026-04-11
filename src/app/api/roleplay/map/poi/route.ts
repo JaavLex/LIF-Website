@@ -10,7 +10,7 @@ export async function GET() {
 	try {
 		const payload = await getPayloadClient();
 		const result = await payload.find({
-			collection: 'map-poi',
+			collection: 'map-poi' as any,
 			limit: 500,
 			depth: 0,
 		});
@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
 		}
 		const payload = await getPayloadClient();
 		const created = await payload.create({
-			collection: 'map-poi',
+			collection: 'map-poi' as any,
 			data: { name, type, x, z, description: description || null } as any,
 		});
 		return NextResponse.json({ success: true, id: created.id });
@@ -78,7 +78,7 @@ export async function DELETE(request: NextRequest) {
 			return NextResponse.json({ error: 'id requis' }, { status: 400 });
 		}
 		const payload = await getPayloadClient();
-		await payload.delete({ collection: 'map-poi', id });
+		await payload.delete({ collection: 'map-poi' as any, id });
 		return NextResponse.json({ success: true });
 	} catch (error: any) {
 		console.error('POI delete error:', error);
