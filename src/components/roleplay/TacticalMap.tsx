@@ -582,7 +582,6 @@ export default function TacticalMap() {
     };
   }, []);
 
-  // Toggle grid visibility
   useEffect(() => {
     showGridRef.current = showGrid;
     const map = mapRef.current;
