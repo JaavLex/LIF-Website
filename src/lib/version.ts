@@ -6,9 +6,16 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.13.4',
+  version: '1.13.5',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.13.5',
+      date: '2026-04-11',
+      changes: [
+        'CARTE — Dézoom supplémentaire (minZoom passe de -3 à -5) pour mieux voir les grandes cartes en entier.',
+      ],
+    },
     {
       version: '1.13.4',
       date: '2026-04-11',

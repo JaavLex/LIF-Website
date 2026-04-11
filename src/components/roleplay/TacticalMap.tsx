@@ -530,7 +530,7 @@ export default function TacticalMap() {
 
     const map = L.map(mapContainerRef.current, {
       crs: L.CRS.Simple,
-      minZoom: -3,
+      minZoom: -5,
       maxZoom: 3,
       zoomControl: true,
       attributionControl: false,
