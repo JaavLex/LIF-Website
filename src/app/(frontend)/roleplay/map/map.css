@@ -426,25 +426,27 @@
 /* ---- PLAYER MARKERS ---- */
 
 .player-map-icon-inner {
-  width: 22px;
-  height: 22px;
+  width: 26px;
+  height: 26px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(8, 12, 8, 0.82);
-  border: 1px solid var(--p-color, #7a8a7a);
-  border-radius: 50%;
-  box-shadow: 0 0 8px color-mix(in srgb, var(--p-color, #7a8a7a) 55%, transparent),
-    inset 0 0 4px color-mix(in srgb, var(--p-color, #7a8a7a) 25%, transparent);
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  background: transparent;
+  border: none;
+  filter:
+    drop-shadow(0 0 6px color-mix(in srgb, var(--p-color, #8a9a8a) 75%, transparent))
+    drop-shadow(0 0 2px color-mix(in srgb, var(--p-color, #8a9a8a) 95%, transparent));
+  transition: transform 0.15s ease, filter 0.15s ease;
 }
 .player-map-icon-inner:hover {
-  transform: scale(1.18);
-  box-shadow: 0 0 14px color-mix(in srgb, var(--p-color, #7a8a7a) 85%, transparent),
-    inset 0 0 6px color-mix(in srgb, var(--p-color, #7a8a7a) 40%, transparent);
+  transform: scale(1.2);
+  filter:
+    drop-shadow(0 0 10px color-mix(in srgb, var(--p-color, #8a9a8a) 90%, transparent))
+    drop-shadow(0 0 3px color-mix(in srgb, var(--p-color, #8a9a8a) 100%, transparent));
 }
 .player-map-icon-inner svg {
   display: block;
+  overflow: visible;
 }
 
 /* Player rich tooltip */
@@ -534,45 +536,24 @@
 .intel-map-icon-inner {
   width: 28px;
   height: 28px;
-  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   filter: drop-shadow(0 0 6px color-mix(in srgb, var(--c, #00ff41) 45%, transparent));
 }
-.intel-map-icon-inner .intel-glyph {
-  position: absolute;
-  top: 52%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 11px;
-  line-height: 1;
-  color: var(--c, #00ff41);
-  font-weight: bold;
-  pointer-events: none;
-}
+.intel-map-icon-inner svg { display: block; }
 
 /* ---- POI MARKERS ---- */
 
 .poi-map-icon-inner {
   width: 28px;
   height: 28px;
-  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  filter: drop-shadow(0 0 5px color-mix(in srgb, var(--c, #fff) 40%, transparent));
+  filter: drop-shadow(0 0 5px color-mix(in srgb, var(--c, #fff) 45%, transparent));
 }
-.poi-map-icon-inner .poi-glyph {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 12px;
-  line-height: 1;
-  color: var(--c, #fff);
-  pointer-events: none;
-}
+.poi-map-icon-inner svg { display: block; }
 
 .poi-popup {
   text-transform: uppercase;
@@ -673,49 +654,20 @@
   font-size: 0.64rem;
 }
 .map-legend-icon {
-  width: 22px;
-  height: 22px;
+  width: 28px;
+  height: 28px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  position: relative;
 }
-.map-legend-icon.player {
-  border-radius: 50%;
-  border: 1px solid #7a8a7a;
-  background: rgba(8, 12, 8, 0.82);
+.map-legend-icon > div {
+  pointer-events: none;
 }
-.map-legend-icon.player .legend-soldier {
-  width: 10px;
-  height: 10px;
-  background: #7a8a7a;
-  clip-path: polygon(50% 0, 100% 30%, 100% 100%, 0 100%, 0 30%);
-}
-.map-legend-icon.hq {
-  border-radius: 50%;
-  border: 2px solid #4a7c23;
-  background: rgba(12, 15, 10, 0.92);
-}
-.map-legend-icon.intel .legend-intel-glyph {
-  position: absolute;
-  top: 58%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 9px;
-  color: #00ff41;
-  font-weight: bold;
-}
-.map-legend-icon.poi {
-  color: var(--c, #fff);
-}
-.map-legend-icon.poi .legend-poi-glyph {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 10px;
-  color: var(--c, #fff);
+/* In legend context, shrink HQ border to fit the 28px slot */
+.map-legend-icon .hq-map-icon-inner {
+  width: 28px !important;
+  height: 28px !important;
 }
 
 /* ---- CUSTOM POPUPS ---- */

@@ -6,9 +6,21 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.9.0',
+  version: '1.9.1',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.9.1',
+      date: '2026-04-11',
+      changes: [
+        'CARTE — Icônes dessinées en SVG pur (plus d\'emojis) : opérateur, QG, renseignement par sous-type, POI.',
+        'CARTE — Opérateur : silhouette de soldat sans fond circulaire, halo coloré selon l\'unité.',
+        'CARTE — Chaque sous-type de renseignement a son propre glyphe interne (œil, éclair, crosshair, masque, antenne, personne).',
+        'CARTE — POI : verre à bière, sac de courses, pompe à essence. Formes distinctes (losange, carré, hexagone).',
+        'CARTE — Légende et marqueurs utilisent exactement le même rendu SVG.',
+        'CARTE — Correction du placement POI : la table map_poi était manquante (migration appliquée manuellement).',
+      ],
+    },
     {
       version: '1.9.0',
       date: '2026-04-11',

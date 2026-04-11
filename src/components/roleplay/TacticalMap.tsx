@@ -78,88 +78,153 @@ const FACTION_COLORS: Record<string, string> = {
   USSR: '#ff4444',
   FIA: '#ffaa00',
 };
-const DEFAULT_COLOR = '#7a8a7a'; // gray for unitless players
+const DEFAULT_COLOR = '#8a9a8a'; // gray for unitless players
 
-// Soldier icon — silhouette with helmet/rifle, scales with color
-const SOLDIER_SVG = `<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" stroke="none">
-  <path d="M12 2.5c-1.6 0-2.9 1.3-2.9 2.9 0 1.6 1.3 2.9 2.9 2.9s2.9-1.3 2.9-2.9c0-1.6-1.3-2.9-2.9-2.9z"/>
-  <path d="M19.5 8.2L17 8.7l-1-1.2-1.5.4-.5 1.6L12 9l-2 .5-.5-1.6L8 7.5l-1 1.2-2.5-.5-.5 1 2.5 1 .8 1.6V21h2v-6.5h.5V21h2v-7h.5v7h2v-7h.5V21h2V11.8l.8-1.6 2.5-1-.5-1z"/>
-</svg>`;
+// ─── Shared inline-SVG icon paths ───
+// All inner glyph SVGs are 20×20, rendered inside their shape wrappers.
+
+// Soldier silhouette (no circle background — just silhouette + stroke halo)
+function playerMarkerHTML(color: string): string {
+  return `<div class="player-map-icon-inner" style="--p-color:${color};">
+    <svg viewBox="0 0 28 28" width="26" height="26" aria-hidden="true">
+      <defs>
+        <filter id="soldier-glow" x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation="0.9" result="b"/>
+          <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+      </defs>
+      <g filter="url(#soldier-glow)" fill="${color}" stroke="rgba(0,0,0,0.85)" stroke-width="0.8" stroke-linejoin="round">
+        <!-- helmet dome + rim -->
+        <path d="M14 4c-3.3 0-5.8 2.1-5.8 5.1v1.4h11.6V9.1C19.8 6.1 17.3 4 14 4z"/>
+        <rect x="7.4" y="10.4" width="13.2" height="1.6" rx="0.4"/>
+        <!-- face/neck -->
+        <path d="M10.5 12v2.3c0 1.4 1.1 2.2 2 2.5l1.5.4 1.5-.4c0.9-.3 2-1.1 2-2.5V12z"/>
+        <!-- shoulders/torso -->
+        <path d="M6 24v-3.4c0-2 1.4-3.6 3.4-4.1l2.1-.5 2.5 1 2.5-1 2.1.5c2 .5 3.4 2.1 3.4 4.1V24z"/>
+        <!-- chest strap -->
+        <path d="M10.2 18.8l7.6 0" stroke="rgba(0,0,0,0.5)" stroke-width="0.9" fill="none"/>
+      </g>
+    </svg>
+  </div>`;
+}
 
 function createPlayerIcon(player: MapPlayer): L.DivIcon {
   const color = player.unitColor || DEFAULT_COLOR;
   return L.divIcon({
     className: 'player-map-icon',
-    html: `<div class="player-map-icon-inner" style="color: ${color}; --p-color: ${color};">
-      ${SOLDIER_SVG}
-    </div>`,
-    iconSize: [22, 22],
-    iconAnchor: [11, 11],
+    html: playerMarkerHTML(color),
+    iconSize: [26, 26],
+    iconAnchor: [13, 13],
   });
 }
 
-// Intel: triangle outline with subtype glyph centered
-const INTEL_TYPE_GLYPHS: Record<string, string> = {
-  observation: '◉',
-  interception: '⚡',
-  reconnaissance: '⌕',
-  infiltration: '⩕',
-  sigint: '))',
-  humint: '☥',
-  other: '?',
+// ─── Intel subtype inner SVGs (drawn INSIDE the triangle) ───
+// Each is a 14×14 glyph centered at (14, 16) of the 28×28 triangle.
+const INTEL_INNER_SVG: Record<string, string> = {
+  // observation — eye
+  observation: `<g transform="translate(7,10)"><ellipse cx="7" cy="5" rx="6" ry="3.2" fill="none" stroke="currentColor" stroke-width="1.3"/><circle cx="7" cy="5" r="1.6" fill="currentColor"/></g>`,
+  // interception — lightning bolt
+  interception: `<path d="M15 10 L10 17 L13.5 17 L12 22 L17 14 L13.8 14 L15.2 10 Z" fill="currentColor" stroke="currentColor" stroke-width="0.4" stroke-linejoin="round"/>`,
+  // reconnaissance — crosshair/scope
+  reconnaissance: `<g stroke="currentColor" stroke-width="1.3" fill="none"><circle cx="14" cy="16" r="4"/><line x1="14" y1="10.5" x2="14" y2="13.2"/><line x1="14" y1="18.8" x2="14" y2="21.5"/><line x1="8.5" y1="16" x2="11.2" y2="16"/><line x1="16.8" y1="16" x2="19.5" y2="16"/></g><circle cx="14" cy="16" r="0.9" fill="currentColor"/>`,
+  // infiltration — balaclava / mask
+  infiltration: `<g fill="currentColor"><path d="M9 12.5 C9 10.6 11.2 9.8 14 9.8 C16.8 9.8 19 10.6 19 12.5 L19 18 C19 20 17 21.2 14 21.2 C11 21.2 9 20 9 18 Z"/></g><g fill="#0a0e0a"><rect x="10.5" y="14.5" width="2.5" height="1.4" rx="0.3"/><rect x="15" y="14.5" width="2.5" height="1.4" rx="0.3"/><rect x="12.5" y="17.8" width="3" height="0.9" rx="0.3"/></g>`,
+  // sigint — antenna with signal waves
+  sigint: `<g fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"><line x1="14" y1="11" x2="14" y2="21"/><line x1="14" y1="11" x2="10.2" y2="13.5"/><line x1="14" y1="11" x2="17.8" y2="13.5"/><path d="M11.2 11.2 Q9.5 13 9.5 15"/><path d="M16.8 11.2 Q18.5 13 18.5 15"/></g><circle cx="14" cy="10.8" r="0.9" fill="currentColor"/>`,
+  // humint — person head + shoulders
+  humint: `<g fill="currentColor"><circle cx="14" cy="13" r="2.1"/><path d="M9.5 22 C9.5 18.6 11.5 16.8 14 16.8 C16.5 16.8 18.5 18.6 18.5 22 Z"/></g>`,
+  // other — question mark
+  other: `<text x="14" y="20" text-anchor="middle" font-family="Georgia, serif" font-size="10" font-weight="700" fill="currentColor">?</text>`,
 };
 
+function intelMarkerHTML(type: string, classColor: string): string {
+  const inner = INTEL_INNER_SVG[type] || INTEL_INNER_SVG.other;
+  return `<div class="intel-map-icon-inner" style="--c:${classColor};">
+    <svg viewBox="0 0 28 28" width="28" height="28" aria-hidden="true">
+      <polygon points="14,2 26,25 2,25" fill="rgba(8,12,8,0.88)" stroke="${classColor}" stroke-width="1.8" stroke-linejoin="round"/>
+      <g color="${classColor}">${inner}</g>
+    </svg>
+  </div>`;
+}
+
 function createIntelIcon(type: string, classColor: string): L.DivIcon {
-  const glyph = INTEL_TYPE_GLYPHS[type] || INTEL_TYPE_GLYPHS.other;
   return L.divIcon({
     className: 'intel-map-icon',
-    html: `<div class="intel-map-icon-inner" style="--c: ${classColor};">
-      <svg viewBox="0 0 28 28" width="28" height="28">
-        <polygon points="14,2 26,25 2,25" fill="rgba(0,0,0,0.78)" stroke="${classColor}" stroke-width="1.6" stroke-linejoin="round"/>
-      </svg>
-      <span class="intel-glyph">${glyph}</span>
-    </div>`,
+    html: intelMarkerHTML(type, classColor),
     iconSize: [28, 28],
     iconAnchor: [14, 17],
   });
 }
 
 // HQ: circle with insignia
-function createHQIcon(color: string, insigniaUrl: string | null): L.DivIcon {
+function hqMarkerHTML(color: string, insigniaUrl: string | null): string {
   const content = insigniaUrl
     ? `<img src="${insigniaUrl}" alt="" style="width:24px;height:24px;object-fit:contain;border-radius:50%;" />`
-    : `<svg viewBox="0 0 24 24" width="16" height="16" fill="${color}" stroke="none"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15" stroke="${color}" stroke-width="2"/></svg>`;
+    : `<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" fill="${color}"/><line x1="4" y1="22" x2="4" y2="15" stroke="${color}" stroke-width="2"/></svg>`;
+  return `<div class="hq-map-icon-inner" style="border-color:${color};box-shadow:0 0 12px ${color}aa,inset 0 0 8px ${color}44;">${content}</div>`;
+}
+
+function createHQIcon(color: string, insigniaUrl: string | null): L.DivIcon {
   return L.divIcon({
     className: 'hq-map-icon',
-    html: `<div class="hq-map-icon-inner" style="border-color: ${color}; box-shadow: 0 0 12px ${color}aa, inset 0 0 8px ${color}44;">${content}</div>`,
+    html: hqMarkerHTML(color, insigniaUrl),
     iconSize: [34, 34],
     iconAnchor: [17, 17],
   });
 }
 
-// POI: distinct shape per type — bar=diamond, shop=square, gas=hexagon
-const POI_META: Record<MapPOI['type'], { color: string; label: string; glyph: string }> = {
-  bar: { color: '#d97a3a', label: 'Bar / Pub', glyph: '🍺' },
-  shop: { color: '#3aa3d9', label: 'Magasin', glyph: '⌂' },
-  gas: { color: '#e8c14d', label: 'Station-service', glyph: '⛽' },
+// ─── POI shapes + inner SVG icons ───
+const POI_META: Record<MapPOI['type'], { color: string; label: string }> = {
+  bar: { color: '#e08b46', label: 'Bar / Pub' },
+  shop: { color: '#4ab3e3', label: 'Magasin' },
+  gas: { color: '#ecc958', label: 'Station-service' },
 };
 
-function createPOIIcon(type: MapPOI['type']): L.DivIcon {
+// Inner glyphs centered around (14,14) inside 28×28
+const POI_INNER_SVG: Record<MapPOI['type'], string> = {
+  // beer mug
+  bar: `<g fill="currentColor" stroke="currentColor" stroke-width="0.6" stroke-linejoin="round">
+    <path d="M10 11 H17 V20 Q17 21.2 15.8 21.2 H11.2 Q10 21.2 10 20 Z"/>
+    <path d="M17 13 H19 Q20.2 13 20.2 14.2 V17 Q20.2 18.2 19 18.2 H17" fill="none" stroke-width="1.2"/>
+    <path d="M10.6 12.5 H16.4" stroke="rgba(0,0,0,0.45)" stroke-width="0.9"/>
+  </g>`,
+  // shopping bag
+  shop: `<g fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round">
+    <path d="M9.5 13 H18.5 L17.8 21.5 H10.2 Z" fill="currentColor"/>
+    <path d="M11.5 13 V11.5 Q11.5 9.6 14 9.6 Q16.5 9.6 16.5 11.5 V13" stroke-linecap="round"/>
+  </g>`,
+  // fuel pump
+  gas: `<g fill="currentColor" stroke="currentColor" stroke-width="0.4">
+    <rect x="9.5" y="10" width="6" height="11.5" rx="0.6"/>
+    <rect x="10.5" y="11.2" width="4" height="3" fill="#0a0e0a" stroke="none"/>
+    <path d="M15.5 12 L17.2 13.7 V18.2 Q17.2 19.2 18.2 19.2 Q19.2 19.2 19.2 18.2 V14.5 L18.2 13" fill="none" stroke-width="1.1"/>
+    <circle cx="18.2" cy="12.6" r="0.55"/>
+  </g>`,
+};
+
+function poiMarkerHTML(type: MapPOI['type']): string {
   const meta = POI_META[type];
-  let shapeSvg = '';
+  const inner = POI_INNER_SVG[type];
+  let shape = '';
   if (type === 'bar') {
-    // diamond
-    shapeSvg = `<svg viewBox="0 0 28 28" width="28" height="28"><polygon points="14,2 26,14 14,26 2,14" fill="rgba(0,0,0,0.78)" stroke="${meta.color}" stroke-width="1.8" stroke-linejoin="round"/></svg>`;
+    shape = `<polygon points="14,2 26,14 14,26 2,14" fill="rgba(8,12,8,0.88)" stroke="${meta.color}" stroke-width="1.8" stroke-linejoin="round"/>`;
   } else if (type === 'shop') {
-    // square (rotated 0°)
-    shapeSvg = `<svg viewBox="0 0 28 28" width="28" height="28"><rect x="3" y="3" width="22" height="22" fill="rgba(0,0,0,0.78)" stroke="${meta.color}" stroke-width="1.8"/></svg>`;
+    shape = `<rect x="3" y="3" width="22" height="22" fill="rgba(8,12,8,0.88)" stroke="${meta.color}" stroke-width="1.8"/>`;
   } else {
-    // hexagon
-    shapeSvg = `<svg viewBox="0 0 28 28" width="28" height="28"><polygon points="14,1 25,8 25,20 14,27 3,20 3,8" fill="rgba(0,0,0,0.78)" stroke="${meta.color}" stroke-width="1.8" stroke-linejoin="round"/></svg>`;
+    shape = `<polygon points="14,1 25,8 25,20 14,27 3,20 3,8" fill="rgba(8,12,8,0.88)" stroke="${meta.color}" stroke-width="1.8" stroke-linejoin="round"/>`;
   }
+  return `<div class="poi-map-icon-inner" style="--c:${meta.color};">
+    <svg viewBox="0 0 28 28" width="28" height="28" aria-hidden="true">
+      ${shape}
+      <g color="${meta.color}">${inner}</g>
+    </svg>
+  </div>`;
+}
+
+function createPOIIcon(type: MapPOI['type']): L.DivIcon {
   return L.divIcon({
     className: 'poi-map-icon',
-    html: `<div class="poi-map-icon-inner" style="--c: ${meta.color};">${shapeSvg}<span class="poi-glyph">${meta.glyph}</span></div>`,
+    html: poiMarkerHTML(type),
     iconSize: [28, 28],
     iconAnchor: [14, 14],
   });
@@ -180,6 +245,183 @@ const CLASSIFICATION_COLORS: Record<string, string> = {
   restricted: '#ffaa00',
   classified: '#ff4444',
 };
+
+// ─── Legend JSX components — mirror the Leaflet divIcon HTML above ───
+// Rendered inline as React elements (no innerHTML), but pixel-identical to
+// what createXIcon() produces by using the same SVG path data.
+
+function LegendPlayer() {
+  const color = DEFAULT_COLOR;
+  return (
+    <span className="map-legend-icon" aria-hidden="true">
+      <div className="player-map-icon-inner" style={{ ['--p-color' as string]: color }}>
+        <svg viewBox="0 0 28 28" width="22" height="22">
+          <g fill={color} stroke="rgba(0,0,0,0.85)" strokeWidth="0.8" strokeLinejoin="round">
+            <path d="M14 4c-3.3 0-5.8 2.1-5.8 5.1v1.4h11.6V9.1C19.8 6.1 17.3 4 14 4z"/>
+            <rect x="7.4" y="10.4" width="13.2" height="1.6" rx="0.4"/>
+            <path d="M10.5 12v2.3c0 1.4 1.1 2.2 2 2.5l1.5.4 1.5-.4c0.9-.3 2-1.1 2-2.5V12z"/>
+            <path d="M6 24v-3.4c0-2 1.4-3.6 3.4-4.1l2.1-.5 2.5 1 2.5-1 2.1.5c2 .5 3.4 2.1 3.4 4.1V24z"/>
+          </g>
+        </svg>
+      </div>
+    </span>
+  );
+}
+
+function LegendHQ() {
+  const color = '#4a7c23';
+  return (
+    <span className="map-legend-icon" aria-hidden="true">
+      <div
+        className="hq-map-icon-inner"
+        style={{
+          borderColor: color,
+          boxShadow: `0 0 12px ${color}aa, inset 0 0 8px ${color}44`,
+          width: 28,
+          height: 28,
+        }}
+      >
+        <svg viewBox="0 0 24 24" width="16" height="16">
+          <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" fill={color}/>
+          <line x1="4" y1="22" x2="4" y2="15" stroke={color} strokeWidth="2"/>
+        </svg>
+      </div>
+    </span>
+  );
+}
+
+function LegendIntel({ type }: { type: string }) {
+  const color = '#00ff41';
+  return (
+    <span className="map-legend-icon" aria-hidden="true">
+      <div className="intel-map-icon-inner" style={{ ['--c' as string]: color }}>
+        <svg viewBox="0 0 28 28" width="24" height="24">
+          <polygon points="14,2 26,25 2,25" fill="rgba(8,12,8,0.88)" stroke={color} strokeWidth="1.8" strokeLinejoin="round"/>
+          <g color={color}><IntelInner type={type} /></g>
+        </svg>
+      </div>
+    </span>
+  );
+}
+
+function IntelInner({ type }: { type: string }) {
+  switch (type) {
+    case 'observation':
+      return (
+        <g transform="translate(7,10)">
+          <ellipse cx="7" cy="5" rx="6" ry="3.2" fill="none" stroke="currentColor" strokeWidth="1.3"/>
+          <circle cx="7" cy="5" r="1.6" fill="currentColor"/>
+        </g>
+      );
+    case 'interception':
+      return (
+        <path
+          d="M15 10 L10 17 L13.5 17 L12 22 L17 14 L13.8 14 L15.2 10 Z"
+          fill="currentColor" stroke="currentColor" strokeWidth="0.4" strokeLinejoin="round"
+        />
+      );
+    case 'reconnaissance':
+      return (
+        <>
+          <g stroke="currentColor" strokeWidth="1.3" fill="none">
+            <circle cx="14" cy="16" r="4"/>
+            <line x1="14" y1="10.5" x2="14" y2="13.2"/>
+            <line x1="14" y1="18.8" x2="14" y2="21.5"/>
+            <line x1="8.5" y1="16" x2="11.2" y2="16"/>
+            <line x1="16.8" y1="16" x2="19.5" y2="16"/>
+          </g>
+          <circle cx="14" cy="16" r="0.9" fill="currentColor"/>
+        </>
+      );
+    case 'infiltration':
+      return (
+        <>
+          <g fill="currentColor">
+            <path d="M9 12.5 C9 10.6 11.2 9.8 14 9.8 C16.8 9.8 19 10.6 19 12.5 L19 18 C19 20 17 21.2 14 21.2 C11 21.2 9 20 9 18 Z"/>
+          </g>
+          <g fill="#0a0e0a">
+            <rect x="10.5" y="14.5" width="2.5" height="1.4" rx="0.3"/>
+            <rect x="15" y="14.5" width="2.5" height="1.4" rx="0.3"/>
+            <rect x="12.5" y="17.8" width="3" height="0.9" rx="0.3"/>
+          </g>
+        </>
+      );
+    case 'sigint':
+      return (
+        <>
+          <g fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round">
+            <line x1="14" y1="11" x2="14" y2="21"/>
+            <line x1="14" y1="11" x2="10.2" y2="13.5"/>
+            <line x1="14" y1="11" x2="17.8" y2="13.5"/>
+            <path d="M11.2 11.2 Q9.5 13 9.5 15"/>
+            <path d="M16.8 11.2 Q18.5 13 18.5 15"/>
+          </g>
+          <circle cx="14" cy="10.8" r="0.9" fill="currentColor"/>
+        </>
+      );
+    case 'humint':
+      return (
+        <g fill="currentColor">
+          <circle cx="14" cy="13" r="2.1"/>
+          <path d="M9.5 22 C9.5 18.6 11.5 16.8 14 16.8 C16.5 16.8 18.5 18.6 18.5 22 Z"/>
+        </g>
+      );
+    default:
+      return (
+        <text x="14" y="20" textAnchor="middle" fontFamily="Georgia, serif" fontSize="10" fontWeight="700" fill="currentColor">?</text>
+      );
+  }
+}
+
+function LegendPOI({ type }: { type: MapPOI['type'] }) {
+  const meta = POI_META[type];
+  return (
+    <span className="map-legend-icon" aria-hidden="true">
+      <div className="poi-map-icon-inner" style={{ ['--c' as string]: meta.color }}>
+        <svg viewBox="0 0 28 28" width="24" height="24">
+          {type === 'bar' && (
+            <polygon points="14,2 26,14 14,26 2,14" fill="rgba(8,12,8,0.88)" stroke={meta.color} strokeWidth="1.8" strokeLinejoin="round"/>
+          )}
+          {type === 'shop' && (
+            <rect x="3" y="3" width="22" height="22" fill="rgba(8,12,8,0.88)" stroke={meta.color} strokeWidth="1.8"/>
+          )}
+          {type === 'gas' && (
+            <polygon points="14,1 25,8 25,20 14,27 3,20 3,8" fill="rgba(8,12,8,0.88)" stroke={meta.color} strokeWidth="1.8" strokeLinejoin="round"/>
+          )}
+          <g color={meta.color}><POIInner type={type} /></g>
+        </svg>
+      </div>
+    </span>
+  );
+}
+
+function POIInner({ type }: { type: MapPOI['type'] }) {
+  if (type === 'bar') {
+    return (
+      <g fill="currentColor" stroke="currentColor" strokeWidth="0.6" strokeLinejoin="round">
+        <path d="M10 11 H17 V20 Q17 21.2 15.8 21.2 H11.2 Q10 21.2 10 20 Z"/>
+        <path d="M17 13 H19 Q20.2 13 20.2 14.2 V17 Q20.2 18.2 19 18.2 H17" fill="none" strokeWidth="1.2"/>
+        <path d="M10.6 12.5 H16.4" stroke="rgba(0,0,0,0.45)" strokeWidth="0.9"/>
+      </g>
+    );
+  }
+  if (type === 'shop') {
+    return (
+      <g fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round">
+        <path d="M9.5 13 H18.5 L17.8 21.5 H10.2 Z" fill="currentColor"/>
+        <path d="M11.5 13 V11.5 Q11.5 9.6 14 9.6 Q16.5 9.6 16.5 11.5 V13" strokeLinecap="round"/>
+      </g>
+    );
+  }
+  return (
+    <g fill="currentColor" stroke="currentColor" strokeWidth="0.4">
+      <rect x="9.5" y="10" width="6" height="11.5" rx="0.6"/>
+      <rect x="10.5" y="11.2" width="4" height="3" fill="#0a0e0a" stroke="none"/>
+      <path d="M15.5 12 L17.2 13.7 V18.2 Q17.2 19.2 18.2 19.2 Q19.2 19.2 19.2 18.2 V14.5 L18.2 13" fill="none" strokeWidth="1.1"/>
+      <circle cx="18.2" cy="12.6" r="0.55"/>
+    </g>
+  );
+}
 
 export default function TacticalMap() {
   const mapContainerRef = useRef<HTMLDivElement>(null);
@@ -968,13 +1210,11 @@ export default function TacticalMap() {
             <div className="map-legend-title">Légende</div>
             <div className="map-legend-section">
               <div className="map-legend-item">
-                <span className="map-legend-icon player" aria-hidden="true">
-                  <span className="legend-soldier" />
-                </span>
+                <LegendPlayer />
                 <span>Opérateur (couleur = unité)</span>
               </div>
               <div className="map-legend-item">
-                <span className="map-legend-icon hq" aria-hidden="true" />
+                <LegendHQ />
                 <span>QG d&apos;unité</span>
               </div>
             </div>
@@ -982,38 +1222,19 @@ export default function TacticalMap() {
               <div className="map-legend-heading">Renseignement</div>
               {Object.entries(INTEL_TYPE_LABELS).map(([key, label]) => (
                 <div key={key} className="map-legend-item">
-                  <span className="map-legend-icon intel" aria-hidden="true">
-                    <svg viewBox="0 0 28 28" width="18" height="18">
-                      <polygon points="14,3 25,24 3,24" fill="rgba(0,0,0,0.78)" stroke="#00ff41" strokeWidth="1.8" strokeLinejoin="round"/>
-                    </svg>
-                    <span className="legend-intel-glyph">{INTEL_TYPE_GLYPHS[key]}</span>
-                  </span>
+                  <LegendIntel type={key} />
                   <span>{label}</span>
                 </div>
               ))}
             </div>
             <div className="map-legend-section">
               <div className="map-legend-heading">Points d&apos;intérêt</div>
-              {(Object.keys(POI_META) as Array<MapPOI['type']>).map(type => {
-                const meta = POI_META[type];
-                return (
-                  <div key={type} className="map-legend-item">
-                    <span className="map-legend-icon poi" aria-hidden="true" style={{ ['--c' as string]: meta.color }}>
-                      {type === 'bar' && (
-                        <svg viewBox="0 0 28 28" width="18" height="18"><polygon points="14,3 25,14 14,25 3,14" fill="rgba(0,0,0,0.78)" stroke={meta.color} strokeWidth="1.8" strokeLinejoin="round"/></svg>
-                      )}
-                      {type === 'shop' && (
-                        <svg viewBox="0 0 28 28" width="18" height="18"><rect x="4" y="4" width="20" height="20" fill="rgba(0,0,0,0.78)" stroke={meta.color} strokeWidth="1.8"/></svg>
-                      )}
-                      {type === 'gas' && (
-                        <svg viewBox="0 0 28 28" width="18" height="18"><polygon points="14,2 25,8 25,20 14,26 3,20 3,8" fill="rgba(0,0,0,0.78)" stroke={meta.color} strokeWidth="1.8" strokeLinejoin="round"/></svg>
-                      )}
-                      <span className="legend-poi-glyph">{meta.glyph}</span>
-                    </span>
-                    <span>{meta.label}</span>
-                  </div>
-                );
-              })}
+              {(Object.keys(POI_META) as Array<MapPOI['type']>).map(type => (
+                <div key={type} className="map-legend-item">
+                  <LegendPOI type={type} />
+                  <span>{POI_META[type].label}</span>
+                </div>
+              ))}
             </div>
           </div>
         )}
