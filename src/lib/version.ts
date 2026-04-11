@@ -6,9 +6,16 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.9.1',
+  version: '1.9.2',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.9.2',
+      date: '2026-04-11',
+      changes: [
+        'CARTE — Légende déplacée à droite (ne couvre plus les contrôles de zoom Leaflet).',
+      ],
+    },
     {
       version: '1.9.1',
       date: '2026-04-11',
