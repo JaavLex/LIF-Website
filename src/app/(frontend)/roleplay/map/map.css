@@ -29,6 +29,12 @@
   letter-spacing: 0.12em;
   position: relative;
   flex-shrink: 0;
+  /* Create a high stacking context so the operator roster popover paints
+     above the sibling .map-container and its Leaflet panes. Without this,
+     the .map-header-status > span { opacity: 0.85 } rule creates a nested
+     stacking context that traps the roster's z-index, making it appear
+     under the map. */
+  z-index: 10;
 }
 
 /* Top-left classification stripe */

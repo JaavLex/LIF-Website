@@ -6,9 +6,16 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.13.6',
+  version: '1.13.7',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.13.7',
+      date: '2026-04-11',
+      changes: [
+        'CARTE — Correction de la liste des opérateurs en ligne qui apparaissait sous la carte et le fond Matrix au clic : l\'entête reçoit un z-index élevé pour sortir du contexte d\'empilement piégé par l\'opacité du statut.',
+      ],
+    },
     {
       version: '1.13.6',
       date: '2026-04-11',
