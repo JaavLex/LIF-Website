@@ -2,10 +2,23 @@
 
 import { useEffect, useState, useRef, useCallback } from 'react';
 
+interface LeaderboardEntry {
+	id: number;
+	firstName: string;
+	lastName: string;
+	callsign: string | null;
+	unitName: string | null;
+	unitInsignia: string | null;
+	avatar: string | null;
+	amount: number;
+	delta: number;
+}
+
 interface OrgStats {
 	totalMoney: number;
 	memberCount: number;
 	history: { date: string; total: number }[];
+	leaderboard?: LeaderboardEntry[];
 }
 
 export default function OrgBankStats({ isAdmin }: { isAdmin?: boolean }) {
@@ -228,15 +241,24 @@ export default function OrgBankStats({ isAdmin }: { isAdmin?: boolean }) {
 
 	const formatted = stats.totalMoney.toLocaleString('fr-FR');
 
-	// Compute change from history
+	// Recent change: last point vs previous point (stock-style delta)
 	let changePercent: number | null = null;
+	let changeAbsolute: number | null = null;
 	if (stats.history.length >= 2) {
-		const first = stats.history[0].total;
+		const prev = stats.history[stats.history.length - 2].total;
 		const last = stats.history[stats.history.length - 1].total;
-		if (first > 0) {
-			changePercent = ((last - first) / first) * 100;
+		changeAbsolute = last - prev;
+		if (prev > 0) {
+			changePercent = ((last - prev) / prev) * 100;
 		}
 	}
+
+	const leaderboard = stats.leaderboard || [];
+	const formatMoney = (n: number) => n.toLocaleString('fr-FR');
+	const formatDelta = (n: number) => {
+		const sign = n > 0 ? '+' : n < 0 ? '−' : '';
+		return sign + Math.abs(Math.round(n)).toLocaleString('fr-FR');
+	};
 
 	return (
 		<div className="org-stats-section">
@@ -256,8 +278,14 @@ export default function OrgBankStats({ isAdmin }: { isAdmin?: boolean }) {
 					{changePercent !== null && (
 						<span
 							className={`org-stats-change ${changePercent >= 0 ? 'positive' : 'negative'}`}
+							title="Évolution depuis le dernier relevé"
 						>
-							{changePercent >= 0 ? '▲' : '▼'} {Math.abs(changePercent).toFixed(1)}%
+							{changePercent >= 0 ? '▲' : '▼'} {Math.abs(changePercent).toFixed(2)}%
+							{changeAbsolute !== null && (
+								<span className="org-stats-change-abs">
+									{' '}({formatDelta(changeAbsolute)}$)
+								</span>
+							)}
 						</span>
 					)}
 				</div>
@@ -272,6 +300,91 @@ export default function OrgBankStats({ isAdmin }: { isAdmin?: boolean }) {
 					Données historiques insuffisantes pour afficher le graphique
 				</div>
 			)}
+
+			{leaderboard.length > 0 && (
+				<div className="org-leaderboard">
+					<div className="org-leaderboard-header">
+						<span className="org-leaderboard-title">
+							<span className="org-leaderboard-dot" /> CLASSEMENT TRÉSORERIE
+						</span>
+						<span className="org-leaderboard-meta">
+							{leaderboard.length} opérateur{leaderboard.length !== 1 ? 's' : ''} listé
+							{leaderboard.length !== 1 ? 's' : ''} · comptes non-anonymes
+						</span>
+					</div>
+					<ol className="org-leaderboard-list">
+						{leaderboard.map((entry, idx) => {
+							const deltaPositive = entry.delta > 0;
+							const deltaNegative = entry.delta < 0;
+							const rank = idx + 1;
+							return (
+								<li
+									key={entry.id}
+									className={`org-leaderboard-row${rank <= 3 ? ' is-top' : ''}`}
+									style={{ animationDelay: `${Math.min(idx * 40, 600)}ms` }}
+								>
+									<div className="org-lb-rank">
+										<span className="org-lb-rank-num">
+											{rank.toString().padStart(2, '0')}
+										</span>
+									</div>
+									<div className="org-lb-avatar">
+										{entry.avatar ? (
+											// eslint-disable-next-line @next/next/no-img-element
+											<img src={entry.avatar} alt="" />
+										) : (
+											<span className="org-lb-avatar-fallback">
+												{(entry.firstName[0] || '?') + (entry.lastName[0] || '')}
+											</span>
+										)}
+									</div>
+									<div className="org-lb-identity">
+										<div className="org-lb-name">
+											{entry.firstName} {entry.lastName.toUpperCase()}
+											{entry.callsign && (
+												<span className="org-lb-callsign">« {entry.callsign} »</span>
+											)}
+										</div>
+										<div className="org-lb-unit">
+											{entry.unitInsignia && (
+												// eslint-disable-next-line @next/next/no-img-element
+												<img
+													className="org-lb-unit-insignia"
+													src={entry.unitInsignia}
+													alt=""
+												/>
+											)}
+											<span className="org-lb-unit-name">
+												{entry.unitName || '— SANS UNITÉ —'}
+											</span>
+										</div>
+									</div>
+									<div className="org-lb-figures">
+										<div className="org-lb-amount">
+											<span className="org-lb-amount-currency">$</span>
+											{formatMoney(entry.amount)}
+										</div>
+										<div
+											className={`org-lb-delta${
+												deltaPositive
+													? ' positive'
+													: deltaNegative
+														? ' negative'
+														: ' flat'
+											}`}
+										>
+											{deltaPositive ? '▲' : deltaNegative ? '▼' : '—'}
+											<span className="org-lb-delta-val">
+												{formatDelta(entry.delta)}$
+											</span>
+										</div>
+									</div>
+								</li>
+							);
+						})}
+					</ol>
+				</div>
+			)}
 			{isAdmin && (
 				<div style={{ textAlign: 'right', marginTop: '0.75rem' }}>
 					<button
@@ -284,7 +397,7 @@ export default function OrgBankStats({ isAdmin }: { isAdmin?: boolean }) {
 							try {
 								const res = await fetch('/api/roleplay/org-stats', { method: 'DELETE' });
 								if (res.ok) {
-									setStats({ totalMoney: 0, memberCount: 0, history: [] });
+									setStats({ totalMoney: 0, memberCount: 0, history: [], leaderboard: [] });
 								}
 							} catch {}
 							setResetting(false);

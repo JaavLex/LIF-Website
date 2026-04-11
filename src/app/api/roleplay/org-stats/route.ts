@@ -10,7 +10,8 @@ export async function GET() {
 	try {
 		const payload = await getPayloadClient();
 
-		// Get all LIF faction characters (non-archived, non-target) with their money
+		// Get all LIF faction characters (non-archived, non-target) with their money.
+		// depth: 2 resolves avatar (media), unit (unit doc), and unit.insignia (media).
 		const characters = await payload.find({
 			collection: 'characters',
 			where: {
@@ -21,7 +22,7 @@ export async function GET() {
 				],
 			},
 			limit: 500,
-			depth: 0,
+			depth: 2,
 		});
 
 		// All character IDs for bank history query
@@ -106,11 +107,109 @@ export async function GET() {
 			}
 		}
 
+		// Build leaderboard: non-anonymous linked characters with their latest
+		// bank-history delta (amount - previousAmount).
+		type LeaderboardEntry = {
+			id: number;
+			firstName: string;
+			lastName: string;
+			callsign: string | null;
+			unitName: string | null;
+			unitInsignia: string | null;
+			avatar: string | null;
+			amount: number;
+			delta: number;
+		};
+
+		const leaderboard: LeaderboardEntry[] = [];
+		// Fetch latest bank-history entry per linked, non-anonymous character.
+		// Easiest path: pull recent entries sorted desc, keep the first seen per char.
+		const nonAnonLinkedIds = characters.docs
+			.filter(
+				c =>
+					c.biId &&
+					!(c as Character & { bankAnonymous?: boolean }).bankAnonymous,
+			)
+			.map(c => c.id);
+
+		const latestByChar = new Map<
+			number,
+			{ amount: number; previousAmount: number | null }
+		>();
+		if (nonAnonLinkedIds.length > 0) {
+			const recent = await payload.find({
+				collection: 'bank-history',
+				where: { character: { in: nonAnonLinkedIds.join(',') } },
+				sort: '-createdAt',
+				limit: 5000,
+				depth: 0,
+			});
+			for (const e of recent.docs) {
+				const charId =
+					typeof e.character === 'number' ? e.character : e.character?.id;
+				if (!charId || latestByChar.has(charId)) continue;
+				latestByChar.set(charId, {
+					amount: typeof e.amount === 'number' ? e.amount : 0,
+					previousAmount:
+						typeof e.previousAmount === 'number' ? e.previousAmount : null,
+				});
+			}
+		}
+
+		for (const c of characters.docs) {
+			if (!c.biId) continue;
+			if ((c as Character & { bankAnonymous?: boolean }).bankAnonymous) continue;
+
+			const latest = latestByChar.get(c.id);
+			const amount = latest
+				? latest.amount
+				: typeof c.savedMoney === 'number'
+					? c.savedMoney
+					: 0;
+			const delta =
+				latest && latest.previousAmount !== null
+					? latest.amount - latest.previousAmount
+					: 0;
+
+			const avatar =
+				typeof c.avatar === 'object' && c.avatar && 'url' in c.avatar
+					? (c.avatar as { url?: string }).url || null
+					: null;
+
+			let unitName: string | null = null;
+			let unitInsignia: string | null = null;
+			if (c.unit && typeof c.unit === 'object') {
+				const u = c.unit as {
+					name?: string;
+					insignia?: { url?: string } | number | null;
+				};
+				unitName = u.name || null;
+				if (u.insignia && typeof u.insignia === 'object' && 'url' in u.insignia) {
+					unitInsignia = u.insignia.url || null;
+				}
+			}
+
+			leaderboard.push({
+				id: c.id,
+				firstName: c.firstName || '',
+				lastName: c.lastName || '',
+				callsign: c.callsign || null,
+				unitName,
+				unitInsignia,
+				avatar,
+				amount,
+				delta,
+			});
+		}
+
+		leaderboard.sort((a, b) => b.amount - a.amount);
+
 		return NextResponse.json(
 			{
 				totalMoney,
 				memberCount: linkedCharacterIds.size,
 				history,
+				leaderboard,
 			},
 			{
 				headers: {
@@ -121,7 +220,7 @@ export async function GET() {
 	} catch (error) {
 		console.error('Org stats error:', error);
 		return NextResponse.json(
-			{ totalMoney: 0, memberCount: 0, history: [] },
+			{ totalMoney: 0, memberCount: 0, history: [], leaderboard: [] },
 			{ headers: { 'Cache-Control': 'no-store' } },
 		);
 	}

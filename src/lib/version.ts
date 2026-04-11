@@ -6,9 +6,17 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.8.7',
+  version: '1.8.8',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.8.8',
+      date: '2026-04-11',
+      changes: [
+        'TRÉSORERIE — Indicateur d\'évolution recalculé sur le dernier relevé (vs précédent) au lieu du point initial.',
+        'TRÉSORERIE — Classement des opérateurs (non-anonymes) sous le graphique : photo, nom, indicatif, unité, delta stock-style.',
+      ],
+    },
     {
       version: '1.8.7',
       date: '2026-04-11',
