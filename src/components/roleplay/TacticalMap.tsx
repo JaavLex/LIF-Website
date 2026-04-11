@@ -3,8 +3,10 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { useSearchParams } from 'next/navigation';
 import { createGridOverlay } from './MapGridOverlay';
 import { OperatorRoster } from './OperatorRoster';
+import { applyFocusHighlight } from './mapFocusHighlight';
 import { formatGrid, escapeHtml } from '@/lib/constants';
 
 interface MapTerrain {
@@ -484,6 +486,8 @@ export default function TacticalMap() {
   const hqLayerRef = useRef<L.LayerGroup | null>(null);
   const intelLayerRef = useRef<L.LayerGroup | null>(null);
   const gridLayerRef = useRef<L.LayerGroup | null>(null);
+  const gridSigRef = useRef<string>('');
+  const showGridRef = useRef(true);
   const currentTerrainRef = useRef<string | null>(null);
   const [state, setState] = useState<MapStateResponse | null>(null);
   const [cursorCoords, setCursorCoords] = useState<{ x: number; z: number } | null>(null);
@@ -502,30 +506,25 @@ export default function TacticalMap() {
   const [calibrateRealX, setCalibrateRealX] = useState('');
   const [calibrateRealZ, setCalibrateRealZ] = useState('');
   const offsetRef = useRef<{ x: number; z: number }>({ x: 0, z: 0 });
-  // Unit HQ state
   const [unitHQs, setUnitHQs] = useState<UnitHQ[]>([]);
   const [placingHQ, setPlacingHQ] = useState(false);
   const [hqUnitList, setHqUnitList] = useState<{ id: number; name: string }[]>([]);
   const [selectedHQUnit, setSelectedHQUnit] = useState<string>('');
-  // Intel markers state
   const [intelMarkers, setIntelMarkers] = useState<IntelMarker[]>([]);
-  // POI state
   const [pois, setPois] = useState<MapPOI[]>([]);
   const poiLayerRef = useRef<L.LayerGroup | null>(null);
   const [placingPOI, setPlacingPOI] = useState(false);
   const [poiType, setPoiType] = useState<MapPOI['type']>('bar');
   const [poiName, setPoiName] = useState('');
-  // Legend
   const [showLegend, setShowLegend] = useState(true);
-  // Heat trails + SOS layers
   const trailsLayerRef = useRef<L.LayerGroup | null>(null);
   const sosLayerRef = useRef<L.LayerGroup | null>(null);
   const [showTrails, setShowTrails] = useState(true);
-  // Admin: live toggle for the publicPlayerPositions global
   const [publicPositions, setPublicPositions] = useState(false);
   const [togglingPublic, setTogglingPublic] = useState(false);
+  const searchParams = useSearchParams();
+  const focusAppliedRef = useRef(false);
 
-  // Initialize Leaflet map
   useEffect(() => {
     if (!mapContainerRef.current || mapRef.current) return;
 
@@ -585,6 +584,7 @@ export default function TacticalMap() {
 
   // Toggle grid visibility
   useEffect(() => {
+    showGridRef.current = showGrid;
     const map = mapRef.current;
     const grid = gridLayerRef.current;
     if (!map || !grid) return;
@@ -827,15 +827,18 @@ export default function TacticalMap() {
     const fitZoom = map.getBoundsZoom(latLngBounds, false);
     map.setMinZoom(Math.max(-3, fitZoom - 1));
 
-    // Create or recreate the grid overlay with correct bounds
-    if (gridLayerRef.current) {
-      map.removeLayer(gridLayerRef.current);
+    // Only (re)create the grid when bounds change — state polls would otherwise
+    // re-add it every few seconds even when toggled off.
+    const gridSig = `${name}|${ox}|${oz}|${sizeX}|${sizeZ}`;
+    if (gridSigRef.current !== gridSig) {
+      if (gridLayerRef.current) {
+        try { map.removeLayer(gridLayerRef.current); } catch { /* ignore */ }
+      }
+      const g = createGridOverlay(map, { minX: ox, minZ: oz, maxX: ox + sizeX, maxZ: oz + sizeZ });
+      if (showGridRef.current) g.addTo(map);
+      gridLayerRef.current = g;
+      gridSigRef.current = gridSig;
     }
-    const gridLayer = createGridOverlay(map, {
-      minX: ox, minZ: oz, maxX: ox + sizeX, maxZ: oz + sizeZ,
-    });
-    gridLayer.addTo(map);
-    gridLayerRef.current = gridLayer;
 
     if (!currentTerrainRef.current) {
       const saved = localStorage.getItem('lif-map-view');
@@ -846,6 +849,15 @@ export default function TacticalMap() {
 
     currentTerrainRef.current = name;
   }, [state?.terrain, state?.mapImageUrl, state?.offsetX, state?.offsetZ]);
+  useEffect(() => {
+    const map = mapRef.current;
+    if (focusAppliedRef.current || !map || !state?.terrain) return;
+    const [xS, zS] = (searchParams?.get('focus') || '').split(',');
+    const x = parseInt(xS, 10), z = parseInt(zS, 10);
+    if (!Number.isFinite(x) || !Number.isFinite(z)) return;
+    focusAppliedRef.current = true;
+    return applyFocusHighlight({ map, x, z, label: searchParams?.get('label') || undefined });
+  }, [state?.terrain, searchParams]);
 
   // Pre-fill terrain info from state
   useEffect(() => {
@@ -1190,6 +1202,7 @@ export default function TacticalMap() {
   return (
     <div className="tactical-map-page">
       <div className="map-header">
+        <a href="/roleplay" className="map-back-link" title="Retour à la base de données"><span className="map-back-link-arrow" aria-hidden>←</span><span className="map-back-link-text">ROLEPLAY</span></a>
         <span className="map-header-title">Terminal Cartographique</span>
         <div className="map-header-status">
           {state?.terrain && (

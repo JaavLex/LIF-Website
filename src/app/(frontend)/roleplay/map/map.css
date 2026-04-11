@@ -47,6 +47,55 @@
   );
 }
 
+.map-back-link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.7rem 0.35rem 0.55rem;
+  color: #9affb8;
+  text-decoration: none;
+  font-family: 'Courier New', monospace;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  background: linear-gradient(90deg, rgba(0, 255, 65, 0.1), rgba(0, 255, 65, 0));
+  border: 1px solid rgba(0, 255, 65, 0.35);
+  border-left: 3px solid #00ff41;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  flex-shrink: 0;
+}
+.map-back-link::before {
+  content: 'CMD-00';
+  position: absolute;
+  top: -7px;
+  left: 6px;
+  padding: 0 4px;
+  font-size: 0.52rem;
+  letter-spacing: 0.18em;
+  color: #5cd6a0;
+  background: rgba(12, 15, 10, 0.95);
+  opacity: 0.85;
+}
+.map-back-link:hover {
+  background: linear-gradient(90deg, rgba(0, 255, 65, 0.2), rgba(0, 255, 65, 0.02));
+  color: #d6ffe4;
+  transform: translateX(-2px);
+  box-shadow: -4px 0 18px -6px rgba(0, 255, 65, 0.55);
+}
+.map-back-link:hover .map-back-link-arrow {
+  transform: translateX(-3px);
+}
+.map-back-link-arrow {
+  font-size: 0.95rem;
+  line-height: 1;
+  color: #00ff41;
+  transition: transform 0.22s ease;
+}
+.map-back-link-text {
+  letter-spacing: 0.22em;
+}
+
 .map-header-title {
   font-weight: bold;
   font-size: 0.95rem;
@@ -972,3 +1021,125 @@
 }
 
 /* SOS marker + city label tooltip styles live in roleplay.css so they're available on both /roleplay/map and /roleplay/comms */
+
+/* ─── Focus lock (deep-linked intel target) ────────────────────── */
+.map-focus-lock {
+  background: transparent !important;
+  border: 0 !important;
+  pointer-events: none;
+}
+
+.map-focus-lock-wrap {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  transform: translate(0, 0);
+  animation: map-focus-fade 14s ease-out forwards;
+}
+
+.map-focus-lock-ring {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  border: 1.5px solid var(--primary, #7aff7a);
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(0.35);
+  opacity: 0;
+  box-shadow: 0 0 18px rgba(122, 255, 122, 0.55);
+}
+
+.map-focus-lock-ring-1 {
+  width: 100px;
+  height: 100px;
+  animation: map-focus-ring 1.8s ease-out infinite;
+}
+
+.map-focus-lock-ring-2 {
+  width: 100px;
+  height: 100px;
+  animation: map-focus-ring 1.8s ease-out infinite;
+  animation-delay: 0.6s;
+}
+
+.map-focus-lock-ring-3 {
+  width: 100px;
+  height: 100px;
+  animation: map-focus-ring 1.8s ease-out infinite;
+  animation-delay: 1.2s;
+}
+
+@keyframes map-focus-ring {
+  0% { transform: translate(-50%, -50%) scale(0.3); opacity: 0; }
+  15% { opacity: 0.95; }
+  70% { opacity: 0.25; }
+  100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
+}
+
+.map-focus-lock-cross {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  background: var(--primary, #7aff7a);
+  box-shadow: 0 0 8px rgba(122, 255, 122, 0.9);
+}
+
+.map-focus-lock-cross-n,
+.map-focus-lock-cross-s {
+  width: 2px;
+  height: 14px;
+}
+
+.map-focus-lock-cross-e,
+.map-focus-lock-cross-w {
+  width: 14px;
+  height: 2px;
+}
+
+.map-focus-lock-cross-n { transform: translate(-50%, -32px); }
+.map-focus-lock-cross-s { transform: translate(-50%, 18px); }
+.map-focus-lock-cross-e { transform: translate(18px, -50%); }
+.map-focus-lock-cross-w { transform: translate(-32px, -50%); }
+
+.map-focus-lock-core {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  background: var(--primary, #7aff7a);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 12px 2px rgba(122, 255, 122, 0.9);
+  animation: map-focus-core 1.2s ease-in-out infinite;
+}
+
+@keyframes map-focus-core {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+  50% { transform: translate(-50%, -50%) scale(1.4); opacity: 0.65; }
+}
+
+.map-focus-lock-label {
+  position: absolute;
+  left: 50%;
+  top: calc(50% + 48px);
+  transform: translateX(-50%);
+  background: rgba(4, 14, 8, 0.88);
+  border: 1px solid var(--primary, #7aff7a);
+  color: var(--primary, #7aff7a);
+  padding: 0.25rem 0.55rem;
+  font-size: 0.64rem;
+  font-family: 'Courier New', monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  white-space: nowrap;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-shadow: 0 0 18px rgba(122, 255, 122, 0.35);
+}
+
+@keyframes map-focus-fade {
+  0%, 75% { opacity: 1; }
+  100% { opacity: 0; }
+}
+

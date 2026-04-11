@@ -6520,6 +6520,145 @@
   border-bottom-color: color-mix(in srgb, var(--danger) 50%, transparent);
 }
 
+/* ─── Intel → Map CTA (deep link to tactical map) ──────────────── */
+.intel-detail-map-cta {
+  --cta-accent: #5cd6a0;
+  position: relative;
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  align-items: center;
+  gap: 0.85rem;
+  margin-top: 0.55rem;
+  padding: 0.7rem 0.95rem;
+  background:
+    linear-gradient(
+      120deg,
+      rgba(92, 214, 160, 0.09) 0%,
+      rgba(92, 214, 160, 0.02) 45%,
+      rgba(0, 0, 0, 0.25) 100%
+    );
+  border: 1px solid color-mix(in srgb, var(--cta-accent) 45%, transparent);
+  border-left: 3px solid var(--cta-accent);
+  text-decoration: none;
+  color: var(--foreground);
+  overflow: hidden;
+  transition:
+    border-color 0.22s ease,
+    transform 0.22s ease,
+    box-shadow 0.22s ease,
+    background 0.22s ease;
+}
+
+.intel-detail-map-cta::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent 0 28px,
+    rgba(92, 214, 160, 0.04) 28px 29px
+  );
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+.intel-detail-map-cta-glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    220px 120px at 12% 50%,
+    rgba(92, 214, 160, 0.18),
+    transparent 70%
+  );
+  opacity: 0.65;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+.intel-detail-map-cta:hover {
+  border-color: var(--cta-accent);
+  transform: translateX(2px);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--cta-accent) 55%, transparent),
+    0 12px 32px -18px rgba(92, 214, 160, 0.55);
+  background:
+    linear-gradient(
+      120deg,
+      rgba(92, 214, 160, 0.16) 0%,
+      rgba(92, 214, 160, 0.04) 45%,
+      rgba(0, 0, 0, 0.25) 100%
+    );
+}
+
+.intel-detail-map-cta:hover .intel-detail-map-cta-glow {
+  opacity: 1;
+}
+
+.intel-detail-map-cta:hover .intel-detail-map-cta-arrow {
+  transform: translateX(4px);
+}
+
+.intel-detail-map-cta-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: rgba(4, 14, 8, 0.75);
+  border: 1px solid color-mix(in srgb, var(--cta-accent) 60%, transparent);
+  color: var(--cta-accent);
+  flex-shrink: 0;
+}
+
+.intel-detail-map-cta-text {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.intel-detail-map-cta-code {
+  font-family: 'Courier New', monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.18em;
+  color: color-mix(in srgb, var(--cta-accent) 80%, var(--muted));
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+
+.intel-detail-map-cta-label {
+  font-family: var(--font-heading, 'Rajdhani', sans-serif);
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--foreground);
+  text-transform: uppercase;
+}
+
+.intel-detail-map-cta-coords {
+  position: relative;
+  padding: 0.25rem 0.55rem;
+  font-family: 'Courier New', monospace;
+  font-size: 0.72rem;
+  color: var(--cta-accent);
+  background: rgba(4, 14, 8, 0.65);
+  border: 1px dashed color-mix(in srgb, var(--cta-accent) 55%, transparent);
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+}
+
+.intel-detail-map-cta-arrow {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--cta-accent);
+  transition: transform 0.22s ease;
+}
+
 .intel-detail-section {
   position: relative;
   background: rgba(8, 12, 8, 0.72);

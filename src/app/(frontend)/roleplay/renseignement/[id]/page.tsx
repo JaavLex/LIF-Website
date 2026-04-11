@@ -1,7 +1,7 @@
 import { getPayloadClient } from '@/lib/payload';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { FileText, MapPin, Crosshair, Flag, User, Calendar } from 'lucide-react';
+import { FileText, MapPin, Crosshair, Flag, User, Calendar, Map as MapIcon, ArrowRight } from 'lucide-react';
 import { RichTextRenderer } from '@/components/roleplay/RichTextRenderer';
 import { IntelMediaGallery } from '@/components/roleplay/IntelMediaGallery';
 
@@ -54,6 +54,12 @@ export default async function IntelReportPage({
 	const linkedFaction =
 		typeof report.linkedFaction === 'object' ? report.linkedFaction : null;
 	const media = (report.media || []).filter((m: any) => m.file?.url);
+
+	// Parse coordinates (format: "XXXXX / ZZZZZ") for map deep-link
+	const coordMatch = report.coordinates?.match(/^(\d{3,5})\s*\/\s*(\d{3,5})$/);
+	const mapCoords = coordMatch
+		? { x: parseInt(coordMatch[1], 10), z: parseInt(coordMatch[2], 10) }
+		: null;
 
 	const dateStr = new Date(report.date).toLocaleDateString('fr-FR', {
 		year: 'numeric',
@@ -134,6 +140,30 @@ export default async function IntelReportPage({
 								{report.coordinates}
 							</span>
 						</div>
+					)}
+					{mapCoords && (
+						<Link
+							href={`/roleplay/map?focus=${mapCoords.x},${mapCoords.z}&label=${encodeURIComponent(report.title)}`}
+							className="intel-detail-map-cta"
+							aria-label="Voir la position de ce rapport sur la carte tactique"
+						>
+							<span className="intel-detail-map-cta-glow" aria-hidden />
+							<span className="intel-detail-map-cta-icon" aria-hidden>
+								<MapIcon size={15} strokeWidth={1.8} />
+							</span>
+							<span className="intel-detail-map-cta-text">
+								<span className="intel-detail-map-cta-code">CMD-04 // TACTIQUE</span>
+								<span className="intel-detail-map-cta-label">
+									Voir sur la carte
+								</span>
+							</span>
+							<span className="intel-detail-map-cta-coords">
+								{String(mapCoords.x).padStart(5, '0')} / {String(mapCoords.z).padStart(5, '0')}
+							</span>
+							<span className="intel-detail-map-cta-arrow" aria-hidden>
+								<ArrowRight size={14} strokeWidth={2} />
+							</span>
+						</Link>
 					)}
 					{linkedTarget && (
 						<div className="intel-detail-meta-item">

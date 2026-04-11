@@ -6,9 +6,19 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.12.1',
+  version: '1.13.0',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.13.0',
+      date: '2026-04-11',
+      changes: [
+        'RENS — Les rapports de renseignement avec coordonnées valides affichent maintenant un bouton « Voir sur la carte » qui redirige vers /roleplay/map et zoome sur la position avec une animation de verrouillage cible.',
+        'CARTE — Nouveau paramètre d\'URL `?focus=x,z&label=...` sur /roleplay/map pour pointer directement sur une position depuis un lien externe.',
+        'CARTE — Bouton « Retour ROLEPLAY » dans l\'entête de la carte tactique pour revenir à la base de données.',
+        'CARTE — Correction d\'un bug où la grille réapparaissait brièvement au zoom / dézoom après l\'avoir désactivée : le sondage d\'état recréait la grille toutes les quelques secondes.',
+      ],
+    },
     {
       version: '1.12.1',
       date: '2026-04-11',
