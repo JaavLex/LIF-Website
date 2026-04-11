@@ -48,11 +48,33 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  // Resolve player names from character sheets linked by biId
-  let players: { name: string; biId: string; x: number; z: number; faction: string }[] = [];
+  // Resolve player names, avatars, and unit colors via biId → character
+  type ResolvedPlayer = {
+    name: string;
+    biId: string;
+    x: number;
+    z: number;
+    faction: string;
+    characterId: number | null;
+    avatar: string | null;
+    unitColor: string | null;
+    unitName: string | null;
+    callsign: string | null;
+  };
+  let players: ResolvedPlayer[] = [];
   if (isAdmin && state.players.length > 0) {
     const biIds = state.players.map(p => p.biId).filter(Boolean);
-    const nameMap = new Map<string, string>();
+    const infoMap = new Map<
+      string,
+      {
+        name: string;
+        characterId: number;
+        avatar: string | null;
+        unitColor: string | null;
+        unitName: string | null;
+        callsign: string | null;
+      }
+    >();
 
     if (biIds.length > 0) {
       try {
@@ -61,23 +83,48 @@ export async function GET(request: NextRequest) {
           collection: 'characters',
           where: { biId: { in: biIds } },
           limit: biIds.length,
-          depth: 0,
+          depth: 2, // resolve avatar + unit + (unit.insignia not needed here)
         });
         for (const doc of result.docs) {
-          if (doc.biId) {
-            nameMap.set(doc.biId, (doc.fullName as string) || 'Unknown');
+          if (!doc.biId) continue;
+          const avatar =
+            typeof doc.avatar === 'object' && doc.avatar && 'url' in doc.avatar
+              ? ((doc.avatar as { url?: string }).url || null)
+              : null;
+          let unitColor: string | null = null;
+          let unitName: string | null = null;
+          if (doc.unit && typeof doc.unit === 'object') {
+            const u = doc.unit as { color?: string; name?: string };
+            unitColor = u.color || null;
+            unitName = u.name || null;
           }
+          infoMap.set(doc.biId, {
+            name: (doc.fullName as string) || 'Unknown',
+            characterId: doc.id,
+            avatar,
+            unitColor,
+            unitName,
+            callsign: (doc as { callsign?: string | null }).callsign || null,
+          });
         }
-      } catch { /* fallback to Unknown */ }
+      } catch { /* fallback */ }
     }
 
-    players = state.players.map(p => ({
-      name: nameMap.get(p.biId) || 'Unknown',
-      biId: p.biId,
-      x: p.x,
-      z: p.z,
-      faction: p.faction,
-    }));
+    players = state.players.map(p => {
+      const info = infoMap.get(p.biId);
+      return {
+        name: info?.name || 'Unknown',
+        biId: p.biId,
+        x: p.x,
+        z: p.z,
+        faction: p.faction,
+        characterId: info?.characterId ?? null,
+        avatar: info?.avatar ?? null,
+        unitColor: info?.unitColor ?? null,
+        unitName: info?.unitName ?? null,
+        callsign: info?.callsign ?? null,
+      };
+    });
   }
 
   return NextResponse.json({

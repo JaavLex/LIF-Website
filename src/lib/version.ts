@@ -6,15 +6,19 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.8.8',
+  version: '1.9.0',
   creator: 'JaavLex',
   changelog: [
     {
-      version: '1.8.8',
+      version: '1.9.0',
       date: '2026-04-11',
       changes: [
-        'TRÉSORERIE — Indicateur d\'évolution recalculé sur le dernier relevé (vs précédent) au lieu du point initial.',
-        'TRÉSORERIE — Classement des opérateurs (non-anonymes) sous le graphique : photo, nom, indicatif, unité, delta stock-style.',
+        'CARTE — Opérateurs représentés par une icône de soldat colorée selon leur unité (gris si aucune).',
+        'CARTE — Survol d\'un opérateur : photo, nom, indicatif, unité. Clic : ouverture de la fiche personnage.',
+        'CARTE — Marqueurs de renseignement en triangles avec glyphe par sous-type (SIGINT, HUMINT, observation, interception…).',
+        'CARTE — QG d\'unité en cercles, blason centré.',
+        'CARTE — Points d\'intérêt placés par admin : bars (losange), magasins (carré), stations-service (hexagone).',
+        'CARTE — Légende latérale listant tous les types de marqueurs et sous-types de renseignement.',
       ],
     },
     {

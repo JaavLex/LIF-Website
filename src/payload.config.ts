@@ -19,6 +19,7 @@ import { ModerationCases } from './collections/ModerationCases';
 import { ModerationEvents } from './collections/ModerationEvents';
 import { ModerationSanctions } from './collections/ModerationSanctions';
 import { BankHistory } from './collections/BankHistory';
+import { MapPOI } from './collections/MapPOI';
 import { CommsChannels } from './collections/CommsChannels';
 import { CommsMessages } from './collections/CommsMessages';
 import { AdminLogs } from './collections/AdminLogs';
@@ -55,6 +56,7 @@ export default buildConfig({
 		ModerationEvents,
 		ModerationSanctions,
 		BankHistory,
+		MapPOI,
 		CommsChannels,
 		CommsMessages,
 		AdminLogs,

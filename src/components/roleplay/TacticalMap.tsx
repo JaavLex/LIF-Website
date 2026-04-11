@@ -18,6 +18,20 @@ interface MapPlayer {
   x: number;
   z: number;
   faction: string;
+  characterId: number | null;
+  avatar: string | null;
+  unitColor: string | null;
+  unitName: string | null;
+  callsign: string | null;
+}
+
+interface MapPOI {
+  id: number;
+  name: string;
+  type: 'bar' | 'shop' | 'gas';
+  description: string | null;
+  x: number;
+  z: number;
 }
 
 interface MapGameMarker {
@@ -64,56 +78,88 @@ const FACTION_COLORS: Record<string, string> = {
   USSR: '#ff4444',
   FIA: '#ffaa00',
 };
-const DEFAULT_COLOR = '#00ff41';
+const DEFAULT_COLOR = '#7a8a7a'; // gray for unitless players
 
-function getFactionColor(faction: string): string {
-  return FACTION_COLORS[faction] || DEFAULT_COLOR;
-}
+// Soldier icon — silhouette with helmet/rifle, scales with color
+const SOLDIER_SVG = `<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" stroke="none">
+  <path d="M12 2.5c-1.6 0-2.9 1.3-2.9 2.9 0 1.6 1.3 2.9 2.9 2.9s2.9-1.3 2.9-2.9c0-1.6-1.3-2.9-2.9-2.9z"/>
+  <path d="M19.5 8.2L17 8.7l-1-1.2-1.5.4-.5 1.6L12 9l-2 .5-.5-1.6L8 7.5l-1 1.2-2.5-.5-.5 1 2.5 1 .8 1.6V21h2v-6.5h.5V21h2v-7h.5v7h2v-7h.5V21h2V11.8l.8-1.6 2.5-1-.5-1z"/>
+</svg>`;
 
-function createPlayerIcon(faction: string): L.DivIcon {
-  const color = getFactionColor(faction);
+function createPlayerIcon(player: MapPlayer): L.DivIcon {
+  const color = player.unitColor || DEFAULT_COLOR;
   return L.divIcon({
-    className: '',
-    html: `<div style="
-      width: 10px;
-      height: 10px;
-      background: ${color};
-      border: 1px solid rgba(255,255,255,0.3);
-      border-radius: 50%;
-      box-shadow: 0 0 8px ${color}, 0 0 16px ${color}44;
-    "></div>`,
-    iconSize: [10, 10],
-    iconAnchor: [5, 5],
+    className: 'player-map-icon',
+    html: `<div class="player-map-icon-inner" style="color: ${color}; --p-color: ${color};">
+      ${SOLDIER_SVG}
+    </div>`,
+    iconSize: [22, 22],
+    iconAnchor: [11, 11],
   });
 }
 
-const INTEL_TYPE_SVGS: Record<string, string> = {
-  observation: `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`,
-  interception: `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>`,
-  reconnaissance: `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>`,
-  infiltration: `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L15 8H9L12 2Z"/><line x1="12" y1="8" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>`,
-  sigint: `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20V16"/></svg>`,
-  humint: `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`,
-  other: `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>`,
+// Intel: triangle outline with subtype glyph centered
+const INTEL_TYPE_GLYPHS: Record<string, string> = {
+  observation: '◉',
+  interception: '⚡',
+  reconnaissance: '⌕',
+  infiltration: '⩕',
+  sigint: '))',
+  humint: '☥',
+  other: '?',
 };
 
-function createIntelIcon(type: string): L.DivIcon {
-  const svg = INTEL_TYPE_SVGS[type] || INTEL_TYPE_SVGS.other;
+function createIntelIcon(type: string, classColor: string): L.DivIcon {
+  const glyph = INTEL_TYPE_GLYPHS[type] || INTEL_TYPE_GLYPHS.other;
   return L.divIcon({
     className: 'intel-map-icon',
-    html: `<div class="intel-map-icon-inner">${svg}</div>`,
-    iconSize: [24, 24],
-    iconAnchor: [12, 12],
+    html: `<div class="intel-map-icon-inner" style="--c: ${classColor};">
+      <svg viewBox="0 0 28 28" width="28" height="28">
+        <polygon points="14,2 26,25 2,25" fill="rgba(0,0,0,0.78)" stroke="${classColor}" stroke-width="1.6" stroke-linejoin="round"/>
+      </svg>
+      <span class="intel-glyph">${glyph}</span>
+    </div>`,
+    iconSize: [28, 28],
+    iconAnchor: [14, 17],
   });
 }
 
+// HQ: circle with insignia
 function createHQIcon(color: string, insigniaUrl: string | null): L.DivIcon {
   const content = insigniaUrl
-    ? `<img src="${insigniaUrl}" alt="" style="width:22px;height:22px;object-fit:contain;" />`
+    ? `<img src="${insigniaUrl}" alt="" style="width:24px;height:24px;object-fit:contain;border-radius:50%;" />`
     : `<svg viewBox="0 0 24 24" width="16" height="16" fill="${color}" stroke="none"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15" stroke="${color}" stroke-width="2"/></svg>`;
   return L.divIcon({
     className: 'hq-map-icon',
-    html: `<div class="hq-map-icon-inner" style="border-color: ${color}; box-shadow: 0 0 10px ${color}88;">${content}</div>`,
+    html: `<div class="hq-map-icon-inner" style="border-color: ${color}; box-shadow: 0 0 12px ${color}aa, inset 0 0 8px ${color}44;">${content}</div>`,
+    iconSize: [34, 34],
+    iconAnchor: [17, 17],
+  });
+}
+
+// POI: distinct shape per type — bar=diamond, shop=square, gas=hexagon
+const POI_META: Record<MapPOI['type'], { color: string; label: string; glyph: string }> = {
+  bar: { color: '#d97a3a', label: 'Bar / Pub', glyph: '🍺' },
+  shop: { color: '#3aa3d9', label: 'Magasin', glyph: '⌂' },
+  gas: { color: '#e8c14d', label: 'Station-service', glyph: '⛽' },
+};
+
+function createPOIIcon(type: MapPOI['type']): L.DivIcon {
+  const meta = POI_META[type];
+  let shapeSvg = '';
+  if (type === 'bar') {
+    // diamond
+    shapeSvg = `<svg viewBox="0 0 28 28" width="28" height="28"><polygon points="14,2 26,14 14,26 2,14" fill="rgba(0,0,0,0.78)" stroke="${meta.color}" stroke-width="1.8" stroke-linejoin="round"/></svg>`;
+  } else if (type === 'shop') {
+    // square (rotated 0°)
+    shapeSvg = `<svg viewBox="0 0 28 28" width="28" height="28"><rect x="3" y="3" width="22" height="22" fill="rgba(0,0,0,0.78)" stroke="${meta.color}" stroke-width="1.8"/></svg>`;
+  } else {
+    // hexagon
+    shapeSvg = `<svg viewBox="0 0 28 28" width="28" height="28"><polygon points="14,1 25,8 25,20 14,27 3,20 3,8" fill="rgba(0,0,0,0.78)" stroke="${meta.color}" stroke-width="1.8" stroke-linejoin="round"/></svg>`;
+  }
+  return L.divIcon({
+    className: 'poi-map-icon',
+    html: `<div class="poi-map-icon-inner" style="--c: ${meta.color};">${shapeSvg}<span class="poi-glyph">${meta.glyph}</span></div>`,
     iconSize: [28, 28],
     iconAnchor: [14, 14],
   });
@@ -168,6 +214,14 @@ export default function TacticalMap() {
   const [selectedHQUnit, setSelectedHQUnit] = useState<string>('');
   // Intel markers state
   const [intelMarkers, setIntelMarkers] = useState<IntelMarker[]>([]);
+  // POI state
+  const [pois, setPois] = useState<MapPOI[]>([]);
+  const poiLayerRef = useRef<L.LayerGroup | null>(null);
+  const [placingPOI, setPlacingPOI] = useState(false);
+  const [poiType, setPoiType] = useState<MapPOI['type']>('bar');
+  const [poiName, setPoiName] = useState('');
+  // Legend
+  const [showLegend, setShowLegend] = useState(true);
 
   // Initialize Leaflet map
   useEffect(() => {
@@ -186,6 +240,7 @@ export default function TacticalMap() {
     markersLayerRef.current = L.layerGroup().addTo(map);
     hqLayerRef.current = L.layerGroup().addTo(map);
     intelLayerRef.current = L.layerGroup().addTo(map);
+    poiLayerRef.current = L.layerGroup().addTo(map);
 
     map.on('mousemove', (e: L.LeafletMouseEvent) => {
       setCursorCoords({ x: Math.round(e.latlng.lng), z: Math.round(e.latlng.lat) });
@@ -305,6 +360,100 @@ export default function TacticalMap() {
     const interval = setInterval(fetchIntelMarkers, 30_000);
     return () => clearInterval(interval);
   }, [fetchIntelMarkers]);
+
+  // Fetch POIs
+  const fetchPOIs = useCallback(async () => {
+    try {
+      const res = await fetch('/api/roleplay/map/poi', { cache: 'no-store' });
+      if (res.ok) {
+        const data = await res.json();
+        setPois(data.pois || []);
+      }
+    } catch { /* ignore */ }
+  }, []);
+
+  useEffect(() => {
+    fetchPOIs();
+    const interval = setInterval(fetchPOIs, 60_000);
+    return () => clearInterval(interval);
+  }, [fetchPOIs]);
+
+  // Remove POI handler (admin)
+  const removePOI = useCallback(async (id: number) => {
+    try {
+      const res = await fetch('/api/roleplay/map/poi', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id }),
+      });
+      if (res.ok) fetchPOIs();
+    } catch { /* ignore */ }
+  }, [fetchPOIs]);
+
+  // Render POI markers
+  useEffect(() => {
+    const layer = poiLayerRef.current;
+    if (!layer) return;
+    layer.clearLayers();
+
+    for (const poi of pois) {
+      const meta = POI_META[poi.type];
+      const marker = L.marker([poi.z, poi.x], { icon: createPOIIcon(poi.type) });
+
+      const removeBtn = isAdmin
+        ? `<button class="poi-remove-btn" data-poi-id="${poi.id}">Supprimer</button>`
+        : '';
+      marker.bindPopup(
+        `<div class="poi-popup" style="--c:${meta.color};">
+          <div class="poi-popup-type">${escapeHtml(meta.label)}</div>
+          <div class="poi-popup-name">${escapeHtml(poi.name)}</div>
+          ${poi.description ? `<div class="poi-popup-desc">${escapeHtml(poi.description)}</div>` : ''}
+          <div class="poi-popup-coords">${formatGrid(poi.x)} / ${formatGrid(poi.z)}</div>
+          ${removeBtn}
+        </div>`,
+        { className: 'map-custom-popup' },
+      );
+      marker.on('popupopen', () => {
+        const btn = document.querySelector(`.poi-remove-btn[data-poi-id="${poi.id}"]`);
+        if (btn) btn.addEventListener('click', () => removePOI(poi.id));
+      });
+      layer.addLayer(marker);
+    }
+  }, [pois, isAdmin, removePOI]);
+
+  // POI placement click handler
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+
+    async function onPOIClick(e: L.LeafletMouseEvent) {
+      if (!poiName.trim()) return;
+      const x = Math.round(e.latlng.lng);
+      const z = Math.round(e.latlng.lat);
+      try {
+        const res = await fetch('/api/roleplay/map/poi', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: poiName.trim(), type: poiType, x, z }),
+        });
+        if (res.ok) {
+          setPlacingPOI(false);
+          setPoiName('');
+          fetchPOIs();
+        }
+      } catch { /* ignore */ }
+    }
+
+    if (placingPOI && poiName.trim()) {
+      map.getContainer().style.cursor = 'crosshair';
+      map.on('click', onPOIClick);
+    }
+
+    return () => {
+      map.off('click', onPOIClick);
+      if (!calibrating && !placingHQ) map.getContainer().style.cursor = '';
+    };
+  }, [placingPOI, poiName, poiType, calibrating, placingHQ, fetchPOIs]);
 
   // Fetch admin unit list for HQ placement
   useEffect(() => {
@@ -486,15 +635,50 @@ export default function TacticalMap() {
 
     for (const player of state.players) {
       const marker = L.marker([player.z, player.x], {
-        icon: createPlayerIcon(player.faction),
+        icon: createPlayerIcon(player),
       });
 
-      marker.bindTooltip(player.name, {
-        permanent: false,
-        direction: 'top',
-        offset: [0, -8],
-        className: 'player-marker-tooltip',
-      });
+      const avatarHtml = player.avatar
+        ? `<img src="${player.avatar}" alt="" />`
+        : `<span class="player-avatar-fallback">${escapeHtml(
+            (player.name || '?').slice(0, 1).toUpperCase(),
+          )}</span>`;
+
+      const unitLine = player.unitName
+        ? `<div class="player-tip-unit" style="color:${player.unitColor || '#9aa'};">${escapeHtml(
+            player.unitName,
+          )}</div>`
+        : `<div class="player-tip-unit player-tip-unit-none">SANS UNITÉ</div>`;
+
+      const callsignLine = player.callsign
+        ? `<div class="player-tip-callsign">« ${escapeHtml(player.callsign)} »</div>`
+        : '';
+
+      marker.bindTooltip(
+        `<div class="player-tip">
+          <div class="player-tip-avatar" style="border-color:${
+            player.unitColor || '#7a8a7a'
+          };">${avatarHtml}</div>
+          <div class="player-tip-body">
+            <div class="player-tip-name">${escapeHtml(player.name)}</div>
+            ${callsignLine}
+            ${unitLine}
+          </div>
+        </div>`,
+        {
+          permanent: false,
+          direction: 'top',
+          offset: [0, -12],
+          className: 'player-marker-tooltip',
+          opacity: 1,
+        },
+      );
+
+      if (player.characterId) {
+        marker.on('click', () => {
+          window.location.href = `/roleplay/personnage/${player.characterId}`;
+        });
+      }
 
       markersLayer.addLayer(marker);
     }
@@ -560,11 +744,11 @@ export default function TacticalMap() {
     layer.clearLayers();
 
     for (const intel of intelMarkers) {
+      const classColor = CLASSIFICATION_COLORS[intel.classification] || '#00ff41';
       const marker = L.marker([intel.z, intel.x], {
-        icon: createIntelIcon(intel.type),
+        icon: createIntelIcon(intel.type, classColor),
       });
 
-      const classColor = CLASSIFICATION_COLORS[intel.classification] || '#00ff41';
       const typeLabel = INTEL_TYPE_LABELS[intel.type] || intel.type;
 
       marker.bindPopup(
@@ -616,6 +800,13 @@ export default function TacticalMap() {
           >
             Grille
           </button>
+          <button
+            type="button"
+            className={`map-admin-btn ${showLegend ? 'active' : ''}`}
+            onClick={() => setShowLegend(v => !v)}
+          >
+            Légende
+          </button>
           {isAdmin && (
             <>
               <button
@@ -644,9 +835,16 @@ export default function TacticalMap() {
               <button
                 type="button"
                 className={`map-admin-btn ${placingHQ ? 'active' : ''}`}
-                onClick={() => { setPlacingHQ(v => !v); setCalibrating(false); if (placingHQ) setSelectedHQUnit(''); }}
+                onClick={() => { setPlacingHQ(v => !v); setCalibrating(false); setPlacingPOI(false); if (placingHQ) setSelectedHQUnit(''); }}
               >
                 {placingHQ ? '✕ QG' : 'Placer QG'}
+              </button>
+              <button
+                type="button"
+                className={`map-admin-btn ${placingPOI ? 'active' : ''}`}
+                onClick={() => { setPlacingPOI(v => !v); setCalibrating(false); setPlacingHQ(false); if (placingPOI) setPoiName(''); }}
+              >
+                {placingPOI ? '✕ POI' : 'Placer POI'}
               </button>
             </>
           )}
@@ -732,6 +930,91 @@ export default function TacticalMap() {
                 Cliquez sur la carte pour placer le QG
               </div>
             )}
+          </div>
+        )}
+        {placingPOI && (
+          <div className="map-upload-panel">
+            <div className="map-upload-title">Placer un POI</div>
+            <label className="map-upload-field">
+              <span>Type</span>
+              <select
+                value={poiType}
+                onChange={e => setPoiType(e.target.value as MapPOI['type'])}
+                className="map-upload-field-select"
+              >
+                <option value="bar">Bar / Pub</option>
+                <option value="shop">Magasin</option>
+                <option value="gas">Station-service</option>
+              </select>
+            </label>
+            <label className="map-upload-field">
+              <span>Nom</span>
+              <input
+                type="text"
+                value={poiName}
+                onChange={e => setPoiName(e.target.value)}
+                placeholder="Ex: Le Dernier Verre"
+              />
+            </label>
+            {poiName.trim() && (
+              <div className="map-calibrate-hint" style={{ position: 'static', animation: 'none', opacity: 0.7 }}>
+                Cliquez sur la carte pour placer le POI
+              </div>
+            )}
+          </div>
+        )}
+        {showLegend && (
+          <div className="map-legend">
+            <div className="map-legend-title">Légende</div>
+            <div className="map-legend-section">
+              <div className="map-legend-item">
+                <span className="map-legend-icon player" aria-hidden="true">
+                  <span className="legend-soldier" />
+                </span>
+                <span>Opérateur (couleur = unité)</span>
+              </div>
+              <div className="map-legend-item">
+                <span className="map-legend-icon hq" aria-hidden="true" />
+                <span>QG d&apos;unité</span>
+              </div>
+            </div>
+            <div className="map-legend-section">
+              <div className="map-legend-heading">Renseignement</div>
+              {Object.entries(INTEL_TYPE_LABELS).map(([key, label]) => (
+                <div key={key} className="map-legend-item">
+                  <span className="map-legend-icon intel" aria-hidden="true">
+                    <svg viewBox="0 0 28 28" width="18" height="18">
+                      <polygon points="14,3 25,24 3,24" fill="rgba(0,0,0,0.78)" stroke="#00ff41" strokeWidth="1.8" strokeLinejoin="round"/>
+                    </svg>
+                    <span className="legend-intel-glyph">{INTEL_TYPE_GLYPHS[key]}</span>
+                  </span>
+                  <span>{label}</span>
+                </div>
+              ))}
+            </div>
+            <div className="map-legend-section">
+              <div className="map-legend-heading">Points d&apos;intérêt</div>
+              {(Object.keys(POI_META) as Array<MapPOI['type']>).map(type => {
+                const meta = POI_META[type];
+                return (
+                  <div key={type} className="map-legend-item">
+                    <span className="map-legend-icon poi" aria-hidden="true" style={{ ['--c' as string]: meta.color }}>
+                      {type === 'bar' && (
+                        <svg viewBox="0 0 28 28" width="18" height="18"><polygon points="14,3 25,14 14,25 3,14" fill="rgba(0,0,0,0.78)" stroke={meta.color} strokeWidth="1.8" strokeLinejoin="round"/></svg>
+                      )}
+                      {type === 'shop' && (
+                        <svg viewBox="0 0 28 28" width="18" height="18"><rect x="4" y="4" width="20" height="20" fill="rgba(0,0,0,0.78)" stroke={meta.color} strokeWidth="1.8"/></svg>
+                      )}
+                      {type === 'gas' && (
+                        <svg viewBox="0 0 28 28" width="18" height="18"><polygon points="14,2 25,8 25,20 14,26 3,20 3,8" fill="rgba(0,0,0,0.78)" stroke={meta.color} strokeWidth="1.8" strokeLinejoin="round"/></svg>
+                      )}
+                      <span className="legend-poi-glyph">{meta.glyph}</span>
+                    </span>
+                    <span>{meta.label}</span>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         )}
         {calibrating && calibrateClick && (
