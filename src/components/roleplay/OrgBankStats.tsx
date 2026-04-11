@@ -48,8 +48,15 @@ export default function OrgBankStats({ isAdmin }: { isAdmin?: boolean }) {
 		// Subtract horizontal padding (0.85rem each side ≈ 13.6px)
 		const w = Math.max(0, rect.width - 27.2);
 		const h = 280;
+		console.log('[OrgBankStats] draw call', {
+			rectWidth: rect.width,
+			computedW: w,
+			dpr,
+			canvasOffsetWidth: canvas.offsetWidth,
+			containerOffsetWidth: container.offsetWidth,
+		});
 		if (w < 50) {
-			console.log('[OrgBankStats] container too narrow', { w, rect });
+			console.log('[OrgBankStats] container too narrow — skipping', { w, rect });
 			return;
 		}
 
@@ -191,16 +198,27 @@ export default function OrgBankStats({ isAdmin }: { isAdmin?: boolean }) {
 	}, [stats]);
 
 	useEffect(() => {
-		// rAF defers one frame so flex/grid parents finalize width.
-		const raf = requestAnimationFrame(drawGraph);
+		// Draw multiple times to survive layout races: immediately, next frame,
+		// frame-after-next, and a safety net at 100ms.
+		drawGraph();
+		const raf1 = requestAnimationFrame(() => {
+			drawGraph();
+			requestAnimationFrame(drawGraph);
+		});
+		const timeout = window.setTimeout(drawGraph, 100);
+
 		window.addEventListener('resize', drawGraph);
 		let ro: ResizeObserver | null = null;
 		if (containerRef.current && typeof ResizeObserver !== 'undefined') {
-			ro = new ResizeObserver(() => drawGraph());
+			ro = new ResizeObserver(() => {
+				console.log('[OrgBankStats] ResizeObserver fired');
+				drawGraph();
+			});
 			ro.observe(containerRef.current);
 		}
 		return () => {
-			cancelAnimationFrame(raf);
+			cancelAnimationFrame(raf1);
+			window.clearTimeout(timeout);
 			window.removeEventListener('resize', drawGraph);
 			ro?.disconnect();
 		};

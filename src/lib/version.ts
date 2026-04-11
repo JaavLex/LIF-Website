@@ -6,9 +6,16 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.8.6',
+  version: '1.8.7',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.8.7',
+      date: '2026-04-11',
+      changes: [
+        'TRÉSORERIE — Tentatives de dessin multiples pour contourner les courses de layout (immédiat, rAF×2, timeout 100ms).',
+      ],
+    },
     {
       version: '1.8.6',
       date: '2026-04-11',
