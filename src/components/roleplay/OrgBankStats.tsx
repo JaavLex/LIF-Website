@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useLayoutEffect, useState, useRef, useCallback } from 'react';
 
 interface OrgStats {
 	totalMoney: number;
@@ -15,12 +15,17 @@ export default function OrgBankStats({ isAdmin }: { isAdmin?: boolean }) {
 	const containerRef = useRef<HTMLDivElement>(null);
 
 	useEffect(() => {
+		console.log('[OrgBankStats] mount, fetching stats');
 		fetch('/api/roleplay/org-stats', { cache: 'no-store' })
 			.then(r => {
+				console.log('[OrgBankStats] response', r.status, r.ok);
 				if (!r.ok) throw new Error(`org-stats ${r.status}`);
 				return r.json();
 			})
-			.then(setStats)
+			.then(data => {
+				console.log('[OrgBankStats] data', data);
+				setStats(data);
+			})
 			.catch(err => console.error('[OrgBankStats] fetch failed', err));
 	}, []);
 
@@ -28,7 +33,7 @@ export default function OrgBankStats({ isAdmin }: { isAdmin?: boolean }) {
 		const canvas = canvasRef.current;
 		const container = containerRef.current;
 		if (!canvas || !container || !stats || stats.history.length < 2) {
-			console.debug('[OrgBankStats] skip draw', {
+			console.log('[OrgBankStats] skip draw', {
 				hasCanvas: !!canvas,
 				hasContainer: !!container,
 				hasStats: !!stats,
@@ -36,6 +41,7 @@ export default function OrgBankStats({ isAdmin }: { isAdmin?: boolean }) {
 			});
 			return;
 		}
+		console.log('[OrgBankStats] drawing', { points: stats.history.length });
 
 		const dpr = window.devicePixelRatio || 1;
 		const rect = container.getBoundingClientRect();
@@ -43,7 +49,7 @@ export default function OrgBankStats({ isAdmin }: { isAdmin?: boolean }) {
 		const w = Math.max(0, rect.width - 27.2);
 		const h = 280;
 		if (w < 50) {
-			console.debug('[OrgBankStats] container too narrow', { w, rect });
+			console.log('[OrgBankStats] container too narrow', { w, rect });
 			return;
 		}
 
@@ -184,8 +190,9 @@ export default function OrgBankStats({ isAdmin }: { isAdmin?: boolean }) {
 		}
 	}, [stats]);
 
-	useEffect(() => {
-		// Defer to next frame so flex/grid parents have finalized layout
+	useLayoutEffect(() => {
+		// useLayoutEffect fires synchronously after DOM commit, so refs are attached.
+		// rAF defers one frame so flex/grid parents finalize width.
 		const raf = requestAnimationFrame(drawGraph);
 		window.addEventListener('resize', drawGraph);
 		let ro: ResizeObserver | null = null;
@@ -200,7 +207,18 @@ export default function OrgBankStats({ isAdmin }: { isAdmin?: boolean }) {
 		};
 	}, [drawGraph]);
 
-	if (!stats) return null;
+	if (!stats) {
+		return (
+			<div className="org-stats-section">
+				<div className="org-stats-header">
+					<div className="org-stats-big-number">
+						<span className="org-stats-currency">$</span>
+						<span className="org-stats-amount">…</span>
+					</div>
+				</div>
+			</div>
+		);
+	}
 
 	const formatted = stats.totalMoney.toLocaleString('fr-FR');
 

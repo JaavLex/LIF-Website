@@ -6,9 +6,16 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.8.4',
+  version: '1.8.5',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.8.5',
+      date: '2026-04-11',
+      changes: [
+        'TRÉSORERIE — Diagnostic renforcé du graphique : trace complète du fetch, useLayoutEffect pour garantir l\'attache des refs avant redraw.',
+      ],
+    },
     {
       version: '1.8.4',
       date: '2026-04-11',
