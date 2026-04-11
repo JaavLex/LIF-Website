@@ -6,9 +6,16 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.8.3',
+  version: '1.8.4',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.8.4',
+      date: '2026-04-11',
+      changes: [
+        'TRÉSORERIE — Graphique plus robuste : redessin automatique quand la taille du conteneur change (ResizeObserver), délai d\'une frame pour laisser le layout se stabiliser, logs de diagnostic en console.',
+      ],
+    },
     {
       version: '1.8.3',
       date: '2026-04-11',

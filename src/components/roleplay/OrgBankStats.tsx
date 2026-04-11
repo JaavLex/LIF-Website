@@ -27,12 +27,25 @@ export default function OrgBankStats({ isAdmin }: { isAdmin?: boolean }) {
 	const drawGraph = useCallback(() => {
 		const canvas = canvasRef.current;
 		const container = containerRef.current;
-		if (!canvas || !container || !stats || stats.history.length < 2) return;
+		if (!canvas || !container || !stats || stats.history.length < 2) {
+			console.debug('[OrgBankStats] skip draw', {
+				hasCanvas: !!canvas,
+				hasContainer: !!container,
+				hasStats: !!stats,
+				points: stats?.history.length,
+			});
+			return;
+		}
 
 		const dpr = window.devicePixelRatio || 1;
 		const rect = container.getBoundingClientRect();
-		const w = rect.width;
+		// Subtract horizontal padding (0.85rem each side ≈ 13.6px)
+		const w = Math.max(0, rect.width - 27.2);
 		const h = 280;
+		if (w < 50) {
+			console.debug('[OrgBankStats] container too narrow', { w, rect });
+			return;
+		}
 
 		canvas.width = w * dpr;
 		canvas.height = h * dpr;
@@ -172,9 +185,19 @@ export default function OrgBankStats({ isAdmin }: { isAdmin?: boolean }) {
 	}, [stats]);
 
 	useEffect(() => {
-		drawGraph();
+		// Defer to next frame so flex/grid parents have finalized layout
+		const raf = requestAnimationFrame(drawGraph);
 		window.addEventListener('resize', drawGraph);
-		return () => window.removeEventListener('resize', drawGraph);
+		let ro: ResizeObserver | null = null;
+		if (containerRef.current && typeof ResizeObserver !== 'undefined') {
+			ro = new ResizeObserver(() => drawGraph());
+			ro.observe(containerRef.current);
+		}
+		return () => {
+			cancelAnimationFrame(raf);
+			window.removeEventListener('resize', drawGraph);
+			ro?.disconnect();
+		};
 	}, [drawGraph]);
 
 	if (!stats) return null;
