@@ -6,9 +6,16 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.8.1',
+  version: '1.8.2',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.8.2',
+      date: '2026-04-11',
+      changes: [
+        'COMMS — Refonte mobile : zone de lecture dégagée, barres supérieures et composer compactés, onglets inférieurs affinés.',
+      ],
+    },
     {
       version: '1.8.1',
       date: '2026-04-10',
