@@ -954,8 +954,10 @@ export default function TacticalMap() {
 
   async function handleCalibrate() {
     if (!calibrateClick || !state?.terrain) return;
-    const realX = Number(calibrateRealX);
-    const realZ = Number(calibrateRealZ);
+    const match = calibrateRealX.match(/^\s*(\d{1,5})\s*[,/\s]\s*(\d{1,5})\s*$/);
+    if (!match) return;
+    const realX = parseInt(match[1], 10);
+    const realZ = parseInt(match[2], 10);
     if (isNaN(realX) || isNaN(realZ)) return;
 
     const newOffsetX = offsetRef.current.x + (realX - calibrateClick.mapX);
@@ -1444,31 +1446,25 @@ export default function TacticalMap() {
             <div className="map-calibrate-info">
               Point cliqué: {formatGrid(calibrateClick.mapX)} / {formatGrid(calibrateClick.mapZ)}
             </div>
-            <div className="map-upload-row">
-              <label className="map-upload-field">
-                <span>Vrai X (m)</span>
-                <input
-                  type="number"
-                  value={calibrateRealX}
-                  onChange={e => setCalibrateRealX(e.target.value)}
-                  placeholder="Ex: 3500"
-                />
-              </label>
-              <label className="map-upload-field">
-                <span>Vrai Z (m)</span>
-                <input
-                  type="number"
-                  value={calibrateRealZ}
-                  onChange={e => setCalibrateRealZ(e.target.value)}
-                  placeholder="Ex: 4200"
-                />
-              </label>
-            </div>
+            <label className="map-upload-field">
+              <span>Coordonnées Reforger (X, Z)</span>
+              <input
+                type="text"
+                value={calibrateRealX}
+                onChange={e => {
+                  setCalibrateRealX(e.target.value);
+                  const m = e.target.value.match(/^\s*(\d{1,5})\s*[,/\s]\s*(\d{1,5})\s*$/);
+                  setCalibrateRealZ(m ? m[2] : '');
+                }}
+                placeholder="Ex: 03500, 02100"
+                style={{ fontFamily: "'Courier New', monospace", letterSpacing: '0.08em' }}
+              />
+            </label>
             <button
               type="button"
               className="map-upload-btn"
               onClick={handleCalibrate}
-              disabled={!calibrateRealX || !calibrateRealZ}
+              disabled={!calibrateRealZ}
             >
               Appliquer
             </button>

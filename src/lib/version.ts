@@ -6,9 +6,16 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.13.0',
+  version: '1.13.1',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.13.1',
+      date: '2026-04-11',
+      changes: [
+        'CARTE — Calibration : champ unique « Coordonnées Reforger » acceptant le format zéro-paddé « 03500, 02100 » (avec virgule, slash ou espace), cohérent avec le format affiché partout ailleurs sur la carte.',
+      ],
+    },
     {
       version: '1.13.0',
       date: '2026-04-11',
