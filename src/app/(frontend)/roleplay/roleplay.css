@@ -9791,10 +9791,10 @@
 }
 
 .map-picker-modal {
-  width: 90vw;
-  max-width: 900px;
-  height: 80vh;
-  max-height: 700px;
+  width: 96vw;
+  max-width: 1600px;
+  height: 92vh;
+  max-height: 1100px;
   display: flex;
   flex-direction: column;
   background: rgba(12, 15, 10, 0.98);

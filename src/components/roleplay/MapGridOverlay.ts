@@ -89,10 +89,15 @@ export function createGridOverlay(
   group.on('remove', () => {
     map.off('zoomend', draw);
   });
+  // Re-subscribe to zoomend on re-add, but defer the redraw: if we mutate the
+  // group synchronously inside the 'add' event we re-enter Leaflet's add
+  // iteration and hit a known parentNode crash.
   group.on('add', () => {
     map.off('zoomend', draw);
     map.on('zoomend', draw);
-    draw();
+    setTimeout(() => {
+      try { draw(); } catch { /* map may be gone already */ }
+    }, 0);
   });
 
   return group;

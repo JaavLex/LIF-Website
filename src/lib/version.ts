@@ -6,9 +6,18 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.11.0',
+  version: '1.11.1',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.11.1',
+      date: '2026-04-11',
+      changes: [
+        'CARTE — Correction du crash « parentNode undefined » : la grille ne se redessine plus de manière synchrone pendant que Leaflet est en train d\'ajouter le calque (re-entrée).',
+        'COMMS — Les modales de sélection et d\'aperçu de position sont beaucoup plus grandes (jusqu\'à 1600×1100 px) pour bien voir les contrôles, la grille et les coordonnées.',
+        'COMMS — L\'aperçu de position nettoie maintenant correctement ses minuteurs lors de la fermeture (plus d\'appels à invalidateSize() sur une carte détruite).',
+      ],
+    },
     {
       version: '1.11.0',
       date: '2026-04-11',

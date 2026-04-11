@@ -63,6 +63,8 @@ export default function PositionPreviewModal({ coords, onClose }: PositionPrevie
 		if (!containerRef.current) return;
 
 		let map: L.Map | null = null;
+		let cancelled = false;
+		const timers: ReturnType<typeof setTimeout>[] = [];
 
 		(async () => {
 			try {
@@ -78,7 +80,7 @@ export default function PositionPreviewModal({ coords, onClose }: PositionPrevie
 						? await stateRes.value.json()
 						: null;
 
-				if (!containerRef.current || !data) {
+				if (cancelled || !containerRef.current || !data) {
 					setLoading(false);
 					return;
 				}
@@ -214,15 +216,25 @@ export default function PositionPreviewModal({ coords, onClose }: PositionPrevie
 				mapRef.current = map;
 				setLoading(false);
 
-				[100, 300, 600].forEach(ms => setTimeout(() => map?.invalidateSize(), ms));
+				[100, 300, 600].forEach(ms => {
+					timers.push(
+						setTimeout(() => {
+							if (!cancelled && map) {
+								try { map.invalidateSize(); } catch { /* removed */ }
+							}
+						}, ms),
+					);
+				});
 			} catch {
 				setLoading(false);
 			}
 		})();
 
 		return () => {
+			cancelled = true;
+			timers.forEach(clearTimeout);
 			if (map) {
-				map.remove();
+				try { map.remove(); } catch { /* already gone */ }
 				mapRef.current = null;
 			}
 		};
@@ -238,10 +250,10 @@ export default function PositionPreviewModal({ coords, onClose }: PositionPrevie
 				className="comms-modal"
 				onClick={e => e.stopPropagation()}
 				style={{
-					width: '95vw',
-					maxWidth: '900px',
-					height: '80vh',
-					maxHeight: '750px',
+					width: '96vw',
+					maxWidth: '1600px',
+					height: '92vh',
+					maxHeight: '1100px',
 					display: 'flex',
 					flexDirection: 'column',
 					borderColor: variant === 'sos' ? '#ff3030' : undefined,
