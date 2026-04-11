@@ -6,9 +6,16 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.13.8',
+  version: '1.13.9',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.13.9',
+      date: '2026-04-11',
+      changes: [
+        'RENSEIGNEMENTS — Correction effective de l\'upload vidéo/audio : la route /api/upload rejetait côté serveur tout fichier non-image. Elle accepte désormais images, vidéos, audio et PDF (SVG toujours refusé pour prévenir les XSS). Limites : 10 Mo pour les images, 50 Mo pour le reste (aligné sur la limite nginx).',
+      ],
+    },
     {
       version: '1.13.8',
       date: '2026-04-11',
