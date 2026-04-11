@@ -6,9 +6,16 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.12.0',
+  version: '1.12.1',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.12.1',
+      date: '2026-04-11',
+      changes: [
+        'REFACTO — Extraction de la liste des opérateurs (OperatorRoster) depuis TacticalMap.tsx pour passer sous la limite des 1500 lignes par composant.',
+      ],
+    },
     {
       version: '1.12.0',
       date: '2026-04-11',
