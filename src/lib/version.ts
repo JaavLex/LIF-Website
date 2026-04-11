@@ -6,9 +6,16 @@ export interface ChangelogEntry {
 }
 
 export const VERSION_INFO = {
-  version: '1.13.5',
+  version: '1.13.6',
   creator: 'JaavLex',
   changelog: [
+    {
+      version: '1.13.6',
+      date: '2026-04-11',
+      changes: [
+        'CARTE — Optimisation de la grille dynamique : ne dessine plus que les lignes et étiquettes visibles dans la zone affichée (au lieu de la carte entière), redraw en requestAnimationFrame sur zoom/pan, plus garde-fous (max 400 lignes/axe, 1500 étiquettes) pour éviter les crashs d\'onglet lors des zooms fins sur grandes cartes.',
+      ],
+    },
     {
       version: '1.13.5',
       date: '2026-04-11',

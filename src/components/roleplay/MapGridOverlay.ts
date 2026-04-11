@@ -23,52 +23,79 @@ const LINE_STYLE: L.PolylineOptions = {
   interactive: false,
 };
 
+// Defensive caps to prevent runaway DOM/layer counts when the map extent is
+// large and the user zooms in. Anything above these limits is skipped.
+const MAX_LINES_PER_AXIS = 400;
+const MAX_LABELS = 1500;
+
 /**
  * Creates a grid overlay as an L.LayerGroup containing polylines and labels.
- * Redraws on zoom change to adjust grid density.
+ *
+ * Only draws lines/labels that intersect the current viewport (plus a small
+ * pad) rather than the full map extent. This turns cost from O(map_area /
+ * spacing²) into O(viewport_area / spacing²), which keeps zoom in/out smooth
+ * on large maps where the old implementation could produce tens of thousands
+ * of label markers at fine zoom.
  */
 export function createGridOverlay(
   map: L.Map,
   bounds: { minX: number; minZ: number; maxX: number; maxZ: number },
 ): L.LayerGroup {
   const group = L.layerGroup();
+  let rafHandle: number | null = null;
 
   function draw() {
+    rafHandle = null;
     group.clearLayers();
     const zoom = map.getZoom();
     const spacing = getGridSpacing(zoom);
 
     const { minX, minZ, maxX, maxZ } = bounds;
 
-    // Snap to grid — clamp INSIDE bounds so lines never draw outside map
-    const startX = Math.ceil(minX / spacing) * spacing;
-    const endX = Math.floor(maxX / spacing) * spacing;
-    const startZ = Math.ceil(minZ / spacing) * spacing;
-    const endZ = Math.floor(maxZ / spacing) * spacing;
+    // Visible viewport in CRS.Simple coordinates (lat=Z, lng=X).
+    const vb = map.getBounds();
+    const pad = spacing;
+    const viewMinX = Math.max(minX, vb.getWest() - pad);
+    const viewMaxX = Math.min(maxX, vb.getEast() + pad);
+    const viewMinZ = Math.max(minZ, vb.getSouth() - pad);
+    const viewMaxZ = Math.min(maxZ, vb.getNorth() + pad);
+    if (viewMinX >= viewMaxX || viewMinZ >= viewMaxZ) return;
 
-    // Vertical lines (constant X)
+    // If the visible cell count would exceed the per-axis cap, bail — the
+    // user has zoomed to a state where the grid wouldn't be readable anyway.
+    const xCount = Math.ceil((viewMaxX - viewMinX) / spacing);
+    const zCount = Math.ceil((viewMaxZ - viewMinZ) / spacing);
+    if (xCount > MAX_LINES_PER_AXIS || zCount > MAX_LINES_PER_AXIS) return;
+
+    const startX = Math.ceil(viewMinX / spacing) * spacing;
+    const endX = Math.floor(viewMaxX / spacing) * spacing;
+    const startZ = Math.ceil(viewMinZ / spacing) * spacing;
+    const endZ = Math.floor(viewMaxZ / spacing) * spacing;
+
+    // Lines span the visible slice only, clamped to map bounds.
+    const lineZ1 = Math.max(minZ, viewMinZ);
+    const lineZ2 = Math.min(maxZ, viewMaxZ);
+    const lineX1 = Math.max(minX, viewMinX);
+    const lineX2 = Math.min(maxX, viewMaxX);
+
     for (let x = startX; x <= endX; x += spacing) {
       if (x < minX || x > maxX) continue;
-      group.addLayer(L.polyline([[minZ, x], [maxZ, x]], LINE_STYLE));
+      group.addLayer(L.polyline([[lineZ1, x], [lineZ2, x]], LINE_STYLE));
     }
-
-    // Horizontal lines (constant Z)
     for (let z = startZ; z <= endZ; z += spacing) {
       if (z < minZ || z > maxZ) continue;
-      group.addLayer(L.polyline([[z, minX], [z, maxX]], LINE_STYLE));
+      group.addLayer(L.polyline([[z, lineX1], [z, lineX2]], LINE_STYLE));
     }
 
-    // Labels at intersections
-    // At fine zoom show labels less often to avoid clutter
     const labelSpacing = spacing < 100 ? spacing * 5 : spacing;
-    const labelStartX = Math.ceil(minX / labelSpacing) * labelSpacing;
-    const labelStartZ = Math.ceil(minZ / labelSpacing) * labelSpacing;
+    const labelStartX = Math.ceil(viewMinX / labelSpacing) * labelSpacing;
+    const labelStartZ = Math.ceil(viewMinZ / labelSpacing) * labelSpacing;
 
-    for (let x = labelStartX; x < maxX; x += labelSpacing) {
-      for (let z = labelStartZ; z < maxZ; z += labelSpacing) {
-        if (x < minX || z < minZ) continue;
-        // Offset label to bottom-right of intersection so it sits INSIDE the cell,
-        // not on top of the grid lines
+    let labelCount = 0;
+    for (let x = labelStartX; x < viewMaxX && labelCount < MAX_LABELS; x += labelSpacing) {
+      if (x < minX || x > maxX) continue;
+      for (let z = labelStartZ; z < viewMaxZ && labelCount < MAX_LABELS; z += labelSpacing) {
+        if (z < minZ || z > maxZ) continue;
         const label = L.marker([z, x], {
           icon: L.divIcon({
             className: 'grid-label',
@@ -79,25 +106,41 @@ export function createGridOverlay(
           interactive: false,
         });
         group.addLayer(label);
+        labelCount++;
       }
     }
   }
 
-  draw();
-  map.on('zoomend', draw);
+  function scheduleDraw() {
+    if (rafHandle !== null) return;
+    rafHandle = requestAnimationFrame(() => {
+      try { draw(); } catch { /* map may be gone */ }
+    });
+  }
 
-  group.on('remove', () => {
-    map.off('zoomend', draw);
-  });
-  // Re-subscribe to zoomend on re-add, but defer the redraw: if we mutate the
-  // group synchronously inside the 'add' event we re-enter Leaflet's add
-  // iteration and hit a known parentNode crash.
+  function subscribe() {
+    map.on('zoomend', scheduleDraw);
+    map.on('moveend', scheduleDraw);
+  }
+  function unsubscribe() {
+    map.off('zoomend', scheduleDraw);
+    map.off('moveend', scheduleDraw);
+    if (rafHandle !== null) {
+      cancelAnimationFrame(rafHandle);
+      rafHandle = null;
+    }
+  }
+
+  draw();
+  subscribe();
+
+  group.on('remove', unsubscribe);
+  // Defer the redraw on re-add — mutating the group synchronously inside the
+  // 'add' event re-enters Leaflet's add iteration and hits a parentNode crash.
   group.on('add', () => {
-    map.off('zoomend', draw);
-    map.on('zoomend', draw);
-    setTimeout(() => {
-      try { draw(); } catch { /* map may be gone already */ }
-    }, 0);
+    unsubscribe();
+    subscribe();
+    scheduleDraw();
   });
 
   return group;
